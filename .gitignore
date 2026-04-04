@@ -1,0 +1,25 @@
+# 환경 변수 (토큰·비밀키 절대 커밋 금지)
+.env
+.env.*
+
+# 오타 파일 (실수로 생성된 것)
+.gitinore
+
+# 에이전트 생성 산출물 (로컬 전용)
+output/web/*.html
+output/web/versions/
+
+# 에이전트 임시 파일
+output/web/_teacher_content.html
+output/web/_student_content.html
+output/web/index_partial.html
+
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
+
+# OS 파일
+.DS_Store
+Thumbs.db
+desktop.ini

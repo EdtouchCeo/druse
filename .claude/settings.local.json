@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"c:/Users/drhon/OneDrive - 대륜고등학교/대륜고사용설명서/.claude/skills/file-reader/scripts\")",
+      "Bash(mkdir -p \"c:/Users/drhon/OneDrive - 대륜고등학교/대륜고사용설명서/.claude/skills/html-writer/scripts\")",
+      "Bash(mkdir -p \"c:/Users/drhon/OneDrive - 대륜고등학교/대륜고사용설명서/.claude/skills/html-writer/references\")"
+    ]
+  }
+}
