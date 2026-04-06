@@ -11,6 +11,7 @@ import re
 SOURCE = os.path.join("output", "web", "index.html")
 TEACHER_OUT = os.path.join("output", "web", "_teacher_content.html")
 STUDENT_OUT = os.path.join("output", "web", "_student_content.html")
+# 학교 소개(_school_content.html)는 별도 관리 — parse 대상에서 제외
 
 
 def extract_tab_content(html: str, tab_id: str) -> str:

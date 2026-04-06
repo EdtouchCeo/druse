@@ -3,7 +3,8 @@
 사용법:
   python .claude/skills/html-writer/scripts/build_html.py \
     "output/web/_teacher_content.html" \
-    "output/web/_student_content.html"
+    "output/web/_student_content.html" \
+    ["output/web/_school_content.html"]   ← 선택 인수
 """
 import sys
 import os
@@ -11,55 +12,58 @@ import os
 TEMPLATE = os.path.join(".claude", "skills", "html-writer", "references", "shell_template.html")
 OUTPUT = os.path.join("output", "web", "index.html")
 
+SCHOOL_PLACEHOLDER  = "<!-- SCHOOL_CONTENT_PLACEHOLDER -->"
 TEACHER_PLACEHOLDER = "<!-- TEACHER_CONTENT_PLACEHOLDER -->"
 STUDENT_PLACEHOLDER = "<!-- STUDENT_CONTENT_PLACEHOLDER -->"
 
+SCHOOL_CONTENT_DEFAULT = os.path.join("output", "web", "_school_content.html")
 
-def build(teacher_file: str, student_file: str):
-    # 셸 템플릿 읽기
-    if not os.path.exists(TEMPLATE):
-        print(f"오류: 셸 템플릿을 찾을 수 없습니다 — {TEMPLATE}", file=sys.stderr)
+
+def _read(path: str, label: str) -> str:
+    if not os.path.exists(path):
+        print(f"오류: {label} 파일 없음 — {path}", file=sys.stderr)
         sys.exit(1)
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
 
-    with open(TEMPLATE, "r", encoding="utf-8") as f:
-        template = f.read()
 
-    # 교사 탭 콘텐츠 읽기
-    if not os.path.exists(teacher_file):
-        print(f"오류: 교사 탭 콘텐츠 파일 없음 — {teacher_file}", file=sys.stderr)
-        sys.exit(1)
+def build(teacher_file: str, student_file: str, school_file: str = None):
+    template = _read(TEMPLATE, "셸 템플릿")
+    teacher_content = _read(teacher_file, "교사 탭 콘텐츠")
+    student_content = _read(student_file, "학생 탭 콘텐츠")
 
-    with open(teacher_file, "r", encoding="utf-8") as f:
-        teacher_content = f.read()
+    # 학교 소개 콘텐츠: 명시 파일 > 기존 저장 파일 > 빈 플레이스홀더
+    if school_file and os.path.exists(school_file):
+        with open(school_file, "r", encoding="utf-8") as f:
+            school_content = f.read()
+    elif os.path.exists(SCHOOL_CONTENT_DEFAULT):
+        with open(SCHOOL_CONTENT_DEFAULT, "r", encoding="utf-8") as f:
+            school_content = f.read()
+    else:
+        school_content = (
+            '<div class="placeholder-card">'
+            '<div class="placeholder-icon">🏫</div>'
+            '<p class="placeholder-title">학교 소개 준비 중</p>'
+            '<p class="placeholder-desc">학교알리미 URL을 입력하면 자동 생성됩니다.</p>'
+            '</div>'
+        )
 
-    # 학생·학부모 탭 콘텐츠 읽기
-    if not os.path.exists(student_file):
-        print(f"오류: 학생 탭 콘텐츠 파일 없음 — {student_file}", file=sys.stderr)
-        sys.exit(1)
+    for marker, label in [(TEACHER_PLACEHOLDER, "TEACHER"), (STUDENT_PLACEHOLDER, "STUDENT"), (SCHOOL_PLACEHOLDER, "SCHOOL")]:
+        if marker not in template:
+            print(f"오류: 템플릿에 {label} 플레이스홀더가 없습니다.", file=sys.stderr)
+            sys.exit(1)
 
-    with open(student_file, "r", encoding="utf-8") as f:
-        student_content = f.read()
-
-    # 플레이스홀더 치환
-    if TEACHER_PLACEHOLDER not in template:
-        print(f"오류: 템플릿에 {TEACHER_PLACEHOLDER} 마커가 없습니다.", file=sys.stderr)
-        sys.exit(1)
-
-    if STUDENT_PLACEHOLDER not in template:
-        print(f"오류: 템플릿에 {STUDENT_PLACEHOLDER} 마커가 없습니다.", file=sys.stderr)
-        sys.exit(1)
-
-    html = template.replace(TEACHER_PLACEHOLDER, teacher_content)
+    html = template.replace(SCHOOL_PLACEHOLDER,  school_content)
+    html = html.replace(TEACHER_PLACEHOLDER, teacher_content)
     html = html.replace(STUDENT_PLACEHOLDER, student_content)
 
-    # 출력
     os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
     with open(OUTPUT, "w", encoding="utf-8") as f:
         f.write(html)
 
     print(f"HTML 생성 완료: {OUTPUT}")
 
-    # 임시 콘텐츠 파일 삭제
+    # 임시 콘텐츠 파일 삭제 (school은 영구 보존)
     for tmp in [teacher_file, student_file]:
         try:
             os.remove(tmp)
@@ -71,7 +75,8 @@ def build(teacher_file: str, student_file: str):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("사용법: python build_html.py <teacher_content.html> <student_content.html>", file=sys.stderr)
+        print("사용법: python build_html.py <teacher_content.html> <student_content.html> [school_content.html]", file=sys.stderr)
         sys.exit(1)
 
-    build(sys.argv[1], sys.argv[2])
+    school_arg = sys.argv[3] if len(sys.argv) >= 4 else None
+    build(sys.argv[1], sys.argv[2], school_arg)
