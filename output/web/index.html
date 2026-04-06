@@ -455,8 +455,12 @@
   var t=new Date(),ymd=t.getFullYear()+String(t.getMonth()+1).padStart(2,"0")+String(t.getDate()).padStart(2,"0");
   var el=document.getElementById("meal-date");
   if(el) el.textContent=t.getFullYear()+"년 "+(t.getMonth()+1)+"월 "+t.getDate()+"일";
-  fetch("https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=c0d07312e99641a998e0a3701bd411cf&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7240085&MLSV_YMD="+ymd+"&MMEAL_SC_CODE=2")
-    .then(function(r){return r.json();})
+  var mealUrl="https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=c0d07312e99641a998e0a3701bd411cf&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7240085&MLSV_YMD="+ymd+"&MMEAL_SC_CODE=2";
+  fetch(mealUrl)
+    .then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      return r.json();
+    })
     .then(function(d){
       var mc=document.getElementById("meal-content");
       if(!mc)return;
@@ -464,16 +468,16 @@
       if(!info||!info[0]||info[0].head[1].RESULT.CODE!=="INFO-000"){
         mc.innerHTML='<span style="opacity:0.55;font-size:0.84rem;">오늘 급식 정보가 없습니다.</span>';return;
       }
-      var dishes=info[1].row[0].DISH_NM.split("<br/>")
+      var dishes=info[1].row[0].DDISH_NM.split("<br/>")
         .map(function(x){return x.replace(/\s*\([^)]*\)/g,"").trim();})
         .filter(function(x){return x.length>0;});
       mc.innerHTML=dishes.map(function(x){
         return '<div style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.45;font-size:0.7rem;">&#x25AA;</span>'+x+'</div>';
       }).join("");
     })
-    .catch(function(){
+    .catch(function(e){
       var mc=document.getElementById("meal-content");
-      if(mc) mc.innerHTML='<span style="opacity:0.55;font-size:0.84rem;">급식 정보를 ���러올 수 없습니다.</span>';
+      if(mc) mc.innerHTML='<span style="opacity:0.55;font-size:0.82rem;">불러오기 실패<br><span style="font-size:0.78rem;opacity:0.7;">'+(e&&e.message?e.message:'네트워크 오류')+'</span></span>';
     });
 })();
 </script>
