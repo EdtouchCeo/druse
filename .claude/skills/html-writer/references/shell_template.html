@@ -472,6 +472,7 @@
     .cal-nav-btn:hover { opacity: 0.8; }
     .cal-grid {
       display: grid; grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: 90px;
       gap: 4px;
     }
     .cal-dow {
@@ -481,9 +482,10 @@
     .cal-dow.sun { color: #dc2626; }
     .cal-dow.sat { color: #2563eb; }
     .cal-cell {
-      min-height: 90px; background: #f8faff; border-radius: 8px;
+      background: #f8faff; border-radius: 8px;
       padding: 6px 7px; position: relative;
       border: 1px solid #e9eef7;
+      overflow: hidden;
     }
     .cal-cell.today { background: #eff6ff; border-color: #93c5fd; }
     .cal-cell.empty { background: transparent; border: none; }
@@ -522,7 +524,8 @@
     .cal-semester-tag.s1 { background: #fef3c7; color: #92400e; }
     .cal-semester-tag.s2 { background: #ede9fe; color: #4c1d95; }
     @media (max-width: 700px) {
-      .cal-cell { min-height: 64px; padding: 4px 4px; }
+      .cal-grid { grid-auto-rows: 64px; }
+      .cal-cell { padding: 4px 4px; }
       .cal-event { font-size: 0.6rem; padding: 1px 3px; }
       .cal-title { font-size: 1.1rem; }
     }  </style>
