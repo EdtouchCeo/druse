@@ -378,11 +378,54 @@
 
     /* ===== 반응형 ===== */
     @media (max-width: 700px) {
-      header { padding: 20px 18px; }
-      header h1 { font-size: 1.3rem; }
-      main { padding: 20px 14px 40px; }
-      .tab-btn { padding: 12px 18px; font-size: 0.88rem; }
-      .card { padding: 18px 16px; }
+      /* 헤더 */
+      header { padding: 14px 16px 12px; }
+      .header-inner {
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        align-items: flex-start !important;
+      }
+      /* 교표 이미지 */
+      .header-inner > img { width: 44px !important; height: 44px !important; }
+      /* 제목 영역 */
+      .header-inner > div[onclick] { flex: 1 1 0; min-width: 0; }
+      header h1 { font-size: 1.15rem; }
+      header p.subtitle { font-size: 0.78rem; }
+      /* 검색창: 전체 너비로 */
+      .search-wrap {
+        width: 100% !important;
+        margin-left: 0 !important;
+        order: 3;
+      }
+      .search-input { width: 100% !important; }
+      .search-input:focus { width: 100% !important; }
+      .search-results { width: 100% !important; right: auto !important; left: 0; }
+
+      /* 탭 네비게이션: 2줄 허용, 버튼 균등 분배 */
+      .tab-nav-inner { flex-wrap: wrap; }
+      .tab-btn {
+        flex: 1 1 auto;
+        padding: 10px 8px;
+        font-size: 0.78rem;
+        min-width: 0;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      /* 콘텐츠 */
+      main { padding: 16px 12px 40px; }
+      .card { padding: 16px 14px; }
+
+      /* 히어로 배너: 세로 스택 */
+      .hero-flex { flex-direction: column !important; }
+      .hero-cards { flex-direction: row !important; gap: 8px !important; width: 100% !important; }
+      .hero-card { width: auto !important; flex: 1 !important; min-width: 0 !important; }
+      .hero-card * { font-size: 0.78rem !important; }
+    }
+
+    @media (max-width: 480px) {
+      header h1 { font-size: 1rem; }
+      .tab-btn { font-size: 0.72rem; padding: 9px 6px; }
     }
 
     /* ===== 푸터 ===== */
@@ -520,7 +563,7 @@
     <!-- TAB:school:START -->
 <!-- ===== 학교 소개 히어로 배너 ===== -->
 <div style="background:linear-gradient(135deg,#1a3a6b 0%,#2a5298 55%,#1e6e8a 100%);border-radius:16px;padding:28px 36px;margin-bottom:36px;color:#fff;position:relative;overflow:hidden;">
-  <div style="display:flex;gap:24px;align-items:stretch;">
+  <div class="hero-flex" style="display:flex;gap:24px;align-items:stretch;">
 
     <!-- 왼쪽: 학교 정보 + 버튼 -->
     <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:16px;">
@@ -539,17 +582,17 @@
     </div>
 
     <!-- 오른쪽: 급식 + 학사일정 카드 -->
-    <div style="display:flex;gap:12px;flex-shrink:0;">
+    <div class="hero-cards" style="display:flex;gap:12px;flex-shrink:0;">
 
       <!-- 급식 카드 -->
-      <div style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
+      <div class="hero-card" style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
         <p style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;font-weight:600;flex-shrink:0;">&#x1F371; 오늘의 중식</p>
         <div id="meal-content" style="font-size:0.85rem;line-height:1.8;opacity:0.9;flex:1;overflow-y:auto;"><span style="opacity:0.55;font-size:0.82rem;">불러오는 중...</span></div>
         <p id="meal-date" style="font-size:0.7rem;opacity:0.4;margin-top:6px;flex-shrink:0;"></p>
       </div>
 
       <!-- 학사일정 카드 -->
-      <div style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
+      <div class="hero-card" style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
         <p style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;font-weight:600;flex-shrink:0;">&#x1F4C5; 이달의 학사일정</p>
         <div id="schedule-content" style="font-size:0.85rem;line-height:1.8;opacity:0.9;flex:1;overflow-y:auto;"><span style="opacity:0.55;font-size:0.82rem;">불러오는 중...</span></div>
       </div>

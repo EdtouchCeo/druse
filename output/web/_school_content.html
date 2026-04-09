@@ -1,6 +1,6 @@
 <!-- ===== 학교 소개 히어로 배너 ===== -->
 <div style="background:linear-gradient(135deg,#1a3a6b 0%,#2a5298 55%,#1e6e8a 100%);border-radius:16px;padding:28px 36px;margin-bottom:36px;color:#fff;position:relative;overflow:hidden;">
-  <div style="display:flex;gap:24px;align-items:stretch;">
+  <div class="hero-flex" style="display:flex;gap:24px;align-items:stretch;">
 
     <!-- 왼쪽: 학교 정보 + 버튼 -->
     <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:16px;">
@@ -19,17 +19,17 @@
     </div>
 
     <!-- 오른쪽: 급식 + 학사일정 카드 -->
-    <div style="display:flex;gap:12px;flex-shrink:0;">
+    <div class="hero-cards" style="display:flex;gap:12px;flex-shrink:0;">
 
       <!-- 급식 카드 -->
-      <div style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
+      <div class="hero-card" style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
         <p style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;font-weight:600;flex-shrink:0;">&#x1F371; 오늘의 중식</p>
         <div id="meal-content" style="font-size:0.85rem;line-height:1.8;opacity:0.9;flex:1;overflow-y:auto;"><span style="opacity:0.55;font-size:0.82rem;">불러오는 중...</span></div>
         <p id="meal-date" style="font-size:0.7rem;opacity:0.4;margin-top:6px;flex-shrink:0;"></p>
       </div>
 
       <!-- 학사일정 카드 -->
-      <div style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
+      <div class="hero-card" style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
         <p style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;font-weight:600;flex-shrink:0;">&#x1F4C5; 이달의 학사일정</p>
         <div id="schedule-content" style="font-size:0.85rem;line-height:1.8;opacity:0.9;flex:1;overflow-y:auto;"><span style="opacity:0.55;font-size:0.82rem;">불러오는 중...</span></div>
       </div>
