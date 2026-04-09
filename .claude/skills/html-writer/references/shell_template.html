@@ -411,7 +411,78 @@
     .search-result-title { font-size:0.88rem; color:#1e3a5f; font-weight:600; }
     .search-result-snippet { font-size:0.78rem; color:#4b5563; margin-top:2px; }
     .search-no-result { padding:20px; text-align:center; color:#9ca3af; font-size:0.88rem; }
-    @media (max-width:600px) { .search-input { width:130px; } .search-input:focus { width:170px; } .search-results { width:280px; } }  </style>
+    @media (max-width:600px) { .search-input { width:130px; } .search-input:focus { width:170px; } .search-results { width:280px; } }
+
+    /* ===== 학사일정 캘린더 ===== */
+    .cal-wrap { max-width: 860px; margin: 0 auto; }
+    .cal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .cal-title { font-size: 1.35rem; font-weight: 700; color: var(--primary); }
+    .cal-nav-btn {
+      background: var(--primary); color: #fff; border: none;
+      border-radius: 50%; width: 36px; height: 36px; font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.2s;
+    }
+    .cal-nav-btn:hover { opacity: 0.8; }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .cal-dow {
+      text-align: center; font-size: 0.78rem; font-weight: 700;
+      padding: 6px 0; color: #64748b;
+    }
+    .cal-dow.sun { color: #dc2626; }
+    .cal-dow.sat { color: #2563eb; }
+    .cal-cell {
+      min-height: 90px; background: #f8faff; border-radius: 8px;
+      padding: 6px 7px; position: relative;
+      border: 1px solid #e9eef7;
+    }
+    .cal-cell.today { background: #eff6ff; border-color: #93c5fd; }
+    .cal-cell.empty { background: transparent; border: none; }
+    .cal-day {
+      font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; line-height: 1;
+    }
+    .cal-cell.sun .cal-day { color: #dc2626; }
+    .cal-cell.sat .cal-day { color: #2563eb; }
+    .cal-cell.today .cal-day {
+      background: var(--primary); color: #fff;
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem;
+    }
+    .cal-event {
+      font-size: 0.68rem; line-height: 1.3; padding: 2px 5px;
+      border-radius: 4px; margin-bottom: 2px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cal-event.exam    { background: #fee2e2; color: #991b1b; }
+    .cal-event.holiday { background: #dbeafe; color: #1e40af; }
+    .cal-event.event   { background: #d1fae5; color: #065f46; }
+    .cal-event.other   { background: #f3f4f6; color: #374151; }
+    .cal-legend {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      margin-top: 16px; font-size: 0.8rem;
+    }
+    .cal-legend-item { display: flex; align-items: center; gap: 5px; }
+    .cal-legend-dot {
+      width: 10px; height: 10px; border-radius: 3px;
+    }
+    .cal-semester-tag {
+      display: inline-block; padding: 3px 12px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 600; margin-left: 12px;
+    }
+    .cal-semester-tag.s1 { background: #fef3c7; color: #92400e; }
+    .cal-semester-tag.s2 { background: #ede9fe; color: #4c1d95; }
+    @media (max-width: 700px) {
+      .cal-cell { min-height: 64px; padding: 4px 4px; }
+      .cal-event { font-size: 0.6rem; padding: 1px 3px; }
+      .cal-title { font-size: 1.1rem; }
+    }  </style>
 </head>
 <body>
 
@@ -437,6 +508,7 @@
     <button class="tab-btn active" onclick="switchTab('school', this)">🏫 학교 소개</button>
     <button class="tab-btn" onclick="switchTab('teacher', this)">📋 업무 매뉴얼</button>
     <button class="tab-btn" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
+    <button class="tab-btn" onclick="switchTab('calendar', this)">📅 학사일정</button>
   </div>
 </nav>
 
@@ -464,6 +536,30 @@
     <!-- TAB:student:END -->
   </div>
 
+  <!-- 학사일정 탭 패널 -->
+  <div class="tab-panel" id="tab-calendar">
+    <div class="cal-wrap">
+      <div class="cal-header">
+        <button class="cal-nav-btn" id="cal-prev" onclick="calMove(-1)">&#8592;</button>
+        <div style="text-align:center;">
+          <span class="cal-title" id="cal-title"></span>
+          <span class="cal-semester-tag" id="cal-semester-tag"></span>
+        </div>
+        <button class="cal-nav-btn" id="cal-next" onclick="calMove(1)">&#8594;</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#fee2e2;border:1px solid #fca5a5;"></span>시험·평가</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#dbeafe;border:1px solid #93c5fd;"></span>공휴일·휴업일</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#d1fae5;border:1px solid #6ee7b7;"></span>학교행사</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#f3f4f6;border:1px solid #d1d5db;"></span>기타일정</span>
+      </div>
+      <div class="card" style="margin-top:24px;border-left-color:#94a3b8;background:#f8faff;font-size:0.85rem;line-height:1.8;color:#475569;">
+        &#128204; 연간 수업일수 <strong>190일</strong> (1학기 95일 / 2학기 95일) &nbsp;|&nbsp; 2026학년도 기준 &nbsp;|&nbsp; 학교 사정에 따라 변경될 수 있습니다.
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- ===== 탭 전환 JS (인라인) ===== -->
@@ -481,6 +577,198 @@
     });
     btn.classList.add('active');
   }
+
+  // ===== 학사일정 캘린더 =====
+  (function() {
+    var EVENTS = {
+      "2026-3-1":[{t:"삼일절",c:"holiday"}],
+      "2026-3-2":[{t:"대체 휴업일",c:"holiday"}],
+      "2026-3-3":[{t:"입학식·개학",c:"event"}],
+      "2026-3-24":[{t:"학력평가 전학년",c:"exam"}],
+      "2026-3-25":[{t:"명상의 시간",c:"other"}],
+      "2026-3-30":[{t:"학부모 설명회",c:"other"}],
+      "2026-3-31":[{t:"학부모 설명회",c:"other"}],
+      "2026-4-7":[{t:"영어듣기 고1",c:"exam"}],
+      "2026-4-8":[{t:"영어듣기 고2",c:"exam"}],
+      "2026-4-9":[{t:"영어듣기 고3",c:"exam"}],
+      "2026-4-24":[{t:"중간고사",c:"exam"}],
+      "2026-4-25":[{t:"중간고사",c:"exam"}],
+      "2026-4-26":[{t:"중간고사",c:"exam"}],
+      "2026-4-27":[{t:"중간고사",c:"exam"}],
+      "2026-4-28":[{t:"중간고사",c:"exam"}],
+      "2026-4-29":[{t:"중간고사",c:"exam"}],
+      "2026-5-1":[{t:"노동절 휴업",c:"holiday"}],
+      "2026-5-5":[{t:"어린이날",c:"holiday"}],
+      "2026-5-7":[{t:"학력평가 고3",c:"exam"}],
+      "2026-5-14":[{t:"체육한마당·현장체험 고3",c:"event"}],
+      "2026-5-15":[{t:"스승의날·재량휴업",c:"holiday"}],
+      "2026-5-25":[{t:"부처님오신날 대체",c:"holiday"}],
+      "2026-5-27":[{t:"명상의 시간",c:"other"}],
+      "2026-6-3":[{t:"지방선거 휴업",c:"holiday"}],
+      "2026-6-4":[{t:"학력평가 고1·2 / 모의평가 고3",c:"exam"}],
+      "2026-6-6":[{t:"현충일",c:"holiday"}],
+      "2026-6-24":[{t:"명상의 시간",c:"other"}],
+      "2026-6-30":[{t:"기말고사",c:"exam"}],
+      "2026-7-1":[{t:"기말고사",c:"exam"}],
+      "2026-7-2":[{t:"기말고사",c:"exam"}],
+      "2026-7-3":[{t:"기말고사",c:"exam"}],
+      "2026-7-8":[{t:"학력평가 고3",c:"exam"}],
+      "2026-7-9":[{t:"자율교육과정",c:"other"}],
+      "2026-7-10":[{t:"자율교육과정",c:"other"}],
+      "2026-7-11":[{t:"자율교육과정",c:"other"}],
+      "2026-7-12":[{t:"자율교육과정",c:"other"}],
+      "2026-7-13":[{t:"자율교육과정",c:"other"}],
+      "2026-7-14":[{t:"자율교육과정",c:"other"}],
+      "2026-7-15":[{t:"자율교육과정",c:"other"}],
+      "2026-7-17":[{t:"제헌절",c:"holiday"}],
+      "2026-7-20":[{t:"방학식",c:"event"}],
+      "2026-8-13":[{t:"개학",c:"event"}],
+      "2026-8-15":[{t:"광복절",c:"holiday"}],
+      "2026-8-17":[{t:"대체 휴일",c:"holiday"}],
+      "2026-8-24":[{t:"학부모 설명회",c:"other"}],
+      "2026-8-25":[{t:"학부모 설명회",c:"other"}],
+      "2026-9-2":[{t:"학력평가 고1·2 / 모의평가 고3",c:"exam"}],
+      "2026-9-8":[{t:"영어듣기 고1",c:"exam"}],
+      "2026-9-9":[{t:"영어듣기 고2",c:"exam"}],
+      "2026-9-10":[{t:"영어듣기 고3",c:"exam"}],
+      "2026-9-14":[{t:"개교기념식",c:"event"}],
+      "2026-9-15":[{t:"개교기념일·재량휴업",c:"holiday"}],
+      "2026-9-23":[{t:"명상의 시간",c:"other"}],
+      "2026-9-24":[{t:"추석 연휴",c:"holiday"}],
+      "2026-9-25":[{t:"추석 연휴",c:"holiday"}],
+      "2026-9-26":[{t:"추석 연휴",c:"holiday"}],
+      "2026-10-3":[{t:"개천절",c:"holiday"}],
+      "2026-10-5":[{t:"대체 휴일",c:"holiday"}],
+      "2026-10-6":[{t:"중간고사 고1·2 / 기말고사 고3",c:"exam"}],
+      "2026-10-7":[{t:"중간고사 고1·2 / 기말고사 고3",c:"exam"}],
+      "2026-10-8":[{t:"중간고사 고1·2 / 기말고사 고3",c:"exam"}],
+      "2026-10-9":[{t:"한글날",c:"holiday"}],
+      "2026-10-20":[{t:"학력평가 전학년",c:"exam"}],
+      "2026-10-21":[{t:"명상의 시간",c:"other"},{t:"수련활동 1학년",c:"event"}],
+      "2026-10-27":[{t:"수련활동 1학년",c:"event"},{t:"체험학습 2학년",c:"event"}],
+      "2026-10-28":[{t:"수련활동 1학년",c:"event"},{t:"체험학습 2학년",c:"event"}],
+      "2026-11-5":[{t:"학력평가 고3",c:"exam"}],
+      "2026-11-19":[{t:"수능·재량휴업",c:"exam"}],
+      "2026-11-25":[{t:"명상의 시간",c:"other"}],
+      "2026-12-8":[{t:"기말고사 고1·2",c:"exam"}],
+      "2026-12-9":[{t:"기말고사 고1·2",c:"exam"}],
+      "2026-12-10":[{t:"기말고사 고1·2",c:"exam"}],
+      "2026-12-11":[{t:"기말고사 고1·2",c:"exam"}],
+      "2026-12-15":[{t:"자율교육과정",c:"other"}],
+      "2026-12-16":[{t:"자율교육과정",c:"other"}],
+      "2026-12-17":[{t:"자율교육과정",c:"other"}],
+      "2026-12-18":[{t:"자율교육과정",c:"other"}],
+      "2026-12-19":[{t:"자율교육과정",c:"other"}],
+      "2026-12-20":[{t:"자율교육과정",c:"other"}],
+      "2026-12-21":[{t:"자율교육과정",c:"other"}],
+      "2026-12-22":[{t:"자율교육과정",c:"other"}],
+      "2026-12-23":[{t:"대륜제 (축제)",c:"event"}],
+      "2026-12-24":[{t:"대륜제 (축제)",c:"event"}],
+      "2026-12-25":[{t:"성탄절",c:"holiday"}],
+      "2026-12-31":[{t:"방학식",c:"event"}],
+      "2027-1-1":[{t:"신정",c:"holiday"}],
+      "2027-2-3":[{t:"개학",c:"event"}],
+      "2027-2-4":[{t:"졸업식 제100회",c:"event"}],
+      "2027-2-5":[{t:"종업식",c:"event"}],
+      "2027-2-6":[{t:"설날 연휴",c:"holiday"}],
+      "2027-2-7":[{t:"설날 연휴",c:"holiday"}],
+      "2027-2-8":[{t:"설날 연휴",c:"holiday"}],
+      "2027-2-9":[{t:"대체 휴일",c:"holiday"}]
+    };
+
+    // 표시 가능한 월 범위: 2026-03 ~ 2027-02
+    var MIN_Y=2026, MIN_M=3, MAX_Y=2027, MAX_M=2;
+
+    var today = new Date();
+    var curYear  = today.getFullYear();
+    var curMonth = today.getMonth() + 1; // 1-based
+    // 범위 클램핑
+    if (curYear < MIN_Y || (curYear === MIN_Y && curMonth < MIN_M)) { curYear=MIN_Y; curMonth=MIN_M; }
+    if (curYear > MAX_Y || (curYear === MAX_Y && curMonth > MAX_M)) { curYear=MAX_Y; curMonth=MAX_M; }
+
+    var MONTH_KO = ["","1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+    var DOW = ["일","월","화","수","목","금","토"];
+
+    function getSemester(y, m) {
+      // 2027/1~2 → 종료 학기
+      if (y===2027) return {label:"2026학년도 종료학기", cls:"s2"};
+      if (m >= 3 && m <= 7) return {label:"1학기", cls:"s1"};
+      return {label:"2학기", cls:"s2"};
+    }
+
+    function renderCal(y, m) {
+      var titleEl = document.getElementById('cal-title');
+      var tagEl   = document.getElementById('cal-semester-tag');
+      var gridEl  = document.getElementById('cal-grid');
+      if (!titleEl || !gridEl) return;
+
+      titleEl.textContent = y + "년 " + MONTH_KO[m];
+      var sem = getSemester(y, m);
+      tagEl.textContent = sem.label;
+      tagEl.className = "cal-semester-tag " + sem.cls;
+
+      // 이전/다음 버튼 비활성화
+      var prevBtn = document.getElementById('cal-prev');
+      var nextBtn = document.getElementById('cal-next');
+      var atMin = (y===MIN_Y && m===MIN_M);
+      var atMax = (y===MAX_Y && m===MAX_M);
+      if (prevBtn) prevBtn.style.opacity = atMin ? "0.3" : "1";
+      if (nextBtn) nextBtn.style.opacity = atMax ? "0.3" : "1";
+      if (prevBtn) prevBtn.disabled = atMin;
+      if (nextBtn) nextBtn.disabled = atMax;
+
+      var html = "";
+      // 요일 헤더
+      for (var d=0; d<7; d++) {
+        html += '<div class="cal-dow' + (d===0?" sun":d===6?" sat":"") + '">' + DOW[d] + '</div>';
+      }
+
+      var firstDow = new Date(y, m-1, 1).getDay(); // 0=일
+      var daysInMonth = new Date(y, m, 0).getDate();
+      var todayStr = today.getFullYear() + "-" + (today.getMonth()+1) + "-" + today.getDate();
+
+      // 빈 칸 (첫째 주 앞)
+      for (var i=0; i<firstDow; i++) html += '<div class="cal-cell empty"></div>';
+
+      for (var day=1; day<=daysInMonth; day++) {
+        var dow = (firstDow + day - 1) % 7;
+        var key = y + "-" + m + "-" + day;
+        var isSun = dow === 0, isSat = dow === 6;
+        var isToday = (key === todayStr);
+        var cls = "cal-cell" + (isSun?" sun":"") + (isSat?" sat":"") + (isToday?" today":"");
+
+        var dayLabel = isToday
+          ? '<div class="cal-day"><span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.78rem;">' + day + '</span></div>'
+          : '<div class="cal-day">' + day + '</div>';
+
+        var evHtml = "";
+        var evs = EVENTS[key] || [];
+        for (var ei=0; ei<evs.length && ei<3; ei++) {
+          evHtml += '<div class="cal-event ' + evs[ei].c + '" title="' + evs[ei].t + '">' + evs[ei].t + '</div>';
+        }
+        if (evs.length > 3) evHtml += '<div class="cal-event other">+' + (evs.length-3) + '개</div>';
+
+        html += '<div class="' + cls + '">' + dayLabel + evHtml + '</div>';
+      }
+
+      gridEl.innerHTML = html;
+    }
+
+    window.calMove = function(dir) {
+      var atMin = (curYear===MIN_Y && curMonth===MIN_M);
+      var atMax = (curYear===MAX_Y && curMonth===MAX_M);
+      if (dir < 0 && atMin) return;
+      if (dir > 0 && atMax) return;
+      curMonth += dir;
+      if (curMonth < 1) { curMonth = 12; curYear--; }
+      if (curMonth > 12) { curMonth = 1; curYear++; }
+      renderCal(curYear, curMonth);
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      renderCal(curYear, curMonth);
+    });
+  })();
 
   function switchSub(panelId, btn) {
     var parent = btn.closest('.tab-panel');
