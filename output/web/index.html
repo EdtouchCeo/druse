@@ -207,12 +207,39 @@
     /* ===== 아코디언 ===== */
     .accordion { margin: 16px 0; }
     .accordion-item {
-      background: var(--surface);
+      background: transparent;
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       overflow: hidden;
     }
+    /* accordion-btn 방식 (진학 정보 등 신규 섹션) */
+    .accordion-btn {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: linear-gradient(90deg, #1a3a6b 0%, #2a5298 100%);
+      color: #fff;
+      padding: 14px 20px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: var(--radius);
+      user-select: none;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .accordion-btn:hover { opacity: 0.88; }
+    .accordion-btn .accordion-arrow {
+      font-style: normal;
+      font-size: 0.8rem;
+      opacity: 0.8;
+      transition: transform 0.25s;
+      flex-shrink: 0;
+      margin-left: 10px;
+    }
+    /* accordion-header 방식 (레거시 호환) */
     .accordion-header {
       padding: 14px 20px;
       cursor: pointer;
@@ -222,16 +249,24 @@
       font-weight: 600;
       color: var(--primary);
       user-select: none;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
     }
     .accordion-header:hover { background: #f0f4fb; }
     .accordion-arrow { transition: transform 0.25s; font-style: normal; }
     .accordion-item.open .accordion-arrow { transform: rotate(180deg); }
+    /* 본문 공통 */
     .accordion-body {
       display: none;
-      padding: 0 20px 16px;
+      padding: 20px 24px;
+      background: #f4f7ff;
+      border-left: 4px solid #2a5298;
+      border-radius: 0 0 var(--radius) var(--radius);
       color: var(--text-secondary);
       font-size: 0.93rem;
       line-height: 1.75;
+      margin-top: 2px;
     }
     .accordion-item.open .accordion-body { display: block; }
 
