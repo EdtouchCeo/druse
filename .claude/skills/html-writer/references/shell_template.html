@@ -460,7 +460,17 @@
     btn.classList.add('active');
   }
 
-  // 아코디언
+  // 아코디언 (accordion-btn + toggleAccordion 방식)
+  function toggleAccordion(btn) {
+    var body = btn.nextElementSibling;
+    var arrow = btn.querySelector('.accordion-arrow');
+    if (!body) return;
+    var isOpen = body.style.display === 'block';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+  }
+
+  // 아코디언 (accordion-header 클래스 방식 — 레거시 호환)
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.accordion-header').forEach(function(header) {
       header.addEventListener('click', function() {
