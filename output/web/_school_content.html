@@ -1,38 +1,160 @@
 <!-- ===== 학교 소개 히어로 배너 ===== -->
-<div style="background: linear-gradient(135deg, #1a3a6b 0%, #2a5298 55%, #1e6e8a 100%); border-radius: 16px; padding: 36px 40px 32px; margin-bottom: 36px; color: #fff; position: relative; overflow: hidden;">
-  <div style="position:absolute;top:-10px;right:20px;font-size:160px;opacity:0.06;line-height:1;">🏫</div>
-  <p style="font-size:0.82rem;opacity:0.75;letter-spacing:3px;margin-bottom:10px;">대구광역시 수성구 · 사립 일반고등학교 · 남학교</p>
-  <h2 style="font-size:2.4rem;font-weight:800;margin-bottom:6px;letter-spacing:-1.5px;">대륜고등학교</h2>
-  <p style="font-size:1.05rem;opacity:0.88;margin-bottom:24px;">1921년 창립 &mdash; 2026년 기준 <strong style="color:#fbbf24;font-size:1.2em;">105년</strong> 역사의 명문 사학</p>
-  <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-self:flex-end;">
-      <a href="http://daeryun.dge.hs.kr" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);color:#fff;padding:9px 20px;border-radius:24px;font-size:0.88rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,0.3);">🌐 학교 홈페이지</a>
-      <a href="https://www.schoolinfo.go.kr/ei/ss/Pneiss_b01_s0.do?SHL_IDF_CD=8dd35a55-0bcd-4611-ae9a-c8e0147c75f7" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);color:#fff;padding:9px 20px;border-radius:24px;font-size:0.88rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,0.3);">📊 학교알리미</a>
+<div style="background:linear-gradient(135deg,#1a3a6b 0%,#2a5298 55%,#1e6e8a 100%);border-radius:16px;padding:28px 36px;margin-bottom:36px;color:#fff;position:relative;overflow:hidden;">
+  <div style="display:flex;gap:24px;align-items:stretch;">
+
+    <!-- 왼쪽: 학교 정보 + 버튼 -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:16px;">
+      <div>
+        <p style="font-size:0.78rem;opacity:0.7;letter-spacing:2px;margin-bottom:8px;">대구광역시 수성구 &middot; 사립 일반고등학교 &middot; 남학교</p>
+        <p style="font-size:1.1rem;opacity:0.92;line-height:1.6;">1921년 창립 &mdash; 2026년 기준 <strong style="color:#fbbf24;font-size:1.25em;">105년</strong> 역사의 명문 사학</p>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(251,191,36,0.35);">
+          <p style="font-size:0.78rem;font-weight:400;color:rgba(251,191,36,0.75);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px;">남을 배려하며 더불어 살아가는</p>
+          <p style="font-size:1.55rem;font-weight:800;color:#ffffff;letter-spacing:6px;line-height:1.2;font-family:Georgia,'Times New Roman',serif;text-shadow:0 2px 12px rgba(0,0,0,0.4);">DAERYUN<span style="color:#fbbf24;margin:0 4px;">·</span>HIGH SCHOOL</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="http://daeryun.dge.hs.kr" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.18);color:#fff;padding:8px 18px;border-radius:20px;font-size:0.85rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,0.3);">&#x1F310; 학교 홈페이지</a>
+        <a href="https://www.schoolinfo.go.kr/ei/ss/Pneiss_b01_s0.do?SHL_IDF_CD=8dd35a55-0bcd-4611-ae9a-c8e0147c75f7" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.18);color:#fff;padding:8px 18px;border-radius:20px;font-size:0.85rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,0.3);">&#x1F4CA; 학교알리미</a>
+      </div>
     </div>
-    <div style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:14px;padding:16px 20px;min-width:180px;max-width:300px;">
-      <p style="font-size:0.78rem;opacity:0.75;margin-bottom:8px;font-weight:600;">🍱 오늘의 중식</p>
-      <div id="meal-content" style="font-size:0.88rem;line-height:1.85;opacity:0.9;"><span style="opacity:0.55;font-size:0.84rem;">불러오는 중...</span></div>
-      <p id="meal-date" style="font-size:0.73rem;opacity:0.45;margin-top:8px;"></p>
+
+    <!-- 오른쪽: 급식 + 학사일정 카드 -->
+    <div style="display:flex;gap:12px;flex-shrink:0;">
+
+      <!-- 급식 카드 -->
+      <div style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
+        <p style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;font-weight:600;flex-shrink:0;">&#x1F371; 오늘의 중식</p>
+        <div id="meal-content" style="font-size:0.85rem;line-height:1.8;opacity:0.9;flex:1;overflow-y:auto;"><span style="opacity:0.55;font-size:0.82rem;">불러오는 중...</span></div>
+        <p id="meal-date" style="font-size:0.7rem;opacity:0.4;margin-top:6px;flex-shrink:0;"></p>
+      </div>
+
+      <!-- 학사일정 카드 -->
+      <div style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:14px 18px;width:190px;display:flex;flex-direction:column;">
+        <p style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;font-weight:600;flex-shrink:0;">&#x1F4C5; 이달의 학사일정</p>
+        <div id="schedule-content" style="font-size:0.85rem;line-height:1.8;opacity:0.9;flex:1;overflow-y:auto;"><span style="opacity:0.55;font-size:0.82rem;">불러오는 중...</span></div>
+      </div>
+
     </div>
   </div>
 </div>
 <script>
 (function(){
-  var t=new Date();
-  var ymd=t.getFullYear()+String(t.getMonth()+1).padStart(2,"0")+String(t.getDate()).padStart(2,"0");
+  var t=new Date(),ymd=t.getFullYear()+String(t.getMonth()+1).padStart(2,"0")+String(t.getDate()).padStart(2,"0");
   var el=document.getElementById("meal-date");
   if(el) el.textContent=t.getFullYear()+"년 "+(t.getMonth()+1)+"월 "+t.getDate()+"일";
-  fetch("https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=c0d07312e99641a998e0a3701bd411cf&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7240085&MLSV_YMD="+ymd+"&MMEAL_SC_CODE=2")
-    .then(function(r){return r.json();})
+  var mealUrl="https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=c0d07312e99641a998e0a3701bd411cf&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7240085&MLSV_YMD="+ymd+"&MMEAL_SC_CODE=2";
+  fetch(mealUrl)
+    .then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      return r.json();
+    })
     .then(function(d){
       var mc=document.getElementById("meal-content");
+      if(!mc)return;
       var info=d.mealServiceDietInfo;
-      if(!info||!info[0]||info[0].head[1].RESULT.CODE!=="INFO-000"){mc.innerHTML="<span style='opacity:0.55;font-size:0.84rem;'>오늘 급식 정보가 없습니다.</span>";return;}
-      var dishes=info[1].row[0].DISH_NM.replace(/<br\/>/g,"
-").split("
-").map(function(d){return d.replace(/\s*\([^)]*\)/g,"").trim();}).filter(function(d){return d.length>0;});
-      mc.innerHTML=dishes.map(function(d){return "<div style='display:flex;align-items:center;gap:6px;'><span style='opacity:0.45;font-size:0.7rem;'>▪</span>"+d+"</div>";}).join("");
+      if(!info||!info[0]||info[0].head[1].RESULT.CODE!=="INFO-000"){
+        mc.innerHTML='<span style="opacity:0.55;font-size:0.84rem;">오늘 급식 정보가 없습니다.</span>';return;
+      }
+      var dishes=info[1].row[0].DDISH_NM.split("<br/>")
+        .map(function(x){return x.replace(/\s*\([^)]*\)/g,"").trim();})
+        .filter(function(x){return x.length>0;});
+      mc.innerHTML=dishes.map(function(x){
+        return '<div style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.45;font-size:0.7rem;">&#x25AA;</span>'+x+'</div>';
+      }).join("");
     })
-    .catch(function(){var mc=document.getElementById("meal-content");if(mc)mc.innerHTML="<span style='opacity:0.55;font-size:0.84rem;'>급식 정보를 불러올 수 없습니다.</span>";});
+    .catch(function(e){
+      var mc=document.getElementById("meal-content");
+      if(mc) mc.innerHTML='<span style="opacity:0.55;font-size:0.82rem;">불러오기 실패<br><span style="font-size:0.78rem;opacity:0.7;">'+(e&&e.message?e.message:'네트워크 오류')+'</span></span>';
+    });
 })();
 </script>
+
+<script>
+(function(){
+  var t=new Date();
+  var ym=t.getFullYear()+String(t.getMonth()+1).padStart(2,"0");
+  var today=parseInt(t.getFullYear()+String(t.getMonth()+1).padStart(2,"0")+String(t.getDate()).padStart(2,"0"));
+  fetch("https://open.neis.go.kr/hub/SchoolSchedule?KEY=c0d07312e99641a998e0a3701bd411cf&Type=json&ATPT_OFCDC_SC_CODE=D10&SD_SCHUL_CODE=7240085&AA_YMD="+ym)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var sc=document.getElementById("schedule-content");
+      if(!sc)return;
+      var info=d.SchoolSchedule;
+      if(!info||!info[0]||info[0].head[1].RESULT.CODE!=="INFO-000"){
+        sc.innerHTML="<span style='opacity:0.55;font-size:0.84rem;'>이달 일정 정보가 없습니다.</span>";return;
+      }
+      var rows=info[1].row.filter(function(r){return parseInt(r.AA_YMD)>=today;}).slice(0,6);
+      if(rows.length===0){sc.innerHTML="<span style='opacity:0.55;font-size:0.84rem;'>남은 일정이 없습니다.</span>";return;}
+      sc.innerHTML=rows.map(function(r){
+        var d=r.AA_YMD;
+        var label=(d.slice(4,6)+"/"+d.slice(6,8));
+        return "<div style='display:flex;align-items:flex-start;gap:6px;margin-bottom:2px;'>"+
+          "<span style='opacity:0.55;font-size:0.75rem;white-space:nowrap;padding-top:2px;'>"+label+"</span>"+
+          "<span>"+r.EVENT_NM+"</span></div>";
+      }).join("");
+    })
+    .catch(function(){
+      var sc=document.getElementById("schedule-content");
+      if(sc) sc.innerHTML="<span style='opacity:0.55;font-size:0.84rem;'>일정 정보를 불러올 수 없습니다.</span>";
+    });
+})();
+</script>
+
+<!-- ===== 주요 지표 ===== -->
+<h2 class="section-title">&#x1F4CA; 주요 현황 지표</h2>
+<div class="card-grid">
+  <div class="grid-card" style="border-top-color:#1a3a6b;"><div class="value" style="color:#1a3a6b;">942명</div><div class="label">전체 학생 수</div></div>
+  <div class="grid-card" style="border-top-color:#2a5298;"><div class="value" style="color:#2a5298;">77명</div><div class="label">전체 교원 수</div></div>
+  <div class="grid-card" style="border-top-color:#1e6e8a;"><div class="value" style="color:#1e6e8a;">13.5명</div><div class="label">교원 1인당 학생 수</div></div>
+  <div class="grid-card" style="border-top-color:#e8a020;"><div class="value" style="color:#e8a020;">26.2명</div><div class="label">학급당 학생 수</div></div>
+</div>
+
+<!-- ===== 기본 정보 ===== -->
+<h2 class="section-title" style="margin-top:44px;">&#x1F3DB;&#xFE0F; 학교 기본 정보</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;">
+  <div class="card" style="border-left-color:#2a5298;">
+    <strong>&#x1F4CD; 위치 및 연락처</strong>
+    <table style="margin-top:14px;width:100%;border-collapse:collapse;font-size:0.92rem;line-height:2;">
+      <tr><td style="color:#555577;width:80px;">주소</td><td>대구광역시 수성구 달구벌대로 2700</td></tr>
+      <tr><td style="color:#555577;">대표번호</td><td><a href="tel:053-756-9501" style="color:#1a3a6b;font-weight:600;">053-756-9501</a></td></tr>
+      <tr><td style="color:#555577;">팩스</td><td>053-756-9503</td></tr>
+      <tr><td style="color:#555577;">홈페이지</td><td><a href="http://daeryun.dge.hs.kr" target="_blank">daeryun.dge.hs.kr</a></td></tr>
+      <tr><td style="color:#555577;">관할청</td><td>대구광역시교육청</td></tr>
+    </table>
+  </div>
+  <div class="card" style="border-left-color:#1a3a6b;">
+    <strong>&#x1F3DB;&#xFE0F; 설립 정보</strong>
+    <table style="margin-top:14px;width:100%;border-collapse:collapse;font-size:0.92rem;line-height:2;">
+      <tr><td style="color:#555577;width:80px;">설립구분</td><td><span style="background:#eef3ff;color:#1a3a6b;padding:1px 10px;border-radius:12px;font-size:0.85rem;font-weight:600;">사립</span></td></tr>
+      <tr><td style="color:#555577;">설립유형</td><td>단설</td></tr>
+      <tr><td style="color:#555577;">학교특성</td><td>일반고등학교</td></tr>
+      <tr><td style="color:#555577;">설립일자</td><td><strong>1921년 09월 15일</strong></td></tr>
+      <tr><td style="color:#555577;">성별</td><td>남학교</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===== 교원 현황 ===== -->
+<h2 class="section-title" style="margin-top:44px;">&#x1F468;&#x200D;&#x1F3EB; 교원 현황</h2>
+<div class="card-grid">
+  <div class="grid-card"><div class="value">77명</div><div class="label">전체 교원</div></div>
+  <div class="grid-card"><div class="value">58명</div><div class="label">남자 교원</div></div>
+  <div class="grid-card"><div class="value">19명</div><div class="label">여자 교원</div></div>
+  <div class="grid-card"><div class="value">3실</div><div class="label">체육·집회 공간</div></div>
+</div>
+
+<!-- ===== 방과후 & 도서관 ===== -->
+<h2 class="section-title" style="margin-top:44px;">&#x1F4DA; 방과후 학교 및 도서관</h2>
+<div class="install-grid">
+  <div class="install-item"><strong>교과 방과후 프로그램</strong><p>참여 학생 <strong>108명</strong></p><p>운영 프로그램 <strong>44개</strong></p></div>
+  <div class="install-item"><strong>특기·적성 프로그램</strong><p>참여 학생 <strong>11명</strong></p><p>운영 프로그램 <strong>5개</strong></p></div>
+  <div class="install-item"><strong>도서관 장서 수 (1인당)</strong><p>학생 1인당 <strong>62.0권</strong> 보유</p></div>
+  <div class="install-item"><strong>도서 대출 실적 (1인당)</strong><p>연간 1인당 <strong>1.5권</strong> 대출</p></div>
+</div>
+
+<!-- ===== 데이터 출처 ===== -->
+<div class="card" style="margin-top:36px;border-left-color:#94a3b8;background:#f8faff;">
+  <strong>&#x1F4CC; 데이터 출처 및 갱신 방법</strong>
+  <p style="margin-top:10px;font-size:0.91rem;line-height:1.8;">위 정보는 <strong>학교알리미</strong> 공시 자료 기반. 학생수·교원수는 전년도 자료이며 5월 29일 2차 공시 후 갱신.<br><strong>급식 정보</strong>는 NEIS API를 통해 페이지 열 때마다 실시간으로 불러옵니다.</p>
+<p style="margin-top:8px;font-size:0.83rem;color:#94a3b8;">마지막 갱신: 2026년 04월 06일 | 출처: 학교알리미 · NEIS 교육정보 개방 포털</p>
+</div>
