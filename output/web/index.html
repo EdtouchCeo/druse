@@ -1796,6 +1796,423 @@
     </div>
 
   </div><!-- /.accordion -->
+
+  <h2 class="section-title" style="margin-top:48px;">📋 출결 규정</h2>
+  <p style="color:#6b7280; font-size:0.92rem; line-height:1.7; margin-bottom:20px;">2026학년도 기준. 학교규칙 및 학교생활기록부 기재요령을 준수하며, 세부 사항은 아래 규정에 따라 처리합니다.</p>
+
+  <div class="accordion">
+
+    <!-- 등·하교 기준 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        🕗 등·하교 기준
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+          <thead><tr style="background:#eff6ff;">
+            <th style="padding:8px 12px; border:1px solid #bfdbfe; text-align:center;">구분</th>
+            <th style="padding:8px 12px; border:1px solid #bfdbfe;">기준</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 12px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">등교</td>
+              <td style="padding:8px 12px; border:1px solid #bfdbfe;">아침 <strong>08:30</strong> 등교 시각 기준</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 12px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">하교</td>
+              <td style="padding:8px 12px; border:1px solid #bfdbfe;">요일별·학년별 수업 종료 시각 기준</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 결석 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📅 결석 처리 기준
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+          <thead><tr style="background:#eff6ff;">
+            <th style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center;">유형</th>
+            <th style="padding:8px 10px; border:1px solid #bfdbfe;">세부 기준</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">기준</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">학칙에 따라 출석해야 할 날짜에 출석하지 않은 경우</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700; color:#2563eb;">질병</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">결석한 날로부터 <strong>5일 이내</strong> 의사의 진단서 또는 의견서(소견서·진료확인서 등, 병명·진료기간 기록)를 첨부한 결석 신고서 제출</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700; color:#16a34a;">인정</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">당해 연도 학교생활기록부 기재요령에 따름</td>
+            </tr>
+            <tr style="background:#fff5f5;">
+              <td style="padding:8px 10px; border:1px solid #fecaca; text-align:center; font-weight:700; color:#dc2626;">미인정</td>
+              <td style="padding:8px 10px; border:1px solid #fecaca;">당해 연도 학교생활기록부 기재요령에 따름<br><span style="color:#dc2626; font-size:0.83rem;">(태만·가출·출석 거부 등 고의로 결석한 경우)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 지각·조퇴 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        ⏰ 지각·조퇴 기준
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+          <thead><tr style="background:#eff6ff;">
+            <th style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center;">구분</th>
+            <th style="padding:8px 10px; border:1px solid #bfdbfe;">기준</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">지각</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">학교장이 정한 <strong>등교 시각(08:30)까지 출석하지 않은</strong> 경우</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">조퇴</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">학교장이 정한 <strong>등교 시각과 하교 시각 사이에 하교</strong>한 경우</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="card" style="margin-top:14px; background:#fffbeb; border-left-color:#f59e0b; font-size:0.86rem; line-height:1.8;">
+          <strong>⚠️ 같은 날 중복 발생 시</strong><br>
+          지각·조퇴·결과가 같은 날 발생한 경우 <strong>마지막 발생 건</strong>을 최종 적용하되, 미인정이 포함되어 있으면 <strong>미인정을 우선 적용</strong>합니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 수업 결과 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📝 수업 결과 처리
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+          <thead><tr style="background:#eff6ff;">
+            <th style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center;">유형</th>
+            <th style="padding:8px 10px; border:1px solid #bfdbfe;">기준</th>
+          </tr></thead>
+          <tbody>
+            <tr style="background:#fff5f5;">
+              <td style="padding:8px 10px; border:1px solid #fecaca; text-align:center; font-weight:700; color:#dc2626;">미인정</td>
+              <td style="padding:8px 10px; border:1px solid #fecaca;">
+                <ul style="margin:0; padding-left:16px; line-height:1.9;">
+                  <li>수업 시작 후 <strong>15분 초과</strong>하여 불참하는 경우</li>
+                  <li>교육활동을 고의적으로 방해한 경우</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700; color:#2563eb;">질병</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">
+                수업 담당 교사 확인하에 보건실에 있었더라도 <strong>연속해서 50분이 지났는데도 교실에 없는 경우</strong><br>
+                <span style="font-size:0.82rem; color:#6b7280;">예) 2교시 시작 후 20분 경과 시점에 보건실 방문 → 3교시 시작 후 20분 지나서 입실 → 3교시 질병결과 처리 (보건실 방문 시간: 2교시 30분 + 3교시 20분)</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 교외현장체험학습 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        🚌 교외현장체험학습
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <ul style="padding-left:18px; line-height:2.0; font-size:0.9rem; margin-bottom:14px;">
+          <li>시교육청 지침 준수를 원칙으로 함</li>
+          <li>보호자 동행 교외현장체험학습 <strong>연간 15일 이내</strong> 허용 (교육과정 이수에 지장 없는 범위)</li>
+          <li>실시 <strong>3일 전까지</strong> 신청 및 통보서(자체 서식)를 제출하여 허가를 받아야 함</li>
+          <li>결과보고서(자체 서식) 제출 시 출석 인정</li>
+          <li><strong>가정학습은 허용하지 않음</strong>을 원칙으로 함 (당해 연도 기재요령에 따름)</li>
+        </ul>
+        <div class="card" style="background:#fff5f5; border-left-color:#ef4444; font-size:0.87rem; line-height:1.8;">
+          <strong>🚫 교외현장체험학습 불허 기간</strong>
+          <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+            <li>정기시험·영어듣기능력평가 등 교내 시험 기간</li>
+            <li>대학수학능력시험일 이전 <strong>2주간</strong></li>
+            <li>연간 학사 일정의 행사 기간 (수련활동·수학여행 등)</li>
+            <li>기타 학교장이 학생의 교육활동에 지장이 있다고 판단하는 시기</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 출결 특기사항 기재 기준 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📌 출결 특기사항 기재 기준
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <ul style="padding-left:18px; line-height:2.0; font-size:0.9rem;">
+          <li><strong>장기결석:</strong> 같은 사유로 연속 <strong>10일 이상</strong>일 경우 (기타결석은 1일부터 기재)</li>
+          <li><strong>지각·조퇴·결과:</strong> 각 항목(질병·인정·미인정·기타) 횟수가 <strong>각각 20회 이상</strong>인 경우</li>
+        </ul>
+        <p style="font-size:0.85rem; color:#6b7280; margin-top:10px; line-height:1.7;">미인정 지각·결과·조퇴·결석에 대한 확인은 반별로 월출결 현황을 학생이 확인하여 서명한 것으로 결정합니다.</p>
+      </div>
+    </div>
+
+  </div><!-- /.accordion 출결 -->
+
+  <h2 class="section-title" style="margin-top:48px;">📊 과목 유형에 따른 성적 산출 방법</h2>
+  <p style="color:#6b7280; font-size:0.92rem; line-height:1.7; margin-bottom:20px;">과목 유형에 따라 기재되는 성적 항목이 다릅니다. 아래 표에서 자녀가 수강하는 과목의 유형을 확인하세요.</p>
+
+  <div class="accordion">
+
+    <!-- 1·2학년 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📘 1·2학년 과목 유형별 성적 산출
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <p style="font-size:0.85rem; color:#6b7280; margin-bottom:12px;">○ = 기재, − = 미기재, P = 이수여부, · = 해당 없음</p>
+        <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.82rem; min-width:560px;">
+          <thead>
+            <tr style="background:#dbeafe; text-align:center;">
+              <th style="padding:8px 10px; border:1px solid #bfdbfe; text-align:left;" colspan="2">구 분</th>
+              <th style="padding:8px 6px; border:1px solid #bfdbfe;">원점수</th>
+              <th style="padding:8px 6px; border:1px solid #bfdbfe;">과목평균</th>
+              <th style="padding:8px 6px; border:1px solid #bfdbfe;">성취도</th>
+              <th style="padding:8px 6px; border:1px solid #bfdbfe;">성취도별<br>분포비율</th>
+              <th style="padding:8px 6px; border:1px solid #bfdbfe;">석차등급</th>
+              <th style="padding:8px 6px; border:1px solid #bfdbfe;">수강자수</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:7px 10px; border:1px solid #bfdbfe; font-weight:700; vertical-align:middle; text-align:center; background:#f0f9ff;" rowspan="5">보통<br>교과</td>
+              <td style="padding:7px 10px; border:1px solid #bfdbfe;">공통 과목</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">5단계</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">5등급</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:7px 10px; border:1px solid #bfdbfe;">과학탐구실험</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">3단계</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px; border:1px solid #bfdbfe;">선택 과목<br><span style="font-size:0.78rem; color:#6b7280;">(일반·진로·융합 선택)</span></td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">5단계</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">5등급</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:7px 10px; border:1px solid #bfdbfe;">체육·예술 교과(군)</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">3단계</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px; border:1px solid #bfdbfe;">교양 교과(군)</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; font-weight:700; color:#7c3aed;">P</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#9ca3af;">−</td>
+            </tr>
+            <tr style="background:#f0fdf4;">
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bfdbfe;">전문교과</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">5단계</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">5등급</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bfdbfe;">수강자수 <strong>5명 이하</strong> 과목<br><span style="font-size:0.78rem; color:#6b7280;">(보통교과·전문교과, 일부 제외)</span></td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">5단계</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; font-size:0.78rem;">· 또는<br>5등급</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bfdbfe;">공동교육과정·온라인학교 개설 과목</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center;">5단계</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#16a34a; font-weight:700;">○</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bfdbfe;">학교 밖 교육</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 6px; border:1px solid #bfdbfe; text-align:center; color:#6b7280;">·</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="card" style="margin-top:14px; background:#fffbeb; border-left-color:#f59e0b; font-size:0.85rem; line-height:1.8;">
+          <strong>📌 교양 교과(군) P 표시</strong>란 성취도가 아닌 <strong>이수 여부</strong>로만 기재됩니다.<br>
+          사회(역사/도덕 포함)·과학 교과(군) <strong>융합 선택</strong> 중 석차등급(·) 과목: 여행지리, 역사로 탐구하는 현대세계, 사회문제탐구, 금융과 경제생활, 윤리문제탐구, 기후변화와 지속가능한세계, 과학의 역사와 문화, 기후변화와 환경생태, 융합과학탐구
+        </div>
+      </div>
+    </div>
+
+    <!-- 3학년 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📗 3학년 과목 유형별 성적 산출
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <p style="font-size:0.85rem; color:#6b7280; margin-bottom:12px;">3학년은 원점수·과목평균·<strong>표준편차</strong>가 추가로 기재됩니다. ○ = 기재, − = 미기재, P = 이수여부, · = 해당 없음</p>
+        <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.82rem; min-width:600px;">
+          <thead>
+            <tr style="background:#dcfce7; text-align:center;">
+              <th style="padding:8px 10px; border:1px solid #bbf7d0; text-align:left;" colspan="2">구 분</th>
+              <th style="padding:8px 5px; border:1px solid #bbf7d0;">원점수</th>
+              <th style="padding:8px 5px; border:1px solid #bbf7d0;">과목평균</th>
+              <th style="padding:8px 5px; border:1px solid #bbf7d0;">표준편차</th>
+              <th style="padding:8px 5px; border:1px solid #bbf7d0;">성취도</th>
+              <th style="padding:8px 5px; border:1px solid #bbf7d0;">수강자수</th>
+              <th style="padding:8px 5px; border:1px solid #bbf7d0;">석차등급</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:7px 8px; border:1px solid #bbf7d0; font-weight:700; text-align:center; background:#f0fdf4; vertical-align:middle;" rowspan="5">보통<br>교과</td>
+              <td style="padding:7px 10px; border:1px solid #bbf7d0;">공통 과목<br><span style="font-size:0.78rem; color:#6b7280;">※ 과학탐구실험 3단계</span></td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center;">5단계</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:7px 10px; border:1px solid #bbf7d0;">일반선택 — 기초·탐구·생활·교양</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center;">5단계</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px; border:1px solid #bbf7d0;">일반선택 — 체육·예술</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center;">3단계</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+            </tr>
+            <tr style="background:#fff7ed;">
+              <td style="padding:7px 10px; border:1px solid #bbf7d0;"><strong>진로 선택 과목</strong><br><span style="font-size:0.78rem; color:#ea580c;">석차등급·표준편차 삭제, 성취도별 분포비율 입력</span></td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center;">3단계</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px; border:1px solid #bbf7d0;">교양 교과(군)</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; font-weight:700; color:#7c3aed;">P</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#7c3aed; font-weight:700;">P</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+            </tr>
+            <tr style="background:#f0fdf4;">
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bbf7d0;">전문교과Ⅰ<br><span style="font-size:0.78rem; color:#6b7280;">융합과학탐구·과학과제연구·물리학실험 등 → 3단계</span></td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center;">5단계</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bbf7d0;">전문교과Ⅱ·Ⅲ <span style="font-size:0.78rem; color:#dc2626;">(석차등급 미산출)</span></td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center;">5단계</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bbf7d0;">수강자수 <strong>13명 이하</strong> 과목<br><span style="font-size:0.78rem; color:#6b7280;">(보통교과·전문교과Ⅰ, 일부 제외)</span></td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; font-size:0.78rem;">3단계<br>또는 5단계</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; font-size:0.78rem;">· 또는<br>○등급</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bbf7d0;">공동교육과정 과목</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; font-size:0.78rem;">3단계<br>또는 5단계</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#16a34a; font-weight:700;">○</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#9ca3af;">−</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td colspan="2" style="padding:7px 10px; border:1px solid #bbf7d0;">학교 밖 교육</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#6b7280;">·</td>
+              <td style="padding:7px 5px; border:1px solid #bbf7d0; text-align:center; color:#6b7280;">·</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="card" style="margin-top:14px; background:#fff7ed; border-left-color:#f59e0b; font-size:0.85rem; line-height:1.8;">
+          <strong>📌 3학년 진로 선택 과목 핵심 포인트</strong><br>
+          석차등급과 표준편차가 <strong>기재되지 않고</strong>, 대신 <strong>성취도별 분포비율</strong>이 입력됩니다. 성취도는 A·B·C 3단계로만 표시됩니다.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.accordion 성적산출 -->
+
 </div>
 
 <!-- 2. 학교생활 -->
