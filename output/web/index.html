@@ -2642,95 +2642,144 @@
   ═══════════════════════════════════ -->
   <h2 class="section-title" style="margin-top:44px;">🎯 학생 선택 과목</h2>
 
-  <!-- 선택 과목 이해 안내 -->
-  <div class="card" style="border-left-color:#7c3aed; margin-bottom:24px;">
-    <strong>📌 선택 과목, 이렇게 이해하세요</strong>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:14px;">
-      <div style="background:#f5f3ff; border-radius:8px; padding:12px;">
-        <div style="font-weight:700; color:#7c3aed; margin-bottom:6px;">🎨 같은 색 그룹이란?</div>
-        <p style="font-size:0.85rem; color:#374151; line-height:1.6;">같은 배경색으로 묶인 과목들이 하나의 선택 풀(pool)입니다. 이 그룹 안에서 정해진 수만큼 고릅니다.</p>
+  <!-- 학년별 요약 카드 -->
+  <div class="card" style="border-left-color:#7c3aed; margin-bottom:28px;">
+    <strong>📊 학년별 선택 과목 한눈에 보기</strong>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:14px;">
+      <div style="background:#f9fafb; border-radius:8px; padding:14px; border:2px solid #e5e7eb; text-align:center;">
+        <div style="font-size:1.05rem; font-weight:700; color:#9ca3af; margin-bottom:6px;">1학년</div>
+        <div style="font-size:0.84rem; color:#6b7280; line-height:1.6;">학생 선택 과목 없음<br>학교 지정 과목만 이수</div>
       </div>
-      <div style="background:#f5f3ff; border-radius:8px; padding:12px;">
-        <div style="font-weight:700; color:#7c3aed; margin-bottom:6px;">🔢 "택5, 15학점"의 뜻</div>
-        <p style="font-size:0.85rem; color:#374151; line-height:1.6;"><strong>택5</strong> = 이 그룹에서 5과목 선택<br><strong>15학점</strong> = 총 이수학점 (각 3학점 × 5과목)</p>
+      <div style="background:#eff6ff; border-radius:8px; padding:14px; border:2px solid #2563eb;">
+        <div style="font-size:1.05rem; font-weight:700; color:#1d4ed8; margin-bottom:8px;">2학년</div>
+        <div style="font-size:0.83rem; color:#1e3a8a; line-height:1.8;">
+          <strong>선택군 1</strong> 국어·수학·영어·사회·과학<br>
+          <span style="background:#2563eb;color:#fff;padding:1px 9px;border-radius:10px;font-size:0.79rem;">택5 · 학기당 15학점</span><br>
+          <strong style="display:inline-block;margin-top:6px;">선택군 2</strong> 제2외국어·한문<br>
+          <span style="background:#059669;color:#fff;padding:1px 9px;border-radius:10px;font-size:0.79rem;">택1 · 학기당 3학점</span>
+        </div>
       </div>
-    </div>
-    <div style="margin-top:12px; padding:10px 14px; background:#ede9fe; border-radius:8px; font-size:0.88rem; color:#4c1d95; line-height:1.6;">
-      💡 <strong>예시:</strong> 영어 그룹 "택1, 3학점" → 영미 문학 읽기 / 영어 발표와 토론 중 <strong>1과목만</strong> 고르면 <strong>3학점</strong> 이수
+      <div style="background:#fff7ed; border-radius:8px; padding:14px; border:2px solid #d97706;">
+        <div style="font-size:1.05rem; font-weight:700; color:#b45309; margin-bottom:8px;">3학년</div>
+        <div style="font-size:0.83rem; color:#78350f; line-height:1.8;">
+          <strong>선택군 3</strong> 교양·기술가정<br>
+          <span style="background:#6b7280;color:#fff;padding:1px 9px;border-radius:10px;font-size:0.79rem;">택1 · 학기당 3학점</span><br>
+          <strong style="display:inline-block;margin-top:6px;">선택군 4</strong> 국어·영어·수학·사회·과학·체육<br>
+          <span style="background:#dc2626;color:#fff;padding:1px 9px;border-radius:10px;font-size:0.79rem;">1학기 택6(24학점) / 2학기 택5(20학점)</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 학기별 선택 단위 요약 -->
-  <div class="card" style="border-left-color:#7c3aed; margin-bottom:28px;">
-    <strong>📊 학년별 선택 과목 배정 단위</strong>
-    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
-      <div style="flex:1; min-width:90px; text-align:center; padding:12px 8px; background:#f9fafb; border-radius:10px; border:2px solid #e5e7eb;">
-        <div style="font-size:1.4rem; font-weight:700; color:#9ca3af;">0</div>
-        <div style="font-size:0.78rem; color:#6b7280; margin-top:4px;">1학년<br>선택 없음</div>
-      </div>
-      <div style="flex:1; min-width:90px; text-align:center; padding:12px 8px; background:#f5f3ff; border-radius:10px; border:2px solid #7c3aed;">
-        <div style="font-size:1.4rem; font-weight:700; color:#7c3aed;">18</div>
-        <div style="font-size:0.78rem; color:#6b7280; margin-top:4px;">2학년<br>학기당 선택</div>
-      </div>
-      <div style="flex:1; min-width:90px; text-align:center; padding:12px 8px; background:#f5f3ff; border-radius:10px; border:2px solid #7c3aed;">
-        <div style="font-size:1.4rem; font-weight:700; color:#7c3aed;">27</div>
-        <div style="font-size:0.78rem; color:#6b7280; margin-top:4px;">3학년 1학기</div>
-      </div>
-      <div style="flex:1; min-width:90px; text-align:center; padding:12px 8px; background:#f5f3ff; border-radius:10px; border:2px solid #7c3aed;">
-        <div style="font-size:1.4rem; font-weight:700; color:#7c3aed;">23</div>
-        <div style="font-size:0.78rem; color:#6b7280; margin-top:4px;">3학년 2학기</div>
-      </div>
-    </div>
+  <!-- ━━━━━━━━━ 2학년 선택 과목 ━━━━━━━━━ -->
+  <div style="display:flex;align-items:center;gap:10px;margin:32px 0 18px;">
+    <div style="flex:1;height:2px;background:#2563eb;border-radius:1px;"></div>
+    <span style="background:#2563eb;color:#fff;padding:6px 20px;border-radius:20px;font-weight:700;font-size:0.95rem;white-space:nowrap;">📚 2학년 선택 과목</span>
+    <div style="flex:1;height:2px;background:#2563eb;border-radius:1px;"></div>
   </div>
 
   <!-- ─── 선택군 1 (2학년) ─── -->
   <div style="border:2px solid #2563eb; border-radius:12px; overflow:hidden; margin-bottom:24px;">
-    <div style="background:#2563eb; color:#fff; padding:14px 20px;">
-      <div style="font-weight:700; font-size:1.0rem;">선택군 1 — 국어·수학 선택 (2학년)</div>
-      <div style="font-size:0.82rem; margin-top:3px; opacity:0.9;">같은 색 그룹 안에서 정해진 수만큼 선택합니다</div>
+    <div style="background:#2563eb; color:#fff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div>
+        <div style="font-weight:700; font-size:1.0rem;">선택군 1 — 국어·수학·영어·사회·과학 (2학년)</div>
+        <div style="font-size:0.82rem; margin-top:3px; opacity:0.9;">5개 교과 풀에서 합산 <strong>택5</strong> · 학기당 <strong>15학점</strong> (각 과목 3학점)</div>
+      </div>
     </div>
 
-    <!-- 국어 그룹 -->
-    <div style="padding:14px 16px; background:#eff6ff; border-bottom:2px solid #bfdbfe;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-        <span style="background:#1d4ed8; color:#fff; padding:4px 14px; border-radius:20px; font-size:0.82rem; font-weight:700;">국어 그룹</span>
-        <strong style="font-size:0.9rem; color:#1e3a8a;">2과목 중 학기별 1과목 선택 · 각 5단위</strong>
+    <!-- 국어 -->
+    <div style="padding:13px 16px; background:#eff6ff; border-bottom:1px solid #bfdbfe;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+        <span style="background:#1d4ed8; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">국어</span>
+        <span style="font-size:0.84rem; color:#1e3a8a;">학기별 1과목 배정</span>
       </div>
       <div style="overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
-        <thead><tr style="background:#dbeafe;">
-          <th style="padding:8px 12px; border:1px solid #bfdbfe; text-align:left;">과목명</th>
-          <th style="padding:8px; border:1px solid #bfdbfe; text-align:center; white-space:nowrap;">유형</th>
-          <th style="padding:8px; border:1px solid #bfdbfe; text-align:center; white-space:nowrap;">배치 학기</th>
-          <th style="padding:8px; border:1px solid #bfdbfe; text-align:center; white-space:nowrap;">단위</th>
-          <th style="padding:8px 12px; border:1px solid #bfdbfe; text-align:left;">성적처리</th>
-        </tr></thead>
+      <table style="width:100%; border-collapse:collapse; font-size:0.87rem;">
+        <thead><tr style="background:#dbeafe;"><th style="padding:7px 12px; border:1px solid #bfdbfe; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #bfdbfe; text-align:center;">유형</th><th style="padding:7px; border:1px solid #bfdbfe; text-align:center;">배치 학기</th><th style="padding:7px 12px; border:1px solid #bfdbfe; text-align:left;">성적처리</th></tr></thead>
         <tbody>
-          <tr style="background:#eff6ff;"><td style="padding:8px 12px; border:1px solid #bfdbfe; font-weight:600;">주제 탐구 독서</td><td style="padding:8px; border:1px solid #bfdbfe; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:8px; border:1px solid #bfdbfe; text-align:center;">2학년 1학기</td><td style="padding:8px; border:1px solid #bfdbfe; text-align:center; font-weight:700; color:#1d4ed8;">5단위</td><td style="padding:8px 12px; border:1px solid #bfdbfe;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#dbeafe; opacity:0.8; background:#e0efff;"><td style="padding:8px 12px; border:1px solid #bfdbfe; font-weight:600;">언어생활 탐구</td><td style="padding:8px; border:1px solid #bfdbfe; text-align:center; font-size:0.8rem;">융합선택</td><td style="padding:8px; border:1px solid #bfdbfe; text-align:center;">2학년 2학기</td><td style="padding:8px; border:1px solid #bfdbfe; text-align:center; font-weight:700; color:#1d4ed8;">5단위</td><td style="padding:8px 12px; border:1px solid #bfdbfe;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
+          <tr style="background:#eff6ff;"><td style="padding:7px 12px; border:1px solid #bfdbfe; font-weight:600;">주제 탐구 독서</td><td style="padding:7px; border:1px solid #bfdbfe; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px; border:1px solid #bfdbfe; text-align:center;">2학년 1학기</td><td style="padding:7px 12px; border:1px solid #bfdbfe;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#e0eeff;"><td style="padding:7px 12px; border:1px solid #bfdbfe; font-weight:600;">언어생활 탐구</td><td style="padding:7px; border:1px solid #bfdbfe; text-align:center; font-size:0.78rem;">융합선택</td><td style="padding:7px; border:1px solid #bfdbfe; text-align:center;">2학년 2학기</td><td style="padding:7px 12px; border:1px solid #bfdbfe;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
         </tbody>
       </table>
       </div>
     </div>
 
-    <!-- 수학 그룹 -->
-    <div style="padding:14px 16px; background:#fdf4ff;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-        <span style="background:#7c3aed; color:#fff; padding:4px 14px; border-radius:20px; font-size:0.82rem; font-weight:700;">수학 그룹</span>
-        <strong style="font-size:0.9rem; color:#4c1d95;">학기별 배정 수학 과목 이수 · 각 15단위</strong>
+    <!-- 수학 -->
+    <div style="padding:13px 16px; background:#fdf4ff; border-bottom:1px solid #e9d5ff;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+        <span style="background:#7c3aed; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">수학</span>
+        <span style="font-size:0.84rem; color:#4c1d95;">학기별 1과목 배정</span>
       </div>
       <div style="overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
-        <thead><tr style="background:#ede9fe;">
-          <th style="padding:8px 12px; border:1px solid #ddd8fe; text-align:left;">과목명</th>
-          <th style="padding:8px; border:1px solid #ddd8fe; text-align:center; white-space:nowrap;">유형</th>
-          <th style="padding:8px; border:1px solid #ddd8fe; text-align:center; white-space:nowrap;">배치 학기</th>
-          <th style="padding:8px; border:1px solid #ddd8fe; text-align:center; white-space:nowrap;">단위</th>
-          <th style="padding:8px 12px; border:1px solid #ddd8fe; text-align:left;">성적처리</th>
-        </tr></thead>
+      <table style="width:100%; border-collapse:collapse; font-size:0.87rem;">
+        <thead><tr style="background:#ede9fe;"><th style="padding:7px 12px; border:1px solid #ddd8fe; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #ddd8fe; text-align:center;">유형</th><th style="padding:7px; border:1px solid #ddd8fe; text-align:center;">배치 학기</th><th style="padding:7px 12px; border:1px solid #ddd8fe; text-align:left;">성적처리</th></tr></thead>
         <tbody>
-          <tr style="background:#fdf4ff;"><td style="padding:8px 12px; border:1px solid #ddd8fe; font-weight:600;">대수</td><td style="padding:8px; border:1px solid #ddd8fe; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:8px; border:1px solid #ddd8fe; text-align:center;">2학년 1학기</td><td style="padding:8px; border:1px solid #ddd8fe; text-align:center; font-weight:700; color:#7c3aed;">15단위</td><td style="padding:8px 12px; border:1px solid #ddd8fe;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#ede9fe; opacity:0.8;"><td style="padding:8px 12px; border:1px solid #ddd8fe; font-weight:600;">미적분Ⅱ</td><td style="padding:8px; border:1px solid #ddd8fe; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:8px; border:1px solid #ddd8fe; text-align:center;">2학년 2학기</td><td style="padding:8px; border:1px solid #ddd8fe; text-align:center; font-weight:700; color:#7c3aed;">15단위</td><td style="padding:8px 12px; border:1px solid #ddd8fe;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
+          <tr style="background:#fdf4ff;"><td style="padding:7px 12px; border:1px solid #ddd8fe; font-weight:600;">대수</td><td style="padding:7px; border:1px solid #ddd8fe; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px; border:1px solid #ddd8fe; text-align:center;">2학년 1학기</td><td style="padding:7px 12px; border:1px solid #ddd8fe;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#ede9fe;"><td style="padding:7px 12px; border:1px solid #ddd8fe; font-weight:600;">미적분Ⅱ</td><td style="padding:7px; border:1px solid #ddd8fe; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px; border:1px solid #ddd8fe; text-align:center;">2학년 2학기</td><td style="padding:7px 12px; border:1px solid #ddd8fe;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- 영어 -->
+    <div style="padding:13px 16px; background:#fff7ed; border-bottom:1px solid #fed7aa;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+        <span style="background:#ea580c; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">영어</span>
+        <span style="font-size:0.84rem; color:#9a3412;">학기별 1과목 배정</span>
+      </div>
+      <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.87rem;">
+        <thead><tr style="background:#fed7aa;"><th style="padding:7px 12px; border:1px solid #fdba74; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #fdba74; text-align:center;">유형</th><th style="padding:7px; border:1px solid #fdba74; text-align:center;">배치 학기</th><th style="padding:7px 12px; border:1px solid #fdba74; text-align:left;">성적처리</th></tr></thead>
+        <tbody>
+          <tr style="background:#fff7ed;"><td style="padding:7px 12px; border:1px solid #fdba74; font-weight:600;">영미 문학 읽기</td><td style="padding:7px; border:1px solid #fdba74; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px; border:1px solid #fdba74; text-align:center;">2학년 1학기</td><td style="padding:7px 12px; border:1px solid #fdba74;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#fef3e2;"><td style="padding:7px 12px; border:1px solid #fdba74; font-weight:600;">영어 발표와 토론</td><td style="padding:7px; border:1px solid #fdba74; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px; border:1px solid #fdba74; text-align:center;">2학년 2학기</td><td style="padding:7px 12px; border:1px solid #fdba74;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- 사회 -->
+    <div style="padding:13px 16px; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+        <span style="background:#475569; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">사회</span>
+        <span style="font-size:0.84rem; color:#1e293b;">아래 과목 중 선택 (과목당 3학점)</span>
+      </div>
+      <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.87rem;">
+        <thead><tr style="background:#e2e8f0;"><th style="padding:7px 12px; border:1px solid #cbd5e1; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #cbd5e1; text-align:center;">유형</th><th style="padding:7px 12px; border:1px solid #cbd5e1; text-align:left;">성적처리</th></tr></thead>
+        <tbody>
+          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">사회와 문화</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#f1f5f9;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">현대사회와 윤리</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">세계시민과 지리</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#f1f5f9;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">법과 사회</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">세계사</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#f1f5f9;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">정치</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">경제</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#f1f5f9;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">한국지리 탐구</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1; font-weight:600;">윤리와 사상</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- 과학 -->
+    <div style="padding:13px 16px; background:#fefce8;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+        <span style="background:#ca8a04; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">과학</span>
+        <span style="font-size:0.84rem; color:#713f12;">아래 과목 중 선택 (과목당 3학점)</span>
+      </div>
+      <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.87rem;">
+        <thead><tr style="background:#fef08a;"><th style="padding:7px 12px; border:1px solid #fde047; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #fde047; text-align:center;">유형</th><th style="padding:7px 12px; border:1px solid #fde047; text-align:left;">성적처리</th></tr></thead>
+        <tbody>
+          <tr style="background:#fefce8;"><td style="padding:7px 12px; border:1px solid #fde047; font-weight:600;">물리학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#fef9c3;"><td style="padding:7px 12px; border:1px solid #fde047; font-weight:600;">화학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#fefce8;"><td style="padding:7px 12px; border:1px solid #fde047; font-weight:600;">생명과학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#fef9c3;"><td style="padding:7px 12px; border:1px solid #fde047; font-weight:600;">지구과학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.78rem;">일반선택</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#fefce8;"><td style="padding:7px 12px; border:1px solid #fde047; font-weight:600;">역학과 에너지</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#fef9c3;"><td style="padding:7px 12px; border:1px solid #fde047; font-weight:600;">물질과 에너지</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#fefce8;"><td style="padding:7px 12px; border:1px solid #fde047; font-weight:600;">세포와 물질대사</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
+          <tr style="background:#fef9c3;"><td style="padding:7px 12px; border:1px solid #fde047; font-weight:600;">지구시스템과학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.78rem;">진로선택</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계·5등급</span></td></tr>
         </tbody>
       </table>
       </div>
@@ -2757,76 +2806,11 @@
     </div>
   </div>
 
-  <!-- ─── 선택군 1 (3학년) — 영사과 ─── -->
-  <div style="border:2px solid #dc2626; border-radius:12px; overflow:hidden; margin-bottom:24px;">
-    <div style="background:#dc2626; color:#fff; padding:14px 20px;">
-      <div style="font-weight:700; font-size:1.0rem;">선택군 1 — 영어·사회·과학 선택 (3학년)</div>
-      <div style="font-size:0.82rem; margin-top:3px; opacity:0.9;">각 교과 그룹에서 택N과목 선택 · 과목당 3학점</div>
-    </div>
-
-    <!-- 영어 그룹 -->
-    <div style="padding:14px 16px; background:#fff7ed; border-bottom:2px solid #fed7aa;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-        <span style="background:#ea580c; color:#fff; padding:4px 14px; border-radius:20px; font-size:0.82rem; font-weight:700;">영어 그룹</span>
-        <strong style="font-size:0.9rem; color:#9a3412;">2과목 중 택1 (3학점)</strong>
-      </div>
-      <div style="overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
-        <thead><tr style="background:#fed7aa;"><th style="padding:8px 12px; border:1px solid #fdba74; text-align:left;">과목명</th><th style="padding:8px; border:1px solid #fdba74; text-align:center;">유형</th><th style="padding:8px; border:1px solid #fdba74; text-align:center;">학점</th><th style="padding:8px 12px; border:1px solid #fdba74; text-align:left;">성적처리</th></tr></thead>
-        <tbody>
-          <tr style="background:#fff7ed;"><td style="padding:8px 12px; border:1px solid #fdba74; font-weight:600;">영미 문학 읽기</td><td style="padding:8px; border:1px solid #fdba74; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:8px; border:1px solid #fdba74; text-align:center; font-weight:700; color:#ea580c;">3학점</td><td style="padding:8px 12px; border:1px solid #fdba74;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#fef3e2;"><td style="padding:8px 12px; border:1px solid #fdba74; font-weight:600;">영어 발표와 토론</td><td style="padding:8px; border:1px solid #fdba74; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:8px; border:1px solid #fdba74; text-align:center; font-weight:700; color:#ea580c;">3학점</td><td style="padding:8px 12px; border:1px solid #fdba74;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-        </tbody>
-      </table>
-      </div>
-    </div>
-
-    <!-- 사회 그룹 -->
-    <div style="padding:14px 16px; background:#f8fafc; border-bottom:2px solid #e2e8f0;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-        <span style="background:#475569; color:#fff; padding:4px 14px; border-radius:20px; font-size:0.82rem; font-weight:700;">사회 그룹</span>
-        <strong style="font-size:0.9rem; color:#1e293b;">아래 과목 중 택N (과목당 3학점)</strong>
-      </div>
-      <div style="overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:0.87rem;">
-        <thead><tr style="background:#e2e8f0;"><th style="padding:7px 12px; border:1px solid #cbd5e1; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #cbd5e1; text-align:center;">유형</th><th style="padding:7px; border:1px solid #cbd5e1; text-align:center;">학점</th><th style="padding:7px 12px; border:1px solid #cbd5e1; text-align:left;">성적처리</th></tr></thead>
-        <tbody>
-          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">사회와 문화</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#f1f5f9;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">현대사회와 윤리</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">세계시민과 지리</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#f1f5f9;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">법과 사회</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">세계사</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#f1f5f9;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">정치</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">경제</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#f1f5f9;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">한국지리 탐구</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#f8fafc;"><td style="padding:7px 12px; border:1px solid #cbd5e1;">윤리와 사상</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #cbd5e1; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #cbd5e1;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-        </tbody>
-      </table>
-      </div>
-    </div>
-
-    <!-- 과학 그룹 -->
-    <div style="padding:14px 16px; background:#fefce8;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-        <span style="background:#ca8a04; color:#fff; padding:4px 14px; border-radius:20px; font-size:0.82rem; font-weight:700;">과학 그룹</span>
-        <strong style="font-size:0.9rem; color:#713f12;">아래 과목 중 택N (과목당 3학점)</strong>
-      </div>
-      <div style="overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:0.87rem;">
-        <thead><tr style="background:#fef08a;"><th style="padding:7px 12px; border:1px solid #fde047; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #fde047; text-align:center;">유형</th><th style="padding:7px; border:1px solid #fde047; text-align:center;">학점</th><th style="padding:7px 12px; border:1px solid #fde047; text-align:left;">성적처리</th></tr></thead>
-        <tbody>
-          <tr style="background:#fefce8;"><td style="padding:7px 12px; border:1px solid #fde047;">물리학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#fef9c3;"><td style="padding:7px 12px; border:1px solid #fde047;">화학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#fefce8;"><td style="padding:7px 12px; border:1px solid #fde047;">생명과학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#fef9c3;"><td style="padding:7px 12px; border:1px solid #fde047;">지구과학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.8rem;">일반선택</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#fefce8;"><td style="padding:7px 12px; border:1px solid #fde047;">역학과 에너지</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#fef9c3;"><td style="padding:7px 12px; border:1px solid #fde047;">물질과 에너지</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#fefce8;"><td style="padding:7px 12px; border:1px solid #fde047;">세포와 물질대사</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-          <tr style="background:#fef9c3;"><td style="padding:7px 12px; border:1px solid #fde047;">지구시스템과학</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-size:0.8rem;">진로선택</td><td style="padding:7px; border:1px solid #fde047; text-align:center; font-weight:700;">3학점</td><td style="padding:7px 12px; border:1px solid #fde047;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">① 5단계·5등급</span></td></tr>
-        </tbody>
-      </table>
-      </div>
-    </div>
+  <!-- ━━━━━━━━━ 3학년 선택 과목 ━━━━━━━━━ -->
+  <div style="display:flex;align-items:center;gap:10px;margin:32px 0 18px;">
+    <div style="flex:1;height:2px;background:#dc2626;border-radius:1px;"></div>
+    <span style="background:#dc2626;color:#fff;padding:6px 20px;border-radius:20px;font-weight:700;font-size:0.95rem;white-space:nowrap;">📚 3학년 선택 과목</span>
+    <div style="flex:1;height:2px;background:#dc2626;border-radius:1px;"></div>
   </div>
 
   <!-- ─── 선택군 3 (3학년) ─── -->
@@ -2834,9 +2818,9 @@
     <div style="background:#6b7280; color:#fff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
       <div>
         <div style="font-weight:700; font-size:1.0rem;">선택군 3 — 교양·기술가정 (3학년)</div>
-        <div style="font-size:0.82rem; margin-top:3px; opacity:0.9;">아래 그룹 중 택1 선택 · 교양 과목은 이수/미이수로 기록</div>
+        <div style="font-size:0.82rem; margin-top:3px; opacity:0.9;">아래 과목 중 <strong>택1</strong> · 교양 과목은 이수/미이수로 기록</div>
       </div>
-      <span style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:20px; font-size:0.82rem; font-weight:600; white-space:nowrap;">3학년 배정</span>
+      <span style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:20px; font-size:0.82rem; font-weight:600; white-space:nowrap;">학기당 3학점</span>
     </div>
     <div style="overflow-x:auto; padding:14px 16px;">
     <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
@@ -2854,8 +2838,11 @@
   <!-- ─── 선택군 4 (3학년) — 심화·전문 ─── -->
   <div style="border:2px solid #b45309; border-radius:12px; overflow:hidden; margin-bottom:24px;">
     <div style="background:#b45309; color:#fff; padding:14px 20px;">
-      <div style="font-weight:700; font-size:1.0rem;">선택군 4 — 심화·전문 과목 (3학년, 2015 교육과정)</div>
-      <div style="font-size:0.82rem; margin-top:3px; opacity:0.9;">각 교과 그룹에서 택N · 성적처리 방식이 다름에 주의</div>
+      <div style="font-weight:700; font-size:1.0rem;">선택군 4 — 국어·영어·수학·사회·과학·체육 (3학년)</div>
+      <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+        <span style="background:rgba(255,255,255,0.25); padding:3px 12px; border-radius:20px; font-size:0.81rem; font-weight:600; white-space:nowrap;">1학기: 택6 · 24학점</span>
+        <span style="background:rgba(255,255,255,0.25); padding:3px 12px; border-radius:20px; font-size:0.81rem; font-weight:600; white-space:nowrap;">2학기: 택5 · 20학점</span>
+      </div>
     </div>
     <div style="padding:14px 16px;">
 
@@ -2865,15 +2852,15 @@
 
       <!-- 국어 그룹 -->
       <div style="margin-bottom:16px;">
-        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">📗 국어 그룹</div>
+        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">📗 국어</div>
         <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
-          <thead><tr style="background:#fef3c7;"><th style="padding:7px 12px; border:1px solid #fde68a; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #fde68a; text-align:center;">유형</th><th style="padding:7px; border:1px solid #fde68a; text-align:center;">단위</th><th style="padding:7px 12px; border:1px solid #fde68a; text-align:left;">성적처리</th></tr></thead>
+          <thead><tr style="background:#fef3c7;"><th style="padding:7px 12px; border:1px solid #fde68a; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #fde68a; text-align:center;">유형</th><th style="padding:7px; border:1px solid #fde68a; text-align:center;">배치 학기</th><th style="padding:7px 12px; border:1px solid #fde68a; text-align:left;">성적처리</th></tr></thead>
           <tbody>
-            <tr style="background:#fffbeb;"><td style="padding:7px 12px; border:1px solid #fde68a;">화법과 작문</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-weight:700;">택6</td><td style="padding:7px 12px; border:1px solid #fde68a;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">④ 5단계+석차등급</span></td></tr>
-            <tr style="background:#fef9e7;"><td style="padding:7px 12px; border:1px solid #fde68a;">언어와 매체</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-weight:700;">24단위</td><td style="padding:7px 12px; border:1px solid #fde68a;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">④ 5단계+석차등급</span></td></tr>
-            <tr style="background:#fffbeb;"><td style="padding:7px 12px; border:1px solid #fde68a;">심화 국어</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-weight:700;">택5</td><td style="padding:7px 12px; border:1px solid #fde68a;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fef9e7;"><td style="padding:7px 12px; border:1px solid #fde68a;">고전 읽기</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-weight:700;">20단위</td><td style="padding:7px 12px; border:1px solid #fde68a;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
+            <tr style="background:#fffbeb;"><td style="padding:7px 12px; border:1px solid #fde68a; font-weight:600;">화법과 작문</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px; border:1px solid #fde68a; text-align:center;"><span style="background:#dbeafe;color:#1d4ed8;padding:1px 7px;border-radius:10px;font-size:0.76rem;">1학기</span></td><td style="padding:7px 12px; border:1px solid #fde68a;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계+석차등급</span></td></tr>
+            <tr style="background:#fef9e7;"><td style="padding:7px 12px; border:1px solid #fde68a; font-weight:600;">언어와 매체</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px; border:1px solid #fde68a; text-align:center;"><span style="background:#dbeafe;color:#1d4ed8;padding:1px 7px;border-radius:10px;font-size:0.76rem;">1학기</span></td><td style="padding:7px 12px; border:1px solid #fde68a;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계+석차등급</span></td></tr>
+            <tr style="background:#fffbeb;"><td style="padding:7px 12px; border:1px solid #fde68a; font-weight:600;">심화 국어</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px; border:1px solid #fde68a; text-align:center;"><span style="background:#fee2e2;color:#dc2626;padding:1px 7px;border-radius:10px;font-size:0.76rem;">2학기</span></td><td style="padding:7px 12px; border:1px solid #fde68a;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#fef9e7;"><td style="padding:7px 12px; border:1px solid #fde68a; font-weight:600;">고전 읽기</td><td style="padding:7px; border:1px solid #fde68a; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px; border:1px solid #fde68a; text-align:center;"><span style="background:#fee2e2;color:#dc2626;padding:1px 7px;border-radius:10px;font-size:0.76rem;">2학기</span></td><td style="padding:7px 12px; border:1px solid #fde68a;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
           </tbody>
         </table>
         </div>
@@ -2881,7 +2868,7 @@
 
       <!-- 영어 그룹 -->
       <div style="margin-bottom:16px;">
-        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">📘 영어 그룹</div>
+        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">📘 영어</div>
         <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
           <thead><tr style="background:#dbeafe;"><th style="padding:7px 12px; border:1px solid #bfdbfe; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #bfdbfe; text-align:center;">유형</th><th style="padding:7px; border:1px solid #bfdbfe; text-align:center;">단위</th><th style="padding:7px 12px; border:1px solid #bfdbfe; text-align:left;">성적처리</th></tr></thead>
@@ -2896,7 +2883,7 @@
 
       <!-- 수학 그룹 -->
       <div style="margin-bottom:16px;">
-        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">📙 수학 그룹</div>
+        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">📙 수학</div>
         <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
           <thead><tr style="background:#dcfce7;"><th style="padding:7px 12px; border:1px solid #bbf7d0; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #bbf7d0; text-align:center;">유형</th><th style="padding:7px; border:1px solid #bbf7d0; text-align:center;">단위</th><th style="padding:7px 12px; border:1px solid #bbf7d0; text-align:left;">성적처리</th></tr></thead>
@@ -2916,27 +2903,51 @@
 
       <!-- 사회·과학·체육 심화 -->
       <div>
-        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">📕 사회·과학·체육 심화 그룹</div>
+        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">📕 사회</div>
         <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
-          <thead><tr style="background:#fee2e2;"><th style="padding:7px 12px; border:1px solid #fecaca; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #fecaca; text-align:center;">교과</th><th style="padding:7px; border:1px solid #fecaca; text-align:center;">유형</th><th style="padding:7px 12px; border:1px solid #fecaca; text-align:left;">성적처리</th></tr></thead>
+          <thead><tr style="background:#fee2e2;"><th style="padding:7px 12px; border:1px solid #fecaca; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #fecaca; text-align:center;">유형</th><th style="padding:7px 12px; border:1px solid #fecaca; text-align:left;">성적처리</th></tr></thead>
           <tbody>
-            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca;">사회문화</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">사회</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">④ 5단계+석차등급</span></td></tr>
-            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca;">생활과 윤리</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">사회</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">④ 5단계+석차등급</span></td></tr>
-            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca;">동아시아사</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">사회</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">④ 5단계+석차등급</span></td></tr>
-            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca;">한국지리</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">사회</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">④ 5단계+석차등급</span></td></tr>
-            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca;">국제 경제</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">사회</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca;">지역 이해</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">사회</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca;">사회문제 탐구</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">사회</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca;">한국 사회의 이해</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">사회</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca;">물리학Ⅱ</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">과학</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca;">화학Ⅱ</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">과학</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca;">생명과학Ⅱ</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">과학</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca;">지구과학Ⅱ</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">과학</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca;">융합과학 탐구</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">과학</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca;">과학사</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">과학</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca;">과학과제 연구</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">과학</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
-            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca;">체육 전공 실기 기초</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">체육</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">③ 3단계+분포비율</span></td></tr>
+            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca; font-weight:600;">사회문화</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계+석차등급</span></td></tr>
+            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca; font-weight:600;">생활과 윤리</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계+석차등급</span></td></tr>
+            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca; font-weight:600;">동아시아사</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계+석차등급</span></td></tr>
+            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca; font-weight:600;">한국지리</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">일반</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fdf4ff;color:#7c3aed;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">5단계+석차등급</span></td></tr>
+            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca; font-weight:600;">국제 경제</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca; font-weight:600;">지역 이해</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#fff5f5;"><td style="padding:7px 12px; border:1px solid #fecaca; font-weight:600;">사회문제 탐구</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#fef2f2;"><td style="padding:7px 12px; border:1px solid #fecaca; font-weight:600;">한국 사회의 이해</td><td style="padding:7px; border:1px solid #fecaca; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #fecaca;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <!-- 과학 그룹 -->
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">🔬 과학</div>
+        <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+          <thead><tr style="background:#f3f4f6;"><th style="padding:7px 12px; border:1px solid #e5e7eb; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #e5e7eb; text-align:center;">유형</th><th style="padding:7px 12px; border:1px solid #e5e7eb; text-align:left;">성적처리</th></tr></thead>
+          <tbody>
+            <tr style="background:#f9fafb;"><td style="padding:7px 12px; border:1px solid #e5e7eb; font-weight:600;">물리학Ⅱ</td><td style="padding:7px; border:1px solid #e5e7eb; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #e5e7eb;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#f3f4f6;"><td style="padding:7px 12px; border:1px solid #e5e7eb; font-weight:600;">화학Ⅱ</td><td style="padding:7px; border:1px solid #e5e7eb; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #e5e7eb;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#f9fafb;"><td style="padding:7px 12px; border:1px solid #e5e7eb; font-weight:600;">생명과학Ⅱ</td><td style="padding:7px; border:1px solid #e5e7eb; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #e5e7eb;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#f3f4f6;"><td style="padding:7px 12px; border:1px solid #e5e7eb; font-weight:600;">지구과학Ⅱ</td><td style="padding:7px; border:1px solid #e5e7eb; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #e5e7eb;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#f9fafb;"><td style="padding:7px 12px; border:1px solid #e5e7eb; font-weight:600;">융합과학 탐구</td><td style="padding:7px; border:1px solid #e5e7eb; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #e5e7eb;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#f3f4f6;"><td style="padding:7px 12px; border:1px solid #e5e7eb; font-weight:600;">과학사</td><td style="padding:7px; border:1px solid #e5e7eb; text-align:center; font-size:0.78rem;">진로</td><td style="padding:7px 12px; border:1px solid #e5e7eb;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+            <tr style="background:#f9fafb;"><td style="padding:7px 12px; border:1px solid #e5e7eb; font-weight:600;">과학과제 연구</td><td style="padding:7px; border:1px solid #e5e7eb; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #e5e7eb;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <!-- 체육 그룹 -->
+      <div>
+        <div style="font-weight:700; color:#78350f; margin-bottom:8px;">🏃 체육</div>
+        <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+          <thead><tr style="background:#d1fae5;"><th style="padding:7px 12px; border:1px solid #a7f3d0; text-align:left;">과목명</th><th style="padding:7px; border:1px solid #a7f3d0; text-align:center;">유형</th><th style="padding:7px 12px; border:1px solid #a7f3d0; text-align:left;">성적처리</th></tr></thead>
+          <tbody>
+            <tr style="background:#ecfdf5;"><td style="padding:7px 12px; border:1px solid #a7f3d0; font-weight:600;">체육 전공 실기 기초</td><td style="padding:7px; border:1px solid #a7f3d0; text-align:center; font-size:0.78rem;">전문</td><td style="padding:7px 12px; border:1px solid #a7f3d0;"><span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:20px;font-size:0.78rem;font-weight:700;">3단계+분포비율</span></td></tr>
           </tbody>
         </table>
         </div>
