@@ -2352,57 +2352,179 @@
 
 <!-- 3. 과목 선택 -->
 <div class="sub-panel" id="sub-subject">
-  <h2 class="section-title">📚 교육과정</h2>
 
-  <!-- ═══════════════════════════════════
-       성적처리 유형 안내
-  ═══════════════════════════════════ -->
-  <div class="card" style="margin-bottom:8px;">
-    <strong style="font-size:1.0rem;">📊 성적처리 유형 안내 — 과목마다 성적 기재 방식이 다릅니다</strong>
-    <div style="display:grid; gap:10px; margin-top:14px;">
+  <h2 class="section-title">📋 2022 개정 교육과정 교과목 편제</h2>
+  <p style="color:#6b7280; font-size:0.92rem; line-height:1.7; margin-bottom:20px;">2022 개정 교육과정 기준 보통교과 편제입니다. 교과(군)별 공통 과목과 선택 과목(일반·진로·융합)을 확인하세요.</p>
 
-      <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:#eff6ff; border-radius:8px; border-left:4px solid #2563eb;">
-        <div style="min-width:36px; height:36px; background:#2563eb; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85rem; flex-shrink:0;">①</div>
-        <div>
-          <strong style="font-size:0.95rem; color:#1e3a8a;">원점수 / 성취도 5단계(A·B·C·D·E) / 석차 5등급</strong>
-          <p style="font-size:0.83rem; color:#374151; margin-top:4px; line-height:1.6;">100점 만점 원점수 기재 + A(90점↑)·B(80~89)·C(70~79)·D(60~69)·E(60점↓) 성취도 5단계 + 석차 5등급 산출<br><span style="color:#2563eb; font-weight:600;">→ 국어·수학·영어·사회·과학 등 대부분의 주요 과목에 적용</span></p>
+  <div class="accordion">
+
+    <!-- 보통교과 편제 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📚 보통교과 편제표
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.8rem; min-width:680px;">
+          <thead>
+            <tr style="background:#dbeafe; text-align:center;">
+              <th style="padding:8px 10px; border:1px solid #bfdbfe; white-space:nowrap;">교과(군)</th>
+              <th style="padding:8px 10px; border:1px solid #bfdbfe; white-space:nowrap;">공통 과목</th>
+              <th style="padding:8px 10px; border:1px solid #bfdbfe;">일반 선택</th>
+              <th style="padding:8px 10px; border:1px solid #bfdbfe;">진로 선택</th>
+              <th style="padding:8px 10px; border:1px solid #bfdbfe;">융합 선택</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">국어</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">공통국어1<br>공통국어2</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">화법과 언어, 독서와 작문, 문학</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">주제 탐구 독서, 문학과 영상, 직무 의사소통</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">독서 토론과 글쓰기, 매체 의사소통, 언어생활 탐구</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">수학</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">공통수학1<br>공통수학2<br>기본수학1<br>기본수학2</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">대수, 미적분Ⅰ, 확률과 통계</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">기하, 미적분Ⅱ, 경제 수학, 인공지능 수학, 직무 수학</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">수학과 문화, 실용 통계, 수학과제 탐구</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">영어</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">공통영어1<br>공통영어2<br>기본영어1<br>기본영어2</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">영어Ⅰ, 영어Ⅱ, 영어 독해와 작문</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">영미 문학 읽기, 영어 발표와 토론, 심화 영어, 심화 영어 독해와 작문, 직무 영어</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">실생활 영어 회화, 미디어 영어, 세계 문화와 영어</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">사회<br><span style="font-size:0.75rem; font-weight:400;">(역사/도덕 포함)</span></td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">한국사1<br>한국사2<br>통합사회1<br>통합사회2</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">세계시민과 지리, 세계사, 사회와 문화, 현대사회와 윤리</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">한국지리 탐구, 도시의 미래 탐구, 동아시아 역사 기행, 정치, 법과 사회, 경제, 윤리와 사상, 인문학과 윤리, 국제 관계의 이해</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">여행지리, 역사로 탐구하는 현대 세계, 사회문제 탐구, 금융과 경제생활, 윤리문제 탐구, 기후변화와 지속가능한 세계</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">과학</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">통합과학1<br>통합과학2<br>과학탐구실험1<br>과학탐구실험2</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">물리학, 화학, 생명과학, 지구과학</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">역학과 에너지, 전자기와 양자, 물질과 에너지, 화학 반응의 세계, 세포와 물질대사, 생물의 유전, 지구시스템과학, 행성우주과학</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">과학의 역사와 문화, 기후변화와 환경생태, 융합과학 탐구</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">체육</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">체육1, 체육2</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">운동과 건강, 스포츠 문화*, 스포츠 과학*</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;"></td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">스포츠 생활1, 스포츠 생활2</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">예술</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">음악, 미술, 연극</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">음악 연주와 창작, 음악 감상과 비평, 미술 창작, 미술 감상과 비평</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;"></td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">음악과 미디어, 미술과 매체</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">기술·가정/<br>정보</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;"></td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">기술·가정, 정보</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">로봇과 공학세계, 생활과학 탐구, 인공지능 기초, 데이터 과학</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">창의 공학 설계, 지식 재산 일반, 생애 설계와 자립*, 아동발달과 부모, 소프트웨어와 생활</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">제2외국어/<br>한문</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;"></td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">독일어, 프랑스어, 스페인어, 중국어, 일본어, 러시아어, 아랍어, 베트남어, 한문</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">독일어 회화 외 각국어 회화, 심화 독일어 외 심화 각국어, 한문 고전 읽기</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">독일어권 문화 외 각국 문화, 언어생활과 한자</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; font-weight:700; white-space:nowrap; vertical-align:top;">교양</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;"></td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">진로와 직업, 생태와 환경</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">인간과 철학, 논리와 사고, 인간과 심리, 교육의 이해, 삶과 종교, 보건</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; vertical-align:top; color:#374151;">인간과 경제활동, 논술</td>
+            </tr>
+          </tbody>
+        </table>
         </div>
       </div>
-
-      <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:#f0fdf4; border-radius:8px; border-left:4px solid #15803d;">
-        <div style="min-width:36px; height:36px; background:#15803d; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85rem; flex-shrink:0;">②</div>
-        <div>
-          <strong style="font-size:0.95rem; color:#14532d;">성취도 3단계(A·B·C) — 석차 없음</strong>
-          <p style="font-size:0.83rem; color:#374151; margin-top:4px; line-height:1.6;">A(80점↑) · B(60~79점) · C(60점↓) 3단계로만 기록, 석차등급 산출 없음<br><span style="color:#15803d; font-weight:600;">→ 체육·예술(음악·미술)·과학탐구실험 등에 적용</span></p>
-        </div>
-      </div>
-
-      <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:#fffbeb; border-radius:8px; border-left:4px solid #d97706;">
-        <div style="min-width:36px; height:36px; background:#d97706; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85rem; flex-shrink:0;">③</div>
-        <div>
-          <strong style="font-size:0.95rem; color:#78350f;">성취도 3단계(A·B·C) + 분포비율 공시</strong>
-          <p style="font-size:0.83rem; color:#374151; margin-top:4px; line-height:1.6;">성취도 A·B·C 3단계 기재 + 각 등급에 속한 학생 비율(%) 함께 공개<br><span style="color:#b45309; font-weight:600;">→ 3학년 진로·전문 선택 과목(2015 교육과정 기반)에 적용</span></p>
-        </div>
-      </div>
-
-      <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:#fdf4ff; border-radius:8px; border-left:4px solid #7c3aed;">
-        <div style="min-width:36px; height:36px; background:#7c3aed; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85rem; flex-shrink:0;">④</div>
-        <div>
-          <strong style="font-size:0.95rem; color:#4c1d95;">성취도 5단계(A·B·C·D·E) + 석차등급</strong>
-          <p style="font-size:0.83rem; color:#374151; margin-top:4px; line-height:1.6;">성취도 5단계 기재 + 석차등급(1~9등급) 산출<br><span style="color:#7c3aed; font-weight:600;">→ 3학년 일반 선택 심화 과목(2015 교육과정)에 적용</span></p>
-        </div>
-      </div>
-
-      <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:#f9fafb; border-radius:8px; border-left:4px solid #6b7280;">
-        <div style="min-width:36px; height:36px; background:#6b7280; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85rem; flex-shrink:0;">⑤</div>
-        <div>
-          <strong style="font-size:0.95rem; color:#374151;">이수 / 미이수</strong>
-          <p style="font-size:0.83rem; color:#374151; margin-top:4px; line-height:1.6;">점수 없이 출석·참여 기준 충족 여부만 기록<br><span style="color:#6b7280; font-weight:600;">→ 교양 과목(환경·심리학·실용 경제 등)에 적용</span></p>
-        </div>
-      </div>
-
     </div>
-  </div>
+
+    <!-- 학점 운영 기준 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📐 학점 운영 기준
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <ul style="padding-left:18px; line-height:2.1; font-size:0.92rem;">
+          <li>선택 과목 기본 학점: <strong>4학점</strong> (단, 체육·예술·교양 교과(군)은 <strong>3학점</strong>)</li>
+          <li>선택 과목은 <strong>1학점 범위</strong> 내에서 증감하여 편성·운영 가능</li>
+          <li><strong>*</strong> 표시 과목의 기본 학점은 <strong>2학점</strong>, 1학점 범위 내에서 감하여 편성·운영 가능</li>
+          <li>체육 교과는 <strong>매 학기 이수</strong>하도록 함 (특성화고·산업수요맞춤형고는 현장실습 학년 탄력 운영 가능)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 특수목적고 계열 과목 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        🔬 특수목적고등학교 계열 과목 (과학·체육·예술계열)
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.8rem; min-width:560px;">
+          <thead>
+            <tr style="background:#fef3c7; text-align:center;">
+              <th style="padding:8px 10px; border:1px solid #fde68a;">계열</th>
+              <th style="padding:8px 10px; border:1px solid #fde68a;">교과(군)</th>
+              <th style="padding:8px 10px; border:1px solid #fde68a;">진로 선택</th>
+              <th style="padding:8px 10px; border:1px solid #fde68a;">융합 선택</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #fde68a; font-weight:700; text-align:center; vertical-align:top;" rowspan="3">과학계열</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top;">수학</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top; color:#374151;">전문 수학, 이산 수학, 고급 기하, 고급 대수, 고급 미적분</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a;"></td>
+            </tr>
+            <tr style="background:#fffbeb;">
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top;">과학</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top; color:#374151;">고급 물리학, 고급 화학, 고급 생명과학, 고급 지구과학, 과학과제 연구, 정보과학</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top; color:#374151;">물리학 실험, 화학 실험, 생명과학 실험, 지구과학 실험</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top;">정보</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top; color:#374151;">정보과학</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a;"></td>
+            </tr>
+            <tr style="background:#fffbeb;">
+              <td style="padding:8px 10px; border:1px solid #fde68a; font-weight:700; text-align:center; vertical-align:top;">체육계열</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top;">체육</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top; color:#374151;">스포츠 개론, 육상, 체조, 수상 스포츠, 기초·심화·고급 체육 전공 실기, 스포츠 경기 기술, 스포츠 경기 분석</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top; color:#374151;">스포츠 교육, 스포츠 경기 체력, 스포츠 생리의학, 스포츠 행정 및 경영</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #fde68a; font-weight:700; text-align:center; vertical-align:top;">예술계열</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top;">예술</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top; color:#374151;">음악 이론, 음악사, 시창·청음, 합창·합주, 미술 이론, 드로잉, 미술사, 조형 탐구, 무용의 이해 외 무용 관련 과목, 문예 창작 관련 과목, 연극·영화·사진 관련 과목</td>
+              <td style="padding:8px 10px; border:1px solid #fde68a; vertical-align:top; color:#374151;">음악과 문화, 음악 공연 실습, 미술 매체 탐구, 미술과 사회, 무용과 매체, 문학과 매체, 연극과 삶, 영화와 삶, 사진과 삶</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <p style="font-size:0.82rem; color:#6b7280; margin-top:10px;">특수목적고등학교 선택 과목의 기본 학점 및 증감 범위는 시·도 교육감이 정합니다.</p>
+      </div>
+    </div>
+
+  </div><!-- /.accordion 2022편제 -->
+
+  <h2 class="section-title">📚 학교 교육과정</h2>
 
   <!-- 이수 단위 요약 -->
   <div class="card-grid" style="margin-top:24px;">
