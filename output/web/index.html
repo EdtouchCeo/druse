@@ -1494,16 +1494,308 @@
 
 <!-- 1. 규정·기준 -->
 <div class="sub-panel active" id="sub-rules">
-  <h2 class="section-title">📜 규정·기준</h2>
-  <div class="placeholder-card">
-    <div class="placeholder-icon">📂</div>
-    <p class="placeholder-title">자료 준비 중</p>
-    <p class="placeholder-desc">
-      해당 내용은 아직 업로드되지 않았습니다.<br>
-      <code>/input/student/</code> 폴더에 파일을 추가한 후<br>
-      "웹페이지 만들어" 명령으로 갱신하세요.
-    </p>
-  </div>
+  <h2 class="section-title">📜 학업 성적 처리 규정</h2>
+
+  <div class="accordion">
+
+    <!-- 성적 결과 공개 및 이의신청 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📢 성적 결과 공개 및 이의신청
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <p style="margin-bottom:12px; line-height:1.8;">정기시험 및 수행평가(학기말 포함)의 결과는 학생 본인에게 공개하며, 타인에게 성적 정보가 노출되지 않도록 유의합니다.</p>
+
+        <strong style="font-size:0.93rem;">📅 이의신청 기간</strong>
+        <ul style="margin:8px 0 16px; padding-left:20px; line-height:1.9;">
+          <li><strong>정기시험:</strong> 시험 종료일로부터 3일간 (공휴일 제외)</li>
+          <li><strong>수행평가:</strong> 각 영역 성적 공개 이후 3일간</li>
+        </ul>
+
+        <strong style="font-size:0.93rem;">📋 이의신청 처리 절차</strong>
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:0.87rem;">
+          <thead>
+            <tr style="background:#eff6ff;">
+              <th style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; white-space:nowrap;">단계</th>
+              <th style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center;">주요 내용</th>
+              <th style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center;">담당</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">1단계</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">전 학년 대상 평가 결과 이의신청 접수</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center;">연구부장</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">2단계</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">담당 교사 검토 후 교과협의회에서 이의신청 내용 검토 → 학업성적관리위원회 상정</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center;">교과협의회</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">3단계</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">교과협의회 검토 결과 심의 → 학교장 결재 후 확정</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; white-space:nowrap;">학업성적관리<br>위원회</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center; font-weight:700;">4단계</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe;">심의 결과를 해당 학생(학년) 및 교사에게 통보 (구두 혹은 인쇄물)</td>
+              <td style="padding:8px 10px; border:1px solid #bfdbfe; text-align:center;">해당 과목<br>담당 교사</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 1·2학년 성취도 평정 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📊 성취도 평정 — 1·2학년
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <p style="margin-bottom:14px; line-height:1.8;">과목 유형에 따라 성취도 평정 방식이 다릅니다. 분할 점수는 평가 시행 전에 학생·학부모에게 안내합니다.</p>
+
+        <strong style="font-size:0.93rem;">① 공통과목 (성취율 기준)</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:0.87rem; text-align:center;">
+          <thead><tr style="background:#dbeafe;">
+            <th style="padding:7px; border:1px solid #bfdbfe;">성취율</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">90% 이상</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">80~90% 미만</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">70~80% 미만</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">60~70% 미만</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">40~60% 미만</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700;">성취도</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">A</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">B</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">C</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">D</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">E</td>
+          </tr></tbody>
+        </table>
+        <p style="font-size:0.82rem; color:#6b7280; margin-bottom:16px;">※ 성취율 40% 미만인 학생 중 최소 성취수준 보장 지도 이수 시 E 부여</p>
+
+        <strong style="font-size:0.93rem;">② 과학탐구 실험 (원점수 기준)</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:0.87rem; text-align:center;">
+          <thead><tr style="background:#dcfce7;">
+            <th style="padding:7px; border:1px solid #bbf7d0;">성취율(원점수)</th>
+            <th style="padding:7px; border:1px solid #bbf7d0;">80% 이상</th>
+            <th style="padding:7px; border:1px solid #bbf7d0;">60~80% 미만</th>
+            <th style="padding:7px; border:1px solid #bbf7d0;">40~60% 미만</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px; border:1px solid #bbf7d0; font-weight:700;">성취도</td>
+            <td style="padding:7px; border:1px solid #bbf7d0; font-weight:700; color:#166534;">A</td>
+            <td style="padding:7px; border:1px solid #bbf7d0; font-weight:700; color:#166534;">B</td>
+            <td style="padding:7px; border:1px solid #bbf7d0; font-weight:700; color:#166534;">C</td>
+          </tr></tbody>
+        </table>
+
+        <strong style="font-size:0.93rem;">③ 선택과목 — 일반 선택·진로 선택·융합 선택 (성취율 기준)</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:0.87rem; text-align:center;">
+          <thead><tr style="background:#fef3c7;">
+            <th style="padding:7px; border:1px solid #fde68a;">성취율</th>
+            <th style="padding:7px; border:1px solid #fde68a;">90% 이상</th>
+            <th style="padding:7px; border:1px solid #fde68a;">80~90% 미만</th>
+            <th style="padding:7px; border:1px solid #fde68a;">70~80% 미만</th>
+            <th style="padding:7px; border:1px solid #fde68a;">60~70% 미만</th>
+            <th style="padding:7px; border:1px solid #fde68a;">60% 미만</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px; border:1px solid #fde68a; font-weight:700;">성취도</td>
+            <td style="padding:7px; border:1px solid #fde68a; font-weight:700; color:#92400e;">A</td>
+            <td style="padding:7px; border:1px solid #fde68a; font-weight:700; color:#92400e;">B</td>
+            <td style="padding:7px; border:1px solid #fde68a; font-weight:700; color:#92400e;">C</td>
+            <td style="padding:7px; border:1px solid #fde68a; font-weight:700; color:#92400e;">D</td>
+            <td style="padding:7px; border:1px solid #fde68a; font-weight:700; color:#92400e;">E</td>
+          </tr></tbody>
+        </table>
+
+        <strong style="font-size:0.93rem;">④ 체육·예술 교과(군) 과목 (원점수 기준)</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 4px; font-size:0.87rem; text-align:center;">
+          <thead><tr style="background:#fce7f3;">
+            <th style="padding:7px; border:1px solid #f9a8d4;">성취율(원점수)</th>
+            <th style="padding:7px; border:1px solid #f9a8d4;">80% 이상</th>
+            <th style="padding:7px; border:1px solid #f9a8d4;">60~80% 미만</th>
+            <th style="padding:7px; border:1px solid #f9a8d4;">60% 미만</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px; border:1px solid #f9a8d4; font-weight:700;">성취도</td>
+            <td style="padding:7px; border:1px solid #f9a8d4; font-weight:700; color:#9d174d;">A</td>
+            <td style="padding:7px; border:1px solid #f9a8d4; font-weight:700; color:#9d174d;">B</td>
+            <td style="padding:7px; border:1px solid #f9a8d4; font-weight:700; color:#9d174d;">C</td>
+          </tr></tbody>
+        </table>
+        <p style="font-size:0.82rem; color:#6b7280; margin-top:8px;">※ 특수목적고등학교 체육·예술 교과(군) 선택과목 제외</p>
+      </div>
+    </div>
+
+    <!-- 3학년 성취도 평정 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        📊 성취도 평정 — 3학년
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <strong style="font-size:0.93rem;">① 공통과목·일반 선택과목 (성취율 기준)</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:0.87rem; text-align:center;">
+          <thead><tr style="background:#dbeafe;">
+            <th style="padding:7px; border:1px solid #bfdbfe;">성취율</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">90% 이상</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">80~90% 미만</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">70~80% 미만</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">60~70% 미만</th>
+            <th style="padding:7px; border:1px solid #bfdbfe;">60% 미만</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700;">성취도</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">A</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">B</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">C</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">D</td>
+            <td style="padding:7px; border:1px solid #bfdbfe; font-weight:700; color:#1d4ed8;">E</td>
+          </tr></tbody>
+        </table>
+
+        <strong style="font-size:0.93rem;">② 원점수 적용 과목 (A·B·C 3단계)</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 10px; font-size:0.87rem; text-align:center;">
+          <thead><tr style="background:#dcfce7;">
+            <th style="padding:7px; border:1px solid #bbf7d0;">성취율(원점수)</th>
+            <th style="padding:7px; border:1px solid #bbf7d0;">80% 이상</th>
+            <th style="padding:7px; border:1px solid #bbf7d0;">60~80% 미만</th>
+            <th style="padding:7px; border:1px solid #bbf7d0;">60% 미만</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px; border:1px solid #bbf7d0; font-weight:700;">성취도</td>
+            <td style="padding:7px; border:1px solid #bbf7d0; font-weight:700; color:#166534;">A</td>
+            <td style="padding:7px; border:1px solid #bbf7d0; font-weight:700; color:#166534;">B</td>
+            <td style="padding:7px; border:1px solid #bbf7d0; font-weight:700; color:#166534;">C</td>
+          </tr></tbody>
+        </table>
+        <p style="font-size:0.82rem; color:#6b7280; line-height:1.7;">원점수 적용 대상: 과학탐구 실험, 체육·예술 교과(군) 일반 선택·진로 선택 과목, 전문교과Ⅰ(과학 계열) 중 융합과학 탐구·과학과제 연구·물리학 실험·화학 실험·생명과학 실험·지구과학 실험, 전문교과Ⅰ(국제 계열) 중 사회 탐구 방법·사회과제 연구</p>
+      </div>
+    </div>
+
+    <!-- 석차등급 산출 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        🏅 석차등급 산출 기준
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <p style="margin-bottom:12px; line-height:1.8;">석차는 매 학기 과목별 환산 점수 합계로 산출합니다. 동점자 발생 시 모두에게 최상위 석차를 부여하고 괄호 안에 동점자 수를 병기합니다.</p>
+
+        <strong style="font-size:0.93rem;">1·2학년 — 5등급제</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:0.87rem; text-align:center;">
+          <thead><tr style="background:#ede9fe;">
+            <th style="padding:7px; border:1px solid #c4b5fd;">석차등급</th>
+            <th style="padding:7px; border:1px solid #c4b5fd;">1등급</th>
+            <th style="padding:7px; border:1px solid #c4b5fd;">2등급</th>
+            <th style="padding:7px; border:1px solid #c4b5fd;">3등급</th>
+            <th style="padding:7px; border:1px solid #c4b5fd;">4등급</th>
+            <th style="padding:7px; border:1px solid #c4b5fd;">5등급</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px; border:1px solid #c4b5fd; font-weight:600;">석차누적비율</td>
+            <td style="padding:7px; border:1px solid #c4b5fd;">~10%</td>
+            <td style="padding:7px; border:1px solid #c4b5fd;">10~34%</td>
+            <td style="padding:7px; border:1px solid #c4b5fd;">34~66%</td>
+            <td style="padding:7px; border:1px solid #c4b5fd;">66~90%</td>
+            <td style="padding:7px; border:1px solid #c4b5fd;">90~100%</td>
+          </tr></tbody>
+        </table>
+
+        <strong style="font-size:0.93rem;">3학년 — 9등급제</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 4px; font-size:0.82rem; text-align:center;">
+          <thead><tr style="background:#fef3c7;">
+            <th style="padding:6px 4px; border:1px solid #fde68a;">등급</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">1</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">2</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">3</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">4</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">5</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">6</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">7</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">8</th>
+            <th style="padding:6px 4px; border:1px solid #fde68a;">9</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:6px 4px; border:1px solid #fde68a; font-weight:600;">누적비율</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">~4%</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">4~11%</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">11~23%</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">23~40%</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">40~60%</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">60~77%</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">77~89%</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">89~96%</td>
+            <td style="padding:6px 4px; border:1px solid #fde68a;">96~100%</td>
+          </tr></tbody>
+        </table>
+        <p style="font-size:0.82rem; color:#6b7280; margin-top:8px;">등급별 누적 인원 = 수강자 수 × 등급별 누적 비율 (반올림)</p>
+      </div>
+    </div>
+
+    <!-- 부정행위 예방 및 처리 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        🚫 부정행위 예방 및 처리 기준
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <strong style="font-size:0.93rem;">부정행위 유형</strong>
+        <ul style="margin:8px 0 16px; padding-left:20px; line-height:2.0; font-size:0.9rem;">
+          <li>다른 수험생의 답안지를 보거나 보여주는 행위</li>
+          <li>손동작·소리 등으로 서로 신호하는 행위</li>
+          <li>부정한 휴대물을 보거나 무선기기 등을 이용하는 행위</li>
+          <li>대리 시험을 의뢰하거나 대리로 응시하는 행위</li>
+          <li>다른 수험생에게 답을 보여주기를 강요·위협하는 행위</li>
+          <li>시험 종료령 후에도 계속 답안지를 작성하는 행위</li>
+          <li>선택과목 시간에 해당하지 않는 과목 문제지를 보는 행위</li>
+          <li>감독관의 본인 확인·소지품 검색 요구에 따르지 않는 행위</li>
+          <li>시험 당일 시험 시작 전 소지 금지 물품을 제출하지 않고 소지하는 행위</li>
+          <li>시험 중 휴대 금지 물품(책·연습장·메모지 등)을 임의 장소에 보관하는 행위</li>
+          <li>위에 명시되지 않은 경우 위원회 심의를 거쳐 학교장이 결정</li>
+        </ul>
+
+        <strong style="font-size:0.93rem;">시험 중 소지 금지 물품</strong>
+        <div class="card" style="margin:8px 0 16px; background:#fef2f2; border-left-color:#ef4444; font-size:0.87rem; line-height:1.8;">
+          휴대전화, 스마트기기(스마트워치 등), 디지털 카메라, 전자사전, MP3 플레이어, 카메라펜, 전자계산기, 라디오, 휴대용 미디어 플레이어, 통신·결제기능(블루투스 등) 또는 전자식 화면표시기(LED 등)가 있는 시계, 전자담배, 통신(블루투스) 기능이 있는 이어폰 등 <strong>모든 전자기기</strong>
+          <p style="margin-top:8px; font-size:0.81rem; color:#6b7280;">※ 1형 당뇨병·신체장애(지체·시각·청각 등) 학생은 학교장 사전 허가를 받은 의료·보조 기기 반입 허용</p>
+        </div>
+
+        <strong style="font-size:0.93rem;">부정행위자 성적 처리</strong>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0 4px; font-size:0.87rem;">
+          <thead><tr style="background:#fee2e2;">
+            <th style="padding:8px 10px; border:1px solid #fecaca;">구분</th>
+            <th style="padding:8px 10px; border:1px solid #fecaca;">상황</th>
+            <th style="padding:8px 10px; border:1px solid #fecaca;">처리</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #fecaca; font-weight:600; white-space:nowrap;">정기시험</td>
+              <td style="padding:8px 10px; border:1px solid #fecaca;">시험 중 금지물품 소지</td>
+              <td style="padding:8px 10px; border:1px solid #fecaca; font-weight:700; color:#dc2626;">해당 교시 0점</td>
+            </tr>
+            <tr style="background:#fff5f5;">
+              <td style="padding:8px 10px; border:1px solid #fecaca; font-weight:600;">정기시험</td>
+              <td style="padding:8px 10px; border:1px solid #fecaca;">금지물품 이용한 실제 부정행위</td>
+              <td style="padding:8px 10px; border:1px solid #fecaca; font-weight:700; color:#dc2626;">해당 시험일 전체 과목 0점</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px; border:1px solid #fecaca; font-weight:600;">수행평가</td>
+              <td style="padding:8px 10px; border:1px solid #fecaca;" colspan="2">해당 영역 평가계획서에 제시된 기본점수 부여</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.82rem; color:#6b7280; margin-top:8px;">징계 여부 및 절차는 학생선도위원회에 회부하여 결정합니다.</p>
+      </div>
+    </div>
+
+  </div><!-- /.accordion -->
 </div>
 
 <!-- 2. 학교생활 -->
@@ -2744,7 +3036,6 @@
       "2026-5-15":[{t:"스승의날·재량휴업",c:"holiday"}],
       "2026-5-25":[{t:"부처님오신날 대체",c:"holiday"}],
       "2026-5-27":[{t:"명상의 시간",c:"other"}],
-      "2026-6-2":[{t:"금요일 수업",c:"other"}],
       "2026-6-3":[{t:"지방선거 휴업",c:"holiday"}],
       "2026-6-4":[{t:"학력평가 고1·2 / 모의평가 고3",c:"exam"}],
       "2026-6-6":[{t:"현충일",c:"holiday"}],
@@ -2753,14 +3044,16 @@
       "2026-7-1":[{t:"기말고사",c:"exam"}],
       "2026-7-2":[{t:"기말고사",c:"exam"}],
       "2026-7-3":[{t:"기말고사",c:"exam"}],
-      "2026-7-8":[{t:"학력평가 고3",c:"exam"},{t:"대학 학과 체험활동 고2",c:"event"}],
+      "2026-7-8":[{t:"학력평가 고3",c:"exam"}],
       "2026-7-9":[{t:"자율교육과정",c:"other"}],
       "2026-7-10":[{t:"자율교육과정",c:"other"}],
+      "2026-7-11":[{t:"자율교육과정",c:"other"}],
+      "2026-7-12":[{t:"자율교육과정",c:"other"}],
       "2026-7-13":[{t:"자율교육과정",c:"other"}],
       "2026-7-14":[{t:"자율교육과정",c:"other"}],
       "2026-7-15":[{t:"자율교육과정",c:"other"}],
       "2026-7-17":[{t:"제헌절",c:"holiday"}],
-      "2026-7-21":[{t:"방학식",c:"event"}],
+      "2026-7-20":[{t:"방학식",c:"event"}],
       "2026-8-13":[{t:"개학",c:"event"}],
       "2026-8-15":[{t:"광복절",c:"holiday"}],
       "2026-8-17":[{t:"대체 휴일",c:"holiday"}],
@@ -2797,6 +3090,8 @@
       "2026-12-16":[{t:"자율교육과정",c:"other"}],
       "2026-12-17":[{t:"자율교육과정",c:"other"}],
       "2026-12-18":[{t:"자율교육과정",c:"other"}],
+      "2026-12-19":[{t:"자율교육과정",c:"other"}],
+      "2026-12-20":[{t:"자율교육과정",c:"other"}],
       "2026-12-21":[{t:"자율교육과정",c:"other"}],
       "2026-12-22":[{t:"자율교육과정",c:"other"}],
       "2026-12-23":[{t:"대륜제 (축제)",c:"event"}],
