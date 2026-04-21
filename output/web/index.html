@@ -4321,8 +4321,10 @@ function switchAiSub(idx) {
     .then(function (authUser) {
       _pendingToken = token;
       _pendingAuth  = authUser;
-      return fetch(SB_URL + '/rest/v1/users?google_id=eq.' + authUser.id + '&select=*', {
-        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      return fetch('/.netlify/functions/get-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ google_id: authUser.id })
       })
       .then(function (r) { return r.json(); })
       .then(function (profiles) {
