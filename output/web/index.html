@@ -571,6 +571,7 @@
     <button class="tab-btn" id="tab-btn-teacher" onclick="switchTab('teacher', this)">📋 업무 매뉴얼</button>
     <button class="tab-btn" id="tab-btn-student" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
     <button class="tab-btn" id="tab-btn-calendar" onclick="switchTab('calendar', this)">📅 학사일정</button>
+    <button class="tab-btn" id="tab-btn-ai" onclick="switchTab('ai', this)">⭐ 샛별AI</button>
   </div>
 </nav>
 
@@ -3639,6 +3640,30 @@ function switchCurrTab(id,btn){
     </div>
   </div>
 
+  <!-- 샛별AI 탭 패널 -->
+  <div class="tab-panel" id="tab-ai">
+    <div style="margin-bottom:20px;">
+      <h2 style="font-size:1.2rem;font-weight:700;color:var(--primary);margin:0 0 4px;">⭐ 샛별AI</h2>
+      <p style="font-size:0.85rem;color:#6b7280;margin:0;">AI 도구를 활용해 업무를 더 빠르게 처리하세요.</p>
+    </div>
+    <!-- 하위 탭 -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+      <button id="ai-sub-btn-0" onclick="switchAiSub(0)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid var(--primary);background:var(--primary);color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
+      <button id="ai-sub-btn-1" onclick="switchAiSub(1)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 AI</button>
+      <button id="ai-sub-btn-2" onclick="switchAiSub(2)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
+    </div>
+    <!-- iframe 영역 -->
+    <div id="ai-sub-0" style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+      <iframe src="https://ai-63986215827.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="교육일정 작성 AI"></iframe>
+    </div>
+    <div id="ai-sub-1" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+      <iframe src="https://ai-888834700673.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="수행평가 AI"></iframe>
+    </div>
+    <div id="ai-sub-2" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+      <iframe src="https://edtouch.ai/score/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="학생 개별 점수 조회"></iframe>
+    </div>
+  </div>
+
   <!-- 회원가입 탭 패널 -->
   <div class="tab-panel" id="tab-register">
     <div style="max-width:480px;margin:48px auto;">
@@ -4090,6 +4115,30 @@ function switchCurrTab(id,btn){
   <p>개발 및 운영: 교사 홍대화 &nbsp;|&nbsp; 문의: <a href="mailto:daveceo@edtouch.ai">daveceo@edtouch.ai</a></p>
 </footer>
 
+
+<!-- ===== 샛별AI 하위 탭 JS ===== -->
+<script>
+function switchAiSub(idx) {
+  for (var i = 0; i < 3; i++) {
+    var panel = document.getElementById('ai-sub-' + i);
+    var btn   = document.getElementById('ai-sub-btn-' + i);
+    if (!panel || !btn) continue;
+    if (i === idx) {
+      panel.style.display = '';
+      btn.style.background = 'var(--primary)';
+      btn.style.color = '#fff';
+      btn.style.borderColor = 'var(--primary)';
+      btn.style.fontWeight = '700';
+    } else {
+      panel.style.display = 'none';
+      btn.style.background = '#fff';
+      btn.style.color = '#4b5563';
+      btn.style.borderColor = '#d1d5db';
+      btn.style.fontWeight = '600';
+    }
+  }
+}
+</script>
 
 <!-- ===== 인증 JS ===== -->
 <script>
