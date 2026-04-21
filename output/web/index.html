@@ -552,11 +552,66 @@
 <nav class="tab-nav">
   <div class="tab-nav-inner">
     <button class="tab-btn active" onclick="switchTab('school', this)">🏫 학교 소개</button>
-    <button class="tab-btn" onclick="switchTab('teacher', this)">📋 업무 매뉴얼</button>
-    <button class="tab-btn" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
-    <button class="tab-btn" onclick="switchTab('calendar', this)">📅 학사일정</button>
+    <button class="tab-btn auth-tab role-교사" id="tab-btn-teacher" onclick="switchTab('teacher', this)" style="display:none">📋 업무 매뉴얼</button>
+    <button class="tab-btn auth-tab" id="tab-btn-student" onclick="switchTab('student', this)" style="display:none">🎒 학생·학부모 안내</button>
+    <button class="tab-btn auth-tab" id="tab-btn-calendar" onclick="switchTab('calendar', this)" style="display:none">📅 학사일정</button>
+    <div id="auth-area" style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <button id="login-btn" onclick="startLogin()" style="background:#4285f4;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fff"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff"/></svg>
+        Google 로그인
+      </button>
+      <div id="user-badge" style="display:none;align-items:center;gap:8px;">
+        <span id="user-name-display" style="font-size:0.82rem;font-weight:600;color:var(--primary);"></span>
+        <button onclick="doLogout()" style="background:#f3f4f6;color:#6b7280;border:none;border-radius:6px;padding:5px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;">로그아웃</button>
+      </div>
+    </div>
   </div>
 </nav>
+
+<!-- ===== 회원가입 모달 ===== -->
+<div id="reg-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:8000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:36px 32px;width:360px;max-width:90vw;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+    <h2 style="font-size:1.2rem;font-weight:700;color:var(--primary);margin:0 0 6px;">처음 오셨군요! 👋</h2>
+    <p style="font-size:0.85rem;color:#6b7280;margin:0 0 24px;">정보를 입력하면 모든 탭을 이용할 수 있어요.</p>
+    <form id="reg-form" onsubmit="submitReg(event)">
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">역할 *</label>
+        <select id="reg-role" onchange="toggleStudentFields()" required style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;">
+          <option value="">선택하세요</option>
+          <option value="학생">학생</option>
+          <option value="학부모">학부모</option>
+          <option value="교사">교사</option>
+        </select>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">이름 *</label>
+        <input id="reg-name" required placeholder="홍길동" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;">
+      </div>
+      <div id="student-fields" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div>
+            <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">입학년도</label>
+            <input id="reg-year" type="number" placeholder="2024" min="2020" max="2030" style="width:100%;padding:9px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">학년</label>
+            <select id="reg-grade" style="width:100%;padding:9px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;">
+              <option value="">-</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">반</label>
+            <input id="reg-class" type="number" placeholder="1" min="1" max="20" style="width:100%;padding:9px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;">
+          </div>
+        </div>
+      </div>
+      <button type="submit" id="reg-submit" style="width:100%;padding:11px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:0.92rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;">저장하고 시작하기</button>
+    </form>
+  </div>
+</div>
 
 <!-- ===== 메인 콘텐츠 ===== -->
 <main>
@@ -3989,6 +4044,227 @@ function switchCurrTab(id,btn){
   <p>개발 및 운영: 교사 홍대화 &nbsp;|&nbsp; 문의: <a href="mailto:daveceo@edtouch.ai">daveceo@edtouch.ai</a></p>
 </footer>
 
+
+<!-- ===== 인증 JS ===== -->
+<script>
+(function () {
+  'use strict';
+
+  var SB_URL  = 'https://aafpkfcxzdrguuctdwth.supabase.co';
+  var SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhZnBrZmN4emRyZ3V1Y3Rkd3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEwNjYsImV4cCI6MjA5MjMwNzA2Nn0.1VWheZHC2qNwWJhJ6KTFhjfFf9-bAfAdjzja2cD-xmw';
+  var SESSION_KEY = 'dr_sess_v1';
+  var _pendingToken = null;
+  var _pendingAuth  = null;
+
+  /* ── 세션 ── */
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
+  }
+  function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+  function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+  /* ── 탭 표시 제어 ── */
+  function showTabs(role) {
+    document.getElementById('tab-btn-student').style.display  = '';
+    document.getElementById('tab-btn-calendar').style.display = '';
+    if (role === '교사') {
+      document.getElementById('tab-btn-teacher').style.display = '';
+    }
+  }
+  function hideTabs() {
+    document.getElementById('tab-btn-student').style.display  = 'none';
+    document.getElementById('tab-btn-calendar').style.display = 'none';
+    document.getElementById('tab-btn-teacher').style.display  = 'none';
+  }
+
+  /* ── 사용자 배지 ── */
+  function showUserBadge(user) {
+    document.getElementById('login-btn').style.display   = 'none';
+    var badge = document.getElementById('user-badge');
+    badge.style.display = 'flex';
+    document.getElementById('user-name-display').textContent =
+      user.name + ' (' + user.role + ')';
+  }
+  function showLoginBtn() {
+    document.getElementById('login-btn').style.display   = '';
+    document.getElementById('user-badge').style.display  = 'none';
+  }
+
+  /* ── 로그인 시작 ── */
+  window.startLogin = function () {
+    var redirectTo = encodeURIComponent('https://daeryun.life');
+    window.location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + redirectTo;
+  };
+
+  /* ── 로그아웃 ── */
+  window.doLogout = function () {
+    clearSession();
+    hideTabs();
+    showLoginBtn();
+    // 학교 소개 탭으로 이동
+    var schoolBtn = document.querySelector('.tab-btn');
+    if (schoolBtn) schoolBtn.click();
+  };
+
+  /* ── 모달 토글 ── */
+  window.toggleStudentFields = function () {
+    var role = document.getElementById('reg-role').value;
+    document.getElementById('student-fields').style.display =
+      role === '학생' ? 'block' : 'none';
+  };
+
+  /* ── 회원가입 제출 ── */
+  window.submitReg = function (e) {
+    e.preventDefault();
+    var btn = document.getElementById('reg-submit');
+    btn.disabled = true;
+    btn.textContent = '저장 중...';
+
+    var role  = document.getElementById('reg-role').value;
+    var name  = document.getElementById('reg-name').value.trim();
+    var year  = parseInt(document.getElementById('reg-year').value) || null;
+    var grade = parseInt(document.getElementById('reg-grade').value) || null;
+    var cls   = parseInt(document.getElementById('reg-class').value) || null;
+
+    var payload = {
+      google_id     : _pendingAuth.id,
+      email         : _pendingAuth.email,
+      name          : name,
+      role          : role,
+      admission_year: year,
+      grade         : role === '학생' ? grade : null,
+      class         : role === '학생' ? cls   : null
+    };
+
+    fetch('/.netlify/functions/save-user', {
+      method  : 'POST',
+      headers : { 'Content-Type': 'application/json' },
+      body    : JSON.stringify(payload)
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var user = Array.isArray(data) ? data[0] : data;
+      var session = { token: _pendingToken, user: user };
+      saveSession(session);
+      hideRegModal();
+      applyAuth(session);
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = '저장하고 시작하기';
+      alert('저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    });
+  };
+
+  function hideRegModal() {
+    document.getElementById('reg-overlay').style.display = 'none';
+  }
+  function showRegModal(token, authUser) {
+    _pendingToken = token;
+    _pendingAuth  = authUser;
+    document.getElementById('reg-overlay').style.display = 'flex';
+  }
+
+  /* ── 인증 적용 ── */
+  function applyAuth(session) {
+    showTabs(session.user.role);
+    showUserBadge(session.user);
+    logActivity(session.user.id, '접속', '', '');
+  }
+
+  /* ── 활동 로그 ── */
+  function logActivity(userId, eventType, detail, page) {
+    fetch('/.netlify/functions/save-log', {
+      method  : 'POST',
+      headers : { 'Content-Type': 'application/json' },
+      body    : JSON.stringify({ user_id: userId, event_type: eventType, detail: detail, page: page })
+    }).catch(function () {});
+  }
+
+  /* ── OAuth 콜백 처리 ── */
+  function handleOAuthCallback(token) {
+    fetch(SB_URL + '/auth/v1/user', {
+      headers: { 'Authorization': 'Bearer ' + token, 'apikey': SB_KEY }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (authUser) {
+      // 기존 프로필 조회
+      return fetch(SB_URL + '/rest/v1/users?google_id=eq.' + authUser.id + '&select=*', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (profiles) {
+        if (profiles && profiles.length > 0) {
+          var session = { token: token, user: profiles[0] };
+          saveSession(session);
+          applyAuth(session);
+        } else {
+          showRegModal(token, authUser);
+        }
+      });
+    })
+    .catch(function () { showLoginBtn(); });
+  }
+
+  /* ── 탭 클릭 로그 훅 ── */
+  function hookTabLogs() {
+    document.querySelectorAll('.tab-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var session = getSession();
+        if (!session) return;
+        var label = btn.textContent.trim();
+        logActivity(session.user.id, '탭클릭', label, label);
+      });
+    });
+  }
+
+  /* ── 검색어 로그 훅 ── */
+  function hookSearchLog() {
+    var inp = document.getElementById('searchInput');
+    if (!inp) return;
+    var timer;
+    inp.addEventListener('input', function () {
+      clearTimeout(timer);
+      var val = inp.value.trim();
+      if (!val) return;
+      timer = setTimeout(function () {
+        var session = getSession();
+        if (!session) return;
+        logActivity(session.user.id, '검색', val, '');
+      }, 1000);
+    });
+  }
+
+  /* ── 초기화 ── */
+  function init() {
+    hookTabLogs();
+    hookSearchLog();
+
+    // OAuth 콜백 해시 확인
+    var hash = new URLSearchParams(window.location.hash.slice(1));
+    var token = hash.get('access_token');
+    if (token) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      handleOAuthCallback(token);
+      return;
+    }
+
+    // 기존 세션 확인
+    var session = getSession();
+    if (session) {
+      applyAuth(session);
+    } else {
+      showLoginBtn();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 
 </body>
 </html>
