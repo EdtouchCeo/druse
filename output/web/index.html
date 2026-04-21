@@ -4185,12 +4185,25 @@ function switchAiSub(idx) {
   var _pendingToken = null;
   var _pendingAuth  = null;
 
-  /* ── JWT 디코딩 (fetch 없이 토큰에서 사용자 정보 추출) ── */
+  /* ── JWT 디코딩 ── */
   function decodeJWT(token) {
     try {
       var b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
       return JSON.parse(atob(b64));
     } catch(e) { return null; }
+  }
+
+  /* ── PKCE 헬퍼 ── */
+  function generateVerifier() {
+    var arr = new Uint8Array(32);
+    crypto.getRandomValues(arr);
+    return btoa(String.fromCharCode.apply(null, arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  }
+  function challengeFromVerifier(verifier) {
+    var enc = new TextEncoder().encode(verifier);
+    return crypto.subtle.digest('SHA-256', enc).then(function(buf) {
+      return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+    });
   }
 
   /* ── 세션 ── */
@@ -4214,16 +4227,17 @@ function switchAiSub(idx) {
     document.getElementById('user-badge').style.display = 'none';
   }
 
-  /* ── 로그인 시작 ── */
+  /* ── 로그인 시작 (PKCE) ── */
   window.startLogin = function () {
-    // 이미 세션이 있으면 Google OAuth 생략
     var existing = getSession();
-    if (existing) {
-      applyAuth(existing);
-      return;
-    }
-    var redirectTo = encodeURIComponent('https://daeryun.life');
-    window.location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + redirectTo + '&flow_type=implicit';
+    if (existing) { applyAuth(existing); return; }
+    var verifier = generateVerifier();
+    localStorage.setItem('pkce_v', verifier);
+    challengeFromVerifier(verifier).then(function(challenge) {
+      var redirectTo = encodeURIComponent('https://daeryun.life');
+      window.location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + redirectTo
+        + '&code_challenge=' + challenge + '&code_challenge_method=S256';
+    });
   };
 
   /* ── 로그아웃 ── */
@@ -4420,16 +4434,43 @@ function switchAiSub(idx) {
     });
   }
 
+  /* ── PKCE 코드 교환 ── */
+  function exchangeCode(code) {
+    var verifier = localStorage.getItem('pkce_v');
+    localStorage.removeItem('pkce_v');
+    if (!verifier) { showLoginBtn(); return; }
+    fetch(SB_URL + '/auth/v1/token?grant_type=pkce', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+      body: JSON.stringify({ auth_code: code, code_verifier: verifier })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.access_token) { showLoginBtn(); return; }
+      handleOAuthCallback(data.access_token);
+    })
+    .catch(function() { showLoginBtn(); });
+  }
+
   /* ── 초기화 ── */
   function init() {
     hookLogs();
     showRegStep('login');
 
-    // OAuth 콜백 해시 확인
+    // PKCE 콜백: ?code= 쿼리 파라미터
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('code');
+    if (code) {
+      history.replaceState(null, '', window.location.pathname);
+      exchangeCode(code);
+      return;
+    }
+
+    // (구) implicit 콜백: #access_token= 해시 (하위 호환)
     var hash = new URLSearchParams(window.location.hash.slice(1));
     var token = hash.get('access_token');
     if (token) {
-      history.replaceState(null, '', window.location.pathname + window.location.search);
+      history.replaceState(null, '', window.location.pathname);
       handleOAuthCallback(token);
       return;
     }
@@ -4440,10 +4481,12 @@ function switchAiSub(idx) {
       applyAuth(session);
       showRegStep('done');
       var u = session.user;
-      var msg = u.role === '교사'
-        ? u.name + ' 선생님, 환영합니다!'
-        : u.grade + '학년 ' + u.class + '반 ' + u.name + ' 님, 환영합니다!';
-      document.getElementById('reg-done-msg').textContent = msg;
+      if (u && u.role) {
+        var msg = u.role === '교사'
+          ? u.name + ' 선생님, 환영합니다!'
+          : u.grade + '학년 ' + u.class + '반 ' + u.name + ' 님, 환영합니다!';
+        document.getElementById('reg-done-msg').textContent = msg;
+      }
     } else {
       showLoginBtn();
     }
