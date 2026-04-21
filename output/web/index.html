@@ -4324,7 +4324,26 @@ function switchAiSub(idx) {
     .then(function (authUser) {
       _pendingToken = token;
       _pendingAuth  = authUser;
-      return fetch('/.netlify/functions/get-user', {
+
+      // 1) localStorage에 같은 사용자 세션이 있으면 토큰만 갱신해서 재사용
+      var stored = getSession();
+      if (stored && stored.user && stored.user.google_id === authUser.id) {
+        stored.token = token;
+        saveSession(stored);
+        applyAuth(stored);
+        var u = stored.user;
+        var msg = u.role === '교사'
+          ? u.name + ' 선생님, 환영합니다!'
+          : u.grade + '학년 ' + u.class + '반 ' + u.name + ' 님, 환영합니다!';
+        document.getElementById('reg-done-msg').textContent = msg;
+        showRegStep('done');
+        var regBtn = document.getElementById('tab-btn-register');
+        if (regBtn) regBtn.click();
+        return;
+      }
+
+      // 2) 세션 없으면 Netlify 함수로 DB에서 프로필 조회
+      fetch('/.netlify/functions/get-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ google_id: authUser.id })
@@ -4344,7 +4363,12 @@ function switchAiSub(idx) {
         } else {
           showRegStep('form');
         }
-        // 회원가입 탭으로 이동
+        var regBtn = document.getElementById('tab-btn-register');
+        if (regBtn) regBtn.click();
+      })
+      .catch(function () {
+        // DB 조회 실패 → 회원가입 폼 표시 (재등록 유도)
+        showRegStep('form');
         var regBtn = document.getElementById('tab-btn-register');
         if (regBtn) regBtn.click();
       });
