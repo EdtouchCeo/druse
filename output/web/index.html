@@ -4197,7 +4197,9 @@ function switchAiSub(idx) {
     document.getElementById('login-btn').style.display = 'none';
     var badge = document.getElementById('user-badge');
     badge.style.display = 'flex';
-    document.getElementById('user-name-display').textContent = user.name + ' (' + user.role + ')';
+    var name = (user && user.name) ? user.name : '사용자';
+    var role = (user && user.role) ? user.role : '';
+    document.getElementById('user-name-display').textContent = name + (role ? ' (' + role + ')' : '');
   }
   function showLoginBtn() {
     document.getElementById('login-btn').style.display = '';
@@ -4299,8 +4301,9 @@ function switchAiSub(idx) {
 
   /* ── 인증 적용 ── */
   function applyAuth(session) {
+    if (!session || !session.user) { showLoginBtn(); return; }
     showUserBadge(session.user);
-    logActivity(session.user.id, '접속', '', '');
+    if (session.user.id) logActivity(session.user.id, '접속', '', '');
   }
 
   /* ── 활동 로그 ── */
