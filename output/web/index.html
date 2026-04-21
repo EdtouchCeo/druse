@@ -4093,7 +4093,7 @@ function switchCurrTab(id,btn){
   /* ── 로그인 시작 ── */
   window.startLogin = function () {
     var redirectTo = encodeURIComponent('https://daeryun.life');
-    window.location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + redirectTo;
+    window.location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + redirectTo + '&flow_type=implicit';
   };
 
   /* ── 로그아웃 ── */
