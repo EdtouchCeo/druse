@@ -552,13 +552,14 @@
 <nav class="tab-nav">
   <div class="tab-nav-inner">
     <button class="tab-btn active" onclick="switchTab('school', this)">🏫 학교 소개</button>
-    <button class="tab-btn auth-tab role-교사" id="tab-btn-teacher" onclick="switchTab('teacher', this)" style="display:none">📋 업무 매뉴얼</button>
-    <button class="tab-btn auth-tab" id="tab-btn-student" onclick="switchTab('student', this)" style="display:none">🎒 학생·학부모 안내</button>
-    <button class="tab-btn auth-tab" id="tab-btn-calendar" onclick="switchTab('calendar', this)" style="display:none">📅 학사일정</button>
+    <button class="tab-btn" id="tab-btn-teacher" onclick="switchTab('teacher', this)">📋 업무 매뉴얼</button>
+    <button class="tab-btn" id="tab-btn-student" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
+    <button class="tab-btn" id="tab-btn-calendar" onclick="switchTab('calendar', this)">📅 학사일정</button>
+    <button class="tab-btn" id="tab-btn-register" onclick="switchTab('register', this)">👤 회원가입</button>
     <div id="auth-area" style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;">
       <button id="login-btn" onclick="startLogin()" style="background:#4285f4;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fff"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff"/></svg>
-        Google 로그인
+        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fff"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff"/></svg>
+        로그인
       </button>
       <div id="user-badge" style="display:none;align-items:center;gap:8px;">
         <span id="user-name-display" style="font-size:0.82rem;font-weight:600;color:var(--primary);"></span>
@@ -568,50 +569,6 @@
   </div>
 </nav>
 
-<!-- ===== 회원가입 모달 ===== -->
-<div id="reg-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:8000;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:20px;padding:36px 32px;width:360px;max-width:90vw;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
-    <h2 style="font-size:1.2rem;font-weight:700;color:var(--primary);margin:0 0 6px;">처음 오셨군요! 👋</h2>
-    <p style="font-size:0.85rem;color:#6b7280;margin:0 0 24px;">정보를 입력하면 모든 탭을 이용할 수 있어요.</p>
-    <form id="reg-form" onsubmit="submitReg(event)">
-      <div style="margin-bottom:14px;">
-        <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">역할 *</label>
-        <select id="reg-role" onchange="toggleStudentFields()" required style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;">
-          <option value="">선택하세요</option>
-          <option value="학생">학생</option>
-          <option value="학부모">학부모</option>
-          <option value="교사">교사</option>
-        </select>
-      </div>
-      <div style="margin-bottom:14px;">
-        <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">이름 *</label>
-        <input id="reg-name" required placeholder="홍길동" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;">
-      </div>
-      <div id="student-fields" style="display:none;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-          <div>
-            <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">입학년도</label>
-            <input id="reg-year" type="number" placeholder="2024" min="2020" max="2030" style="width:100%;padding:9px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;">
-          </div>
-          <div>
-            <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">학년</label>
-            <select id="reg-grade" style="width:100%;padding:9px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;">
-              <option value="">-</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:5px;">반</label>
-            <input id="reg-class" type="number" placeholder="1" min="1" max="20" style="width:100%;padding:9px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;">
-          </div>
-        </div>
-      </div>
-      <button type="submit" id="reg-submit" style="width:100%;padding:11px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:0.92rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;">저장하고 시작하기</button>
-    </form>
-  </div>
-</div>
 
 <!-- ===== 메인 콘텐츠 ===== -->
 <main>
@@ -3677,6 +3634,90 @@ function switchCurrTab(id,btn){
     </div>
   </div>
 
+  <!-- 회원가입 탭 패널 -->
+  <div class="tab-panel" id="tab-register">
+    <div style="max-width:480px;margin:48px auto;">
+
+      <!-- 로그인 전 -->
+      <div id="reg-step-login" style="text-align:center;padding:48px 24px;">
+        <div style="font-size:3rem;margin-bottom:16px;">👤</div>
+        <h2 style="font-size:1.4rem;font-weight:700;color:var(--primary);margin:0 0 10px;">회원가입 / 로그인</h2>
+        <p style="font-size:0.9rem;color:#6b7280;margin:0 0 32px;line-height:1.7;">Google 계정으로 간편하게 가입하세요.<br>가입 후 맞춤 정보를 이용할 수 있습니다.</p>
+        <button onclick="startLogin()" style="display:inline-flex;align-items:center;gap:10px;background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:14px 28px;font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;color:#374151;box-shadow:0 2px 8px rgba(0,0,0,0.08);transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.14)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+          <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google 계정으로 시작하기
+        </button>
+      </div>
+
+      <!-- 정보 입력 (로그인 후 신규) -->
+      <div id="reg-step-form" style="display:none;">
+        <div style="background:#fff;border-radius:20px;padding:36px 32px;box-shadow:0 4px 24px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+          <h2 style="font-size:1.2rem;font-weight:700;color:var(--primary);margin:0 0 6px;">정보를 입력해 주세요 👋</h2>
+          <p style="font-size:0.85rem;color:#6b7280;margin:0 0 24px;">한 번만 입력하면 다음부터 자동으로 로그인됩니다.</p>
+          <form id="reg-form" onsubmit="submitReg(event)">
+            <div style="margin-bottom:16px;">
+              <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">구분 *</label>
+              <div style="display:flex;gap:10px;">
+                <label style="flex:1;display:flex;align-items:center;gap:8px;border:2px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;font-size:0.88rem;font-weight:600;transition:border-color 0.15s;">
+                  <input type="radio" name="reg-role" value="교사" onchange="toggleRegFields()" style="accent-color:var(--primary);"> 교사
+                </label>
+                <label style="flex:1;display:flex;align-items:center;gap:8px;border:2px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;font-size:0.88rem;font-weight:600;transition:border-color 0.15s;">
+                  <input type="radio" name="reg-role" value="학생" onchange="toggleRegFields()" style="accent-color:var(--primary);"> 학생
+                </label>
+                <label style="flex:1;display:flex;align-items:center;gap:8px;border:2px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;font-size:0.88rem;font-weight:600;transition:border-color 0.15s;">
+                  <input type="radio" name="reg-role" value="학부모" onchange="toggleRegFields()" style="accent-color:var(--primary);"> 학부모
+                </label>
+              </div>
+            </div>
+            <!-- 교사: 성명만 -->
+            <div id="reg-teacher-fields" style="display:none;">
+              <div style="margin-bottom:16px;">
+                <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">성명 *</label>
+                <input id="reg-name-t" placeholder="홍길동" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+              </div>
+            </div>
+            <!-- 학생·학부모: 학년·반·번호·성명 -->
+            <div id="reg-student-fields" style="display:none;">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">학년 *</label>
+                  <select id="reg-grade" style="width:100%;padding:10px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;">
+                    <option value="">-</option>
+                    <option value="1">1학년</option>
+                    <option value="2">2학년</option>
+                    <option value="3">3학년</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">반 *</label>
+                  <input id="reg-class" type="number" placeholder="1" min="1" max="20" style="width:100%;padding:10px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+                </div>
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">번호 *</label>
+                  <input id="reg-number" type="number" placeholder="1" min="1" max="50" style="width:100%;padding:10px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+                </div>
+              </div>
+              <div style="margin-bottom:16px;">
+                <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">성명 *</label>
+                <input id="reg-name-s" placeholder="홍길동" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+              </div>
+            </div>
+            <button type="submit" id="reg-submit" style="width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;">가입 완료</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 이미 가입된 경우 -->
+      <div id="reg-step-done" style="display:none;text-align:center;padding:48px 24px;">
+        <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+        <h2 style="font-size:1.3rem;font-weight:700;color:var(--primary);margin:0 0 10px;">가입이 완료되었습니다!</h2>
+        <p id="reg-done-msg" style="font-size:0.9rem;color:#6b7280;margin:0 0 24px;line-height:1.7;"></p>
+        <button onclick="switchTab('school', document.querySelector('.tab-btn'))" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:11px 28px;font-size:0.92rem;font-weight:700;cursor:pointer;font-family:inherit;">학교 소개 보기</button>
+      </div>
+
+    </div>
+  </div>
+
 </main>
 
 <!-- ===== 탭 전환 JS (인라인) ===== -->
@@ -4050,8 +4091,8 @@ function switchCurrTab(id,btn){
 (function () {
   'use strict';
 
-  var SB_URL  = 'https://aafpkfcxzdrguuctdwth.supabase.co';
-  var SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhZnBrZmN4emRyZ3V1Y3Rkd3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEwNjYsImV4cCI6MjA5MjMwNzA2Nn0.1VWheZHC2qNwWJhJ6KTFhjfFf9-bAfAdjzja2cD-xmw';
+  var SB_URL      = 'https://aafpkfcxzdrguuctdwth.supabase.co';
+  var SB_KEY      = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhZnBrZmN4emRyZ3V1Y3Rkd3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEwNjYsImV4cCI6MjA5MjMwNzA2Nn0.1VWheZHC2qNwWJhJ6KTFhjfFf9-bAfAdjzja2cD-xmw';
   var SESSION_KEY = 'dr_sess_v1';
   var _pendingToken = null;
   var _pendingAuth  = null;
@@ -4061,33 +4102,18 @@ function switchCurrTab(id,btn){
     try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
   }
   function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
-  function clearSession() { localStorage.removeItem(SESSION_KEY); }
-
-  /* ── 탭 표시 제어 ── */
-  function showTabs(role) {
-    document.getElementById('tab-btn-student').style.display  = '';
-    document.getElementById('tab-btn-calendar').style.display = '';
-    if (role === '교사') {
-      document.getElementById('tab-btn-teacher').style.display = '';
-    }
-  }
-  function hideTabs() {
-    document.getElementById('tab-btn-student').style.display  = 'none';
-    document.getElementById('tab-btn-calendar').style.display = 'none';
-    document.getElementById('tab-btn-teacher').style.display  = 'none';
-  }
+  function clearSession()  { localStorage.removeItem(SESSION_KEY); }
 
   /* ── 사용자 배지 ── */
   function showUserBadge(user) {
-    document.getElementById('login-btn').style.display   = 'none';
+    document.getElementById('login-btn').style.display = 'none';
     var badge = document.getElementById('user-badge');
     badge.style.display = 'flex';
-    document.getElementById('user-name-display').textContent =
-      user.name + ' (' + user.role + ')';
+    document.getElementById('user-name-display').textContent = user.name + ' (' + user.role + ')';
   }
   function showLoginBtn() {
-    document.getElementById('login-btn').style.display   = '';
-    document.getElementById('user-badge').style.display  = 'none';
+    document.getElementById('login-btn').style.display = '';
+    document.getElementById('user-badge').style.display = 'none';
   }
 
   /* ── 로그인 시작 ── */
@@ -4099,75 +4125,86 @@ function switchCurrTab(id,btn){
   /* ── 로그아웃 ── */
   window.doLogout = function () {
     clearSession();
-    hideTabs();
     showLoginBtn();
-    // 학교 소개 탭으로 이동
+    showRegStep('login');
     var schoolBtn = document.querySelector('.tab-btn');
     if (schoolBtn) schoolBtn.click();
   };
 
-  /* ── 모달 토글 ── */
-  window.toggleStudentFields = function () {
-    var role = document.getElementById('reg-role').value;
-    document.getElementById('student-fields').style.display =
-      role === '학생' ? 'block' : 'none';
+  /* ── 회원가입 탭 단계 전환 ── */
+  function showRegStep(step) {
+    ['login','form','done'].forEach(function(s) {
+      var el = document.getElementById('reg-step-' + s);
+      if (el) el.style.display = s === step ? '' : 'none';
+    });
+  }
+
+  /* ── 구분 선택 시 필드 토글 ── */
+  window.toggleRegFields = function () {
+    var role = document.querySelector('input[name="reg-role"]:checked');
+    if (!role) return;
+    var isTeacher = role.value === '교사';
+    document.getElementById('reg-teacher-fields').style.display = isTeacher ? '' : 'none';
+    document.getElementById('reg-student-fields').style.display = isTeacher ? 'none' : '';
   };
 
   /* ── 회원가입 제출 ── */
   window.submitReg = function (e) {
     e.preventDefault();
+    var roleEl = document.querySelector('input[name="reg-role"]:checked');
+    if (!roleEl) { alert('구분을 선택해 주세요.'); return; }
+    var role = roleEl.value;
+    var isTeacher = role === '교사';
+
+    var name  = isTeacher
+      ? document.getElementById('reg-name-t').value.trim()
+      : document.getElementById('reg-name-s').value.trim();
+    var grade  = isTeacher ? null : parseInt(document.getElementById('reg-grade').value) || null;
+    var cls    = isTeacher ? null : parseInt(document.getElementById('reg-class').value) || null;
+    var number = isTeacher ? null : parseInt(document.getElementById('reg-number').value) || null;
+
+    if (!name) { alert('성명을 입력해 주세요.'); return; }
+
     var btn = document.getElementById('reg-submit');
     btn.disabled = true;
     btn.textContent = '저장 중...';
 
-    var role  = document.getElementById('reg-role').value;
-    var name  = document.getElementById('reg-name').value.trim();
-    var year  = parseInt(document.getElementById('reg-year').value) || null;
-    var grade = parseInt(document.getElementById('reg-grade').value) || null;
-    var cls   = parseInt(document.getElementById('reg-class').value) || null;
-
     var payload = {
-      google_id     : _pendingAuth.id,
-      email         : _pendingAuth.email,
-      name          : name,
-      role          : role,
-      admission_year: year,
-      grade         : role === '학생' ? grade : null,
-      class         : role === '학생' ? cls   : null
+      google_id: _pendingAuth.id,
+      email    : _pendingAuth.email,
+      name     : name,
+      role     : role,
+      grade    : grade,
+      class    : cls,
+      admission_year: number
     };
 
     fetch('/.netlify/functions/save-user', {
-      method  : 'POST',
-      headers : { 'Content-Type': 'application/json' },
-      body    : JSON.stringify(payload)
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify(payload)
     })
     .then(function (r) { return r.json(); })
     .then(function (data) {
       var user = Array.isArray(data) ? data[0] : data;
       var session = { token: _pendingToken, user: user };
       saveSession(session);
-      hideRegModal();
       applyAuth(session);
+      var msg = isTeacher
+        ? name + ' 선생님, 환영합니다!'
+        : grade + '학년 ' + cls + '반 ' + number + '번 ' + name + ' 님, 환영합니다!';
+      document.getElementById('reg-done-msg').textContent = msg;
+      showRegStep('done');
     })
     .catch(function () {
       btn.disabled = false;
-      btn.textContent = '저장하고 시작하기';
+      btn.textContent = '가입 완료';
       alert('저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
     });
   };
 
-  function hideRegModal() {
-    document.getElementById('reg-overlay').style.display = 'none';
-  }
-  function showRegModal(token, authUser) {
-    _pendingToken = token;
-    _pendingAuth  = authUser;
-    document.getElementById('reg-overlay').style.display = 'flex';
-  }
-
   /* ── 인증 적용 ── */
   function applyAuth(session) {
-    showTabs(session.user.role);
     showUserBadge(session.user);
     logActivity(session.user.id, '접속', '', '');
   }
@@ -4175,9 +4212,9 @@ function switchCurrTab(id,btn){
   /* ── 활동 로그 ── */
   function logActivity(userId, eventType, detail, page) {
     fetch('/.netlify/functions/save-log', {
-      method  : 'POST',
-      headers : { 'Content-Type': 'application/json' },
-      body    : JSON.stringify({ user_id: userId, event_type: eventType, detail: detail, page: page })
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ user_id: userId, event_type: eventType, detail: detail, page: page })
     }).catch(function () {});
   }
 
@@ -4188,7 +4225,8 @@ function switchCurrTab(id,btn){
     })
     .then(function (r) { return r.json(); })
     .then(function (authUser) {
-      // 기존 프로필 조회
+      _pendingToken = token;
+      _pendingAuth  = authUser;
       return fetch(SB_URL + '/rest/v1/users?google_id=eq.' + authUser.id + '&select=*', {
         headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
       })
@@ -4198,28 +4236,32 @@ function switchCurrTab(id,btn){
           var session = { token: token, user: profiles[0] };
           saveSession(session);
           applyAuth(session);
+          var u = profiles[0];
+          var msg = u.role === '교사'
+            ? u.name + ' 선생님, 환영합니다!'
+            : u.grade + '학년 ' + u.class + '반 ' + u.name + ' 님, 환영합니다!';
+          document.getElementById('reg-done-msg').textContent = msg;
+          showRegStep('done');
         } else {
-          showRegModal(token, authUser);
+          showRegStep('form');
         }
+        // 회원가입 탭으로 이동
+        var regBtn = document.getElementById('tab-btn-register');
+        if (regBtn) regBtn.click();
       });
     })
     .catch(function () { showLoginBtn(); });
   }
 
-  /* ── 탭 클릭 로그 훅 ── */
-  function hookTabLogs() {
+  /* ── 탭 클릭·검색 로그 ── */
+  function hookLogs() {
     document.querySelectorAll('.tab-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var session = getSession();
         if (!session) return;
-        var label = btn.textContent.trim();
-        logActivity(session.user.id, '탭클릭', label, label);
+        logActivity(session.user.id, '탭클릭', btn.textContent.trim(), '');
       });
     });
-  }
-
-  /* ── 검색어 로그 훅 ── */
-  function hookSearchLog() {
     var inp = document.getElementById('searchInput');
     if (!inp) return;
     var timer;
@@ -4237,8 +4279,8 @@ function switchCurrTab(id,btn){
 
   /* ── 초기화 ── */
   function init() {
-    hookTabLogs();
-    hookSearchLog();
+    hookLogs();
+    showRegStep('login');
 
     // OAuth 콜백 해시 확인
     var hash = new URLSearchParams(window.location.hash.slice(1));
@@ -4249,10 +4291,16 @@ function switchCurrTab(id,btn){
       return;
     }
 
-    // 기존 세션 확인
+    // 기존 세션
     var session = getSession();
     if (session) {
       applyAuth(session);
+      showRegStep('done');
+      var u = session.user;
+      var msg = u.role === '교사'
+        ? u.name + ' 선생님, 환영합니다!'
+        : u.grade + '학년 ' + u.class + '반 ' + u.name + ' 님, 환영합니다!';
+      document.getElementById('reg-done-msg').textContent = msg;
     } else {
       showLoginBtn();
     }
