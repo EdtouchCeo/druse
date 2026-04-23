@@ -4308,11 +4308,7 @@ function switchAiSub(idx) {
       var session = { token: _pendingToken, user: user };
       saveSession(session);
       applyAuth(session);
-      var msg = isTeacher
-        ? name + ' 선생님, 환영합니다!'
-        : grade + '학년 ' + cls + '반 ' + number + '번 ' + name + ' 님, 환영합니다!';
-      document.getElementById('reg-done-msg').textContent = msg;
-      showRegStep('done');
+      gotoSchoolTab();
     })
     .catch(function () {
       btn.disabled = false;
@@ -4393,21 +4389,12 @@ function switchAiSub(idx) {
 
   function finishLogin(session) {
     applyAuth(session);
-    var u = session.user;
-    if (u.role) {
-      var msg = u.role === '교사'
-        ? u.name + ' 선생님, 환영합니다!'
-        : u.grade + '학년 ' + u.class + '반 ' + u.name + ' 님, 환영합니다!';
-      var el = document.getElementById('reg-done-msg');
-      if (el) el.textContent = msg;
-      showRegStep('done');
-    }
-    gotoRegTab();
+    gotoSchoolTab();
   }
 
-  function gotoRegTab() {
-    var regBtn = document.getElementById('tab-btn-register');
-    if (regBtn) regBtn.click();
+  function gotoSchoolTab() {
+    var btn = document.querySelector('.tab-btn[onclick*="school"]');
+    if (btn) btn.click();
   }
 
   /* ── 탭 클릭·검색 로그 ── */
@@ -4479,14 +4466,6 @@ function switchAiSub(idx) {
     var session = getSession();
     if (session) {
       applyAuth(session);
-      showRegStep('done');
-      var u = session.user;
-      if (u && u.role) {
-        var msg = u.role === '교사'
-          ? u.name + ' 선생님, 환영합니다!'
-          : u.grade + '학년 ' + u.class + '반 ' + u.name + ' 님, 환영합니다!';
-        document.getElementById('reg-done-msg').textContent = msg;
-      }
     } else {
       showLoginBtn();
     }
