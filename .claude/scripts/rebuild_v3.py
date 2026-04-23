@@ -132,10 +132,18 @@ AUTH_JS = r"""
     var name = (user && user.name) ? user.name : '사용자';
     var role = (user && user.role) ? user.role : '';
     document.getElementById('user-name-display').textContent = name + (role ? ' (' + role + ')' : '');
+    var lr = document.getElementById('ai-login-required');
+    var ac = document.getElementById('ai-content');
+    if (lr) lr.style.display = 'none';
+    if (ac) ac.style.display = '';
   }
   function showLoginBtn() {
     document.getElementById('login-btn').style.display = '';
     document.getElementById('user-badge').style.display = 'none';
+    var lr = document.getElementById('ai-login-required');
+    var ac = document.getElementById('ai-content');
+    if (lr) lr.style.display = '';
+    if (ac) ac.style.display = 'none';
   }
 
   window.startLogin = function () {
@@ -501,7 +509,6 @@ JS = f"""
   let _name='',_type='';
   window.ttSearch=function(){{
     document.getElementById('tt-suggest').style.display='none';
-    if(!isLoggedIn()){{alert('로그인 후 이용 가능합니다.');return;}}
     const type=document.getElementById('tt-type').value;
     let name='';
     if(type==='teacher'){{

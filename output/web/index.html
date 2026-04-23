@@ -630,6 +630,7 @@
     <button class="tab-btn" onclick="switchTab('teacher', this)">📋 업무 매뉴얼</button>
     <button class="tab-btn" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
     <button class="tab-btn" onclick="switchTab('calendar', this)">📅 학사일정</button>
+    <button class="tab-btn" id="tab-btn-ai" onclick="switchTab('ai', this)">⭐ 샛별AI</button>
   </div>
 </nav>
 
@@ -4441,6 +4442,113 @@ function switchSpTab(id,btn){
     </div>
   </div>
 
+  <!-- 샛별AI 탭 패널 -->
+  <div class="tab-panel" id="tab-ai">
+    <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <h2 style="font-size:1.2rem;font-weight:700;color:var(--primary);margin:0 0 4px;">⭐ 샛별AI</h2>
+        <p style="font-size:0.85rem;color:#6b7280;margin:0;">AI 도구를 활용해 업무와 학습에 도움을 받으세요.</p>
+      </div>
+    </div>
+    <!-- 로그인 필요 안내 (미로그인 시 표시) -->
+    <div id="ai-login-required" style="display:none;text-align:center;padding:60px 24px;background:#f8faff;border-radius:16px;border:1px solid #e5e7eb;">
+      <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
+      <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 10px;">로그인이 필요한 서비스입니다</h3>
+      <p style="font-size:0.88rem;color:#6b7280;margin:0 0 28px;line-height:1.7;">샛별AI는 회원만 이용할 수 있습니다.<br>로그인 또는 회원가입 후 이용해 주세요.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button onclick="startLogin()" style="display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 20px;background:#4285f4;color:#fff;border:none;border-radius:20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;">
+          <svg width="14" height="14" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fff"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff"/></svg>
+          로그인
+        </button>
+        <button onclick="switchTab('register', document.getElementById('tab-btn-register'))" style="display:inline-flex;align-items:center;height:38px;padding:0 20px;background:#fff;color:var(--primary);border:2px solid var(--primary);border-radius:20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;">👤 회원가입</button>
+      </div>
+    </div>
+    <!-- AI 콘텐츠 (로그인 후 표시) -->
+    <div id="ai-content">
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <button id="ai-sub-btn-0" onclick="switchAiSub(0)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid var(--primary);background:var(--primary);color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
+        <button id="ai-sub-btn-1" onclick="switchAiSub(1)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 AI</button>
+        <button id="ai-sub-btn-2" onclick="switchAiSub(2)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
+      </div>
+      <div id="ai-sub-0" style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+        <iframe src="https://ai-63986215827.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="교육일정 작성 AI"></iframe>
+      </div>
+      <div id="ai-sub-1" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+        <iframe src="https://ai-888834700673.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="수행평가 AI"></iframe>
+      </div>
+      <div id="ai-sub-2" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+        <iframe src="https://edtouch.ai/score/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="학생 개별 점수 조회"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- 회원가입 탭 패널 -->
+  <div class="tab-panel" id="tab-register">
+    <div style="max-width:480px;margin:48px auto;">
+      <!-- 로그인 전 -->
+      <div id="reg-step-login" style="text-align:center;padding:48px 24px;">
+        <div style="font-size:3rem;margin-bottom:16px;">👤</div>
+        <h2 style="font-size:1.4rem;font-weight:700;color:var(--primary);margin:0 0 10px;">회원가입 / 로그인</h2>
+        <p style="font-size:0.9rem;color:#6b7280;margin:0 0 32px;line-height:1.7;">Google 계정으로 간편하게 가입하세요.<br>가입 후 맞춤 정보를 이용할 수 있습니다.</p>
+        <button onclick="startLogin()" style="display:inline-flex;align-items:center;gap:10px;background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:14px 28px;font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;color:#374151;box-shadow:0 2px 8px rgba(0,0,0,0.08);transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.14)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+          <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google 계정으로 시작하기
+        </button>
+      </div>
+      <!-- 정보 입력 (신규 가입) -->
+      <div id="reg-step-form" style="display:none;">
+        <div style="background:#fff;border-radius:20px;padding:36px 32px;box-shadow:0 4px 24px rgba(0,0,0,0.08);border:1px solid #e5e7eb;">
+          <h2 style="font-size:1.2rem;font-weight:700;color:var(--primary);margin:0 0 6px;">정보를 입력해 주세요 👋</h2>
+          <p style="font-size:0.85rem;color:#6b7280;margin:0 0 24px;">한 번만 입력하면 다음부터 자동으로 로그인됩니다.</p>
+          <form id="reg-form" onsubmit="submitReg(event)">
+            <div style="margin-bottom:16px;">
+              <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">구분 *</label>
+              <div style="display:flex;gap:10px;">
+                <label style="flex:1;display:flex;align-items:center;gap:8px;border:2px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;font-size:0.88rem;font-weight:600;"><input type="radio" name="reg-role" value="교사" onchange="toggleRegFields()" style="accent-color:var(--primary);"> 교사</label>
+                <label style="flex:1;display:flex;align-items:center;gap:8px;border:2px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;font-size:0.88rem;font-weight:600;"><input type="radio" name="reg-role" value="학생" onchange="toggleRegFields()" style="accent-color:var(--primary);"> 학생</label>
+                <label style="flex:1;display:flex;align-items:center;gap:8px;border:2px solid #e5e7eb;border-radius:10px;padding:10px 14px;cursor:pointer;font-size:0.88rem;font-weight:600;"><input type="radio" name="reg-role" value="학부모" onchange="toggleRegFields()" style="accent-color:var(--primary);"> 학부모</label>
+              </div>
+            </div>
+            <div id="reg-teacher-fields" style="display:none;">
+              <div style="margin-bottom:16px;">
+                <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">성명 *</label>
+                <input id="reg-name-t" placeholder="홍길동" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+              </div>
+            </div>
+            <div id="reg-student-fields" style="display:none;">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">학년 *</label>
+                  <select id="reg-grade" style="width:100%;padding:10px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;"><option value="">-</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option></select>
+                </div>
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">반 *</label>
+                  <input id="reg-class" type="number" placeholder="1" min="1" max="20" style="width:100%;padding:10px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+                </div>
+                <div>
+                  <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">번호 *</label>
+                  <input id="reg-number" type="number" placeholder="1" min="1" max="50" style="width:100%;padding:10px 8px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+                </div>
+              </div>
+              <div style="margin-bottom:16px;">
+                <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:6px;">성명 *</label>
+                <input id="reg-name-s" placeholder="홍길동" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+              </div>
+            </div>
+            <button type="submit" id="reg-submit" style="width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;">가입 완료</button>
+          </form>
+        </div>
+      </div>
+      <!-- 가입 완료 -->
+      <div id="reg-step-done" style="display:none;text-align:center;padding:48px 24px;">
+        <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+        <h2 style="font-size:1.3rem;font-weight:700;color:var(--primary);margin:0 0 10px;">가입이 완료되었습니다!</h2>
+        <p id="reg-done-msg" style="font-size:0.9rem;color:#6b7280;margin:0 0 24px;line-height:1.7;"></p>
+        <button onclick="switchTab('school', document.querySelector('.tab-btn'))" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:11px 28px;font-size:0.92rem;font-weight:700;cursor:pointer;font-family:inherit;">학교 소개 보기</button>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- ===== 탭 전환 JS (인라인) ===== -->
@@ -4965,10 +5073,18 @@ function switchSpTab(id,btn){
     var name = (user && user.name) ? user.name : '사용자';
     var role = (user && user.role) ? user.role : '';
     document.getElementById('user-name-display').textContent = name + (role ? ' (' + role + ')' : '');
+    var lr = document.getElementById('ai-login-required');
+    var ac = document.getElementById('ai-content');
+    if (lr) lr.style.display = 'none';
+    if (ac) ac.style.display = '';
   }
   function showLoginBtn() {
     document.getElementById('login-btn').style.display = '';
     document.getElementById('user-badge').style.display = 'none';
+    var lr = document.getElementById('ai-login-required');
+    var ac = document.getElementById('ai-content');
+    if (lr) lr.style.display = '';
+    if (ac) ac.style.display = 'none';
   }
 
   window.startLogin = function () {
@@ -5212,7 +5328,6 @@ function switchSpTab(id,btn){
   let _name='',_type='';
   window.ttSearch=function(){
     document.getElementById('tt-suggest').style.display='none';
-    if(!isLoggedIn()){alert('로그인 후 이용 가능합니다.');return;}
     const type=document.getElementById('tt-type').value;
     let name='';
     if(type==='teacher'){
