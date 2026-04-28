@@ -547,81 +547,6 @@
     </div>
   </div>
 </header>
-<!-- ===== 회원 인증 바 ===== -->
-<div id="auth-bar" style="background:#f8faff;border-bottom:1px solid #e5e7eb;padding:0 16px;">
-  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px;">
-    <!-- 시간표 검색 위젯 -->
-    <div id="tt-search-wrap" style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-      <span style="font-size:0.8rem;font-weight:700;color:#1a3a6b;white-space:nowrap;">🗓 시간표</span>
-      <select id="tt-type" onchange="ttTypeChange()" style="height:30px;border:1px solid #d1d5db;border-radius:20px;font-size:0.75rem;padding:0 10px;cursor:pointer;background:#fff;color:#374151;font-family:inherit;outline:none;">
-        <option value="teacher">교사별</option>
-        <option value="class">학급별</option>
-      </select>
-      <!-- 교사별: 텍스트 자동완성 -->
-      <div id="tt-teacher-wrap" style="position:relative;">
-        <input id="tt-input" type="text" placeholder="교사 이름 검색..." autocomplete="off"
-          oninput="ttSuggest()" onkeydown="ttKeydown(event)"
-          style="height:30px;border:1px solid #d1d5db;border-radius:20px;font-size:0.75rem;padding:0 12px;width:140px;font-family:inherit;outline:none;color:#374151;">
-        <div id="tt-suggest" style="display:none;position:absolute;top:34px;left:0;z-index:2000;background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.13);max-height:220px;overflow-y:auto;width:180px;"></div>
-      </div>
-      <!-- 학급별: select 드롭다운 -->
-      <select id="tt-class-select" style="display:none;height:30px;border:1px solid #d1d5db;border-radius:20px;font-size:0.75rem;padding:0 10px;cursor:pointer;background:#fff;color:#374151;font-family:inherit;outline:none;width:100px;">
-        <option value="">학반 선택...</option>
-        <option value="1-1">1-1</option>
-        <option value="1-2">1-2</option>
-        <option value="1-3">1-3</option>
-        <option value="1-4">1-4</option>
-        <option value="1-5">1-5</option>
-        <option value="1-6">1-6</option>
-        <option value="1-7">1-7</option>
-        <option value="1-8">1-8</option>
-        <option value="1-9">1-9</option>
-        <option value="1-10">1-10</option>
-        <option value="1-11">1-11</option>
-        <option value="1-12">1-12</option>
-        <option value="2-1">2-1</option>
-        <option value="2-2">2-2</option>
-        <option value="2-3">2-3</option>
-        <option value="2-4">2-4</option>
-        <option value="2-5">2-5</option>
-        <option value="2-6">2-6</option>
-        <option value="2-7">2-7</option>
-        <option value="2-8">2-8</option>
-        <option value="2-9">2-9</option>
-        <option value="2-10">2-10</option>
-        <option value="2-11">2-11</option>
-        <option value="2-12">2-12</option>
-        <option value="3-1">3-1</option>
-        <option value="3-2">3-2</option>
-        <option value="3-3">3-3</option>
-        <option value="3-4">3-4</option>
-        <option value="3-5">3-5</option>
-        <option value="3-6">3-6</option>
-        <option value="3-7">3-7</option>
-        <option value="3-8">3-8</option>
-        <option value="3-9">3-9</option>
-        <option value="3-10">3-10</option>
-        <option value="3-11">3-11</option>
-        <option value="3-12">3-12</option>
-      </select>
-      <button onclick="ttSearch()" style="height:30px;padding:0 14px;font-size:0.75rem;font-weight:600;font-family:inherit;background:#1a3a6b;color:#fff;border:none;border-radius:20px;cursor:pointer;white-space:nowrap;">검색</button>
-    </div>
-    <!-- 우측 인증 영역 -->
-    <div style="display:flex;align-items:center;gap:8px;">
-    <button id="tab-btn-register" onclick="switchTab('register', document.getElementById('tab-btn-register'))" style="display:inline-flex;align-items:center;height:30px;padding:0 14px;font-size:0.8rem;font-weight:600;font-family:inherit;color:#4b5563;background:#fff;border:1px solid #d1d5db;border-radius:20px;cursor:pointer;white-space:nowrap;">👤 회원가입</button>
-    <div style="width:1px;height:18px;background:#d1d5db;flex-shrink:0;"></div>
-    <button id="login-btn" onclick="startLogin()" style="display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 14px;font-size:0.8rem;font-weight:600;font-family:inherit;color:#fff;background:#4285f4;border:none;border-radius:20px;cursor:pointer;white-space:nowrap;">
-      <svg width="13" height="13" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fff"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff"/></svg>
-      로그인
-    </button>
-    <div id="user-badge" style="display:none;align-items:center;gap:8px;">
-      <span id="user-name-display" style="font-size:0.8rem;font-weight:600;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;"></span>
-      <button onclick="doLogout()" style="display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 14px;font-size:0.8rem;font-weight:600;font-family:inherit;color:#fff;background:#ef4444;border:none;border-radius:20px;cursor:pointer;white-space:nowrap;">↩ 로그아웃</button>
-    </div>
-    </div><!-- /auth-right -->
-  </div>
-</div>
-
 
 <!-- ===== 탭 네비게이션 ===== -->
 <nav class="tab-nav">
@@ -3357,6 +3282,29 @@ function switchCurrTab(id,btn){
 <div class="sub-panel" id="sub-univ">
   <h2 class="section-title">🎓 진학 정보</h2>
 
+<style>
+.univ-tab-nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+.univ-tab-btn{padding:9px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:8px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;}
+.univ-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.univ-tab-panel{display:none;}
+.univ-tab-panel.active{display:block;}
+</style>
+<script>
+function switchUnivTab(id,btn){
+  document.querySelectorAll('.univ-tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.univ-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+
+<div class="univ-tab-nav">
+  <button class="univ-tab-btn active" onclick="switchUnivTab('univ-general',this)">📊 일반 입시 가이드</button>
+  <button class="univ-tab-btn" onclick="switchUnivTab('univ-regional',this)">🩺 의대 — 지역의사제 심층분석</button>
+</div>
+
+<div class="univ-tab-panel active" id="univ-general">
+
   <div class="card" style="border-left-color:#7c3aed;">
     <strong>📋 2026학년도 대륜고 입시 결과 요약</strong>
     <p style="margin-top:8px; color:#374151; line-height:1.8;">2026학년도부터 합격자 기준 대신 <strong>재학생·졸업생 등록자 기준</strong>으로 자료를 제공합니다. 서울 주요 대학과 의치약수 계열에서 괄목할 성과를 거두었습니다.</p>
@@ -3849,6 +3797,204 @@ function switchCurrTab(id,btn){
       <li>2028학년도부터는 8월 모의평가 성적을 보고 전략적으로 지원 대학을 결정할 수 있습니다.</li>
     </ul>
   </div>
+
+</div>
+<!-- /univ-general -->
+
+<div class="univ-tab-panel" id="univ-regional">
+
+  <h2 class="section-title">🩺 지역의사제 심층분석 — 의대를 꿈꾼다면 꼭 확인하세요</h2>
+
+  <div class="card" style="border-left-color:#059669;">
+    <strong>지역의사제란?</strong>
+    <p style="margin-top:8px; line-height:1.8;">2027학년도부터 도입되는 제도로, 지역 의료 공백을 해소하기 위해 의대 6년 학비 전액(등록금·교재비·실습비·기숙사비)을 정부와 지방자치단체가 지원합니다. 대신 졸업 후 <strong>10년간 특정 지역에서 근무</strong>해야 합니다.</p>
+    <p style="margin-top:8px; line-height:1.8; color:#374151;">입시 전문가들 사이에서 "최상위권이 아니어도 도전할 수 있는 <strong>꿀전형</strong>"이라는 평가가 나오면서, 의대 진학을 고민하는 학생·학부모의 관심이 높습니다. 다만 "내신 3등급도 합격 가능"이라는 분석은 어디까지나 <strong>전망</strong>이며, 실제 합격선은 첫 해 지원율로 결정됩니다.</p>
+  </div>
+
+  <div class="card-grid" style="margin-top:20px;">
+    <div class="grid-card" style="border-top:4px solid #059669;">
+      <div class="value" style="color:#059669;">6년 전액</div>
+      <div class="label">의대 학비 지원<br><small style="font-size:0.75rem; font-weight:400;">등록금·교재·실습·기숙사</small></div>
+    </div>
+    <div class="grid-card" style="border-top:4px solid #d97706;">
+      <div class="value" style="color:#d97706;">10년</div>
+      <div class="label">지역 의무 복무<br><small style="font-size:0.75rem; font-weight:400;">필수 의료 과목 시 6년</small></div>
+    </div>
+    <div class="grid-card" style="border-top:4px solid #2563eb;">
+      <div class="value" style="color:#2563eb;">광역 / 지역</div>
+      <div class="label">선발 방식 2종<br><small style="font-size:0.75rem; font-weight:400;">중·고교 6년 권역 이수</small></div>
+    </div>
+    <div class="grid-card" style="border-top:4px solid #ef4444;">
+      <div class="value" style="color:#ef4444;">전액 반환</div>
+      <div class="label">중도 이탈 페널티<br><small style="font-size:0.75rem; font-weight:400;">의사 면허 취소 가능</small></div>
+    </div>
+  </div>
+
+  <h2 class="section-title" style="margin-top:48px;">📋 지역의사제 vs 지역인재 — 무엇이 다른가요?</h2>
+
+  <div class="card" style="border-left-color:#7c3aed;">
+    <p style="line-height:1.8;">"지역인재가 지역 학생에게 우선 기회를 주는 <strong>지역 할당제</strong>라면, 지역의사제는 혜택을 받는 대신 장기간 의무적으로 일해야 하는 <strong>의사 사관학교</strong>에 가깝다."</p>
+    <p style="margin-top:6px; color:#6b7280; font-size:0.87rem;">— 신진상 교육 컨설턴트 (『의대 생기부 필독서50』 저자)</p>
+  </div>
+
+  <table class="data-table" style="margin-top:16px;">
+    <thead>
+      <tr><th>구분</th><th>지역인재 전형</th><th>지역의사제 전형</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>출신 학교 요건</strong></td>
+        <td>비수도권에서 중·고교 졸업<br>(비수도권 내 이동 허용)</td>
+        <td>해당 권역 내 중·고교 6년 이수</td>
+      </tr>
+      <tr>
+        <td><strong>학비 지원</strong></td>
+        <td style="color:#6b7280;">없음</td>
+        <td style="color:#059669; font-weight:600;">의대 6년 전액 지원</td>
+      </tr>
+      <tr>
+        <td><strong>근무지 제한</strong></td>
+        <td>없음 (자유)</td>
+        <td>해당 권역 내 의료 취약지(중진료권)</td>
+      </tr>
+      <tr>
+        <td><strong>의무 복무</strong></td>
+        <td>없음</td>
+        <td>10년 (필수 의료 과목 4~5년 수련 시 인정)</td>
+      </tr>
+      <tr>
+        <td><strong>이탈 시 페널티</strong></td>
+        <td>없음</td>
+        <td style="color:#ef4444; font-weight:600;">지원 비용 전액 반환 / 의사 면허 취소 가능</td>
+      </tr>
+      <tr>
+        <td><strong>예상 합격선</strong></td>
+        <td>지역의사제보다 높음</td>
+        <td>의무 부담으로 지원자 감소 → 더 낮을 전망</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 class="section-title" style="margin-top:48px;">🗺️ 광역형 vs 지역형 — 어떤 전형으로 지원할 수 있나요?</h2>
+
+  <div class="accordion">
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        🏙️ 광역형 — 광역시·도 단위 선발
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <ul style="padding-left:18px; line-height:1.9;">
+          <li><strong>지원 자격:</strong> 해당 의대가 있는 광역시 또는 도 내 고교 졸업자</li>
+          <li><strong>근무지:</strong> 학교 소재지가 아닌 권역 내 <strong>의료 취약지(중진료권)</strong>로 배치</li>
+          <li><strong>예시:</strong> 대전·세종 소재 고교 졸업자가 합격하면 → 천안·공주·서산·논산·홍성 등으로 근무 배치</li>
+        </ul>
+        <div class="card" style="border-left-color:#2563eb; margin-top:12px;">
+          <strong>📌 중진료권이란?</strong>
+          <p style="margin-top:6px; line-height:1.8;">의료 불평등 해소를 위해 지정된 지역 단위로, 인구수·접근성 등을 기준으로 전국을 <strong>70개 권역</strong>으로 나눠 관리합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        🏞️ 지역형 — 도 내 중진료권 단위 선발
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <ul style="padding-left:18px; line-height:1.9;">
+          <li><strong>지원 자격:</strong> 도 내 <strong>중진료권 소재 고교</strong> 졸업자만 (주로 소규모 시·군, 읍·면)</li>
+          <li><strong>특징:</strong> 지역형 지원자는 <strong>광역형도 동시 지원 가능</strong> → 입시 기회 확대</li>
+        </ul>
+        <div class="card" style="border-left-color:#059669; margin-top:12px;">
+          <strong>💡 전략 포인트</strong>
+          <p style="margin-top:6px; line-height:1.8;">중학교를 교육 여건이 좋은 광역시(예: 대전)에서 다닌 뒤, 고등학교를 권역 내 중진료권 도시(예: 충남 천안·홍성)에서 졸업하면 <strong>광역형 + 지역형 동시 지원 자격</strong>을 확보할 수 있습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        ⏳ 의무 복무 기간 — 과목 선택에 따라 달라집니다
+        <span class="accordion-arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <table class="data-table">
+          <thead>
+            <tr><th>과목 유형</th><th>예시 과목</th><th>수련 인정</th><th>실 근무 기간</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>필수 의료</strong></td>
+              <td>내과·외과·산부인과·소아과</td>
+              <td>4~5년 수련 100% 인정</td>
+              <td>전문의 후 5~6년</td>
+            </tr>
+            <tr>
+              <td><strong>기타 과목</strong></td>
+              <td>피부과·성형외과 등</td>
+              <td>수련 기간의 절반만 인정</td>
+              <td>전문의 후 7~8년</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="margin-top:10px; line-height:1.8; color:#374151;">"내과·외과·산부인과·소아과 등 필수 의료 과목을 선택해 4~5년간 수련하면 의무 복무 10년에 100% 반영된다."<br><span style="color:#6b7280; font-size:0.87rem;">— 최승후 경기 연천고 교장 (『의대 진로 진학 특강』 저자)</span></p>
+        <div class="card" style="border-left-color:#ef4444; margin-top:12px;">
+          <strong>⚠️ 남학생이 꼭 확인해야 할 사항</strong>
+          <p style="margin-top:6px; line-height:1.8;"><strong>군의관 복무 기간(약 3년)은 의무 복무에 포함되지 않습니다.</strong> 남학생은 실질적인 의무 복무 종료 시점이 더 늦어질 수 있으니 진로 계획 시 반드시 고려하세요.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title" style="margin-top:48px;">📊 합격선 전망 — 정말 내신 3등급도 의대에 갈 수 있을까?</h2>
+
+  <div class="card" style="border-left-color:#d97706;">
+    <strong>입시 전문가의 분석</strong>
+    <p style="margin-top:8px; line-height:1.8;">전문가들은 "지역 제한만 있는 지역인재와 달리 <strong>지역의사제는 10년 의무 복무라는 강력한 제약</strong>이 더해져 지원자가 줄어들 수밖에 없다"고 분석합니다. 이에 따라 <strong>합격선이 지역인재 전형보다 낮게 형성될 가능성</strong>이 높습니다.</p>
+    <p style="margin-top:8px; line-height:1.8; color:#374151;">"내신 3등급도 의대 합격 가능"이라는 분석이 나오는 이유입니다. 다만 이는 <strong>예상치</strong>이며, 실제 합격선은 첫 해 지원율과 모집 정원에 따라 결정됩니다. 막연한 기대보다는 본인의 학생부·내신·수능 준비 상태를 객관적으로 점검하는 것이 우선입니다.</p>
+  </div>
+
+  <h2 class="section-title" style="margin-top:48px;">✅ 지원 전 체크리스트</h2>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>10년 후의 본인을 상상해 보라</strong>
+        <p>의대 6년 + 인턴·레지던트 4~5년 + 의무 복무 5~10년 = 약 <strong>15~21년의 진로 고정</strong>입니다. 거주지·결혼·자녀 교육 환경까지 고려해야 합니다.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>지원 자격 요건을 정확히 확인하라</strong>
+        <p>중·고교 6년 권역 이수 조건은 <strong>고2부터 적용</strong>됩니다. 본인의 학교 이력이 권역 요건을 충족하는지 진학 담당 교사와 함께 검토하세요.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>중도 이탈 페널티를 가족과 공유하라</strong>
+        <p>의무 복무를 다하지 못하면 <strong>지원받은 등록금·실습비·기숙사비 전액을 반환</strong>해야 하며, 경우에 따라 <strong>의사 면허가 취소</strong>될 수 있습니다.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>공식 고시와 학교 진학 상담을 병행하라</strong>
+        <p>언론 분석이나 학원 설명회 정보만 믿지 말고, <strong>보건복지부 공식 고시</strong>와 우리 학교 진학 담당 교사 상담을 통해 정확한 최신 정보를 확인하세요.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-left-color:#7c3aed; margin-top:24px;">
+    <strong>📚 출처</strong>
+    <p style="margin-top:6px; line-height:1.8; color:#374151;">중앙일보 헬로페어런츠(hello! Parents) — '지역의사제 심층분석 리포트' (의대 입시 전문가 11명 인터뷰 기반)</p>
+  </div>
+
+</div>
+<!-- /univ-regional -->
 
 </div>
 
@@ -4914,864 +5060,6 @@ function switchSpTab(id,btn){
 <footer>
   <p>개발 및 운영: 교사 홍대화 &nbsp;|&nbsp; 문의: <a href="mailto:daveceo@edtouch.ai">daveceo@edtouch.ai</a></p>
 </footer>
-
-
-<!-- ===== 시간표 검색 패널 ===== -->
-<div id="tt-panel" style="display:none;position:fixed;top:44px;left:0;right:0;z-index:1500;background:#fff;border-bottom:2px solid #1a3a6b;box-shadow:0 8px 28px rgba(0,0,0,0.18);max-height:82vh;overflow-y:auto;">
-  <div style="max-width:960px;margin:0 auto;padding:14px 22px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <h3 id="tt-panel-title" style="margin:0;font-size:.97rem;color:#1a3a6b;font-weight:700;"></h3>
-        <span id="tt-panel-sub" style="font-size:.75rem;color:#6b7280;"></span>
-      </div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;">
-        <button id="tt-view-today" onclick="ttShowView('today')" class="tt-hdr-btn tt-hdr-active">📅 오늘</button>
-        <button id="tt-view-week"  onclick="ttShowView('week')"  class="tt-hdr-btn">📋 전체 주간</button>
-        <button id="tt-move-btn"   onclick="ttToggleMove()"      class="tt-hdr-btn" style="display:none;">🔄 이동 시뮬레이션</button>
-        <button onclick="ttClose()" class="tt-hdr-btn tt-close-btn">✕ 닫기</button>
-      </div>
-    </div>
-    <div id="tt-move-hint" style="display:none;background:#eff6ff;border:1px solid #93c5fd;border-radius:7px;padding:7px 13px;margin-bottom:10px;font-size:.76rem;color:#1e40af;">
-      🖱 수업 셀을 <strong>클릭</strong>하면 모든 이동 가능 시간을 시각적으로 확인합니다. 원하는 목적지로 <strong>드래그</strong>하면 해당 시간 상세 분석을 보여줍니다.
-    </div>
-    <div id="tt-today-view"><div id="tt-today-day-label" style="font-size:.8rem;font-weight:700;color:#2563eb;margin-bottom:7px;"></div><div id="tt-today-content"></div></div>
-    <div id="tt-week-view" style="display:none;"><div id="tt-week-content"></div></div>
-  </div>
-</div>
-<div id="tt-backdrop" onclick="ttClose()" style="display:none;position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,0.16);"></div>
-
-<!-- ===== 드래그앤드롭 분석 모달 ===== -->
-<div id="tt-drop-modal" style="display:none;position:fixed;inset:0;z-index:3000;align-items:center;justify-content:center;">
-  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.4);" onclick="ttDropClose()"></div>
-  <div style="position:relative;background:#fff;border-radius:14px;padding:0;max-width:420px;width:92%;box-shadow:0 20px 50px rgba(0,0,0,0.28);">
-    <div id="tt-drop-header" style="padding:16px 20px 12px;border-radius:14px 14px 0 0;"></div>
-    <div id="tt-drop-body" style="padding:0 20px 16px;font-size:.83rem;"></div>
-  </div>
-</div>
-
-<!-- ===== 시뮬레이션 그리드 모달 ===== -->
-<div id="tt-sim-modal" style="display:none;position:fixed;inset:0;z-index:3000;align-items:flex-start;justify-content:center;padding-top:52px;overflow-y:auto;">
-  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.42);" onclick="ttSimClose()"></div>
-  <div style="position:relative;background:#fff;border-radius:14px;padding:0;max-width:660px;width:96%;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.28);margin-bottom:30px;">
-    <div style="background:linear-gradient(135deg,#1a3a6b,#2563eb);color:#fff;padding:16px 20px;border-radius:14px 14px 0 0;position:sticky;top:0;z-index:5;">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div><div id="tt-sim-title" style="font-size:.92rem;font-weight:700;"></div>
-          <div id="tt-sim-badges" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;"></div></div>
-        <button onclick="ttSimClose()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.85rem;flex-shrink:0;">✕</button>
-      </div>
-    </div>
-    <div style="padding:16px 20px;">
-      <div id="tt-sim-grid-wrap" style="overflow-x:auto;"></div>
-      <div id="tt-sim-detail" style="margin-top:14px;min-height:60px;"></div>
-    </div>
-  </div>
-</div>
-
-<style>
-.tt-hdr-btn{height:27px;padding:0 11px;font-size:.72rem;font-weight:600;font-family:inherit;background:#fff;color:#1a3a6b;border:1px solid #1a3a6b;border-radius:20px;cursor:pointer;white-space:nowrap;}
-.tt-hdr-btn.tt-hdr-active{background:#1a3a6b;color:#fff;}
-.tt-close-btn{background:#f3f4f6;color:#374151;border-color:#d1d5db;}
-/* 주간표 */
-.tt-table{width:100%;border-collapse:collapse;font-size:.78rem;}
-.tt-table th{background:#1a3a6b;color:#fff;padding:6px 8px;text-align:center;font-weight:600;}
-.tt-table td{padding:5px 8px;border:1px solid #e5e7eb;text-align:center;vertical-align:middle;min-width:65px;}
-.tt-table tr:nth-child(even) td{background:#f8faff;}
-.tt-period{background:#f0f4fb!important;font-weight:700;color:#1a3a6b;width:40px;min-width:40px!important;font-size:.72rem;}
-.tt-today-col{background:#fffbeb!important;}
-.tt-subj{font-weight:600;color:#111827;font-size:.78rem;}
-.tt-meta{font-size:.67rem;color:#6b7280;margin-top:1px;}
-.tt-empty{color:#d1d5db;font-size:.72rem;}
-.tt-today-badge{display:inline-block;background:#fbbf24;color:#78350f;font-size:.62rem;font-weight:700;padding:0 5px;border-radius:10px;margin-left:4px;}
-/* 자동완성 */
-#tt-suggest div{padding:6px 12px;font-size:.79rem;cursor:pointer;color:#374151;border-bottom:1px solid #f3f4f6;}
-#tt-suggest div:last-child{border-bottom:none;}
-#tt-suggest div:hover,.tt-ac-act{background:#eff6ff;color:#1a3a6b;font-weight:600;}
-/* 이동 모드 드래그 */
-.tt-drag{cursor:pointer!important;}
-.tt-drag:hover{background:#dbeafe!important;outline:2px solid #3b82f6;}
-.tt-dragging{opacity:.3;}
-.tt-dst-empty{background:#f0fdf4!important;outline:2px dashed #22c55e;}
-.tt-dst-filled{background:#fef9c3!important;outline:2px dashed #eab308;}
-.tt-drop-over{background:#bfdbfe!important;}
-/* 시뮬레이션 그리드 */
-.sg-wrap{border-collapse:collapse;font-size:.75rem;width:100%;}
-.sg-wrap th{background:#1a3a6b;color:#fff;padding:6px 8px;text-align:center;font-weight:600;font-size:.72rem;}
-.sg-cell{width:80px;min-width:72px;height:52px;text-align:center;vertical-align:middle;border:1px solid #e5e7eb;cursor:pointer;transition:opacity .12s;padding:4px;}
-.sg-cell:hover:not(.sg-blk):not(.sg-inv):not(.sg-cur){opacity:.72;}
-.sg-ok {background:#dcfce7;color:#166534;}
-.sg-swap{background:#dbeafe;color:#1e40af;}
-.sg-neg {background:#fef9c3;color:#854d0e;}
-.sg-blk {background:#fee2e2;color:#b91c1c;cursor:default;}
-.sg-inv {background:#f3f4f6;color:#9ca3af;cursor:default;}
-.sg-cur {background:#eff6ff;color:#1e40af;outline:2px solid #3b82f6;cursor:default;}
-.sg-sel {outline:3px solid #1a3a6b!important;}
-.sg-icon{font-size:.95rem;display:block;}
-.sg-txt{font-size:.62rem;line-height:1.2;margin-top:1px;}
-/* 상세 패널 */
-.sg-detail-card{background:#f8faff;border:1px solid #e0e7ff;border-radius:10px;padding:12px 15px;}
-.sg-detail-card.ok {background:#f0fdf4;border-color:#86efac;}
-.sg-detail-card.swap{background:#eff6ff;border-color:#93c5fd;}
-.sg-detail-card.neg {background:#fefce8;border-color:#fde047;}
-.sg-detail-card.blk {background:#fff1f2;border-color:#fca5a5;}
-/* 드롭 모달 */
-.dm-ok  {background:linear-gradient(135deg,#166534,#16a34a);}
-.dm-swap{background:linear-gradient(135deg,#1e40af,#2563eb);}
-.dm-neg {background:linear-gradient(135deg,#92400e,#d97706);}
-.dm-blk {background:linear-gradient(135deg,#991b1b,#ef4444);}
-.dm-title{color:#fff;font-size:.9rem;font-weight:700;margin:0 0 4px;}
-.dm-sub  {color:rgba(255,255,255,.85);font-size:.76rem;}
-.dm-row  {display:flex;align-items:flex-start;gap:6px;margin-bottom:9px;font-size:.81rem;line-height:1.5;}
-.dm-label{color:#6b7280;white-space:nowrap;width:80px;flex-shrink:0;font-size:.75rem;}
-.dm-chip {display:inline-flex;align-items:center;background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;border-radius:20px;padding:2px 9px;font-size:.71rem;font-weight:600;margin:2px;white-space:nowrap;cursor:pointer;}
-.dm-chip:hover{background:#0ea5e9;color:#fff;}
-.dm-chip.g{background:#dcfce7;color:#166534;border-color:#86efac;}
-.dm-chip.g:hover{background:#16a34a;color:#fff;}
-.dm-btn{height:30px;padding:0 14px;font-size:.78rem;font-weight:600;font-family:inherit;border:none;border-radius:20px;cursor:pointer;margin-right:6px;}
-.dm-btn.p{background:#1a3a6b;color:#fff;}
-.dm-btn.s{background:#f3f4f6;color:#374151;}
-@media(max-width:640px){.sg-cell{min-width:52px;height:44px;}.sg-icon{font-size:.82rem;}.sg-txt{font-size:.56rem;}.tt-table th,.tt-table td{padding:4px 5px;font-size:.7rem;}}
-</style>
-
-<!-- ===== 인증 JS ===== -->
-<script>
-(function () {
-  'use strict';
-
-  var SB_URL      = 'https://aafpkfcxzdrguuctdwth.supabase.co';
-  var SB_KEY      = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhZnBrZmN4emRyZ3V1Y3Rkd3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEwNjYsImV4cCI6MjA5MjMwNzA2Nn0.1VWheZHC2qNwWJhJ6KTFhjfFf9-bAfAdjzja2cD-xmw';
-  var SESSION_KEY = 'dr_sess_v1';
-  var _pendingToken = null;
-  var _pendingAuth  = null;
-
-  function decodeJWT(token) {
-    try {
-      var b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(atob(b64));
-    } catch(e) { return null; }
-  }
-  function generateVerifier() {
-    var arr = new Uint8Array(32);
-    crypto.getRandomValues(arr);
-    return btoa(String.fromCharCode.apply(null, arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-  }
-  function challengeFromVerifier(verifier) {
-    var enc = new TextEncoder().encode(verifier);
-    return crypto.subtle.digest('SHA-256', enc).then(function(buf) {
-      return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-    });
-  }
-  function getSession() {
-    try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
-  }
-  function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
-  function clearSession()  { localStorage.removeItem(SESSION_KEY); }
-
-  function showUserBadge(user) {
-    document.getElementById('login-btn').style.display = 'none';
-    var badge = document.getElementById('user-badge');
-    badge.style.display = 'flex';
-    var name = (user && user.name) ? user.name : '사용자';
-    var role = (user && user.role) ? user.role : '';
-    document.getElementById('user-name-display').textContent = name + (role ? ' (' + role + ')' : '');
-    var lr = document.getElementById('ai-login-required');
-    var ac = document.getElementById('ai-content');
-    if (lr) lr.style.display = 'none';
-    if (ac) ac.style.display = '';
-  }
-  function showLoginBtn() {
-    document.getElementById('login-btn').style.display = '';
-    document.getElementById('user-badge').style.display = 'none';
-    var lr = document.getElementById('ai-login-required');
-    var ac = document.getElementById('ai-content');
-    if (lr) lr.style.display = '';
-    if (ac) ac.style.display = 'none';
-  }
-
-  window.startLogin = function () {
-    var existing = getSession();
-    if (existing) { applyAuth(existing); return; }
-    var verifier = generateVerifier();
-    localStorage.setItem('pkce_v', verifier);
-    challengeFromVerifier(verifier).then(function(challenge) {
-      var redirectTo = encodeURIComponent('https://daeryun.life');
-      window.location.href = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + redirectTo
-        + '&code_challenge=' + challenge + '&code_challenge_method=S256';
-    });
-  };
-
-  window.doLogout = function () {
-    clearSession();
-    showLoginBtn();
-    showRegStep('login');
-    var schoolBtn = document.querySelector('.tab-btn');
-    if (schoolBtn) schoolBtn.click();
-  };
-
-  function showRegStep(step) {
-    ['login','form','done'].forEach(function(s) {
-      var el = document.getElementById('reg-step-' + s);
-      if (el) el.style.display = s === step ? '' : 'none';
-    });
-  }
-
-  window.toggleRegFields = function () {
-    var role = document.querySelector('input[name="reg-role"]:checked');
-    if (!role) return;
-    var isTeacher = role.value === '교사';
-    document.getElementById('reg-teacher-fields').style.display = isTeacher ? '' : 'none';
-    document.getElementById('reg-student-fields').style.display = isTeacher ? 'none' : '';
-  };
-
-  window.submitReg = function (e) {
-    e.preventDefault();
-    var roleEl = document.querySelector('input[name="reg-role"]:checked');
-    if (!roleEl) { alert('구분을 선택해 주세요.'); return; }
-    var role = roleEl.value;
-    var isTeacher = role === '교사';
-    var name  = isTeacher
-      ? document.getElementById('reg-name-t').value.trim()
-      : document.getElementById('reg-name-s').value.trim();
-    var grade  = isTeacher ? null : parseInt(document.getElementById('reg-grade').value) || null;
-    var cls    = isTeacher ? null : parseInt(document.getElementById('reg-class').value) || null;
-    var number = isTeacher ? null : parseInt(document.getElementById('reg-number').value) || null;
-    if (!name) { alert('성명을 입력해 주세요.'); return; }
-    var btn = document.getElementById('reg-submit');
-    btn.disabled = true; btn.textContent = '저장 중...';
-    var payload = { google_id: _pendingAuth.id, email: _pendingAuth.email, name: name, role: role,
-                    grade: grade, class: cls, admission_year: number };
-    fetch('/.netlify/functions/save-user', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var user = Array.isArray(data) ? data[0] : data;
-      var session = { token: _pendingToken, user: user };
-      saveSession(session); applyAuth(session); gotoSchoolTab();
-    })
-    .catch(function() {
-      btn.disabled = false; btn.textContent = '가입 완료';
-      alert('저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
-    });
-  };
-
-  function applyAuth(session) {
-    if (!session || !session.user) { showLoginBtn(); return; }
-    showUserBadge(session.user);
-    if (session.user.id) logActivity(session.user.id, '접속', '', '');
-  }
-
-  function logActivity(userId, eventType, detail, page) {
-    fetch('/.netlify/functions/save-log', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, event_type: eventType, detail: detail, page: page })
-    }).catch(function() {});
-  }
-
-  function handleOAuthCallback(token) {
-    var claims = decodeJWT(token);
-    var authId = claims ? claims.sub : null;
-    var meta   = (claims && claims.user_metadata) ? claims.user_metadata : {};
-    var gName  = meta.full_name || meta.name || '';
-    if (!authId) { showLoginBtn(); return; }
-    _pendingToken = token;
-    _pendingAuth  = { id: authId, email: (claims && claims.email) || '', user_metadata: meta };
-    var stored = getSession();
-    if (stored && stored.user && stored.user.google_id === authId) {
-      stored.token = token; saveSession(stored); finishLogin(stored); return;
-    }
-    fetch('/.netlify/functions/get-user', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ google_id: authId })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(profiles) {
-      if (profiles && profiles.length > 0) {
-        var session = { token: token, user: profiles[0] };
-        saveSession(session); finishLogin(session);
-      } else {
-        var nameInput = document.getElementById('reg-name-t');
-        if (nameInput && gName) nameInput.value = gName;
-        showRegStep('form'); gotoRegTab();
-      }
-    })
-    .catch(function() {
-      var tempUser = { google_id: authId, name: gName || '사용자', role: '', id: authId };
-      var session  = { token: token, user: tempUser };
-      saveSession(session); finishLogin(session);
-      showRegStep('form'); gotoRegTab();
-    });
-  }
-
-  function finishLogin(session) { applyAuth(session); gotoSchoolTab(); }
-
-  function gotoSchoolTab() {
-    var btn = document.querySelector('.tab-btn[onclick*="school"]');
-    if (btn) btn.click();
-  }
-  function gotoRegTab() {
-    var btn = document.getElementById('tab-btn-register');
-    if (btn) switchTab('register', btn);
-  }
-
-  function hookLogs() {
-    document.querySelectorAll('.tab-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var session = getSession();
-        if (!session) return;
-        logActivity(session.user.id, '탭클릭', btn.textContent.trim(), '');
-      });
-    });
-    var inp = document.getElementById('searchInput');
-    if (!inp) return;
-    var timer;
-    inp.addEventListener('input', function() {
-      clearTimeout(timer);
-      var val = inp.value.trim();
-      if (!val) return;
-      timer = setTimeout(function() {
-        var session = getSession();
-        if (!session) return;
-        logActivity(session.user.id, '검색', val, '');
-      }, 1000);
-    });
-  }
-
-  function exchangeCode(code) {
-    var verifier = localStorage.getItem('pkce_v');
-    localStorage.removeItem('pkce_v');
-    if (!verifier) { showLoginBtn(); return; }
-    fetch(SB_URL + '/auth/v1/token?grant_type=pkce', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
-      body: JSON.stringify({ auth_code: code, code_verifier: verifier })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.access_token) { showLoginBtn(); return; }
-      handleOAuthCallback(data.access_token);
-    })
-    .catch(function() { showLoginBtn(); });
-  }
-
-  function init() {
-    hookLogs();
-    showRegStep('login');
-    var params = new URLSearchParams(window.location.search);
-    var code = params.get('code');
-    if (code) {
-      history.replaceState(null, '', window.location.pathname);
-      exchangeCode(code); return;
-    }
-    var hash = new URLSearchParams(window.location.hash.slice(1));
-    var token = hash.get('access_token');
-    if (token) {
-      history.replaceState(null, '', window.location.pathname);
-      handleOAuthCallback(token); return;
-    }
-    var session = getSession();
-    if (session) { applyAuth(session); } else { showLoginBtn(); }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else { init(); }
-})();
-</script>
-
-<script>
-(function(){
-  'use strict';
-  const TT={"t":{"김기철A":{"월":["|","국어1|1-4","국어3|1-2","|","국어3|1-1","국어1|1-3","|"],"화":["국어3|1-1","국어1|1-5","|","국어3|1-4","국어1|1-2","|","|"],"수":["국어1|1-1","|","국어3|1-3","|","|","자율|1-3","|"],"목":["국어3|1-2","|","|","|","국어3|1-3","|","국어3|1-4"],"금":["|","국어3|1-2","|","국어3|1-3","|","국어3|1-1","국어3|1-4"]},"구자용":{"월":["심수Ⅰ|3-6","|","|","심수Ⅰ|3-8","심수Ⅰ|3-7","|","수학3|1-1"],"화":["|","|","수학3|1-2","|","심수Ⅰ|3-8","심수Ⅰ|3-7","|"],"수":["심수Ⅰ|3-8","|","수학3|1-1","|","심수Ⅰ|3-6","|","|"],"목":["심수Ⅰ|3-7","|","수학3|1-2","|","심수Ⅰ|3-6","심수Ⅰ|3-8","|"],"금":["|","심수Ⅰ|3-6","|","수학3|1-1","|","수학3|1-2","심수Ⅰ|3-7"]},"김대도":{"월":["영어Ⅰ|2-11","|","영어Ⅰ|2-2","|","영어Ⅰ|2-3","|","|"],"화":["|","영어Ⅰ|2-4","|","영어Ⅰ|2-2","|","|","영어Ⅰ|2-11"],"수":["영어Ⅰ|2-4","영어Ⅰ|2-3","|","|","동아|2-4","자율|2-4","|"],"목":["|","영어Ⅰ|2-2","영어Ⅰ|2-3","|","영어Ⅰ|2-4","영어Ⅰ|2-11","|"],"금":["영어Ⅰ|2-4","|","|","영어Ⅰ|2-11","영어Ⅰ|2-2","|","영어Ⅰ|2-3"]},"전희규":{"월":["|","물리|2-4","|","물리|2-2","|","물리|2-1","|"],"화":["물리|2-1","진로|2-1","|","|","물리|2-4","|","물리|2-3"],"수":["|","|","물리|2-2","|","동아|2-1","자율|2-1","|"],"목":["물리|2-1","|","|","물리|2-2","|","물리|2-3","|"],"금":["물리|2-3","|","|","물리|2-4","|","|","진로|2-4"]},"강상호":{"월":["|","사문|2-10","|","사문|2-12","|","사문|2-11","|"],"화":["|","|","사회B|1-4","사회B|1-3","|","|","사문|2-10"],"수":["|","사회B|1-5","사문|2-12","|","동아|1-8","|","|"],"목":["|","사문|2-10","사문|2-11","|","사문|2-12","|","|"],"금":["사문|2-11","|","사회B|1-6","|","사회B|1-2","|","사회B|1-1"]},"김경환":{"월":["|","|","체육B|1-10","|","체육B|1-12","운동|3-12","|"],"화":["|","|","|","체육B|1-11","|","체육A|1-10","|"],"수":["체육B|1-8","|","|","체육A|1-11","|","|","|"],"목":["|","체육A|1-9","운동|3-12","|","체육A|1-8","|","|"],"금":["|","|","|","|","체육B|1-9","체육A|1-12","|"]},"김민채":{"월":["국어3|1-9","국어3|1-7","|","|","국어3|1-6","|","국어3|1-5"],"화":["국어3|1-7","국어3|1-8","|","국어3|1-9","|","국어3|1-6","|"],"수":["|","국어1|1-7","국어1|1-8","|","|","자율|1-8","|"],"목":["국어3|1-8","|","국어3|1-5","|","국어3|1-7","|","국어1|1-6"],"금":["|","국어3|1-5","국어3|1-9","|","국어3|1-8","|","국어3|1-6"]},"최정현":{"월":["기하|3-7","|","미적Ⅰ|2-6","|","미적Ⅰ|2-7","미적Ⅰ|2-8","|"],"화":["미적Ⅰ|2-8","미적Ⅰ|2-6","|","미적Ⅰ|2-7","|","|","|"],"수":["|","미적Ⅰ|2-8","|","|","기하|3-7","자율|2-8","|"],"목":["|","미적Ⅰ|2-7","기하|3-7","|","미적Ⅰ|2-8","|","미적Ⅰ|2-6"],"금":["기하|3-7","|","미적Ⅰ|2-6","|","동아|3-3","|","미적Ⅰ|2-7"]},"손동인":{"월":["영어Ⅰ|2-12","|","영어Ⅰ|2-7","영어Ⅰ|2-8","|","|","영어Ⅰ|2-6"],"화":["|","영어Ⅰ|2-7","|","영어Ⅰ|2-6","|","영어Ⅰ|2-8","영어Ⅰ|2-12"],"수":["|","|","영어Ⅰ|2-8","|","동아|2-7","자율|2-7","|"],"목":["영어Ⅰ|2-7","|","|","영어Ⅰ|2-6","|","|","영어Ⅰ|2-12"],"금":["영어Ⅰ|2-12","|","영어Ⅰ|2-7","영어Ⅰ|2-6","|","영어Ⅰ|2-8","|"]},"안홍엽":{"월":["과학A|1-8","진로|2-6","|","과학A|1-10","|","진로|2-5","|"],"화":["|","과학A|1-12","|","|","과학A|1-5","|","과학A|1-2"],"수":["|","과학A|1-4","|","|","동아|1-1","자율|1-1","|"],"목":["|","|","과학A|1-9","과학A|1-1","|","과학A|1-7","|"],"금":["과학A|1-3","|","|","과학A|1-6","동아|물리실","|","과학A|1-11"]},"최병권":{"월":["|","사·문|3-12","사·문|3-10","|","사·문|3-11","사·문|3-9","|"],"화":["사·문|3-10","사문탐|3-2","|","사·문|3-11","|","|","사·문|3-12"],"수":["|","|","사·문|3-12","사·문|3-9","|","자율|2-10","|"],"목":["사·문|3-12","|","사·문|3-11","|","사·문|3-10","|","사·문|3-9"],"금":["사·문|3-9","사·문|3-10","|","사·문|3-11","|","|","사문탐|3-2"]},"전상식":{"월":["|","|","운동|3-5","운동|3-1","|","|","|"],"화":["|","운동|3-3","운동|3-2","운동|3-4","|","|","|"],"수":["|","체육A|1-1","운동|3-3","|","동아|체육관","|","|"],"목":["|","체육A|1-2","운동|3-1","운동|3-4","|","|","|"],"금":["|","운동|3-2","|","운동|3-5","동아|체육관","|","|"]},"박성근":{"월":["문학1|2-3","|","국어3|1-11","|","국어1|1-10","|","문학1|2-4"],"화":["국어1|1-12","|","문학1|2-1","|","국어3|1-10","문학1|2-2","|"],"수":["국어3|1-12","국어3|1-11","|","국어1|1-9","|","|","|"],"목":["|","|","국어3|1-10","|","국어3|1-12","국어1|1-11","|"],"금":["|","국어3|1-12","국어3|1-11","|","국어3|1-10","|","문학1|2-5"]},"윤신영":{"월":["심수Ⅰ|3-11","|","|","수탐|3-12","|","|","심수Ⅰ|3-9"],"화":["심수Ⅰ|3-9","|","심수Ⅰ|3-12","|","심수Ⅰ|3-11","수탐|3-12","|"],"수":["|","수탐|3-12","|","심수Ⅰ|3-12","|","자율|3-12","|"],"목":["|","심수Ⅰ|3-12","|","심수Ⅰ|3-9","|","수탐|3-12","심수Ⅰ|3-11"],"금":["|","심수Ⅰ|3-11","심수Ⅰ|3-9","|","|","봉사|3-12","심수Ⅰ|3-12"]},"최영은":{"월":["영어Ⅰ|2-1","|","영어Ⅰ|2-10","영어Ⅰ|2-9","|","|","영어Ⅰ|2-5"],"화":["영어Ⅰ|2-10","|","영어Ⅰ|2-9","|","영어Ⅰ|2-1","|","영어Ⅰ|2-5"],"수":["|","영어Ⅰ|2-1","|","영어Ⅰ|2-5","동아|2-12","|","|"],"목":["|","|","영어Ⅰ|2-1","영어Ⅰ|2-10","|","영어Ⅰ|2-5","영어Ⅰ|2-9"],"금":["|","|","영어Ⅰ|2-9","|","동아|3-4","영어Ⅰ|2-10","|"]},"양해준":{"월":["|","|","|","융과탐|3-3","과과연|3-2","|","과과연|3-1"],"화":["융과탐|3-3","|","|","과과연|3-2","|","|","과과연|3-1"],"수":["융과탐|3-3","|","|","|","동아|물리실","자율|3-1","|"],"목":["|","과과연|3-2","|","|","|","과과연|3-1","융과탐|3-3"],"금":["과과연|3-1","|","과과연|3-2","|","동아|3-1","봉사|3-1","|"]},"장하영":{"월":["|","사문탐|3-2","|","법사|2-11","|","법사|2-10","|"],"화":["법사|2-12","|","사회B|1-12","|","사회B|1-9","|","사회B|1-11"],"수":["사회B|1-7","|","법사|2-11","법사|2-12","|","|","|"],"목":["사회B|1-10","|","사회B|1-8","|","사문탐|3-2","법사|2-10","|"],"금":["|","법사|2-10","|","법사|2-12","|","|","법사|2-11"]},"이병을":{"월":["운동|3-9","운동|3-11","|","체실|3-9","체육|2-1","|","|"],"화":["|","운동|3-7","운동|3-6","|","운동|3-10","체실|3-9","|"],"수":["|","체실|3-9","운동|3-9","|","운동|3-8","자율|3-9","|"],"목":["운동|3-8","운동|3-10","|","운동|3-7","운동|3-11","체실|3-9","|"],"금":["운동|3-6","체육|2-3","|","체육|2-2","|","봉사|3-9","|"]},"홍원의":{"월":["|","문학3|2-11","|","문학3|2-10","|","탐독2|2-6","탐독2|2-7"],"화":["|","문학3|2-10","문학3|2-11","|","탐독2|2-6","|","|"],"수":["탐독2|2-8","문학3|2-12","|","탐독2|2-9","|","자율|2-12","|"],"목":["문학3|2-12","|","|","문학3|2-11","|","|","탐독2|2-7"],"금":["탐독2|2-9","|","문학3|2-12","|","탐독2|2-8","|","문학3|2-10"]},"김영진":{"월":["|","|","기하|3-2","|","|","기하|3-4","기하|3-6"],"화":["|","기하|3-6","|","|","기하|3-2","|","|"],"수":["기하|3-2","|","|","|","기하|3-4","|","|"],"목":["기하|3-4","기하|3-6","|","기하|3-2","|","|","|"],"금":["|","|","기하|3-4","|","|","|","기하|3-6"]},"신화룡":{"월":["영어|1-1","|","영어|1-3","|","영어|1-2","|","영어|1-4"],"화":["|","영어|1-1","영어|1-3","|","영어|1-4","|","|"],"수":["|","영어|1-2","|","|","동아|1-2","자율|1-2","|"],"목":["영어|1-1","영어|1-3","|","영어|1-4","|","영어|1-2","|"],"금":["영어|1-1","|","|","영어|1-4","영어|1-3","|","영어|1-2"]},"이영권":{"월":["|","물리|2-8","물리|2-5","|","물리|2-9","|","|"],"화":["물리|2-7","|","물리|2-6","|","물리|2-9","|","물리|2-8"],"수":["|","|","물리|2-6","|","동아|2-6","자율|2-6","|"],"목":["|","물리|2-8","|","물리|2-5","|","물리|2-7","|"],"금":["물리|2-5","물리|2-9","|","물리|2-7","|","물리|2-6","|"]},"전성환":{"월":["심리|3-10","|","사회A|1-4","|","사문탐|3-8","사회A|1-5","|"],"화":["|","|","심리|3-10","|","사문탐|3-6","사회A|1-2","|"],"수":["|","|","사회A|1-2","사회A|1-1","|","자율|3-10","|"],"목":["사회A|1-3","|","사회A|1-4","|","사회A|1-5","|","사회A|1-1"],"금":["|","사회A|1-3","|","사문탐|3-6","|","봉사|3-10","심리|3-10"]},"임재우":{"월":["체육|2-4","체육A|1-6","|","체육|2-5","|","체육A|1-7","|"],"화":["체육B|1-6","체육B|1-4","|","체육|2-9","체육|2-8","체육|2-10","|"],"수":["체육A|1-4","|","체육A|1-5","체육A|1-3","|","|","|"],"목":["체육B|1-5","체육|2-12","체육B|1-3","|","체육|2-6","체육B|1-1","|"],"금":["|","체육|2-7","체육B|1-2","|","체육B|1-7","체육|2-11","|"]},"이희순":{"월":["문학3|2-6","|","탐독2|2-3","|","문학3|2-5","|","탐독2|2-10"],"화":["|","탐독2|2-5","탐독2|2-2","|","문학3|2-5","탐독2|2-4","|"],"수":["|","|","탐독2|2-1","탐독2|2-4","|","자율|2-5","|"],"목":["탐독2|2-2","|","문학3|2-6","|","문학3|2-5","|","탐독2|2-3"],"금":["문학3|2-6","탐독2|2-5","|","|","탐독2|2-10","|","탐독2|2-1"]},"김해영":{"월":["|","|","수탐|3-1","수탐|3-10","|","수탐|3-3","수탐|3-5"],"화":["|","수탐|3-5","|","|","수탐|3-1","수탐|3-10","|"],"수":["수탐|3-1","수탐|3-10","|","|","수탐|3-3","|","|"],"목":["수탐|3-3","수탐|3-5","|","수탐|3-1","|","수탐|3-10","|"],"금":["수학1|1-12","|","수탐|3-3","수학1|1-11","|","|","수탐|3-5"]},"손세욱":{"월":["영어|1-5","|","영어|1-6","|","영어|1-7","|","영어|1-8"],"화":["|","영어|1-6","|","영어|1-7","|","영어|1-5","영어|1-8"],"수":["|","영어|1-6","|","|","동아|1-7","자율|1-7","|"],"목":["|","영어|1-8","|","영어|1-7","|","영어|1-5","|"],"금":["영어|1-6","|","영어|1-8","|","영어|1-5","|","영어|1-7"]},"김종목":{"월":["|","화학|2-7","|","화학|2-6","|","|","화학|2-8"],"화":["화학|2-6","|","화학|2-7","과학B|1-10","|","|","화학|2-9"],"수":["|","|","화학|2-7","|","동아|2-9","자율|2-9","|"],"목":["화학|2-9","|","|","화학|2-8","|","과학B|1-12","과학B|1-11"],"금":["화학|2-8","|","|","화학|2-9","화학|2-6","|","|"]},"고덕민":{"월":["사회A|1-6","|","|","사회A|1-11","|","사회A|1-12","사회A|1-9"],"화":["|","|","사회A|1-8","|","|","사문탐|3-8","사회A|1-10"],"수":["사회A|1-6","사회A|1-12","|","사회A|1-10","|","자율|1-9","|"],"목":["사회A|1-7","|","사문탐|3-8","|","사회A|1-11","|","|"],"금":["|","|","사문탐|3-8","사회A|1-8","|","사회A|1-7","사회A|1-9"]},"손예진":{"월":["|","음악|1-2","음악|1-1","|","음악|1-5","음감|3-1","|"],"화":["|","음악|1-3","|","음감|3-3","|","음악|1-1","음감|3-2"],"수":["음악|1-2","|","|","음악|1-4","음감|3-2","|","|"],"목":["|","음감|3-1","|","음감|3-3","|","음악|1-6","|"],"금":["음악|1-5","|","음악|1-3","|","음악|1-6","음악|1-4","|"]},"이강산":{"월":["|","문학3|2-1","탐독1|2-12","|","문학3|2-2","|","|"],"화":["|","문학3|2-3","문학3|2-4","|","탐독2|2-12","탐독2|2-11","|"],"수":["|","탐독1|2-11","문학3|2-3","문학3|2-1","|","|","|"],"목":["|","문학3|2-3","|","탐독2|2-12","|","문학3|2-4","문학3|2-2"],"금":["|","문학3|2-4","문학3|2-2","|","탐독2|2-11","문학3|2-1","|"]},"송준원":{"월":["대수|2-2","미적Ⅰ|2-5","|","|","미적Ⅰ|2-4","|","대수|2-3"],"화":["미적Ⅰ|2-4","|","대수|2-3","대수|2-1","|","미적Ⅰ|2-5","|"],"수":["대수|2-3","|","|","대수|2-2","|","자율|2-3","|"],"목":["|","미적Ⅰ|2-5","미적Ⅰ|2-4","|","대수|2-2","|","대수|2-1"],"금":["|","|","미적Ⅰ|2-5","대수|2-1","|","미적Ⅰ|2-4","|"]},"한상우":{"월":["영어|1-10","영어|1-9","|","영어|1-12","|","영어|1-11","|"],"화":["|","영어|1-11","영어|1-10","|","영어|1-12","|","영어|1-9"],"수":["|","영어|1-9","|","영어|1-12","|","자율|1-12","|"],"목":["영어|1-11","|","|","영어|1-10","|","|","영어|1-9"],"금":["|","영어|1-10","영어|1-12","|","영어|1-11","|","|"]},"장성원":{"월":["|","과과연|3-5","|","화학|2-1","|","|","화학|2-2"],"화":["화학|2-2","|","|","과과연|3-5","|","화학|2-3","|"],"수":["|","화학|2-2","|","|","동아|2-8","자율|3-5","|"],"목":["화학|2-3","|","|","화학|2-1","|","과과연|3-5","|"],"금":["과과연|3-5","|","화학|2-3","|","화학|2-1","봉사|3-5","|"]},"허진":{"월":["국사|1-12","국사|1-8","|","|","|","사문탐|3-6","국사|1-11"],"화":["|","국사|1-10","|","국사|1-8","|","|","국사|1-12"],"수":["국사|1-9","|","국사|1-11","사문탐|3-6","|","|","|"],"목":["|","국사|1-11","|","국사|1-9","|","국사|1-10","국사|1-12"],"금":["|","국사|1-8","국사|1-10","|","동아|3-10","국사|1-9","|"]},"손선미":{"월":["음감|3-5","음감|3-6","|","음감|3-7","|","|","음감|3-4"],"화":["음감|3-11","|","음감|3-9","|","음감|3-12","|","음감|3-10"],"수":["|","음감|3-8","음감|3-4","|","동아|음악실","|","|"],"목":["음감|3-10","|","음감|3-5","|","음감|3-7","|","음감|3-6"],"금":["음감|3-8","음감|3-9","|","음감|3-12","|","|","음감|3-11"]},"이경인":{"월":["문학3|2-8","문학3|2-9","|","문학3|2-7","|","|","탐독1|2-1"],"화":["|","|","문학3|2-8","|","문학3|2-7","문학1|2-9","|"],"수":["문학1|2-6","탐독1|2-5","|","문학1|2-7","동아|2-10","|","|"],"목":["|","탐독1|2-4","문학3|2-9","|","문학3|2-7","문학1|2-8","|"],"금":["탐독1|2-2","문학3|2-8","|","|","탐독1|2-3","|","문학3|2-9"]},"노광수":{"월":["|","|","수학1|1-7","|","심수Ⅰ|3-10","|","기하|3-8"],"화":["|","기하|3-8","심수Ⅰ|3-4","|","심수Ⅰ|3-5","|","수학1|1-6"],"수":["|","심수Ⅰ|3-4","|","심수Ⅰ|3-10","심수Ⅰ|3-5","|","|"],"목":["심수Ⅰ|3-5","기하|3-8","|","심수Ⅰ|3-10","|","심수Ⅰ|3-4","|"],"금":["심수Ⅰ|3-4","심수Ⅰ|3-5","|","심수Ⅰ|3-10","|","|","기하|3-8"]},"문형선":{"월":["영독3|3-4","심리|3-4","|","심리|3-2","|","영독3|3-5","|"],"화":["|","영독3|3-4","영독3|3-5","|","심리|3-4","심리|3-5","|"],"수":["|","|","심리|3-5","심리|3-2","|","자율|3-4","|"],"목":["|","영독3|3-4","|","영독3|3-5","|","|","심리|3-2"],"금":["|","|","심리|3-5","심리|3-4","|","봉사|3-4","|"]},"최승호":{"월":["|","과학B|1-1","|","과학B|1-6","|","|","과학B|1-7"],"화":["화학|2-5","|","|","화학|2-4","|","과학B|1-9","|"],"수":["|","화학|2-4","|","|","동아|1-4","자율|1-4","|"],"목":["화학|2-4","|","화학|2-5","과학B|1-8","|","|","과학B|1-3"],"금":["과학B|1-2","|","과학B|1-5","|","과학B|1-4","화학|2-5","|"]},"김재익":{"월":["|","|","국사|1-5","사문탐|3-4","|","국사|1-4","|"],"화":["사문탐|3-4","|","|","국사|1-6","국사|1-7","|","국사|1-5"],"수":["사문탐|3-4","|","|","|","동아|1-5","자율|1-5","|"],"목":["|","국사|1-4","국사|1-7","|","국사|1-6","|","사문탐|3-4"],"금":["국사|1-7","|","국사|1-4","국사|1-5","|","국사|1-6","|"]},"구교원":{"월":["|","|","|","미술|1-7","|","|","미술|1-12"],"화":["미술|1-10","|","|","미술|1-12","|","미술|1-7","|"],"수":["|","미술|1-8","미술|1-9","|","동아|미술실","|","|"],"목":["|","|","미술|1-11","|","미술|1-10","|","|"],"금":["|","|","|","미술|1-9","|","미술|1-11","미술|1-8"]},"박주생":{"월":["언매|3-2","|","|","|","언매|3-4","|","언매|3-12"],"화":["|","언매|3-12","|","문학1|2-12","|","언매|3-2","언매|3-4"],"수":["언매|3-12","언매|3-2","|","언매|3-4","|","자율|3-2","|"],"목":["언매|3-2","|","문학1|2-10","|","언매|3-4","|","|"],"금":["|","문학1|2-11","언매|3-12","|","동아|3-2","봉사|3-2","|"]},"오상승":{"월":["미적Ⅰ|2-10","|","미적Ⅰ|2-9","|","미적Ⅰ|2-12","|","미적Ⅰ|2-11"],"화":["|","미적Ⅰ|2-11","|","미적Ⅰ|2-10","|","미적Ⅰ|2-12","대수|2-6"],"수":["미적Ⅰ|2-10","미적Ⅰ|2-9","|","대수|2-6","|","|","|"],"목":["미적Ⅰ|2-11","|","미적Ⅰ|2-12","|","미적Ⅰ|2-10","미적Ⅰ|2-9","|"],"금":["|","미적Ⅰ|2-12","미적Ⅰ|2-11","|","미적Ⅰ|2-9","|","대수|2-6"]},"하도균":{"월":["|","영독3|3-3","|","|","영독3|3-1","영독3|3-2","|"],"화":["영독3|3-2","|","영독3|3-1","|","|","영독3|3-3","영독1|3-7"],"수":["영독1|3-6","영독1|3-5","|","영독1|3-1","|","|","|"],"목":["영독3|3-1","|","영독1|3-3","|","영독1|3-8","영독1|3-2","|"],"금":["영독3|3-3","영독1|3-4","|","영독3|3-2","|","|","|"]},"이종환":{"월":["생명|2-7","생Ⅱ|3-7","|","|","생명|2-6","|","|"],"화":["|","생명|2-8","|","생Ⅱ|3-7","|","|","진로|2-2"],"수":["생명|2-7","|","생Ⅱ|3-7","|","동아|생물실","|","|"],"목":["생명|2-8","|","|","생명|2-7","|","생명|2-6","생Ⅱ|3-7"],"금":["|","생명|2-6","생명|2-8","|","동아|3-5","|","|"]},"김지혜":{"월":["심리|3-12","|","|","국사|1-3","|","국사|1-1","|"],"화":["|","국사|1-2","국사|1-1","|","심리|3-9","|","국사|1-3"],"수":["심리|3-9","|","심리|3-11","|","심리|3-12","|","|"],"목":["|","심리|3-11","|","심리|3-12","심리|3-9","|","국사|1-2"],"금":["심리|3-11","|","국사|1-1","국사|1-2","|","국사|1-3","|"]},"김기철B":{"월":["정보A|1-3","│|▽","|","정보B|1-4","|","|","정보B|1-6"],"화":["|","|","정보A|1-5","│|▽","|","정보A|1-4","│|▽"],"수":["정보B|1-5","|","|","정보B|1-7","동아|2-3","|","|"],"목":["정보A|1-6","│|▽","|","|","|","정보B|1-3","|"],"금":["|","정보A|1-7","│|▽","|","동아|정보2실","|","|"]},"정민석":{"월":["|","|","언매|3-8","언매|3-6","|","탐독1|2-9","언매|3-11"],"화":["언매|3-8","언매|3-11","|","|","탐독1|2-10","|","언매|3-6"],"수":["언매|3-11","|","언매|3-6","언매|3-8","|","자율|3-6","|"],"목":["|","탐독1|2-6","|","언매|3-6","|","|","탐독1|2-8"],"금":["|","언매|3-8","언매|3-11","|","탐독1|2-7","봉사|3-6","|"]},"서혜리":{"월":["수학3|1-4","|","수학1|1-8","|","수학3|1-3","수학3|1-6","|"],"화":["수학3|1-5","|","수학1|1-9","|","수학3|1-3","|","수학3|1-7"],"수":["|","|","수학3|1-6","수학3|1-5","|","자율|1-6","|"],"목":["|","수학3|1-7","|","수학3|1-3","|","수학3|1-4","수학1|1-10"],"금":["수학3|1-4","수학3|1-6","|","수학3|1-7","|","수학3|1-5","|"]},"이상범":{"월":["|","영독3|3-9","영독1|3-11","|","영독3|3-12","영독3|3-10","|"],"화":["영독1|3-12","|","영독3|3-11","영독3|3-10","|","|","영독3|3-9"],"수":["|","|","영독1|3-10","|","영독3|3-11","자율|3-11","|"],"목":["영독3|3-9","|","영독3|3-10","영독3|3-11","|","|","영독3|3-12"],"금":["영독3|3-12","|","|","|","동아|3-11","봉사|3-11","|"]},"김정우":{"월":["|","과과연|3-8","|","진로|2-3","과과연|3-6","|","|"],"화":["|","생명|2-9","|","과과연|3-8","|","과과연|3-6","|"],"수":["생명|2-9","|","과과연|3-8","|","동아|1-3","자율|3-8","|"],"목":["|","|","과과연|3-6","|","생명|2-9","|","과과연|3-8"],"금":["|","|","과과연|3-6","|","동아|3-8","봉사|3-8","|"]},"김유성":{"월":["|","생윤|3-10","생윤|3-12","|","생윤|3-9","생윤|3-11","|"],"화":["|","생윤|3-9","|","생윤|3-12","|","|","생윤|3-11"],"수":["사회C|1-11","|","|","생윤|3-11","생윤|3-10","|","|"],"목":["생윤|3-11","|","생윤|3-9","|","생윤|3-12","|","생윤|3-10"],"금":["생윤|3-10","생윤|3-12","|","|","사회C|1-12","|","생윤|3-9"]},"정지원":{"월":["|","정보B|1-10","정보B|1-9","|","정보A|1-8","│|▽","|"],"화":["정보A|1-9","│|▽","|","|","정보B|1-11","|","|"],"수":["|","정보A|1-10","│|▽","|","동아|2-11","|","|"],"목":["|","|","정보A|1-12","│|▽","|","|","정보B|1-8"],"금":["정보A|1-11","│|▽","|","|","동아|3-12","|","정보B|1-12"]},"석은동":{"월":["|","|","언매|3-7","|","언매|3-3","|","|"],"화":["|","|","언매|3-7","언매|3-1","|","|","언매|3-3"],"수":["|","언매|3-1","|","언매|3-3","|","|","|"],"목":["|","언매|3-7","|","|","언매|3-3","|","언매|3-1"],"금":["|","|","언매|3-7","언매|3-1","|","|","|"]},"정호재":{"월":["심수Ⅰ|3-1","|","심수Ⅰ|3-3","수탐|3-11","|","|","심수Ⅰ|3-2"],"화":["심수Ⅰ|3-1","|","|","|","심수Ⅰ|3-3","수탐|3-11","|"],"수":["|","수탐|3-11","심수Ⅰ|3-2","|","심수Ⅰ|3-1","자율|3-3","|"],"목":["|","심수Ⅰ|3-3","심수Ⅰ|3-2","|","수학1|1-1","수탐|3-11","|"],"금":["심수Ⅰ|3-2","심수Ⅰ|3-1","|","심수Ⅰ|3-3","|","봉사|3-3","|"]},"박혜영":{"월":["심리|3-8","|","영독3|3-6","|","|","영독3|3-8","영독3|3-7"],"화":["심리|3-7","|","영독3|3-8","영독3|3-6","|","|","심리|3-8"],"수":["영독3|3-7","심리|3-7","|","|","영독1|3-9","자율|3-7","|"],"목":["영독3|3-6","|","|","심리|3-8","|","심리|3-7","|"],"금":["|","영독3|3-7","|","영독3|3-8","|","봉사|3-7","|"]},"전혜진":{"월":["|","생명|2-2","|","생명|2-4","|","생명|2-3","|"],"화":["생명|2-3","|","|","생명|2-5","|","|","생명|2-1"],"수":["생명|2-2","|","생명|2-4","|","동아|2-2","자율|2-2","|"],"목":["생명|2-5","|","|","생명|2-3","생명|2-1","|","|"],"금":["|","생명|2-1","생명|2-4","|","생명|2-5","생명|2-2","|"]},"남상훈":{"월":["사회C|1-2","|","|","사회C|1-8","|","사윤|2-12","사회C|1-3"],"화":["|","사윤|2-12","사회C|1-7","|","사윤|2-11","|","사회C|1-1"],"수":["사윤|2-11","|","사회C|1-4","사윤|2-10","|","|","|"],"목":["사윤|2-10","|","|","사회C|1-6","|","사회C|1-9","사윤|2-11"],"금":["사회C|1-10","|","사윤|2-10","|","사윤|2-12","|","사회C|1-5"]},"홍대화":{"월":["데과|3-3","|","|","|","|","정보A|1-2","│|▽"],"화":["데과|3-6","|","데과|3-3","정보B|1-1","|","데과|3-1","|"],"수":["|","데과|3-6","데과|3-1","|","동아|2-5","|","|"],"목":["|","정보A|1-1","│|▽","|","정보B|1-2","데과|3-6","|"],"금":["|","|","데과|3-1","|","동아|정보1실","|","데과|3-3"]},"김대연":{"월":["|","|","언매|3-9","|","화작|3-5","|","화작|3-10"],"화":["|","화작|3-10","|","언매|3-9","|","|","화작|3-5"],"수":["화작|3-10","|","|","화작|3-5","|","|","|"],"목":["|","언매|3-9","|","|","화작|3-5","|","|"],"금":["|","|","화작|3-10","언매|3-9","|","|","|"]},"홍예설":{"월":["대수|2-5","|","대수|2-4","수학1|1-5","|","미적Ⅰ|2-2","|"],"화":["|","미적Ⅰ|2-2","|","미적Ⅰ|2-3","|","미적Ⅰ|2-1","대수|2-4"],"수":["미적Ⅰ|2-1","|","대수|2-5","미적Ⅰ|2-3","|","|","|"],"목":["|","미적Ⅰ|2-1","미적Ⅰ|2-2","|","미적Ⅰ|2-3","|","대수|2-4"],"금":["미적Ⅰ|2-1","|","|","대수|2-5","|","미적Ⅰ|2-3","미적Ⅰ|2-2"]},"최유리B":{"월":["|","과학C|1-12","|","과학C|1-2","과학C|1-11","|","|"],"화":["과학C|1-8","|","실험|1-6","|","과학C|1-6","실험|1-8","|"],"수":["|","과학C|1-3","과학C|1-7","|","동아|1-12","|","|"],"목":["과학C|1-4","|","|","과학C|1-5","|","|","실험|1-7"],"금":["과학C|1-9","과학C|1-1","|","|","동아|3-6","과학C|1-10","|"]},"박선영":{"월":["|","일어|2-3","일어|2-1","|","일어|2-11","일어|2-7","|"],"화":["일어|2-9","|","일어|2-5","|","일어|2-3","|","|"],"수":["일어|2-5","일어|2-7","|","일어|2-11","|","자율|2-11","|"],"목":["|","일어|2-11","|","일어|2-9","|","일어|2-1","일어|2-5"],"금":["일어|2-7","|","일어|2-1","일어|2-3","|","일어|2-9","|"]},"신동철":{"월":["|","수학3|1-11","수학3|1-12","|","수학3|1-9","|","수학3|1-10"],"화":["수학1|1-4","|","수학3|1-11","|","수학3|1-8","수학3|1-12","|"],"수":["수학3|1-10","|","|","수학1|1-2","|","자율|1-11","|"],"목":["수학3|1-9","수학3|1-12","|","수학3|1-11","|","수학3|1-8","|"],"금":["|","수학3|1-9","|","수학3|1-10","|","수학3|1-8","수학1|1-3"]},"정용석":{"월":["|","융과탐|3-1","|","지Ⅱ|3-5","|","지Ⅱ|3-7","진로|2-9"],"화":["지Ⅱ|3-5","융과탐|3-1","|","|","지Ⅱ|3-7","진로|2-7","|"],"수":["지Ⅱ|3-5","|","|","지Ⅱ|3-7","동아|1-9","|","|"],"목":["|","|","진로|2-8","|","융과탐|3-1","|","지Ⅱ|3-5"],"금":["|","|","|","지Ⅱ|3-7","동아|3-7","|","융과탐|3-1"]},"홍성수":{"월":["|","한문|2-12","한문|2-8","|","한문|2-10","한문|2-4","|"],"화":["|","|","한문|2-12","|","한문|2-2","한문|2-6","|"],"수":["한문|2-12","한문|2-6","|","한문|2-8","|","|","|"],"목":["한문|2-6","|","|","한문|2-4","|","한문|2-2","한문|2-10"],"금":["|","한문|2-2","|","한문|2-10","한문|2-4","|","한문|2-8"]},"배승현":{"월":["대수|2-9","|","대수|2-11","|","대수|2-8","|","대수|2-12"],"화":["대수|2-11","|","대수|2-10","대수|2-8","|","|","대수|2-7"],"수":["|","대수|2-10","대수|2-9","|","동아|1-6","|","|"],"목":["|","대수|2-9","대수|2-7","|","대수|2-11","대수|2-12","|"],"금":["대수|2-10","|","|","대수|2-8","|","대수|2-7","대수|2-12"]},"이재균":{"월":["|","과학D|1-5","과과연|3-4","|","과학D|1-4","|","과과연|3-3"],"화":["과학D|1-3","|","|","|","과학D|1-1","과과연|3-4","|"],"수":["|","과과연|3-3","|","과학D|1-6","동아|1-11","|","|"],"목":["실험|1-12","|","과과연|3-4","과학D|1-2","|","과과연|3-3","|"],"금":["|","과과연|3-3","|","|","동아|3-9","|","과과연|3-4"]},"장진환":{"월":["진로|1-7","|","|","진로|1-1","|","진로|1-10","|"],"화":["진로|1-2","|","|","진로|2-11","|","진로|1-11","|"],"수":["진로|1-3","|","진로|2-10","진로|1-8","|","|","|"],"목":["|","진로|1-5","진로|1-6","|","진로|1-9","|","|"],"금":["|","진로|1-4","|","진로|1-12","|","진로|2-12","|"]},"김태수":{"월":["실험|1-11","|","|","과학D|1-9","|","실험|1-9","|"],"화":["과학D|1-11","과학D|1-7","|","실험|1-2","|","실험|1-3","|"],"수":["|","|","과학D|1-12","|","동아|1-10","자율|1-10","|"],"목":["|","과학D|1-10","|","|","실험|1-4","|","실험|1-5"],"금":["과학D|1-8","|","|","|","실험|1-1","|","실험|1-10"]}},"c":{"1-1":{"h":"안홍엽","s":{"월":["영어|신화룡","과학B|최승호","음악|손예진","진로|장진환","국어3|김기A","국사|김지혜","수학3|구자용"],"화":["국어3|김기A","영어|신화룡","국사|김지혜","정보B|홍대화","과학D|이재균","음악|손예진","사회C|남상훈"],"수":["국어1|김기A","체육A|전상식","수학3|구자용","사회A|전성환","동아|안홍엽","자율|안홍엽","|"],"목":["영어|신화룡","정보A|홍대화","│|▽","과학A|안홍엽","수학1|정호재","체육B|임재우","사회A|전성환"],"금":["영어|신화룡","과학C|최유B","국사|김지혜","수학3|구자용","실험|김태수","국어3|김기A","사회B|강상호"]}},"2-1":{"h":"전희규","s":{"월":["영어Ⅰ|최영은","문학3|이강산","일어|박선영","화학|장성원","체육|이병을","물리|전희규","탐독1|이경인"],"화":["물리|전희규","진로|전희규","문학1|박성근","대수|송준원","영어Ⅰ|최영은","미적Ⅰ|홍예설","생명|전혜진"],"수":["미적Ⅰ|홍예설","영어Ⅰ|최영은","탐독2|이희순","문학3|이강산","동아|전희규","자율|전희규","|"],"목":["물리|전희규","미적Ⅰ|홍예설","영어Ⅰ|최영은","화학|장성원","생명|전혜진","일어|박선영","대수|송준원"],"금":["미적Ⅰ|홍예설","생명|전혜진","일어|박선영","대수|송준원","화학|장성원","문학3|이강산","탐독2|이희순"]}},"3-1":{"h":"양해준","s":{"월":["심수Ⅰ|정호재","융과탐|정용석","수탐|김해영","운동|전상식","영독3|하도균","음감|손예진","과과연|양해준"],"화":["심수Ⅰ|정호재","융과탐|정용석","영독3|하도균","언매|석은동","수탐|김해영","데과|홍대화","과과연|양해준"],"수":["수탐|김해영","언매|석은동","데과|홍대화","영독1|하도균","심수Ⅰ|정호재","자율|양해준","|"],"목":["영독3|하도균","음감|손예진","운동|전상식","수탐|김해영","융과탐|정용석","과과연|양해준","언매|석은동"],"금":["과과연|양해준","심수Ⅰ|정호재","데과|홍대화","언매|석은동","동아|양해준","봉사|양해준","융과탐|정용석"]}},"1-2":{"h":"신화룡","s":{"월":["사회C|남상훈","음악|손예진","국어3|김기A","과학C|최유B","영어|신화룡","정보A|홍대화","│|▽"],"화":["진로|장진환","국사|김지혜","수학3|구자용","실험|김태수","국어1|김기A","사회A|전성환","과학A|안홍엽"],"수":["음악|손예진","영어|신화룡","사회A|전성환","수학1|신동철","동아|신화룡","자율|신화룡","|"],"목":["국어3|김기A","체육A|전상식","수학3|구자용","과학D|이재균","정보B|홍대화","영어|신화룡","국사|김지혜"],"금":["과학B|최승호","국어3|김기A","체육B|임재우","국사|김지혜","사회B|강상호","수학3|구자용","영어|신화룡"]}},"2-2":{"h":"전혜진","s":{"월":["대수|송준원","생명|전혜진","영어Ⅰ|김대도","물리|전희규","문학3|이강산","미적Ⅰ|홍예설","화학|장성원"],"화":["화학|장성원","미적Ⅰ|홍예설","탐독2|이희순","영어Ⅰ|김대도","한문|홍성수","문학1|박성근","진로|이종환"],"수":["생명|전혜진","화학|장성원","물리|전희규","대수|송준원","동아|전혜진","자율|전혜진","|"],"목":["탐독2|이희순","영어Ⅰ|김대도","미적Ⅰ|홍예설","물리|전희규","대수|송준원","한문|홍성수","문학3|이강산"],"금":["탐독1|이경인","한문|홍성수","문학3|이강산","체육|이병을","영어Ⅰ|김대도","생명|전혜진","미적Ⅰ|홍예설"]}},"3-2":{"h":"박주생","s":{"월":["언매|박주생","사문탐|장하영","기하|김영진","심리|문형선","과과연|양해준","영독3|하도균","심수Ⅰ|정호재"],"화":["영독3|하도균","사문탐|최병권","운동|전상식","과과연|양해준","기하|김영진","언매|박주생","음감|손예진"],"수":["기하|김영진","언매|박주생","심수Ⅰ|정호재","심리|문형선","음감|손예진","자율|박주생","|"],"목":["언매|박주생","과과연|양해준","심수Ⅰ|정호재","기하|김영진","사문탐|장하영","영독1|하도균","심리|문형선"],"금":["심수Ⅰ|정호재","운동|전상식","과과연|양해준","영독3|하도균","동아|박주생","봉사|박주생","사문탐|최병권"]}},"1-3":{"h":"김기철A","s":{"월":["정보A|김기B","│|▽","영어|신화룡","국사|김지혜","수학3|서혜리","국어1|김기A","사회C|남상훈"],"화":["과학D|이재균","음악|손예진","영어|신화룡","사회B|강상호","수학3|서혜리","실험|김태수","국사|김지혜"],"수":["진로|장진환","과학C|최유B","국어3|김기A","체육A|임재우","동아|김정우","자율|김기A","|"],"목":["사회A|전성환","영어|신화룡","체육B|임재우","수학3|서혜리","국어3|김기A","정보B|김기B","과학B|최승호"],"금":["과학A|안홍엽","사회A|전성환","음악|손예진","국어3|김기A","영어|신화룡","국사|김지혜","수학1|신동철"]}},"2-3":{"h":"송준원","s":{"월":["문학1|박성근","일어|박선영","탐독2|이희순","진로|김정우","영어Ⅰ|김대도","생명|전혜진","대수|송준원"],"화":["생명|전혜진","문학3|이강산","대수|송준원","미적Ⅰ|홍예설","일어|박선영","화학|장성원","물리|전희규"],"수":["대수|송준원","영어Ⅰ|김대도","문학3|이강산","미적Ⅰ|홍예설","동아|김기B","자율|송준원","|"],"목":["화학|장성원","문학3|이강산","영어Ⅰ|김대도","생명|전혜진","미적Ⅰ|홍예설","물리|전희규","탐독2|이희순"],"금":["물리|전희규","체육|이병을","화학|장성원","일어|박선영","탐독1|이경인","미적Ⅰ|홍예설","영어Ⅰ|김대도"]}},"3-3":{"h":"정호재","s":{"월":["데과|홍대화","영독3|하도균","심수Ⅰ|정호재","융과탐|양해준","언매|석은동","수탐|김해영","과과연|이재균"],"화":["융과탐|양해준","운동|전상식","데과|홍대화","음감|손예진","심수Ⅰ|정호재","영독3|하도균","언매|석은동"],"수":["융과탐|양해준","과과연|이재균","운동|전상식","언매|석은동","수탐|김해영","자율|정호재","|"],"목":["수탐|김해영","심수Ⅰ|정호재","영독1|하도균","음감|손예진","언매|석은동","과과연|이재균","융과탐|양해준"],"금":["영독3|하도균","과과연|이재균","수탐|김해영","심수Ⅰ|정호재","동아|최정현","봉사|정호재","데과|홍대화"]}},"1-4":{"h":"최승호","s":{"월":["수학3|서혜리","국어1|김기A","사회A|전성환","정보B|김기B","과학D|이재균","국사|김재익","영어|신화룡"],"화":["수학1|신동철","체육B|임재우","사회B|강상호","국어3|김기A","영어|신화룡","정보A|김기B","│|▽"],"수":["체육A|임재우","과학A|안홍엽","사회C|남상훈","음악|손예진","동아|최승호","자율|최승호","|"],"목":["과학C|최유B","국사|김재익","사회A|전성환","영어|신화룡","실험|김태수","수학3|서혜리","국어3|김기A"],"금":["수학3|서혜리","진로|장진환","국사|김재익","영어|신화룡","과학B|최승호","음악|손예진","국어3|김기A"]}},"2-4":{"h":"김대도","s":{"월":["체육|임재우","물리|전희규","대수|홍예설","생명|전혜진","미적Ⅰ|송준원","한문|홍성수","문학1|박성근"],"화":["미적Ⅰ|송준원","영어Ⅰ|김대도","문학3|이강산","화학|최승호","물리|전희규","탐독2|이희순","대수|홍예설"],"수":["영어Ⅰ|김대도","화학|최승호","생명|전혜진","탐독2|이희순","동아|김대도","자율|김대도","|"],"목":["화학|최승호","탐독1|이경인","미적Ⅰ|송준원","한문|홍성수","영어Ⅰ|김대도","문학3|이강산","대수|홍예설"],"금":["영어Ⅰ|김대도","문학3|이강산","생명|전혜진","물리|전희규","한문|홍성수","미적Ⅰ|송준원","진로|전희규"]}},"3-4":{"h":"문형선","s":{"월":["영독3|문형선","심리|문형선","과과연|이재균","사문탐|김재익","언매|박주생","기하|김영진","음감|손선미"],"화":["사문탐|김재익","영독3|문형선","심수Ⅰ|노광수","운동|전상식","심리|문형선","과과연|이재균","언매|박주생"],"수":["사문탐|김재익","심수Ⅰ|노광수","음감|손선미","언매|박주생","기하|김영진","자율|문형선","|"],"목":["기하|김영진","영독3|문형선","과과연|이재균","운동|전상식","언매|박주생","심수Ⅰ|노광수","사문탐|김재익"],"금":["심수Ⅰ|노광수","영독1|하도균","기하|김영진","심리|문형선","동아|최영은","봉사|문형선","과과연|이재균"]}},"1-5":{"h":"김재익","s":{"월":["영어|손세욱","과학D|이재균","국사|김재익","수학1|홍예설","음악|손예진","사회A|전성환","국어3|김민채"],"화":["수학3|서혜리","국어1|김기A","정보A|김기B","│|▽","과학A|안홍엽","영어|손세욱","국사|김재익"],"수":["정보B|김기B","사회B|강상호","체육A|임재우","수학3|서혜리","동아|김재익","자율|김재익","|"],"목":["체육B|임재우","진로|장진환","국어3|김민채","과학C|최유B","사회A|전성환","영어|손세욱","실험|김태수"],"금":["음악|손예진","국어3|김민채","과학B|최승호","국사|김재익","영어|손세욱","수학3|서혜리","사회C|남상훈"]}},"2-5":{"h":"이희순","s":{"월":["대수|홍예설","미적Ⅰ|송준원","물리|이영권","체육|임재우","문학3|이희순","진로|안홍엽","영어Ⅰ|최영은"],"화":["화학|최승호","탐독2|이희순","일어|박선영","생명|전혜진","문학3|이희순","미적Ⅰ|송준원","영어Ⅰ|최영은"],"수":["일어|박선영","탐독1|이경인","대수|홍예설","영어Ⅰ|최영은","동아|홍대화","자율|이희순","|"],"목":["생명|전혜진","미적Ⅰ|송준원","화학|최승호","물리|이영권","문학3|이희순","영어Ⅰ|최영은","일어|박선영"],"금":["물리|이영권","탐독2|이희순","미적Ⅰ|송준원","대수|홍예설","생명|전혜진","화학|최승호","문학1|박성근"]}},"3-5":{"h":"장성원","s":{"월":["음감|손선미","과과연|장성원","운동|전상식","지Ⅱ|정용석","화작|김대연","영독3|문형선","수탐|김해영"],"화":["지Ⅱ|정용석","수탐|김해영","영독3|문형선","과과연|장성원","심수Ⅰ|노광수","심리|문형선","화작|김대연"],"수":["지Ⅱ|정용석","영독1|하도균","심리|문형선","화작|김대연","심수Ⅰ|노광수","자율|장성원","|"],"목":["심수Ⅰ|노광수","수탐|김해영","음감|손선미","영독3|문형선","화작|김대연","과과연|장성원","지Ⅱ|정용석"],"금":["과과연|장성원","심수Ⅰ|노광수","심리|문형선","운동|전상식","동아|이종환","봉사|장성원","수탐|김해영"]}},"1-6":{"h":"서혜리","s":{"월":["사회A|고덕민","체육A|임재우","영어|손세욱","과학B|최승호","국어3|김민채","수학3|서혜리","정보B|김기B"],"화":["체육B|임재우","영어|손세욱","실험|최유B","국사|김재익","과학C|최유B","국어3|김민채","수학1|노광수"],"수":["사회A|고덕민","영어|손세욱","수학3|서혜리","과학D|이재균","동아|배승현","자율|서혜리","|"],"목":["정보A|김기B","│|▽","진로|장진환","사회C|남상훈","국사|김재익","음악|손예진","국어1|김민채"],"금":["영어|손세욱","수학3|서혜리","사회B|강상호","과학A|안홍엽","음악|손예진","국사|김재익","국어3|김민채"]}},"2-6":{"h":"이영권","s":{"월":["문학3|이희순","진로|안홍엽","미적Ⅰ|최정현","화학|김종목","생명|이종환","탐독2|홍원의","영어Ⅰ|손동인"],"화":["화학|김종목","미적Ⅰ|최정현","물리|이영권","영어Ⅰ|손동인","탐독2|홍원의","한문|홍성수","대수|오상승"],"수":["문학1|이경인","한문|홍성수","물리|이영권","대수|오상승","동아|이영권","자율|이영권","|"],"목":["한문|홍성수","탐독1|정민석","문학3|이희순","영어Ⅰ|손동인","체육|임재우","생명|이종환","미적Ⅰ|최정현"],"금":["문학3|이희순","생명|이종환","미적Ⅰ|최정현","영어Ⅰ|손동인","화학|김종목","물리|이영권","대수|오상승"]}},"3-6":{"h":"정민석","s":{"월":["심수Ⅰ|구자용","음감|손선미","영독3|박혜영","언매|정민석","과과연|김정우","사문탐|허진","기하|김영진"],"화":["데과|홍대화","기하|김영진","운동|이병을","영독3|박혜영","사문탐|전성환","과과연|김정우","언매|정민석"],"수":["영독1|하도균","데과|홍대화","언매|정민석","사문탐|허진","심수Ⅰ|구자용","자율|정민석","|"],"목":["영독3|박혜영","기하|김영진","과과연|김정우","언매|정민석","심수Ⅰ|구자용","데과|홍대화","음감|손선미"],"금":["운동|이병을","심수Ⅰ|구자용","과과연|김정우","사문탐|전성환","동아|최유B","봉사|정민석","기하|김영진"]}},"1-7":{"h":"손세욱","s":{"월":["진로|장진환","국어3|김민채","수학1|노광수","미술|구교원","영어|손세욱","체육A|임재우","과학B|최승호"],"화":["국어3|김민채","과학D|김태수","사회C|남상훈","영어|손세욱","국사|김재익","미술|구교원","수학3|서혜리"],"수":["사회B|장하영","국어1|김민채","과학C|최유B","정보B|김기B","동아|손세욱","자율|손세욱","|"],"목":["사회A|고덕민","수학3|서혜리","국사|김재익","영어|손세욱","국어3|김민채","과학A|안홍엽","실험|최유B"],"금":["국사|김재익","정보A|김기B","│|▽","수학3|서혜리","체육B|임재우","사회A|고덕민","영어|손세욱"]}},"2-7":{"h":"손동인","s":{"월":["생명|이종환","화학|김종목","영어Ⅰ|손동인","문학3|이경인","미적Ⅰ|최정현","일어|박선영","탐독2|홍원의"],"화":["물리|이영권","영어Ⅰ|손동인","화학|김종목","미적Ⅰ|최정현","문학3|이경인","진로|정용석","대수|배승현"],"수":["생명|이종환","일어|박선영","화학|김종목","문학1|이경인","동아|손동인","자율|손동인","|"],"목":["영어Ⅰ|손동인","미적Ⅰ|최정현","대수|배승현","생명|이종환","문학3|이경인","물리|이영권","탐독2|홍원의"],"금":["일어|박선영","체육|임재우","영어Ⅰ|손동인","물리|이영권","탐독1|정민석","대수|배승현","미적Ⅰ|최정현"]}},"3-7":{"h":"박혜영","s":{"월":["기하|최정현","생Ⅱ|이종환","언매|석은동","음감|손선미","심수Ⅰ|구자용","지Ⅱ|정용석","영독3|박혜영"],"화":["심리|박혜영","운동|이병을","언매|석은동","생Ⅱ|이종환","지Ⅱ|정용석","심수Ⅰ|구자용","영독1|하도균"],"수":["영독3|박혜영","심리|박혜영","생Ⅱ|이종환","지Ⅱ|정용석","기하|최정현","자율|박혜영","|"],"목":["심수Ⅰ|구자용","언매|석은동","기하|최정현","운동|이병을","음감|손선미","심리|박혜영","생Ⅱ|이종환"],"금":["기하|최정현","영독3|박혜영","언매|석은동","지Ⅱ|정용석","동아|정용석","봉사|박혜영","심수Ⅰ|구자용"]}},"1-8":{"h":"김민채","s":{"월":["과학A|안홍엽","국사|허진","수학1|서혜리","사회C|남상훈","정보A|정지원","│|▽","영어|손세욱"],"화":["과학C|최유B","국어3|김민채","사회A|고덕민","국사|허진","수학3|신동철","실험|최유B","영어|손세욱"],"수":["체육B|김경환","미술|구교원","국어1|김민채","진로|장진환","동아|강상호","자율|김민채","|"],"목":["국어3|김민채","영어|손세욱","사회B|장하영","과학B|최승호","체육A|김경환","수학3|신동철","정보B|정지원"],"금":["과학D|김태수","국사|허진","영어|손세욱","사회A|고덕민","국어3|김민채","수학3|신동철","미술|구교원"]}},"2-8":{"h":"최정현","s":{"월":["문학3|이경인","물리|이영권","한문|홍성수","영어Ⅰ|손동인","대수|배승현","미적Ⅰ|최정현","화학|김종목"],"화":["미적Ⅰ|최정현","생명|이종환","문학3|이경인","대수|배승현","체육|임재우","영어Ⅰ|손동인","물리|이영권"],"수":["탐독2|홍원의","미적Ⅰ|최정현","영어Ⅰ|손동인","한문|홍성수","동아|장성원","자율|최정현","|"],"목":["생명|이종환","물리|이영권","진로|정용석","화학|김종목","미적Ⅰ|최정현","문학1|이경인","탐독1|정민석"],"금":["화학|김종목","문학3|이경인","생명|이종환","대수|배승현","탐독2|홍원의","영어Ⅰ|손동인","한문|홍성수"]}},"3-8":{"h":"김정우","s":{"월":["심리|박혜영","과과연|김정우","언매|정민석","심수Ⅰ|구자용","사문탐|전성환","영독3|박혜영","기하|노광수"],"화":["언매|정민석","기하|노광수","영독3|박혜영","과과연|김정우","심수Ⅰ|구자용","사문탐|고덕민","심리|박혜영"],"수":["심수Ⅰ|구자용","음감|손선미","과과연|김정우","언매|정민석","운동|이병을","자율|김정우","|"],"목":["운동|이병을","기하|노광수","사문탐|고덕민","심리|박혜영","영독1|하도균","심수Ⅰ|구자용","과과연|김정우"],"금":["음감|손선미","언매|정민석","사문탐|고덕민","영독3|박혜영","동아|김정우","봉사|김정우","기하|노광수"]}},"1-9":{"h":"고덕민","s":{"월":["국어3|김민채","영어|한상우","정보B|정지원","과학D|김태수","수학3|신동철","실험|김태수","사회A|고덕민"],"화":["정보A|정지원","│|▽","수학1|서혜리","국어3|김민채","사회B|장하영","과학B|최승호","영어|한상우"],"수":["국사|허진","영어|한상우","미술|구교원","국어1|박성근","동아|정용석","자율|고덕민","|"],"목":["수학3|신동철","체육A|김경환","과학A|안홍엽","국사|허진","진로|장진환","사회C|남상훈","영어|한상우"],"금":["과학C|최유B","수학3|신동철","국어3|김민채","미술|구교원","체육B|김경환","국사|허진","사회A|고덕민"]}},"2-9":{"h":"김종목","s":{"월":["대수|배승현","문학3|이경인","미적Ⅰ|오상승","영어Ⅰ|최영은","물리|이영권","탐독1|정민석","진로|정용석"],"화":["일어|박선영","생명|김정우","영어Ⅰ|최영은","체육|임재우","물리|이영권","문학1|이경인","화학|김종목"],"수":["생명|김정우","미적Ⅰ|오상승","대수|배승현","탐독2|홍원의","동아|김종목","자율|김종목","|"],"목":["화학|김종목","대수|배승현","문학3|이경인","일어|박선영","생명|김정우","미적Ⅰ|오상승","영어Ⅰ|최영은"],"금":["탐독2|홍원의","물리|이영권","영어Ⅰ|최영은","화학|김종목","미적Ⅰ|오상승","일어|박선영","문학3|이경인"]}},"3-9":{"h":"이병을","s":{"월":["운동|이병을","영독3|이상범","언매|김대연","체실|이병을","생윤|김유성","사·문|최병권","심수Ⅰ|윤신영"],"화":["심수Ⅰ|윤신영","생윤|김유성","음감|손선미","언매|김대연","심리|김지혜","체실|이병을","영독3|이상범"],"수":["심리|김지혜","체실|이병을","운동|이병을","사·문|최병권","영독1|박혜영","자율|이병을","|"],"목":["영독3|이상범","언매|김대연","생윤|김유성","심수Ⅰ|윤신영","심리|김지혜","체실|이병을","사·문|최병권"],"금":["사·문|최병권","음감|손선미","심수Ⅰ|윤신영","언매|김대연","동아|이재균","봉사|이병을","생윤|김유성"]}},"1-10":{"h":"김태수","s":{"월":["영어|한상우","정보B|정지원","체육B|김경환","과학A|안홍엽","국어1|박성근","진로|장진환","수학3|신동철"],"화":["미술|구교원","국사|허진","영어|한상우","과학B|김종목","국어3|박성근","체육A|김경환","사회A|고덕민"],"수":["수학3|신동철","정보A|정지원","│|▽","사회A|고덕민","동아|김태수","자율|김태수","|"],"목":["사회B|장하영","과학D|김태수","국어3|박성근","영어|한상우","미술|구교원","국사|허진","수학1|서혜리"],"금":["사회C|남상훈","영어|한상우","국사|허진","수학3|신동철","국어3|박성근","과학C|최유B","실험|김태수"]}},"2-10":{"h":"최병권","s":{"월":["미적Ⅰ|오상승","사문|강상호","영어Ⅰ|최영은","문학3|홍원의","한문|홍성수","법사|장하영","탐독2|이희순"],"화":["영어Ⅰ|최영은","문학3|홍원의","대수|배승현","미적Ⅰ|오상승","탐독1|정민석","체육|임재우","사문|강상호"],"수":["미적Ⅰ|오상승","대수|배승현","진로|장진환","사윤|남상훈","동아|이경인","자율|최병권","|"],"목":["사윤|남상훈","사문|강상호","문학1|박주생","영어Ⅰ|최영은","미적Ⅰ|오상승","법사|장하영","한문|홍성수"],"금":["대수|배승현","법사|장하영","사윤|남상훈","한문|홍성수","탐독2|이희순","영어Ⅰ|최영은","문학3|홍원의"]}},"3-10":{"h":"전성환","s":{"월":["심리|전성환","생윤|김유성","사·문|최병권","수탐|김해영","심수Ⅰ|노광수","영독3|이상범","화작|김대연"],"화":["사·문|최병권","화작|김대연","심리|전성환","영독3|이상범","운동|이병을","수탐|김해영","음감|손선미"],"수":["화작|김대연","수탐|김해영","영독1|이상범","심수Ⅰ|노광수","생윤|김유성","자율|전성환","|"],"목":["음감|손선미","운동|이병을","영독3|이상범","심수Ⅰ|노광수","사·문|최병권","수탐|김해영","생윤|김유성"],"금":["생윤|김유성","사·문|최병권","화작|김대연","심수Ⅰ|노광수","동아|허진","봉사|전성환","심리|전성환"]}},"1-11":{"h":"신동철","s":{"월":["실험|김태수","수학3|신동철","국어3|박성근","사회A|고덕민","과학C|최유B","영어|한상우","국사|허진"],"화":["과학D|김태수","영어|한상우","수학3|신동철","체육B|김경환","정보B|정지원","진로|장진환","사회B|장하영"],"수":["사회C|김유성","국어3|박성근","국사|허진","체육A|김경환","동아|이재균","자율|신동철","|"],"목":["영어|한상우","국사|허진","미술|구교원","수학3|신동철","사회A|고덕민","국어1|박성근","과학B|김종목"],"금":["정보A|정지원","│|▽","국어3|박성근","수학1|김해영","영어|한상우","미술|구교원","과학A|안홍엽"]}},"2-11":{"h":"박선영","s":{"월":["영어Ⅰ|김대도","문학3|홍원의","대수|배승현","법사|장하영","일어|박선영","사문|강상호","미적Ⅰ|오상승"],"화":["대수|배승현","미적Ⅰ|오상승","문학3|홍원의","진로|장진환","사윤|남상훈","탐독2|이강산","영어Ⅰ|김대도"],"수":["사윤|남상훈","탐독1|이강산","법사|장하영","일어|박선영","동아|정지원","자율|박선영","|"],"목":["미적Ⅰ|오상승","일어|박선영","사문|강상호","문학3|홍원의","대수|배승현","영어Ⅰ|김대도","사윤|남상훈"],"금":["사문|강상호","문학1|박주생","미적Ⅰ|오상승","영어Ⅰ|김대도","탐독2|이강산","체육|임재우","법사|장하영"]}},"3-11":{"h":"이상범","s":{"월":["심수Ⅰ|윤신영","운동|이병을","영독1|이상범","수탐|정호재","사·문|최병권","생윤|김유성","언매|정민석"],"화":["음감|손선미","언매|정민석","영독3|이상범","사·문|최병권","심수Ⅰ|윤신영","수탐|정호재","생윤|김유성"],"수":["언매|정민석","수탐|정호재","심리|김지혜","생윤|김유성","영독3|이상범","자율|이상범","|"],"목":["생윤|김유성","심리|김지혜","사·문|최병권","영독3|이상범","운동|이병을","수탐|정호재","심수Ⅰ|윤신영"],"금":["심리|김지혜","심수Ⅰ|윤신영","언매|정민석","사·문|최병권","동아|이상범","봉사|이상범","음감|손선미"]}},"1-12":{"h":"한상우","s":{"월":["국사|허진","과학C|최유B","수학3|신동철","영어|한상우","체육B|김경환","사회A|고덕민","미술|구교원"],"화":["국어1|박성근","과학A|안홍엽","사회B|장하영","미술|구교원","영어|한상우","수학3|신동철","국사|허진"],"수":["국어3|박성근","사회A|고덕민","과학D|김태수","영어|한상우","동아|최유B","자율|한상우","|"],"목":["실험|이재균","수학3|신동철","정보A|정지원","│|▽","국어3|박성근","과학B|김종목","국사|허진"],"금":["수학1|김해영","국어3|박성근","영어|한상우","진로|장진환","사회C|김유성","체육A|김경환","정보B|정지원"]}},"2-12":{"h":"홍원의","s":{"월":["영어Ⅰ|손동인","한문|홍성수","탐독1|이강산","사문|강상호","미적Ⅰ|오상승","사윤|남상훈","대수|배승현"],"화":["법사|장하영","사윤|남상훈","한문|홍성수","문학1|박주생","탐독2|이강산","미적Ⅰ|오상승","영어Ⅰ|손동인"],"수":["한문|홍성수","문학3|홍원의","사문|강상호","법사|장하영","동아|최영은","자율|홍원의","|"],"목":["문학3|홍원의","체육|임재우","미적Ⅰ|오상승","탐독2|이강산","사문|강상호","대수|배승현","영어Ⅰ|손동인"],"금":["영어Ⅰ|손동인","미적Ⅰ|오상승","문학3|홍원의","법사|장하영","사윤|남상훈","진로|장진환","대수|배승현"]}},"3-12":{"h":"윤신영","s":{"월":["심리|김지혜","사·문|최병권","생윤|김유성","수탐|윤신영","영독3|이상범","운동|김경환","언매|박주생"],"화":["영독1|이상범","언매|박주생","심수Ⅰ|윤신영","생윤|김유성","음감|손선미","수탐|윤신영","사·문|최병권"],"수":["언매|박주생","수탐|윤신영","사·문|최병권","심수Ⅰ|윤신영","심리|김지혜","자율|윤신영","|"],"목":["사·문|최병권","심수Ⅰ|윤신영","운동|김경환","심리|김지혜","생윤|김유성","수탐|윤신영","영독3|이상범"],"금":["영독3|이상범","생윤|김유성","언매|박주생","음감|손선미","동아|정지원","봉사|윤신영","심수Ⅰ|윤신영"]}}}};
-  const ALI={"김기A":"김기철A","김기B":"김기철B","최유B":"최유리B"};
-  const DAYS=['월','화','수','목','금'];
-  const P=7;
-  const NO7=[2]; // 수요일 7교시 없음
-
-  function R(n){return ALI[n]||n;}
-  function todayIdx(){const d=new Date().getDay();return d>=1&&d<=5?d-1:-1;}
-  function validSlot(d,p){return!(NO7.includes(d)&&p===6);}
-
-  /* ── 타입 전환 ─────────────────────────── */
-  window.ttTypeChange=function(){
-    const t=document.getElementById('tt-type').value;
-    document.getElementById('tt-teacher-wrap').style.display=t==='teacher'?'':'none';
-    document.getElementById('tt-class-select').style.display=t==='class'?'':'none';
-    document.getElementById('tt-input').value='';
-    document.getElementById('tt-suggest').style.display='none';
-  };
-
-  /* ── 자동완성 ──────────────────────────── */
-  const TL=["강상호","고덕민","구교원","구자용","김경환","김기철A","김기철B","김대도","김대연","김민채","김영진","김유성","김재익","김정우","김종목","김지혜","김태수","김해영","남상훈","노광수","문형선","박선영","박성근","박주생","박혜영","배승현","서혜리","석은동","손동인","손선미","손세욱","손예진","송준원","신동철","신화룡","안홍엽","양해준","오상승","윤신영","이강산","이경인","이병을","이상범","이영권","이재균","이종환","이희순","임재우","장성원","장진환","장하영","전상식","전성환","전혜진","전희규","정민석","정용석","정지원","정호재","최병권","최승호","최영은","최유리B","최정현","하도균","한상우","허진","홍대화","홍성수","홍예설","홍원의"];
-  window.ttSuggest=function(){
-    const q=document.getElementById('tt-input').value.trim().toLowerCase();
-    const box=document.getElementById('tt-suggest');
-    if(!q){box.style.display='none';return;}
-    const m=TL.filter(n=>n.toLowerCase().includes(q)).slice(0,12);
-    if(!m.length){box.style.display='none';return;}
-    box.innerHTML=m.map(n=>`<div onclick="ttSelect('${n}')">${n}</div>`).join('');
-    box.style.display='block';
-  };
-  window.ttSelect=function(n){document.getElementById('tt-input').value=n;document.getElementById('tt-suggest').style.display='none';ttSearch();};
-  let _ki=-1;
-  window.ttKeydown=function(e){
-    const box=document.getElementById('tt-suggest'),items=box.querySelectorAll('div');
-    if(e.key==='ArrowDown'){_ki=Math.min(_ki+1,items.length-1);_hl(items);e.preventDefault();}
-    else if(e.key==='ArrowUp'){_ki=Math.max(_ki-1,-1);_hl(items);e.preventDefault();}
-    else if(e.key==='Enter'){if(_ki>=0&&items[_ki])items[_ki].click();else ttSearch();_ki=-1;}
-    else if(e.key==='Escape'){box.style.display='none';_ki=-1;}
-  };
-  function _hl(items){items.forEach((el,i)=>el.classList.toggle('tt-ac-act',i===_ki));if(_ki>=0&&items[_ki])items[_ki].scrollIntoView({block:'nearest'});}
-
-  function isLoggedIn(){try{return!!JSON.parse(localStorage.getItem('dr_sess_v1'));}catch{return false;}}
-
-  /* ── 검색 ──────────────────────────────── */
-  let _name='',_type='';
-  window.ttSearch=function(){
-    document.getElementById('tt-suggest').style.display='none';
-    const type=document.getElementById('tt-type').value;
-    let name='';
-    if(type==='teacher'){
-      name=document.getElementById('tt-input').value.trim();
-      if(!name){alert('교사 이름을 입력하세요.');return;}
-      if(!TT.t[name]){const f=Object.keys(TT.t).find(k=>k.includes(name));if(!f){alert('교사를 찾을 수 없습니다: '+name);return;}name=f;document.getElementById('tt-input').value=name;}
-    }else{
-      name=document.getElementById('tt-class-select').value;
-      if(!name){alert('학반을 선택하세요.');return;}
-    }
-    _name=name;_type=type;_moveMode=false;
-    document.getElementById('tt-move-btn').style.display=type==='teacher'?'':'none';
-    document.getElementById('tt-move-btn').textContent='🔄 이동 시뮬레이션';
-    document.getElementById('tt-move-btn').classList.remove('tt-hdr-active');
-    document.getElementById('tt-move-hint').style.display='none';
-    document.getElementById('tt-panel-title').textContent=type==='teacher'?'🧑‍🏫 '+name+' 선생님 시간표':'🏫 '+name+' 시간표';
-    document.getElementById('tt-panel-sub').textContent='';
-    document.getElementById('tt-panel').style.display='block';
-    document.getElementById('tt-backdrop').style.display='block';
-    ttShowView('today');
-  };
-  window.ttClose=function(){
-    document.getElementById('tt-panel').style.display='none';
-    document.getElementById('tt-backdrop').style.display='none';
-    _moveMode=false;
-  };
-
-  /* ── 뷰 전환 ───────────────────────────── */
-  window.ttShowView=function(v){
-    const tv=document.getElementById('tt-today-view'),wv=document.getElementById('tt-week-view');
-    const bt=document.getElementById('tt-view-today'),bw=document.getElementById('tt-view-week');
-    if(v==='today'){tv.style.display='';wv.style.display='none';bt.classList.add('tt-hdr-active');bw.classList.remove('tt-hdr-active');_renderToday();}
-    else{tv.style.display='none';wv.style.display='';bw.classList.add('tt-hdr-active');bt.classList.remove('tt-hdr-active');_renderWeek();}
-  };
-
-  function _slots(day){
-    if(_type==='teacher')return TT.t[_name]?TT.t[_name][day]:null;
-    return TT.c[_name]?TT.c[_name].s[day]:null;
-  }
-  function _parseSub(raw){const[s,m]=(raw||'').split('|');return{s:s||'',m:m||''};}
-  function _hasSub(raw){const{s}=_parseSub(raw);return!!(s&&s.trim());}
-  function _isBlock(raw){return(raw||'').startsWith('│');}
-  // 블록타임(│|▽)이면 이전 교시 raw로 대체, 아니면 그대로 반환
-  function _resolveRaw(slots,p){
-    if(!slots)return'';
-    const raw=slots[p]||'';
-    if(_isBlock(raw)&&p>0)return slots[p-1]||'';
-    return raw;
-  }
-
-  /* ── 오늘 시간표 ────────────────────────── */
-  function _renderToday(){
-    const di=todayIdx();
-    const lbl=document.getElementById('tt-today-day-label'),cnt=document.getElementById('tt-today-content');
-    if(di<0){lbl.textContent='오늘은 주말입니다.';cnt.innerHTML='<p style="color:#6b7280;font-size:.84rem;">전체 주간을 보려면 [📋 전체 주간] 버튼을 클릭하세요.</p>';return;}
-    const now=new Date();
-    lbl.innerHTML=`${now.getMonth()+1}월 ${now.getDate()}일 (${DAYS[di]}요일) <span class="tt-today-badge">TODAY</span>`;
-    const sl=_slots(DAYS[di]);
-    const col=_type==='teacher'?'수업 (담당 학반)':'수업 (담당 교사)';
-    let rows='';
-    for(let p=0;p<P;p++){
-      if(!validSlot(di,p))continue; // 수 7교시 생략
-      const{s,m}=_parseSub(_resolveRaw(sl,p));
-      rows+=`<tr><td class="tt-period">${p+1}교시</td><td>${s?`<div class="tt-subj">${s}</div><div class="tt-meta">${m}</div>`:'<span class="tt-empty">—</span>'}</td></tr>`;
-    }
-    cnt.innerHTML=`<div style="overflow-x:auto;"><table class="tt-table"><thead><tr><th>교시</th><th>${col}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  }
-
-  /* ── 전체 주간 ──────────────────────────── */
-  function _renderWeek(){
-    const di=todayIdx();
-    const cnt=document.getElementById('tt-week-content');
-    const col=_type==='teacher'?'학반':'교사';
-    let th='<tr><th style="width:38px;">교시</th>'+DAYS.map((d,i)=>`<th${i===di?' style="background:#2563eb;"':''}>${d}</th>`).join('')+'</tr>';
-    let rows='';
-    for(let p=0;p<P;p++){
-      const isNoSlot=NO7.every(wd=>p===6&&wd===wd); // 7교시 행에 수요일만 제외
-      let row=`<td class="tt-period">${p+1}</td>`;
-      for(let d=0;d<5;d++){
-        const day=DAYS[d];
-        const sl=_slots(day);
-        const{s,m}=_parseSub(_resolveRaw(sl,p));
-        const isT=d===di;
-        const inv=!validSlot(d,p);
-        const hasCnt=!inv&&!!(s&&s.trim());
-        const id=`tt-cell-${d}-${p}`;
-        const moveCls=_moveMode&&hasCnt?' tt-drag':'';
-        const dropCls=_moveMode&&!hasCnt&&!inv?' tt-dst-empty':(_moveMode&&hasCnt?' tt-dst-filled':'');
-        row+=`<td id="${id}" data-day="${d}" data-period="${p}" class="${isT?'tt-today-col':''}${inv?' tt-empty':''}${moveCls}${dropCls}"${_moveMode&&hasCnt?' draggable="true"':''}>`;
-        if(inv)row+='<span class="tt-empty" style="font-size:.68rem;">—</span>';
-        else if(s)row+=`<div class="tt-subj">${s}</div><div class="tt-meta">${m}</div>`;
-        else row+='<span class="tt-empty">—</span>';
-        row+='</td>';
-      }
-      rows+=`<tr>${row}</tr>`;
-    }
-    cnt.innerHTML=`<div style="overflow-x:auto;"><table class="tt-table" id="tt-week-tbl"><thead>${th}</thead><tbody>${rows}</tbody></table></div>`;
-    if(_moveMode)_bindDrag();
-  }
-
-  /* ══════════════════════════════════════════
-     이동 시뮬레이션 모드
-  ══════════════════════════════════════════ */
-  let _moveMode=false,_dragSrc=null;
-
-  window.ttToggleMove=function(){
-    _moveMode=!_moveMode;
-    const btn=document.getElementById('tt-move-btn');
-    btn.classList.toggle('tt-hdr-active',_moveMode);
-    btn.textContent=_moveMode?'✕ 시뮬레이션 종료':'🔄 이동 시뮬레이션';
-    document.getElementById('tt-move-hint').style.display=_moveMode?'':'none';
-    ttShowView('week');
-  };
-
-  function _bindDrag(){
-    const tbl=document.getElementById('tt-week-tbl');
-    if(!tbl)return;
-    tbl.addEventListener('click',function(e){
-      if(_dragSrc!==null)return;
-      const td=e.target.closest('td.tt-drag');
-      if(!td)return;
-      _showSimGrid(+td.dataset.day,+td.dataset.period);
-    });
-    tbl.addEventListener('dragstart',function(e){
-      const td=e.target.closest('td.tt-drag');
-      if(!td){e.preventDefault();return;}
-      _dragSrc={d:+td.dataset.day,p:+td.dataset.period};
-      td.classList.add('tt-dragging');
-      e.dataTransfer.effectAllowed='move';
-    });
-    tbl.addEventListener('dragend',function(){
-      document.querySelectorAll('.tt-dragging,.tt-drop-over').forEach(el=>el.classList.remove('tt-dragging','tt-drop-over'));
-      setTimeout(()=>{_dragSrc=null;},60);
-    });
-    tbl.addEventListener('dragover',function(e){
-      const td=e.target.closest('td[data-day]');
-      if(!td||!_dragSrc)return;
-      e.preventDefault();e.dataTransfer.dropEffect='move';
-      document.querySelectorAll('.tt-drop-over').forEach(el=>el.classList.remove('tt-drop-over'));
-      if(+td.dataset.day!==_dragSrc.d||+td.dataset.period!==_dragSrc.p)td.classList.add('tt-drop-over');
-    });
-    tbl.addEventListener('dragleave',function(e){
-      const td=e.target.closest('td[data-day]');
-      if(td)td.classList.remove('tt-drop-over');
-    });
-    tbl.addEventListener('drop',function(e){
-      e.preventDefault();
-      const td=e.target.closest('td[data-day]');
-      if(!td||!_dragSrc)return;
-      const dD=+td.dataset.day,dP=+td.dataset.period;
-      if(dD===_dragSrc.d&&dP===_dragSrc.p)return;
-      _showDropModal(_dragSrc.d,_dragSrc.p,dD,dP);
-    });
-  }
-
-  /* ── 데이터 헬퍼 ────────────────────────── */
-  function _teacherFreeAt(tName,day,p){
-    if(!tName||!TT.t[tName])return true;
-    return!_hasSub((TT.t[tName][day]||[])[p]);
-  }
-  function _classFreeAt(cls,day,p){
-    if(!cls||!TT.c[cls])return true;
-    return!_hasSub((TT.c[cls].s[day]||[])[p]);
-  }
-  function _classTeacherAt(cls,day,p){
-    if(!cls||!TT.c[cls])return'';
-    const raw=(TT.c[cls].s[day]||[])[p]||'';
-    const[,t]=raw.split('|');return R(t||'');
-  }
-  function _classSubjAt(cls,day,p){
-    if(!cls||!TT.c[cls])return'';
-    const raw=(TT.c[cls].s[day]||[])[p]||'';
-    const[s]=raw.split('|');return s||'';
-  }
-
-  // Teacher B가 Class X 수업을 옮길 수 있는 시간 (맞교대 가능 시간)
-  // 조건: Teacher B 가 비어있음 AND Class X 가 비어있음
-  //       (단, Teacher A의 원래 자리(srcD,srcP)는 이동 후 빌 예정이므로 후보 포함)
-  function _swapSlots(tB,cls,srcD,srcP,N){
-    const res=[];
-    for(let d=0;d<5&&res.length<N;d++){
-      for(let p=0;p<P&&res.length<N;p++){
-        if(!validSlot(d,p))continue;
-        if(!_teacherFreeAt(tB,DAYS[d],p))continue;
-        // Class X는 비어있거나, 이동 후 빌 자리(srcD,srcP)인 경우 포함
-        const clsFree=_classFreeAt(cls,DAYS[d],p)||(d===srcD&&p===srcP);
-        if(clsFree)res.push({d,p,label:DAYS[d]+' '+(p+1)+'교시'});
-      }
-    }
-    return res;
-  }
-
-  /* ══════════════════════════════════════════
-     드래그앤드롭 분석 모달
-  ══════════════════════════════════════════ */
-  function _showDropModal(srcD,srcP,dstD,dstP){
-    if(!validSlot(dstD,dstP)){alert('수요일 7교시는 수업이 없습니다.');return;}
-    const teacher=_name;
-    const srcDay=DAYS[srcD],dstDay=DAYS[dstD];
-    const srcRaw=(TT.t[teacher][srcDay]||[])[srcP]||'';
-    const dstRaw=(TT.t[teacher][dstDay]||[])[dstP]||'';
-    const{s:srcS,m:srcC}=_parseSub(_resolveRaw(TT.t[teacher][srcDay]||[],srcP));
-    const{s:dstS,m:dstC}=_parseSub(_resolveRaw(TT.t[teacher][dstDay]||[],dstP));
-    const tFree=!_hasSub(dstRaw);      // 교사 자신이 목적지에 비어있는지
-    const cxFree=_classFreeAt(srcC,dstDay,dstP); // 담당 학반이 목적지에 비어있는지
-
-    // 헤더 색상 및 상태 결정
-    let status,clsName,hdrCls;
-    if(tFree&&cxFree){status='✅ 즉시 이동 가능';clsName='ok';hdrCls='dm-ok';}
-    else if(!tFree&&cxFree){status='🔄 맞바꾸기 가능';clsName='swap';hdrCls='dm-swap';}
-    else if(tFree&&!cxFree){status='💬 학반 협의 필요';clsName='neg';hdrCls='dm-neg';}
-    else{status='⚠️ 이동 어려움';clsName='blk';hdrCls='dm-blk';}
-
-    // 헤더
-    const hdr=document.getElementById('tt-drop-header');
-    hdr.className=hdrCls;hdr.style.borderRadius='14px 14px 0 0';hdr.style.padding='14px 18px';
-    hdr.innerHTML=`<p class="dm-title">${status}</p>
-      <p class="dm-sub">${srcDay} ${srcP+1}교시 ${srcS}${srcC?' ('+srcC+'반)':''} → ${dstDay} ${dstP+1}교시</p>`;
-
-    let body='';
-
-    /* Case 1: 즉시 이동 */
-    if(tFree&&cxFree){
-      body+=`<div class="dm-row"><span class="dm-label">이동할 수업</span><strong>${srcS}</strong>&nbsp;${srcC?'('+srcC+'반)':''}</div>
-      <div class="dm-row"><span class="dm-label">목적지</span>${dstDay} ${dstP+1}교시 — 비어있음</div>
-      <div style="margin-top:12px;">
-        <button class="dm-btn p" onclick="ttApplyMove('${srcDay}',${srcP},'${dstDay}',${dstP})">✅ 이동 확정</button>
-        <button class="dm-btn s" onclick="ttDropClose()">취소</button>
-      </div>`;
-    }
-    /* Case 2: 교사 자신의 다른 수업과 맞바꾸기 */
-    else if(!tFree&&cxFree){
-      const cyFree=_classFreeAt(dstC,srcDay,srcP);
-      if(cyFree){
-        body+=`<div class="dm-row"><span class="dm-label">이동할 수업</span><strong>${srcS}</strong> (${srcC||'—'}반)</div>
-        <div class="dm-row"><span class="dm-label">현재 수업</span><strong>${dstS}</strong> (${dstC||'—'}반)</div>
-        <div style="background:#eff6ff;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:.79rem;">
-          두 수업을 서로 맞바꿉니다.<br>
-          <b>${srcC}반</b> ${dstDay} ${dstP+1}교시 ← ${srcS}<br>
-          <b>${dstC}반</b> ${srcDay} ${srcP+1}교시 ← ${dstS}
-        </div>
-        <div><button class="dm-btn p" onclick="ttApplySwap('${srcDay}',${srcP},'${dstDay}',${dstP})">🔄 맞바꾸기 확정</button>
-        <button class="dm-btn s" onclick="ttDropClose()">취소</button></div>`;
-      }else{
-        // 맞바꾸기 불가 - 대안 시간 제시
-        const alts=[];
-        for(let d=0;d<5&&alts.length<5;d++)for(let p=0;p<P&&alts.length<5;p++){
-          if(!validSlot(d,p))continue;
-          if(_teacherFreeAt(teacher,DAYS[d],p)&&_classFreeAt(srcC,DAYS[d],p))
-            alts.push({d,p,label:DAYS[d]+' '+(p+1)+'교시'});
-        }
-        body+=`<div class="dm-row"><span class="dm-label">현재 수업</span><strong>${dstS}</strong> (${dstC||'—'}반) — 맞바꾸기 시 ${dstC}반 충돌</div>
-        ${alts.length?'<div style="font-size:.77rem;color:#374151;margin-bottom:5px;">대신 이동 가능한 시간:</div><div>'
-          +alts.map(a=>`<span class="dm-chip g" onclick="ttDropClose();_quickMove('${srcDay}',${srcP},'${DAYS[a.d]}',${a.p})">${a.label}</span>`).join('')+'</div>':
-          '<p style="color:#6b7280;font-size:.79rem;">대안 시간이 없습니다.</p>'}
-        <div style="margin-top:10px;"><button class="dm-btn s" onclick="ttDropClose()">닫기</button></div>`;
-      }
-    }
-    /* Case 3: 교사 O, 학반 X — 맞교대 협의 */
-    else if(tFree&&!cxFree){
-      const bName=_classTeacherAt(srcC,dstDay,dstP);
-      const bSubj=_classSubjAt(srcC,dstDay,dstP);
-      // Teacher B가 Class X 수업을 옮길 수 있는 시간
-      // (Teacher B 비어있음 + Class X 비어있음 or 이동 후 빌 자리)
-      const swapSlots=_swapSlots(bName,srcC,srcD,srcP,7);
-      body+=`<div class="dm-row"><span class="dm-label">이동할 수업</span><strong>${srcS}</strong> (${srcC}반)</div>
-      <div style="background:#fef9c3;border-radius:8px;padding:9px 12px;margin:8px 0;font-size:.79rem;">
-        ⚠️ <b>${srcC}반</b> ${dstDay} ${dstP+1}교시: <b>${bName||'—'}</b> 선생님의 <b>${bSubj}</b> 수업이 있습니다.
-      </div>`;
-      if(bName){
-        body+=`<div style="font-size:.77rem;color:#374151;margin-bottom:5px;"><b>${bName}</b> 선생님이 해당 수업을 옮길 수 있는 시간:</div>`;
-        if(swapSlots.length){
-          body+=`<div>${swapSlots.map(s=>`<span class="dm-chip">${s.label}</span>`).join('')}</div>`;
-        }else{
-          body+='<p style="color:#6b7280;font-size:.78rem;">공통 빈 시간이 없습니다.</p>';
-        }
-      }
-      body+=`<div style="margin-top:10px;"><button class="dm-btn s" onclick="ttDropClose()">닫기</button></div>`;
-    }
-    /* Case 4: 양측 충돌 */
-    else{
-      body+=`<p style="font-size:.8rem;color:#374151;">교사 스케줄과 학반 스케줄 모두 충돌합니다.</p>
-      <div style="margin-top:10px;"><button class="dm-btn s" onclick="ttDropClose()">닫기</button></div>`;
-    }
-
-    document.getElementById('tt-drop-body').innerHTML=body;
-    document.getElementById('tt-drop-modal').style.display='flex';
-  }
-  window.ttDropClose=function(){document.getElementById('tt-drop-modal').style.display='none';};
-
-  window.ttApplyMove=function(srcDay,srcP,dstDay,dstP){
-    TT.t[_name][dstDay][dstP]=TT.t[_name][srcDay][srcP];
-    TT.t[_name][srcDay][srcP]='|';
-    ttDropClose();_renderWeek();_bindDrag();
-  };
-  window.ttApplySwap=function(srcDay,srcP,dstDay,dstP){
-    const tmp=TT.t[_name][srcDay][srcP];
-    TT.t[_name][srcDay][srcP]=TT.t[_name][dstDay][dstP];
-    TT.t[_name][dstDay][dstP]=tmp;
-    ttDropClose();_renderWeek();_bindDrag();
-  };
-  window._quickMove=function(srcDay,srcP,dstDay,dstP){
-    TT.t[_name][dstDay][dstP]=TT.t[_name][srcDay][srcP];
-    TT.t[_name][srcDay][srcP]='|';
-    ttSimClose();ttDropClose();_renderWeek();_bindDrag();
-  };
-
-  /* ══════════════════════════════════════════
-     시뮬레이션 그리드 (클릭 시)
-  ══════════════════════════════════════════ */
-  function _cellType(srcD,srcP,d,p){
-    const teacher=_name;
-    const srcDay=DAYS[srcD],dstDay=DAYS[d];
-    const srcRaw=(TT.t[teacher][srcDay]||[])[srcP]||'';
-    const{m:srcC}=_parseSub(srcRaw);
-
-    const dstRaw=(TT.t[teacher][dstDay]||[])[p]||'';
-    const tFree=!_hasSub(dstRaw);
-    const{s:dstS,m:dstC}=_parseSub(_resolveRaw(TT.t[teacher][dstDay]||[],p));
-    const cxFree=_classFreeAt(srcC,dstDay,p);
-
-    if(tFree&&cxFree)return{type:'ok',dstS,dstC,cxFree};
-    if(!tFree&&cxFree){
-      const cyFree=_classFreeAt(dstC,srcDay,srcP);
-      return{type:'swap',dstS,dstC,cyFree};
-    }
-    if(tFree&&!cxFree){
-      const bName=_classTeacherAt(srcC,dstDay,p);
-      return{type:'neg',bName,bSubj:_classSubjAt(srcC,dstDay,p),srcC};
-    }
-    return{type:'blk'};
-  }
-
-  function _showSimGrid(srcD,srcP){
-    const teacher=_name;
-    const srcDay=DAYS[srcD];
-    const srcRaw=(TT.t[teacher][srcDay]||[])[srcP]||'';
-    const{s:srcS,m:srcC}=_parseSub(srcRaw);
-
-    // 요약 카운트
-    let nOk=0,nSwap=0,nNeg=0;
-    for(let d=0;d<5;d++)for(let p=0;p<P;p++){
-      if(d===srcD&&p===srcP)continue;
-      if(!validSlot(d,p))continue;
-      const{type}=_cellType(srcD,srcP,d,p);
-      if(type==='ok')nOk++;else if(type==='swap')nSwap++;else if(type==='neg')nNeg++;
-    }
-
-    document.getElementById('tt-sim-title').textContent=
-      `${srcDay} ${srcP+1}교시 ${srcS}${srcC?' ('+srcC+'반)':''} 이동 시뮬레이션`;
-    document.getElementById('tt-sim-badges').innerHTML=
-      `<span style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:12px;padding:2px 10px;font-size:.72rem;">✅ 즉시 ${nOk}</span>`+
-      `<span style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:12px;padding:2px 10px;font-size:.72rem;">🔄 맞바꾸기 ${nSwap}</span>`+
-      `<span style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:12px;padding:2px 10px;font-size:.72rem;">💬 협의 ${nNeg}</span>`;
-
-    // 그리드 빌드
-    let th='<tr><th style="width:36px;">교시</th>'+DAYS.map(d=>`<th>${d}</th>`).join('')+'</tr>';
-    let rows='';
-    for(let p=0;p<P;p++){
-      let row=`<td style="background:#f0f4fb;font-weight:700;color:#1a3a6b;font-size:.72rem;text-align:center;">${p+1}</td>`;
-      for(let d=0;d<5;d++){
-        if(d===srcD&&p===srcP){
-          row+=`<td class="sg-cell sg-cur"><span class="sg-icon">📍</span><span class="sg-txt">현재</span></td>`;
-          continue;
-        }
-        if(!validSlot(d,p)){
-          row+=`<td class="sg-cell sg-inv"><span class="sg-txt">—</span></td>`;
-          continue;
-        }
-        const ci=_cellType(srcD,srcP,d,p);
-        let icon='',cls2='',txt='';
-        if(ci.type==='ok'){icon='✅';cls2='sg-ok';txt='즉시';}
-        else if(ci.type==='swap'){icon='🔄';cls2='sg-swap';txt=ci.cyFree?'맞바꾸기':'제한';}
-        else if(ci.type==='neg'){icon='💬';cls2='sg-neg';txt=ci.bName?ci.bName.slice(0,3):'협의';}
-        else{icon='✕';cls2='sg-blk';txt='불가';}
-        const onclick=ci.type!=='blk'?`onclick="_simCellClick(${srcD},${srcP},${d},${p},${JSON.stringify(ci).replace(/"/g,'&quot;')})"`:'';
-        row+=`<td class="sg-cell ${cls2}" ${onclick}><span class="sg-icon">${icon}</span><span class="sg-txt">${txt}</span></td>`;
-      }
-      rows+=`<tr>${row}</tr>`;
-    }
-
-    const legend='<div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;font-size:.72rem;">'
-      +'<span><span style="background:#dcfce7;padding:1px 6px;border-radius:4px;">✅</span> 즉시 이동</span>'
-      +'<span><span style="background:#dbeafe;padding:1px 6px;border-radius:4px;">🔄</span> 맞바꾸기</span>'
-      +'<span><span style="background:#fef9c3;padding:1px 6px;border-radius:4px;">💬</span> 협의 필요</span>'
-      +'<span><span style="background:#fee2e2;padding:1px 6px;border-radius:4px;">✕</span> 이동 불가</span>'
-      +'</div>';
-
-    document.getElementById('tt-sim-grid-wrap').innerHTML=
-      legend+`<table class="sg-wrap"><thead>${th}</thead><tbody>${rows}</tbody></table>`;
-    document.getElementById('tt-sim-detail').innerHTML=
-      '<p style="color:#6b7280;font-size:.8rem;text-align:center;margin:8px 0;">셀을 클릭하면 상세 분석이 표시됩니다.</p>';
-    document.getElementById('tt-sim-modal').style.display='flex';
-  }
-
-  window._simCellClick=function(srcD,srcP,dstD,dstP,ci){
-    const srcDay=DAYS[srcD],dstDay=DAYS[dstD];
-    const srcRaw=(TT.t[_name][srcDay]||[])[srcP]||'';
-    const{s:srcS,m:srcC}=_parseSub(srcRaw);
-    const label=`${dstDay} ${dstP+1}교시`;
-
-    document.querySelectorAll('.sg-sel').forEach(el=>el.classList.remove('sg-sel'));
-    const cell=document.querySelector(`.sg-cell[onclick*="${dstD},${dstP}"]`);
-    if(cell)cell.classList.add('sg-sel');
-
-    let html='',cardCls='';
-    if(ci.type==='ok'){
-      cardCls='ok';
-      html=`<div class="dm-row"><span class="dm-label">이동 위치</span><strong>${label}</strong> — 빈 시간</div>
-        <div style="margin-top:10px;">
-          <button class="dm-btn p" onclick="ttSimClose();_quickMove('${srcDay}',${srcP},'${dstDay}',${dstP})">✅ 이동 확정</button>
-        </div>`;
-    }else if(ci.type==='swap'){
-      cardCls='swap';
-      html=`<div class="dm-row"><span class="dm-label">교환 수업</span><strong>${ci.dstS}</strong> ${ci.dstC?'('+ci.dstC+'반)':''}</div>`;
-      if(ci.cyFree){
-        html+=`<div style="background:#eff6ff;border-radius:7px;padding:8px 11px;margin:7px 0;font-size:.78rem;">
-          ${srcC||'—'}반 ${label} ← ${srcS} / ${ci.dstC||'—'}반 ${srcDay} ${srcP+1}교시 ← ${ci.dstS}</div>
-          <button class="dm-btn p" onclick="ttSimClose();ttApplySwap('${srcDay}',${srcP},'${dstDay}',${dstP})">🔄 맞바꾸기 확정</button>`;
-      }else{
-        html+=`<p style="font-size:.78rem;color:#b45309;">${ci.dstC}반의 ${srcDay} ${srcP+1}교시에 다른 수업이 있어 맞바꾸기 불가</p>`;
-      }
-    }else if(ci.type==='neg'){
-      cardCls='neg';
-      const swapSlots=_swapSlots(ci.bName,ci.srcC,srcD,srcP,6);
-      html=`<div class="dm-row"><span class="dm-label">충돌</span>${ci.srcC}반 ${label}: <b>${ci.bName}</b> ${ci.bSubj}</div>
-        <div style="font-size:.76rem;color:#374151;margin-bottom:5px;">${ci.bName} 선생님이 해당 수업을 옮길 수 있는 시간:</div>
-        ${swapSlots.length?'<div>'+swapSlots.map(s=>`<span class="dm-chip">${s.label}</span>`).join('')+'</div>':
-          '<p style="color:#6b7280;font-size:.77rem;">맞교대 가능 시간 없음</p>'}`;
-    }
-
-    document.getElementById('tt-sim-detail').innerHTML=
-      `<div class="sg-detail-card ${cardCls}"><div style="font-weight:700;font-size:.82rem;margin-bottom:8px;">${label}</div>${html}</div>`;
-  };
-
-  window.ttSimClose=function(){document.getElementById('tt-sim-modal').style.display='none';};
-
-  /* ── 외부 클릭 자동완성 닫기 ────────────── */
-  document.addEventListener('click',function(e){
-    const w=document.getElementById('tt-teacher-wrap');
-    if(w&&!w.contains(e.target)){document.getElementById('tt-suggest').style.display='none';_ki=-1;}
-  });
-})();
-</script>
 
 </body>
 </html>
