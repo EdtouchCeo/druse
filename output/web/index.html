@@ -2644,6 +2644,7 @@ function switchCurrTab(id,btn){
 <div class="curr-tab-nav">
   <button class="curr-tab-btn active" onclick="switchCurrTab('curr-national',this)">📋 2022 개정 교육과정 교과목 편제</button>
   <button class="curr-tab-btn" onclick="switchCurrTab('curr-school',this)">🏫 학교 교육과정</button>
+  <button class="curr-tab-btn" onclick="switchCurrTab('curr-univ',this)">🎯 대학별 권장과목</button>
 </div>
 
 <!-- ═══ 탭 1: 2022 개정 교육과정 교과목 편제 ═══ -->
@@ -3275,6 +3276,178 @@ function switchCurrTab(id,btn){
     </table>
     </div>
   </div>
+
+</div>
+
+<!-- ═══ 탭 3: 대학별 권장과목 ═══ -->
+<div class="curr-tab-panel" id="curr-univ">
+  <h2 class="section-title">🎯 대학별 권장과목 (2028학년도)</h2>
+  <p style="color:#6b7280; font-size:0.92rem; line-height:1.7; margin-bottom:20px;">
+    2028학년도 대입(현 고1)부터 적용되는 주요 대학별 모집단위·전공별 <strong>권장 이수 과목</strong> 안내입니다.
+    학교명을 검색하거나 지역별로 선택해 PDF를 확인하세요.
+  </p>
+
+  <div style="background:#fef3c7; border-left:4px solid #f59e0b; padding:14px 18px; border-radius:8px; margin-bottom:20px;">
+    <strong style="color:#92400e;">💡 활용 안내</strong>
+    <ul style="margin:8px 0 0 18px; padding:0; color:#78350f; font-size:0.88rem; line-height:1.7;">
+      <li>희망 대학·학과의 권장 과목을 우리 학교 교육과정 편제와 비교하세요.</li>
+      <li>해당 과목이 학교에 개설되지 않은 경우 <strong>공동교육과정</strong> 또는 <strong>온라인학교</strong> 신청을 검토하세요.</li>
+      <li>같은 학과라도 대학별로 권장 과목이 다르므로 <strong>지원 희망 대학을 모두 확인</strong>해야 합니다.</li>
+    </ul>
+  </div>
+
+  <!-- 검색 + 지역 필터 -->
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; align-items:center;">
+    <input id="univSearchInput" type="search" placeholder="🔍 대학명 검색 (예: 서울대, 경북대)"
+      oninput="filterUniv()"
+      style="flex:1; min-width:240px; padding:10px 14px; font-size:0.92rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:inherit;">
+  </div>
+
+  <div id="univRegionTabs" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px;">
+    <button class="univ-region-btn active" data-region="all" onclick="filterUnivRegion(this)" style="padding:7px 14px; border:1.5px solid #2563eb; background:#2563eb; color:#fff; border-radius:18px; font-size:0.83rem; font-weight:600; cursor:pointer;">전체</button>
+    <button class="univ-region-btn" data-region="서울" onclick="filterUnivRegion(this)" style="padding:7px 14px; border:1.5px solid #e5e7eb; background:#fff; color:#6b7280; border-radius:18px; font-size:0.83rem; font-weight:600; cursor:pointer;">서울</button>
+    <button class="univ-region-btn" data-region="경기인천" onclick="filterUnivRegion(this)" style="padding:7px 14px; border:1.5px solid #e5e7eb; background:#fff; color:#6b7280; border-radius:18px; font-size:0.83rem; font-weight:600; cursor:pointer;">경기·인천</button>
+    <button class="univ-region-btn" data-region="강원충청" onclick="filterUnivRegion(this)" style="padding:7px 14px; border:1.5px solid #e5e7eb; background:#fff; color:#6b7280; border-radius:18px; font-size:0.83rem; font-weight:600; cursor:pointer;">강원·충청</button>
+    <button class="univ-region-btn" data-region="영남" onclick="filterUnivRegion(this)" style="padding:7px 14px; border:1.5px solid #e5e7eb; background:#fff; color:#6b7280; border-radius:18px; font-size:0.83rem; font-weight:600; cursor:pointer;">영남</button>
+    <button class="univ-region-btn" data-region="호남" onclick="filterUnivRegion(this)" style="padding:7px 14px; border:1.5px solid #e5e7eb; background:#fff; color:#6b7280; border-radius:18px; font-size:0.83rem; font-weight:600; cursor:pointer;">호남</button>
+  </div>
+
+  <div id="univCardCount" style="color:#6b7280; font-size:0.85rem; margin-bottom:12px;"></div>
+
+  <!-- 대학 카드 그리드 -->
+  <div id="univCardGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;"></div>
+
+  <!-- PDF 미리보기 영역 -->
+  <div id="univPdfViewer" style="display:none; margin-top:24px; border:2px solid #2563eb; border-radius:12px; overflow:hidden; background:#fff;">
+    <div style="background:#2563eb; color:#fff; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+      <strong id="univPdfTitle" style="font-size:0.95rem;"></strong>
+      <div style="display:flex; gap:8px;">
+        <a id="univPdfDownload" href="#" target="_blank" rel="noopener" style="background:#fff; color:#2563eb; padding:5px 12px; border-radius:6px; font-size:0.82rem; font-weight:600; text-decoration:none;">새 창으로 열기 ↗</a>
+        <button onclick="closeUnivPdf()" style="background:rgba(255,255,255,0.2); color:#fff; border:none; padding:5px 12px; border-radius:6px; font-size:0.82rem; font-weight:600; cursor:pointer;">닫기 ✕</button>
+      </div>
+    </div>
+    <iframe id="univPdfFrame" src="" style="width:100%; height:680px; border:0; display:block;"></iframe>
+  </div>
+
+<script>
+(function(){
+  var UNIV = [
+    {name:'가톨릭대', region:'서울',     file:'가톨릭대 2028 모집단위별 반영과목」 안내(안).pdf'},
+    {name:'강원대',   region:'강원충청', file:'강원대 2028 모집단위별 반영과목 안내.pdf'},
+    {name:'건국대',   region:'서울',     file:'건국대 2028 이수 추천 과목.pdf'},
+    {name:'경기대',   region:'경기인천', file:'경기대 2028 모집단위별 과목선택 가이드.pdf'},
+    {name:'경북대',   region:'영남',     file:'경북대 2028 고교선택가이드(최종).pdf'},
+    {name:'경희대',   region:'서울',     file:'경희대 2028 자연계열 학문분야의 고등학교 교과이수 권장과목 수정 안내_20250828.pdf'},
+    {name:'고려대',   region:'서울',     file:'고려대 2028 자연계열 권장이수과목(0902수정).pdf'},
+    {name:'광운대',   region:'서울',     file:'광운대 2028 권장 선택과목 안내.pdf'},
+    {name:'국민대',   region:'서울',     file:'국민대 2028 모집단위별 교과 이수 추천.pdf'},
+    {name:'단국대',   region:'경기인천', file:'단국대 2028 모집단위별 이수 권장 과목 안내.pdf'},
+    {name:'덕성여대', region:'서울',     file:'덕성여대 2028 전공 연계 과목 선택_ASSIST제출.pdf'},
+    {name:'동국대',   region:'서울',     file:'동국대 2028 모집단위별 전공 관련 교과 영역(최종).pdf'},
+    {name:'부산대',   region:'영남',     file:'부산대 2028 모집단위별 반영과목_부산대학교_ASSIST 입력용.pdf'},
+    {name:'서강대',   region:'서울',     file:'서강대 2028 모집단위별 반영과목_250829.pdf'},
+    {name:'서울과학기술대', region:'서울', file:'서울과학기술대 2028 모집단위별 이수 권장과목.pdf'},
+    {name:'서울대',   region:'서울',     file:'서울대 2028 전공 연계 과목 선택 안내.pdf'},
+    {name:'서울시립대', region:'서울',   file:'서울시립대 2028 모집단위별 반영과목.pdf'},
+    {name:'성균관대', region:'서울',     file:'성균관대 2028 학생부종합전형 서류평가 개요.pdf'},
+    {name:'숭실대',   region:'서울',     file:'숭실대 2028 교과목 선택 이수 안내.pdf'},
+    {name:'아주대',   region:'경기인천', file:'아주대 2028 모집단위별 고등학교 교과 이수 권장 과목 안내.pdf'},
+    {name:'영남대',   region:'영남',     file:'영남대 2028 모집단위별 이수 권장과목(학생부종합전형)-250826-2.pdf'},
+    {name:'인하대',   region:'경기인천', file:'인하대 2028 자연계열 모집단위 권장 교과영역」 안내.pdf'},
+    {name:'전남대',   region:'호남',     file:'전남대 2028 모집단위별 반영 과목.pdf'},
+    {name:'전북대',   region:'호남',     file:'전북대 2028 모집단위별 전공참고교과(안).pdf'},
+    {name:'중앙대',   region:'서울',     file:'중앙대 2028 자연계열 학문단위별 이수 권장과목 안내.pdf'},
+    {name:'충남대',   region:'강원충청', file:'충남대 2028 권장 이수 과목 안내.pdf'},
+    {name:'포항공대', region:'영남',     file:'포항공대 2028 모집단위별 반영과목.pdf'},
+    {name:'한양대',   region:'서울',     file:'한양대 2028 이수 권장 과목(안).pdf'}
+  ];
+
+  var REGION_COLORS = {
+    '서울':     {bg:'#dbeafe', border:'#3b82f6', text:'#1e40af'},
+    '경기인천': {bg:'#dcfce7', border:'#22c55e', text:'#166534'},
+    '강원충청': {bg:'#fef3c7', border:'#f59e0b', text:'#92400e'},
+    '영남':     {bg:'#fce7f3', border:'#ec4899', text:'#9d174d'},
+    '호남':     {bg:'#ede9fe', border:'#8b5cf6', text:'#5b21b6'}
+  };
+
+  var REGION_LABEL = {
+    '서울':'서울', '경기인천':'경기·인천', '강원충청':'강원·충청', '영남':'영남', '호남':'호남'
+  };
+
+  var currentRegion = 'all';
+  var currentSearch = '';
+
+  function renderCards() {
+    var grid  = document.getElementById('univCardGrid');
+    var count = document.getElementById('univCardCount');
+    if (!grid) return;
+    var q = currentSearch.toLowerCase().replace(/\s/g,'');
+    var list = UNIV.filter(function(u){
+      if (currentRegion !== 'all' && u.region !== currentRegion) return false;
+      if (q && u.name.toLowerCase().replace(/\s/g,'').indexOf(q) === -1) return false;
+      return true;
+    });
+    count.textContent = '총 ' + list.length + '개 대학';
+    grid.innerHTML = list.map(function(u){
+      var c = REGION_COLORS[u.region] || {bg:'#f3f4f6', border:'#9ca3af', text:'#374151'};
+      return '<div onclick="openUnivPdf(\'' + u.name.replace(/'/g,"\\'") + '\')" style="background:#fff; border:2px solid '+c.border+'; border-radius:10px; padding:14px 16px; cursor:pointer; transition:transform .15s, box-shadow .15s; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">'
+        + '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">'
+          + '<strong style="font-size:1rem; color:#111827;">' + u.name + '</strong>'
+          + '<span style="background:'+c.bg+'; color:'+c.text+'; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600;">' + REGION_LABEL[u.region] + '</span>'
+        + '</div>'
+        + '<div style="color:#6b7280; font-size:0.78rem;">📄 PDF 보기 →</div>'
+      + '</div>';
+    }).join('');
+    if (list.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#9ca3af; font-size:0.9rem;">검색 결과가 없습니다.</div>';
+    }
+  }
+
+  window.filterUniv = function() {
+    currentSearch = document.getElementById('univSearchInput').value || '';
+    renderCards();
+  };
+
+  window.filterUnivRegion = function(btn) {
+    currentRegion = btn.getAttribute('data-region');
+    document.querySelectorAll('.univ-region-btn').forEach(function(b){
+      var active = b === btn;
+      b.style.background = active ? '#2563eb' : '#fff';
+      b.style.color      = active ? '#fff'    : '#6b7280';
+      b.style.borderColor = active ? '#2563eb' : '#e5e7eb';
+      b.classList.toggle('active', active);
+    });
+    renderCards();
+  };
+
+  window.openUnivPdf = function(name) {
+    var u = UNIV.find(function(x){ return x.name === name; });
+    if (!u) return;
+    var url = 'data/univ/' + encodeURIComponent(u.file);
+    document.getElementById('univPdfTitle').textContent = u.name + ' — 2028학년도 권장과목';
+    document.getElementById('univPdfFrame').src = url;
+    document.getElementById('univPdfDownload').href = url;
+    document.getElementById('univPdfViewer').style.display = 'block';
+    setTimeout(function(){
+      document.getElementById('univPdfViewer').scrollIntoView({behavior:'smooth', block:'start'});
+    }, 100);
+  };
+
+  window.closeUnivPdf = function() {
+    document.getElementById('univPdfViewer').style.display = 'none';
+    document.getElementById('univPdfFrame').src = '';
+  };
+
+  // 초기 렌더링
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderCards);
+  } else {
+    renderCards();
+  }
+})();
+</script>
+
+</div>
 
 </div>
 </div>
