@@ -5318,6 +5318,165 @@ function switchSpTab(id,btn){
 </script>
 
 
+<!-- ===== 해시 라우팅 (탭별 고유 URL) ===== -->
+<script>
+(function() {
+  'use strict';
+
+  var TOP_TABS = ['school','teacher','student','calendar','ai','register'];
+
+  // 탭별 sub URL slug ↔ sub-panel id 매핑
+  var SUB_MAP = {
+    teacher: {
+      records:'sub-records', club:'sub-club', check:'sub-check',
+      culture:'sub-culture', grade:'sub-grade', exam:'sub-exam'
+    },
+    student: {
+      rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',
+      univ:'sub-univ', special:'sub-special', counsel:'sub-counsel'
+    }
+  };
+
+  // sub-sub URL slug ↔ panel id + 호출 함수
+  var SUB2_MAP = {
+    'student/curriculum': {
+      national: {id:'curr-national', fn:'switchCurrTab'},
+      school:   {id:'curr-school',   fn:'switchCurrTab'},
+      univ:     {id:'curr-univ',     fn:'switchCurrTab'}
+    },
+    'student/univ': {
+      general:  {id:'univ-general',  fn:'switchUnivTab'},
+      regional: {id:'univ-regional', fn:'switchUnivTab'}
+    },
+    'student/special': {
+      family: {id:'sp-family', fn:'switchSpTab'},
+      ai:     {id:'sp-ai',     fn:'switchSpTab'},
+      steam:  {id:'sp-steam',  fn:'switchSpTab'},
+      eng:    {id:'sp-eng',    fn:'switchSpTab'},
+      nado:   {id:'sp-nado',   fn:'switchSpTab'}
+    }
+  };
+
+  var _state = { tab:'school', sub:null, sub2:null };
+  var _suppress = false;
+
+  function panelToSlug(tab, panelId) {
+    var m = SUB_MAP[tab]; if (!m) return null;
+    for (var s in m) if (m[s] === panelId) return s;
+    return null;
+  }
+  function sub2ToSlug(tab, sub, panelId) {
+    var m = SUB2_MAP[tab + '/' + sub]; if (!m) return null;
+    for (var s in m) if (m[s].id === panelId) return s;
+    return null;
+  }
+
+  function buildHash(s) {
+    var h = '#' + s.tab;
+    if (s.sub)  h += '/' + s.sub;
+    if (s.sub2) h += '/' + s.sub2;
+    return h;
+  }
+
+  function updateHash() {
+    if (_suppress) return;
+    var h = buildHash(_state);
+    if (window.location.hash !== h) {
+      history.replaceState(null, '', h);
+    }
+  }
+
+  function applyHash() {
+    var raw = window.location.hash.replace(/^#/, '');
+    if (!raw) return;
+    // OAuth 콜백 등 특수 해시는 무시 (=, & 포함 시)
+    if (raw.indexOf('=') !== -1 || raw.indexOf('&') !== -1) return;
+
+    var parts = raw.split('/');
+    var tab = parts[0], sub = parts[1], sub2 = parts[2];
+    if (TOP_TABS.indexOf(tab) === -1) return;
+
+    _suppress = true;
+    try {
+      // 1) 최상위 탭 클릭
+      var tabBtn;
+      if (tab === 'register') {
+        tabBtn = document.getElementById('tab-btn-register');
+      } else {
+        tabBtn = document.querySelector('.tab-btn[onclick*="switchTab(\'' + tab + '\'"]');
+      }
+      if (tabBtn) tabBtn.click();
+
+      // 2) 서브 탭
+      if (sub && SUB_MAP[tab] && SUB_MAP[tab][sub]) {
+        var subId = SUB_MAP[tab][sub];
+        var subBtn = document.querySelector('#tab-' + tab + ' .sub-nav-btn[onclick*="\'' + subId + '\'"]');
+        if (subBtn) subBtn.click();
+      }
+
+      // 3) 서브-서브 탭
+      if (sub && sub2) {
+        var info = (SUB2_MAP[tab + '/' + sub] || {})[sub2];
+        if (info) {
+          var ssBtn = document.querySelector('button[onclick*="' + info.fn + '(\'' + info.id + '\'"]');
+          if (ssBtn) ssBtn.click();
+        }
+      }
+
+      _state = { tab:tab, sub:sub||null, sub2:sub2||null };
+    } finally {
+      setTimeout(function(){ _suppress = false; }, 50);
+    }
+  }
+
+  // ── 기존 switch 함수 래핑 (해시 자동 업데이트) ──
+  function wrap(name, handler) {
+    var orig = window[name];
+    if (typeof orig !== 'function') return;
+    window[name] = function() {
+      orig.apply(this, arguments);
+      handler.apply(this, arguments);
+    };
+  }
+
+  wrap('switchTab', function(tabId) {
+    _state.tab = tabId;
+    _state.sub = null;
+    _state.sub2 = null;
+    var panel = document.getElementById('tab-' + tabId);
+    if (panel) {
+      var activeSub = panel.querySelector('.sub-panel.active');
+      if (activeSub) _state.sub = panelToSlug(tabId, activeSub.id);
+    }
+    updateHash();
+  });
+
+  wrap('switchSub', function(panelId) {
+    _state.sub = panelToSlug(_state.tab, panelId);
+    _state.sub2 = null;
+    updateHash();
+  });
+
+  ['switchCurrTab','switchUnivTab','switchSpTab'].forEach(function(fn) {
+    wrap(fn, function(id) {
+      _state.sub2 = sub2ToSlug(_state.tab, _state.sub, id);
+      updateHash();
+    });
+  });
+
+  // ── 브라우저 뒤로/앞으로 ──
+  window.addEventListener('hashchange', applyHash);
+
+  // ── 페이지 로드 시 해시 적용 (auth init 후 약간 지연) ──
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(applyHash, 150); });
+  } else {
+    setTimeout(applyHash, 150);
+  }
+})();
+</script>
+
+
 <!-- ===== 푸터 ===== -->
 <footer>
   <p>개발 및 운영: 교사 홍대화 &nbsp;|&nbsp; 문의: <a href="mailto:daveceo@edtouch.ai">daveceo@edtouch.ai</a></p>
