@@ -3676,6 +3676,18 @@ function switchCurrTab(id,btn){
 .univ-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
 .univ-tab-panel{display:none;}
 .univ-tab-panel.active{display:block;}
+.univ-sub-tab-nav{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap;border-bottom:2px solid #e5e7eb;}
+.univ-sub-tab-btn{padding:8px 16px;border:none;background:transparent;font-size:0.86rem;font-weight:600;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
+.univ-sub-tab-btn:hover{color:#7c3aed;}
+.univ-sub-tab-btn.active{color:#7c3aed;border-bottom-color:#7c3aed;}
+.univ-sub-tab-panel{display:none;}
+.univ-sub-tab-panel.active{display:block;}
+.snu-tab-nav{display:flex;gap:6px;margin:8px 0 18px;flex-wrap:wrap;}
+.snu-tab-btn{padding:6px 14px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:20px;font-size:0.82rem;font-weight:600;color:#475569;cursor:pointer;transition:all .2s;}
+.snu-tab-btn:hover{background:#e2e8f0;}
+.snu-tab-btn.active{background:#1e3a8a;border-color:#1e3a8a;color:#fff;}
+.snu-tab-panel{display:none;}
+.snu-tab-panel.active{display:block;}
 </style>
 <script>
 function switchUnivTab(id,btn){
@@ -3684,15 +3696,30 @@ function switchUnivTab(id,btn){
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
 }
+function switchUnivSubTab(id,btn){
+  var panel=btn.closest('.univ-tab-panel');
+  panel.querySelectorAll('.univ-sub-tab-panel').forEach(p=>p.classList.remove('active'));
+  panel.querySelectorAll('.univ-sub-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function switchSnuTab(id,btn){
+  var p=btn.closest('.univ-sub-tab-panel');
+  p.querySelectorAll('.snu-tab-panel').forEach(x=>x.classList.remove('active'));
+  p.querySelectorAll('.snu-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
 </script>
 
 <div class="univ-tab-nav">
-  <button class="univ-tab-btn active" onclick="switchUnivTab('univ-general',this)">📊 2027 대입 전형</button>
+  <button class="univ-tab-btn active" onclick="switchUnivTab('univ-2026',this)">📋 진학 가이드</button>
+  <button class="univ-tab-btn" onclick="switchUnivTab('univ-general',this)">📊 2027 대입 전형</button>
   <button class="univ-tab-btn" onclick="switchUnivTab('univ-2028',this)">📅 2028 대입 전형</button>
   <button class="univ-tab-btn" onclick="switchUnivTab('univ-regional',this)">🩺 지역의사제</button>
 </div>
 
-<div class="univ-tab-panel active" id="univ-general">
+<div class="univ-tab-panel active" id="univ-2026">
 
   <div class="card" style="border-left-color:#7c3aed;">
     <strong>📋 2026학년도 대륜고 입시 결과 요약</strong>
@@ -3729,7 +3756,7 @@ function switchUnivTab(id,btn){
     </tbody>
   </table>
 
-  <h2 class="section-title" style="margin-top:48px;">📌 우리 학교에서 어떤 전형으로 가장 많이 합격할까?</h2>
+<h2 class="section-title" style="margin-top:48px;">📌 우리 학교에서 어떤 전형으로 가장 많이 합격할까?</h2>
 
   <div class="card" style="border-left-color:#2563eb;">
     <strong>합격 경향 핵심 요약</strong>
@@ -4083,36 +4110,949 @@ function switchUnivTab(id,btn){
 
   </div>
 
-  <h2 class="section-title" style="margin-top:48px;">📅 2027학년도 주요 입시 일정</h2>
+</div>
+<!-- /univ-2026 -->
 
-  <table class="data-table">
-    <thead><tr><th>구분</th><th>일정</th><th>학생·학부모 체크포인트</th></tr></thead>
-    <tbody>
-      <tr><td><strong>수시 원서접수</strong></td><td>2026. 9. 7(월) ~ 11(금) 중 3일</td><td>최대 6개교 지원 / 수능 최저 충족 가능한 대학만 지원</td></tr>
-      <tr><td><strong>수시 전형 기간</strong></td><td>2026. 9. 12(토) ~ 12. 17(목)</td><td>면접·논술 날짜 미리 확인 / 학교 출결 관리</td></tr>
-      <tr><td><strong>수능 시험</strong></td><td>2026년 11월 (예정)</td><td>수능 최저 충족을 위한 실전 컨디션 관리 중요</td></tr>
-      <tr><td><strong>수시 합격자 발표</strong></td><td>2026. 12. 18(금)까지</td><td>합격 시 반드시 등록 — 미등록 시 정시 지원 가능</td></tr>
-      <tr><td><strong>수시 합격자 등록</strong></td><td>2026. 12. 21(월) ~ 23(수)</td><td>등록 포기 시 정시 지원 가능</td></tr>
-      <tr><td><strong>정시 원서접수</strong></td><td>2027. 1. 4(월) ~ 7(목) 중 3일</td><td>가/나/다 군별 각 1개교 — 총 3개교 지원</td></tr>
-      <tr><td><strong>정시 합격자 발표</strong></td><td>2027. 2. 5(금)까지</td><td>미충원 시 추가 합격 통보 있음 — 연락처 관리 중요</td></tr>
-      <tr><td><strong>정시 합격자 등록</strong></td><td>2027. 2. 10(수) ~ 12(금)</td><td>등록금 납부 기한 엄수</td></tr>
-    </tbody>
-  </table>
+<div class="univ-tab-panel" id="univ-general">
 
-  <div class="card" style="margin-top:16px; border-left-color:#2563eb;">
-    <strong>📌 2028학년도부터 달라지는 수시 일정 (현재 1·2학년 참고)</strong>
-    <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
-      <li>모의평가가 <strong>8월로 이동</strong> → 성적을 확인한 후 수시 원서를 쓸 수 있게 됩니다.</li>
-      <li>2028학년도부터는 8월 모의평가 성적을 보고 전략적으로 지원 대학을 결정할 수 있습니다.</li>
-    </ul>
+  <div class="univ-sub-tab-nav">
+    <button class="univ-sub-tab-btn active" onclick="switchUnivSubTab('uni27-schedule',this)">📅 주요 일정</button>
+    <button class="univ-sub-tab-btn" onclick="switchUnivSubTab('uni27-snu',this)">🎓 서울대</button>
+    <button class="univ-sub-tab-btn" onclick="switchUnivSubTab('uni27-ku',this)">🎓 고려대</button>
+    <button class="univ-sub-tab-btn" onclick="switchUnivSubTab('uni27-knu',this)">🏫 경북대</button>
   </div>
+
+  <div class="univ-sub-tab-panel active" id="uni27-schedule">
+
+    <h2 class="section-title" style="margin-top:8px;">📅 2027학년도 주요 입시 일정</h2>
+
+    <table class="data-table">
+      <thead><tr><th>구분</th><th>일정</th><th>학생·학부모 체크포인트</th></tr></thead>
+      <tbody>
+        <tr><td><strong>수시 원서접수</strong></td><td>2026. 9. 7(월) ~ 11(금) 중 3일</td><td>최대 6개교 지원 / 수능 최저 충족 가능한 대학만 지원</td></tr>
+        <tr><td><strong>수시 전형 기간</strong></td><td>2026. 9. 12(토) ~ 12. 17(목)</td><td>면접·논술 날짜 미리 확인 / 학교 출결 관리</td></tr>
+        <tr><td><strong>수능 시험</strong></td><td>2026년 11월 (예정)</td><td>수능 최저 충족을 위한 실전 컨디션 관리 중요</td></tr>
+        <tr><td><strong>수시 합격자 발표</strong></td><td>2026. 12. 18(금)까지</td><td>합격 시 반드시 등록 — 미등록 시 정시 지원 가능</td></tr>
+        <tr><td><strong>수시 합격자 등록</strong></td><td>2026. 12. 21(월) ~ 23(수)</td><td>등록 포기 시 정시 지원 가능</td></tr>
+        <tr><td><strong>정시 원서접수</strong></td><td>2027. 1. 4(월) ~ 7(목) 중 3일</td><td>가/나/다 군별 각 1개교 — 총 3개교 지원</td></tr>
+        <tr><td><strong>정시 합격자 발표</strong></td><td>2027. 2. 5(금)까지</td><td>미충원 시 추가 합격 통보 있음 — 연락처 관리 중요</td></tr>
+        <tr><td><strong>정시 합격자 등록</strong></td><td>2027. 2. 10(수) ~ 12(금)</td><td>등록금 납부 기한 엄수</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card" style="margin-top:16px; border-left-color:#2563eb;">
+      <strong>📌 2028학년도부터 달라지는 수시 일정 (현재 1·2학년 참고)</strong>
+      <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+        <li>모의평가가 <strong>8월로 이동</strong> → 성적을 확인한 후 수시 원서를 쓸 수 있게 됩니다.</li>
+        <li>2028학년도부터는 8월 모의평가 성적을 보고 전략적으로 지원 대학을 결정할 수 있습니다.</li>
+      </ul>
+    </div>
+
+  </div>
+  <!-- /uni27-schedule -->
+
+  <div class="univ-sub-tab-panel" id="uni27-snu">
+
+    <div class="snu-tab-nav">
+      <button class="snu-tab-btn active" onclick="switchSnuTab('snu-admissions',this)">📋 입학전형</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('snu-jongha',this)">📘 학생부종합전형</button>
+    </div>
+
+    <div class="snu-tab-panel active" id="snu-admissions">
+
+      <div class="card" style="border-left-color:#1e3a8a;">
+        <strong>📋 2027학년도 서울대 입학전형 한눈에</strong>
+        <p style="margin-top:8px; color:#374151; line-height:1.8;">서울대는 2027학년도에 정원 내 <strong>총 3,562명</strong>을 모집합니다. 수시 2,201명(61.8%)과 정시 'ᄂ'군 1,361명(38.2%)으로 구분되며, 학생부종합전형과 수능위주전형이 중심을 이룹니다.</p>
+      </div>
+
+      <div class="card-grid" style="margin-top:20px;">
+        <div class="grid-card" style="border-top:4px solid #7c3aed;">
+          <div class="value" style="color:#7c3aed;">2,201명</div>
+          <div class="label">수시 모집<br><small style="font-size:0.75rem; font-weight:400;">(61.8%) — 학종 중심</small></div>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #2563eb;">
+          <div class="value" style="color:#2563eb;">1,361명</div>
+          <div class="label">정시 모집<br><small style="font-size:0.75rem; font-weight:400;">(38.2%) — 'ᄂ'군</small></div>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #059669;">
+          <div class="value" style="color:#059669;">3,562명</div>
+          <div class="label">정원 내 총 모집<br><small style="font-size:0.75rem; font-weight:400;">(2027학년도)</small></div>
+        </div>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">⚡ 2027학년도 핵심 변화</h2>
+
+      <div class="card" style="border-left-color:#ef4444;">
+        <strong>📌 꼭 확인해야 할 변경점</strong>
+        <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+          <li><strong>의예과 → 의학과로 모집단위명 변경</strong> — 2027학년부터 통합 6년제 신입생부터 적용</li>
+          <li><strong>사범대 체육교육과 수시 일반전형 전면 폐지</strong></li>
+          <li>수시 일반전형에서 수능최저 적용 모집단위는 <strong>미대 디자인과 단 1곳</strong>만 남음</li>
+          <li>지원 시 모집단위별 <strong>수능 필수 응시과목</strong>을 반드시 사전 확인 — 2024수능 만점자가 응시조합 미충족으로 의대 지원 불가 사례 발생</li>
+        </ul>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">🎯 수시모집 (2,201명)</h2>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>전형</th><th>인원</th><th>1단계</th><th>2단계</th><th>수능 최저</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>지역균형</strong></td>
+            <td>514명<br>(14.4%)</td>
+            <td>서류 100%<br>(3배수)</td>
+            <td>1단계 70 + 면접 30</td>
+            <td><strong>국·수·영·탐 중<br>3개합 7 이내</strong> (전 모집단위)</td>
+          </tr>
+          <tr>
+            <td><strong>일반전형</strong></td>
+            <td>1,509명<br>(42.4%)</td>
+            <td>서류 100%<br>(2배수)</td>
+            <td>서류 50 + 면접·구술 50</td>
+            <td>미적용<br>(디자인과만 3개합 7 이내)</td>
+          </tr>
+          <tr>
+            <td><strong>기회균형<br>(사회통합)</strong></td>
+            <td>178명<br>(5.0%)</td>
+            <td>서류 100%</td>
+            <td>서류 + 면접</td>
+            <td>미적용</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="accordion" style="margin-top:16px;">
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            지역균형전형 — 학교장 추천 + 수능 최저
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>지원자격 — 국내고 졸업예정자 중 <strong>학교장 추천</strong> (학교당 추천 인원 제한)</li>
+              <li>1단계 — 서류평가 100% (모집인원의 3배수 선발)</li>
+              <li>2단계 — 1단계 성적 70% + 면접 30%</li>
+              <li>면접 — 의대는 <strong>MMI(다중미니면접) 60분 내외</strong>, 그 외 모집단위는 서류확인 면접 10분 내외</li>
+              <li><strong>수능최저 적용</strong> — 국·수·영·탐 중 3개 영역 합 7 이내 (전 모집단위)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            일반전형 — 제시문 면접의 비중이 큰 전형
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>지원자격 — 고교 졸업(예정)자 또는 동등 학력 인정자</li>
+              <li>1단계 — 서류평가 100% (모집인원의 2배수 선발)</li>
+              <li>2단계 — 서류평가 50% + 면접 및 구술고사 50%</li>
+              <li>면접 — <strong>제시문 활용 면접 15분 내외</strong> (답변 준비 30분 또는 45분 별도)</li>
+              <li>수능최저 — <strong>미대 디자인과만 적용</strong> (국·수·영·탐(2과목) 중 3개합 7 이내)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            기회균형특별전형(사회통합)
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>지원자격 — 농어촌·저소득·국가보훈대상자·서해 5도·자립지원 대상자·농생명계열 고교 졸업예정자</li>
+              <li>1단계 — 서류평가 100%</li>
+              <li>2단계 — 서류평가 + 면접</li>
+              <li>수능최저 미적용</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">📊 정시모집 ('ᄂ'군, 1,361명)</h2>
+
+      <div class="card" style="border-left-color:#2563eb;">
+        <strong>수능 반영 비율</strong>
+        <p style="margin-top:8px; line-height:1.9;">국어 <strong>33.3%</strong> · 수학 <strong>40%</strong> · 탐구 <strong>26.6%</strong> + 한국사·영어 등급 가산/감산</p>
+      </div>
+
+      <table class="data-table" style="margin-top:16px;">
+        <thead>
+          <tr><th>전형</th><th>인원</th><th>1단계</th><th>최종 평가</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>일반전형</strong></td>
+            <td>1,208명<br>(33.9%)</td>
+            <td>수능 100% (2배수)</td>
+            <td>수능 80 + 교과평가 20</td>
+          </tr>
+          <tr>
+            <td><strong>지역균형</strong></td>
+            <td>153명<br>(4.3%)</td>
+            <td>—</td>
+            <td>수능 60 + 교과평가 40</td>
+          </tr>
+          <tr>
+            <td><strong>기회균형<br>(농어촌·저소득)</strong></td>
+            <td>—</td>
+            <td>수능 100%</td>
+            <td>수능 + 교과평가</td>
+          </tr>
+          <tr>
+            <td><strong>기회균형<br>(특수·북한이탈)</strong></td>
+            <td>—</td>
+            <td>서류평가</td>
+            <td>서류 + 면접</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="card" style="border-left-color:#f59e0b; margin-top:16px;">
+        <strong>📌 정시 핵심 포인트</strong>
+        <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+          <li><strong>교과평가가 정시에서도 결정적</strong> — 일반 20%, 지균 40%까지 반영</li>
+          <li><strong>과탐 응시조합 조정점수</strong> — Ⅰ+Ⅱ 조합 3점 / Ⅱ+Ⅱ 조합 5점 가산</li>
+          <li>수의대·의대·치대(치의학과)는 <strong>적성·인성면접</strong> 별도 실시</li>
+          <li>"정시는 수능만"이라는 인식은 더 이상 유효하지 않음 — <strong>학교생활기록부 관리 필수</strong></li>
+        </ul>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">📚 수능 응시영역 기준 (모집단위별 4유형)</h2>
+
+      <div class="card" style="border-left-color:#1e3a8a;">
+        <strong>⚠️ 모집단위별로 필수 응시과목이 다릅니다</strong>
+        <p style="margin-top:8px; line-height:1.9;">서울대는 모집단위를 <strong>4개 유형</strong>으로 구분하여 수능 필수 응시과목을 지정합니다. 특히 의대를 포함한 <strong>2-1 유형은 과탐에서 물리Ⅰ과 Ⅱ, 화학Ⅰ과 Ⅱ 중 1과목 이상 필수 응시</strong>해야 합니다. 자세한 모집단위별 응시영역 기준은 하단 PDF의 참고자료를 확인하세요.</p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">📅 주요 일정</h2>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>구분</th><th>일정</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>수시 원서접수</strong></td><td>2026. 9. 7(월) ~ 9(수)</td></tr>
+          <tr><td><strong>수시 1단계 합격자 발표</strong></td><td>10월 ~ 11월 (전형별 상이)</td></tr>
+          <tr><td><strong>수시 면접·구술고사</strong></td><td>11월 ~ 12월</td></tr>
+          <tr><td><strong>수능</strong></td><td>2026. 11. (예정)</td></tr>
+          <tr><td><strong>수시 합격자 발표</strong></td><td>2026. 12. 18(금)까지</td></tr>
+          <tr><td><strong>정시 원서접수</strong></td><td>2027. 1. 4(월) ~ 6(수)</td></tr>
+          <tr><td><strong>정시 면접·교과평가</strong></td><td>2027. 1. 하순 ~ 2. 초</td></tr>
+          <tr><td><strong>정시 합격자 발표</strong></td><td>2027. 2. 5(금)까지</td></tr>
+        </tbody>
+      </table>
+
+      <h2 class="section-title" style="margin-top:36px;">💡 학생·학부모 실전 포인트</h2>
+
+      <div class="accordion">
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            ① 모집단위별 수능 필수 응시과목 — 반드시 사전 확인
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>4개 유형으로 구분된 수능 응시영역 기준을 본인 희망 모집단위에 맞춰 확인</li>
+              <li>특히 의대·치대·수의대 등 자연계열 상위권 모집단위는 <strong>과탐 필수 과목 조합</strong> 주의</li>
+              <li>2024수능 사례 — 만점자가 응시조합 미충족으로 의대 지원 불가</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            ② 교과이수기준 Ⅰ·Ⅱ를 동시에 충족할 것
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>수시 서류평가와 정시 교과평가에서 모두 활용되는 핵심 기준</li>
+              <li><strong>전공 연계 교과이수 과목</strong>도 함께 안내되어 있으니 모집단위별 권장 과목 확인 필수</li>
+              <li>1·2학년 단계에서 과목 선택 시점부터 미리 검토하는 것이 가장 안전</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            ③ 수시 일반전형 — 면접·구술고사 비중이 50%
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>1단계 통과 후 2단계에서 <strong>제시문 활용 면접 비중이 50%</strong></li>
+              <li>제시문 면접은 정규 교육과정 범위 내 출제 — 평소 토론·발표 경험이 자산</li>
+              <li>모집단위별 평가 분야(인문/사회/수학/과학 등)가 다르므로 <strong>모집요강 사전 확인 필수</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            ④ 정시에서도 교과평가가 결정적
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>정시 일반 — 수능 80% + <strong>교과평가 20%</strong></li>
+              <li>정시 지균 — 수능 60% + <strong>교과평가 40%</strong></li>
+              <li>학교생활기록부 관리가 정시에서도 합·불을 가른다는 점을 잊지 말 것</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">📎 원문 자료</h2>
+
+      <div class="card" style="border-left-color:#1e3a8a;">
+        <strong>📄 2027학년도 서울대학교 대학 신입학생 입학전형 안내 (PDF)</strong>
+        <p style="margin-top:8px; color:#374151; line-height:1.8;">아래 임베드된 PDF로 전체 내용을 확인할 수 있습니다. <a href="../../input/student/2027%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2027%ED%95%99%EB%85%84%EB%8F%84%20%EB%8C%80%ED%95%99%20%EC%8B%A0%EC%9E%85%ED%95%99%EC%83%9D%20%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%20%EC%95%88%EB%82%B4.pdf" target="_blank" rel="noopener">📥 새 창으로 열기</a></p>
+      </div>
+
+      <div style="margin-top:16px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; background:#f9fafb;">
+        <iframe
+          src="../../input/student/2027%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2027%ED%95%99%EB%85%84%EB%8F%84%20%EB%8C%80%ED%95%99%20%EC%8B%A0%EC%9E%85%ED%95%99%EC%83%9D%20%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%20%EC%95%88%EB%82%B4.pdf"
+          style="width:100%; height:780px; border:0;"
+          title="2027학년도 서울대학교 대학 신입학생 입학전형 안내"></iframe>
+      </div>
+
+    </div>
+    <!-- /snu-admissions -->
+
+    <div class="snu-tab-panel" id="snu-jongha">
+
+      <div class="card" style="border-left-color:#1e3a8a;">
+        <strong>🎯 서울대가 기다리는 학생</strong>
+        <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+          <li>학교 교육과정을 성실히 이수하고 학업역량이 우수한 학생</li>
+          <li>학교생활에서 적극적이고 진취적인 태도를 보인 학생</li>
+          <li>글로벌 리더로 성장할 수 있는 자질을 지닌 학생</li>
+          <li>다양한 교육적·사회적·문화적 배경과 경험을 지닌 학생</li>
+          <li>사회적 약자에 대한 배려심과 공동체 의식을 가진 학생</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-left-color:#7c3aed; margin-top:16px;">
+        <strong>📌 한 줄 요약</strong>
+        <p style="margin-top:8px; line-height:1.9;">서울대 학종은 <strong>"결과보다 과정"</strong>을 평가합니다. 정량 점수가 아닌 학교 교육과정 안에서 보여준 <strong>학습 경험·탐구 과정·변화와 성장</strong>을 종합적으로 살펴봅니다.</p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">📊 평가 영역 (3가지)</h2>
+
+      <div class="card-grid" style="margin-top:16px;">
+        <div class="grid-card" style="border-top:4px solid #2563eb;">
+          <div class="value" style="color:#2563eb; font-size:1.1rem;">학업역량</div>
+          <div class="label">교과 성적 정량 반영 X<br>이해와 적용, 성장 과정 평가</div>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #059669;">
+          <div class="value" style="color:#059669; font-size:1.1rem;">학업태도</div>
+          <div class="label">자기주도 학습·지적 호기심<br>적극성·진취성·도전 의지</div>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #d97706;">
+          <div class="value" style="color:#d97706; font-size:1.1rem;">학업 외 소양</div>
+          <div class="label">바른 인성·공동체 의식<br>리더십(직책 아닌 실질적 역할)</div>
+        </div>
+      </div>
+
+      <div class="accordion" style="margin-top:20px;">
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            📘 학업역량 — 교과 성적은 어떻게 반영되나?
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li><strong>정량평가 X</strong> — 학년별·과목별 반영 비율 없음. 전 교과의 3년간 성취도를 정성 평가합니다.</li>
+              <li><strong>맥락 고려</strong> — 수강자 수, 원점수, 평균, 표준편차, 학년별 변화, 선택 과목 특성을 종합적으로 해석합니다.</li>
+              <li><strong>도전 우대</strong> — 소수가 선택한 과목·난도 높은 과목 이수가 결코 불리하지 않습니다.</li>
+              <li><strong>핵심 자료</strong> — 교과학습발달상황 + 세부능력 및 특기사항 + 창체(학업 관련) + 행동특성 및 종합의견</li>
+            </ul>
+            <div class="card" style="border-left-color:#7c3aed; margin-top:12px;">
+              <strong>💡 평가 기준 핵심 질문</strong>
+              <ul style="margin-top:6px; padding-left:18px; line-height:1.9;">
+                <li>단순 암기 이상의 깊이 있는 이해를 갖추었는가?</li>
+                <li>습득한 지식을 적절히 활용한 경험이 있는가?</li>
+                <li>의미 있는 학습경험과 노력을 통한 성장이 보이는가?</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            📗 학업태도 — 적극성·도전 의지를 어떻게 보여줄까?
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>지적 호기심·탐구 의지·과목 선택의 적극성·진로 탐색 의지를 평가합니다.</li>
+              <li>교과학습뿐 아니라 <strong>독서·글쓰기·탐구활동·실험 수업</strong> 등 다양한 학습 경험에서 드러납니다.</li>
+              <li>핵심 자료 — 교과학습발달상황 + 창의적 체험활동 + 행동특성 및 종합의견</li>
+            </ul>
+            <div class="card" style="border-left-color:#059669; margin-top:12px;">
+              <strong>💡 평가 기준 핵심 질문</strong>
+              <ul style="margin-top:6px; padding-left:18px; line-height:1.9;">
+                <li>적극적이며 지속적으로 노력하였는가?</li>
+                <li>주어진 교육자원을 적극 활용하였는가?</li>
+                <li>스스로 알고자 하는 호기심과 도전적 태도가 나타나는가?</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            📙 학업 외 소양 — 인성과 공동체 의식
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>품성·리더십·공동체 의식·책임감·사회 기여 가능성을 평가합니다.</li>
+              <li><strong>활동의 양·횟수가 아닌 맡은 역할과 내용을 질적으로 평가</strong>합니다.</li>
+              <li>임원 경력이 많다고 리더십 있다고 보지 않습니다 — 실질적 역할이 핵심입니다.</li>
+              <li>핵심 자료 — 창의적 체험활동(자율·동아리) + 교내 봉사활동 + 행동특성 및 종합의견</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">🔍 어떻게 평가하나요? — 다수에 의한 다단계 평가</h2>
+
+      <div class="card" style="border-left-color:#1e3a8a;">
+        <p style="line-height:1.8; margin:0;">한 명의 지원자를 <strong>다수의 입학사정관이 4단계</strong>에 걸쳐 평가합니다. 전임입학사정관 28명 + 위촉입학사정관 약 110명이 참여하여 개인 주관을 배제합니다.</p>
+      </div>
+
+      <div class="flow-steps" style="margin-top:16px;">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>1단계 — 전임입학사정관 1·2차 평가</strong>
+            <p>전임입학사정관 2명이 <strong>독립적으로</strong> 학업역량·학업태도·학업 외 소양을 평가합니다. 2차 평가자는 1차 결과 미공개 상태에서 별도 평가합니다.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>2단계 — 평가 결과 검토 및 조정</strong>
+            <p>1·2차 결과가 일정 수준 이상 다르면 <strong>대학입학전형운영위원회</strong>에서 면밀히 검토하여 조정합니다.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>3단계 — 위촉입학사정관 평가</strong>
+            <p>각 모집단위 교수진으로 구성된 위촉입학사정관이 모집단위 적합성을 평가합니다. 전임사정관과 의견 교환을 거칩니다.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>4단계 — 최종 평가</strong>
+            <p>입학본부와 단과대 평가 책임자로 구성된 <strong>평가위원회</strong>에서 최종 확인·결정합니다. 단계별 결과가 상이하면 검토 후 확정합니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">🎤 면접 안내</h2>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>구분</th><th>대상 전형</th><th>면접 시간</th><th>내용</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>서류 기반 면접</strong></td>
+            <td>지역균형 / 기회균형(사회통합) / 정시 기회균형(특수·북한)</td>
+            <td>10분 내외<br>(의대 60분)</td>
+            <td>제출 서류(생기부) 내용 확인 + 기본 학업소양 평가</td>
+          </tr>
+          <tr>
+            <td><strong>제시문 활용 면접</strong></td>
+            <td>일반전형</td>
+            <td>15분 내외<br>(준비 30·45분)</td>
+            <td>제시문 + 질문으로 전공적성·학업능력 평가 (정규 교육과정 범위 내 출제)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="card" style="border-left-color:#f59e0b; margin-top:16px;">
+        <strong>📌 면접 준비 핵심</strong>
+        <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+          <li><strong>단기 연습이 아닌 평소 학교생활 충실</strong>이 핵심 — 말투·태도 측정 면접이 아닙니다.</li>
+          <li>생기부에 담긴 자신의 경험을 되돌아보고 의미를 정리해 두세요.</li>
+          <li>수업 중 토론·발표에서 자신의 생각을 조리 있게 표현하는 훈련이 도움이 됩니다.</li>
+          <li>제시문 면접은 <strong>고등학교 정규 교육과정 범위</strong> 내에서 출제됩니다.</li>
+        </ul>
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">💡 실전 준비 포인트</h2>
+
+      <div class="accordion">
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            과목 선택 — 진로 적합성에 자신을 가두지 마세요
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>소수 학생만 선택하는 과목이라도 <strong>나의 발전에 도움이 된다면 도전</strong>을 권장합니다.</li>
+              <li>난도 높은 과목 이수로 수치상 결과가 다소 불리해도 <strong>도전 정신·호기심을 긍정적으로 평가</strong>합니다.</li>
+              <li>"진로 적합성"이라는 단어에 자신을 가두지 마세요 — 폭넓은 학습이 강점이 됩니다.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            독서 — 학생부 반영 여부와 무관하게 사고력의 핵심
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>독서활동상황은 대입에 미반영되지만 <strong>탐구·발표·세특에 녹아들면</strong> 평가 자료가 됩니다.</li>
+              <li>책을 읽고 끝내지 말고 <strong>연결된 후속 활동</strong>(보고서·동아리·발표)으로 이어가세요.</li>
+              <li>면접에서도 본인의 사고력의 깊이로 자연스럽게 드러납니다.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            활동 기록 — "내가 하고 싶은 활동"을 하라
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>주어진 활동을 단순 수행하기보다 <strong>자기 주도적으로 기획한 경험</strong>이 강점이 됩니다.</li>
+              <li>동기 → 과정 → 후속 활동의 흐름을 만들어 같은 주제를 여러 과목에서 연결하세요.</li>
+              <li>임원·동아리 회장 등 직책보다 <strong>실질적 역할과 기여 내용</strong>이 평가됩니다.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-btn" onclick="toggleAccordion(this)">
+            2022 개정 교육과정 (현재 1·2학년) — 5등급제 걱정하지 마세요
+            <span class="accordion-arrow">▼</span>
+          </button>
+          <div class="accordion-body">
+            <ul style="padding-left:18px; line-height:1.9;">
+              <li>"전 과목 평균 1.00이 아니면 어렵다"는 말은 <strong>사실이 아닙니다.</strong></li>
+              <li>교육청 학업 성취 분석 자료에서도 <strong>5등급제 안에서 학생 성장 평가가 충분히 가능</strong>함이 확인됐습니다.</li>
+              <li>서울대는 학교 교육 중심의 평가 기조를 <strong>변함없이 유지</strong>합니다 — 안정적 운영.</li>
+              <li>지금까지처럼 학교 안에서 성실하게, 깊이 있게, 도전적으로 학습하면 됩니다.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <h2 class="section-title" style="margin-top:36px;">📎 원문 자료</h2>
+
+      <div class="card" style="border-left-color:#1e3a8a;">
+        <strong>📄 2027학년도 서울대학교 학생부종합전형 안내 (PDF)</strong>
+        <p style="margin-top:8px; color:#374151; line-height:1.8;">아래에 임베드된 PDF로 전체 내용을 확인할 수 있습니다. <a href="../../input/student/2027%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2027%ED%95%99%EB%85%84%EB%8F%84%20%EC%84%9C%EC%9A%B8%EB%8C%80%ED%95%99%EA%B5%90%20%ED%95%99%EC%83%9D%EB%B6%80%EC%A2%85%ED%95%A9%EC%A0%84%ED%98%95%20%EC%95%88%EB%82%B4.pdf" target="_blank" rel="noopener">📥 새 창으로 열기</a></p>
+      </div>
+
+      <div style="margin-top:16px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; background:#f9fafb;">
+        <iframe
+          src="../../input/student/2027%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2027%ED%95%99%EB%85%84%EB%8F%84%20%EC%84%9C%EC%9A%B8%EB%8C%80%ED%95%99%EA%B5%90%20%ED%95%99%EC%83%9D%EB%B6%80%EC%A2%85%ED%95%A9%EC%A0%84%ED%98%95%20%EC%95%88%EB%82%B4.pdf"
+          style="width:100%; height:780px; border:0;"
+          title="2027학년도 서울대학교 학생부종합전형 안내"></iframe>
+      </div>
+
+    </div>
+    <!-- /snu-jongha -->
+
+  </div>
+  <!-- /uni27-snu -->
+
+  <div class="univ-sub-tab-panel" id="uni27-ku">
+
+    <h2 class="section-title" style="margin-top:8px;">🎓 2027학년도 고려대학교(서울) 입학전형</h2>
+
+    <div class="card" style="border-left-color:#8b1414;">
+      <strong>📋 한눈에 보기</strong>
+      <p style="margin-top:8px; color:#374151; line-height:1.8;">고려대(서울)는 2027학년도에 정원 내 <strong>4,173명</strong>(+ 정원 외 496) <strong>총 4,669명</strong>을 모집합니다. 수능위주 40.0%, 지역균형 13.8%, 기회균형 10.0%로 다양한 전형을 운영하며, 학종 학업우수는 <strong>일괄 서류 100%</strong> / 계열적합은 <strong>단계별 + 면접 40%</strong>로 차별화되어 있습니다.</p>
+    </div>
+
+    <div class="card-grid" style="margin-top:20px;">
+      <div class="grid-card" style="border-top:4px solid #8b1414;">
+        <div class="value" style="color:#8b1414;">4,669명</div>
+        <div class="label">총 모집인원<br><small style="font-size:0.75rem; font-weight:400;">정원 내 4,173 + 정원 외 496</small></div>
+      </div>
+      <div class="grid-card" style="border-top:4px solid #7c3aed;">
+        <div class="value" style="color:#7c3aed;">2,721명</div>
+        <div class="label">수시 (학종 중심)</div>
+      </div>
+      <div class="grid-card" style="border-top:4px solid #2563eb;">
+        <div class="value" style="color:#2563eb;">1,870명</div>
+        <div class="label">정시 ('가'군)</div>
+      </div>
+    </div>
+
+    <h2 class="section-title" style="margin-top:36px;">🎯 수시모집 (2,721명)</h2>
+
+    <table class="data-table">
+      <thead><tr><th>분류</th><th>전형</th><th>인원</th><th>전형요소</th><th>수능 최저 (4개 영역)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>학생부<br>교과</strong></td><td>학교추천</td><td>648</td><td>학생부 교과 90 + 서류 10 (일괄)<br>※ 학교당 추천 12명 / 인문·자연 무관</td><td><strong>3개 영역 합 7 이내</strong> + 한국사 4 / 의대 <strong>4개 합 5</strong></td></tr>
+        <tr><td rowspan="6"><strong>학생부<br>종합</strong></td><td>학업우수</td><td>901</td><td><strong>서류 100% 일괄</strong></td><td>인문·자연 <strong>4개 합 8</strong> + 한국사 4 / 의대 <strong>4개 합 5</strong></td></tr>
+        <tr><td>계열적합</td><td>521</td><td>1단계 서류 100% (5배수)<br>2단계 1단계 60 + <strong>면접 40</strong> (제시문 기반)</td><td>미적용 (의대 적성·인성 면접 추가)</td></tr>
+        <tr><td>고른기회</td><td>199</td><td>1단계 서류 100% (3배수)<br>2단계 1단계 60 + 면접 40</td><td>미적용</td></tr>
+        <tr><td>다문화</td><td>20</td><td>1단계 서류 100% (3배수)<br>2단계 1단계 60 + 면접 40</td><td>미적용</td></tr>
+        <tr><td>재직자</td><td>18</td><td>1단계 서류 100% (3배수)<br>2단계 1단계 60 + 면접 40</td><td>미적용</td></tr>
+        <tr><td>사이버국방</td><td>10</td><td>1단계 서류 100% (5배수)<br>2단계 1단계 60 + 면접 20 + 기타* 20</td><td>미적용</td></tr>
+        <tr><td><strong>논술</strong></td><td>논술전형</td><td>349</td><td>논술 100%</td><td>인문·자연 <strong>4개 합 8</strong> + 한국사 4</td></tr>
+        <tr><td><strong>실기</strong></td><td>특기자<br>(체육교육·디자인조형)</td><td>55</td><td>체육 — 1단계 경기실적 70 + 학생부(교과) 25 + 출결 5 (5배수) → 2단계 1단계 70 + 면접 30<br>디자인조형 — 1단계 서류 100 (5배수) → 2단계 1단계 60 + 면접 40</td><td>디자인조형만 <strong>3개 합 8 이내</strong></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:6px; color:#6b7280; font-size:0.85rem;">* 사이버국방 기타 — 군 면접·체력검정·신원조회·인성검사·신체검사 / ※ 탐구 1과목 반영, 직업탐구 미인정 / ※ <strong>학교추천·학업우수 중복지원 불가</strong> · 고른기회·다문화·재직자 간 중복지원 불가</p>
+
+    <div class="card" style="border-left-color:#7c3aed; margin-top:16px;">
+      <strong>📋 학교추천 — 학생부(교과) 점수 산출</strong>
+      <p style="margin-top:8px; line-height:1.8;">5개 학기(1-1 ~ 3-1) 전 교과 모든 과목 — 학년별 반영비율 없음.</p>
+      <p style="margin-top:6px; line-height:1.8;">등급별 점수 — <strong>1등급 100 / 2등급 96 / 3등급 92 / 4등급 86 / 5등급 70 / 6등급 55 / 7등급 40 / 8등급 20 / 9등급 0</strong></p>
+      <p style="margin-top:6px; color:#374151; line-height:1.8;">교과평균등급 = Σ(과목별 등급 × 이수단위) / Σ이수단위 → 등급별 점수 환산 → ×0.9 (학생부 90% 반영)<br>성취도(A/B/C)는 비율 환산을 통해 <strong>변환 석차등급</strong>으로 변환하여 반영</p>
+    </div>
+
+    <h2 class="section-title" style="margin-top:36px;">📊 정시모집 (1,870명, 가군)</h2>
+
+    <table class="data-table">
+      <thead><tr><th>전형</th><th>인원</th><th>전형요소</th></tr></thead>
+      <tbody>
+        <tr><td><strong>일반전형</strong></td><td>1,027</td><td>인문·자연 <strong>수능 100%</strong> / 의대 수능 100 + 적성·인성면접 / 사이버국방 수능 80 + 기타 20 / 체육·디자인 수능 70 + 실기 30</td></tr>
+        <tr><td><strong>교과우수</strong></td><td>593</td><td>일괄 — <strong>수능 80 + 학생부(교과) 20</strong> / 의대 적성·인성 면접 추가</td></tr>
+        <tr><td>농어촌·사회배려·특수교육·특성화고</td><td>120 / 69 / 36 / 25</td><td>정원 외 — 수능 + 학생부 등 (요강 참조)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card" style="border-left-color:#2563eb; margin-top:16px;">
+      <strong>📊 정시 수능 영역별 반영점수</strong>
+      <p style="margin-top:8px; line-height:1.8;">
+        <strong>자연·의학계열</strong> (가정교육·간호 제외) — 국 200 / 수 240 / 탐구 200<br>
+        <strong>가정교육·간호</strong> — 국 200 / 수 200 / 탐구 160<br>
+        <strong>인문·체능(체육교육)</strong> — 국 200 / 수 200 / 탐구 160<br>
+        <strong>예능(디자인조형)</strong> — 국 200 / 수 - / 탐구 160 (수학 미반영)
+      </p>
+      <p style="margin-top:6px; color:#374151; font-size:0.9rem;">※ 자연·의대 지원자 과학탐구 응시 시 <strong>해당 과목 변환점수에 3% 가산점</strong><br>※ 영어·한국사는 등급별 감점 적용 (요강 참조)</p>
+    </div>
+
+    <div class="card" style="border-left-color:#1e40af; margin-top:16px;">
+      <strong>🛡️ 사이버국방 정시 추가 자격</strong>
+      <p style="margin-top:8px; line-height:1.8;">「군인사법」 '소위' 자격 충족 + 수능에서 다음 중 1개 이상:</p>
+      <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+        <li>수학영역 1등급</li>
+        <li>과학탐구 2과목 모두 1등급</li>
+        <li>국·수·영·탐(상위 1) 4개 영역 등급 합 8 이내</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-left-color:#ef4444; margin-top:16px;">
+      <strong>⚠️ 학교폭력 조치사항 반영</strong>
+      <p style="margin-top:8px; line-height:1.8;"><strong>수시·정시 모든 전형</strong> 총점에서 호수별 감점:</p>
+      <p style="margin-top:6px; line-height:1.8;">1호 1점 / 2호 3점 / 3호 7점 / <strong>4~9호 20점</strong></p>
+      <p style="margin-top:6px; color:#374151; font-size:0.9rem;">※ 학종은 서류평가에서 정성평가로 반영</p>
+    </div>
+
+    <h2 class="section-title" style="margin-top:36px;">📅 주요 일정</h2>
+    <ul style="padding-left:18px; line-height:1.9;">
+      <li><strong>수시 원서접수</strong> — 2026. 9. 7(월) ~ 11(금) 중 3일 이상</li>
+      <li><strong>수능</strong> — 2026. 11. (예정)</li>
+      <li><strong>수시 합격 발표</strong> — 2026. 12. 18(금)까지</li>
+      <li><strong>정시 원서접수</strong> — 2027. 1. 4(월) ~ 7(목) 중 3일 이상</li>
+      <li><strong>정시 합격 발표</strong> — 2027. 2. 5(금)까지</li>
+    </ul>
+
+    <h2 class="section-title" style="margin-top:36px;">📎 원문 자료</h2>
+    <div class="card" style="border-left-color:#8b1414;">
+      <strong>📄 2027학년도 고려대학교(서울) 입학전형시행계획 (2025. 4.)</strong>
+      <p style="margin-top:8px; color:#374151; line-height:1.8;">아래 임베드된 PDF로 모집단위별 인원·평가 세부 내용을 확인할 수 있습니다. <a href="../../input/student/2027%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2027%ED%95%99%EB%85%84%EB%8F%84_%EA%B3%A0%EB%A0%A4%EB%8C%80%28%EC%84%9C%EC%9A%B8%29_%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%EC%8B%9C%ED%96%89%EA%B3%84%ED%9A%8D%282025.04%29.pdf" target="_blank" rel="noopener">📥 새 창으로 열기</a></p>
+    </div>
+    <div style="margin-top:16px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; background:#f9fafb;">
+      <iframe
+        src="../../input/student/2027%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2027%ED%95%99%EB%85%84%EB%8F%84_%EA%B3%A0%EB%A0%A4%EB%8C%80%28%EC%84%9C%EC%9A%B8%29_%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%EC%8B%9C%ED%96%89%EA%B3%84%ED%9A%8D%282025.04%29.pdf"
+        style="width:100%; height:780px; border:0;"
+        title="2027학년도 고려대학교(서울) 입학전형시행계획"></iframe>
+    </div>
+
+  </div>
+  <!-- /uni27-ku -->
+
+  <div class="univ-sub-tab-panel" id="uni27-knu">
+
+    <h2 class="section-title" style="margin-top:8px;">🏫 2027학년도 경북대학교 입학전형</h2>
+
+    <div class="card" style="border-left-color:#c41230;">
+      <strong>📋 한눈에 보기</strong>
+      <p style="margin-top:8px; color:#374151; line-height:1.8;">경북대학교는 2027학년도에 정원 내 <strong>총 5,629명</strong>을 모집합니다. 수시 4,573명(81.2%) + 정시 1,056명(18.8%)으로 <strong>수시 비중이 매우 높은 구조</strong>이며, 학생부교과·학생부종합·논술(AAT)·실기 등 다양한 전형을 운영합니다. 대구·경북 지역인재 전형의 비중도 큰 편입니다.</p>
+    </div>
+
+    <div class="card-grid" style="margin-top:20px;">
+      <div class="grid-card" style="border-top:4px solid #c41230;">
+        <div class="value" style="color:#c41230;">5,629명</div>
+        <div class="label">정원 내 총 모집</div>
+      </div>
+      <div class="grid-card" style="border-top:4px solid #7c3aed;">
+        <div class="value" style="color:#7c3aed;">4,573명</div>
+        <div class="label">수시 (81.2%)</div>
+      </div>
+      <div class="grid-card" style="border-top:4px solid #2563eb;">
+        <div class="value" style="color:#2563eb;">1,056명</div>
+        <div class="label">정시 (18.8%)</div>
+      </div>
+    </div>
+
+    <h2 class="section-title" style="margin-top:36px;">🎯 수시모집 (4,573명)</h2>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>분류</th><th>전형</th><th>인원</th><th>평가방법</th><th>수능 최저</th></tr>
+      </thead>
+      <tbody>
+        <tr><td rowspan="5"><strong>학생부<br>교과</strong></td><td>교과우수자</td><td>1,383</td><td>교과 80% + 교과이수 충실도 20%</td><td>○ (생환·과기·자율미래인재 ×)</td></tr>
+        <tr><td>지역인재</td><td>610</td><td>교과 80% + 교과이수 충실도 20%</td><td>○ (생환·과기·자율미래인재 ×)</td></tr>
+        <tr><td>지역인재 기초생활수급자등</td><td>10</td><td>교과 80% + 교과이수 충실도 20%</td><td>○</td></tr>
+        <tr><td>사회통합</td><td>118</td><td>교과 80% + 교과이수 충실도 20%</td><td>×</td></tr>
+        <tr><td>특성화고졸업자</td><td>31</td><td>교과 80% + 교과이수 충실도 20%</td><td>×</td></tr>
+        <tr><td rowspan="11"><strong>학생부<br>종합</strong></td><td>일반학생</td><td>907</td><td>서류평가 100%</td><td>○ (생환·과기 ×)</td></tr>
+        <tr><td>지역인재</td><td>395</td><td>1단계 서류 100% (4~5배수)<br>2단계 1단계 70 + 면접 30</td><td>× (의·치·약 ○)</td></tr>
+        <tr><td>지역인재 학교장추천(치의예)</td><td>3</td><td>1단계 서류 100% (5배수)<br>2단계 1단계 70 + 면접 30</td><td>○</td></tr>
+        <tr><td>사회배려자</td><td>18</td><td>서류평가 100%</td><td>×</td></tr>
+        <tr><td>고졸재직자</td><td>5</td><td>1단계 서류 100% (4배수)<br>2단계 1단계 70 + 면접 30</td><td>×</td></tr>
+        <tr><td>영농창업인재</td><td>19</td><td>1단계 서류 100% (4배수)<br>2단계 1단계 70 + 면접 30</td><td>×</td></tr>
+        <tr><td>SW특별</td><td>10</td><td>1단계 서류 100% (4배수)<br>2단계 1단계 70 + 면접 30</td><td>×</td></tr>
+        <tr><td>농어촌학생</td><td>195</td><td>서류평가 100%</td><td>× (치·약 ○)</td></tr>
+        <tr><td>기초생활수급자등</td><td>53</td><td>서류평가 100%</td><td>×</td></tr>
+        <tr><td>장애인등대상자</td><td>20</td><td>1단계 서류 100% (3~4배수)<br>2단계 1단계 70 + 면접 30</td><td>×</td></tr>
+        <tr><td>특성화고졸재직자</td><td>25</td><td>서류평가 100%</td><td>×</td></tr>
+        <tr><td><strong>특별</strong></td><td>모바일과학인재 (전자공학부 모바일공학전공)</td><td>5</td><td>1단계 서류 100% (5배수)<br>2단계 1단계 50 + 면접 50</td><td>○</td></tr>
+        <tr><td><strong>논술</strong></td><td>논술(AAT)</td><td>560</td><td>논술 70% + 학생부 교과 30%</td><td>○</td></tr>
+        <tr><td><strong>실기</strong></td><td>실기/실적(예·체능) + 특기자(체육)</td><td>206</td><td>모집단위별 학생부+실기 비율 상이</td><td>일부 모집단위만 ○</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card" style="border-left-color:#f59e0b; margin-top:16px;">
+      <strong>📌 학생부교과 핵심 — 교과이수 충실도 20%</strong>
+      <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+        <li>합산 500점 — <strong>학생부 교과 400점(80%) + 교과이수 충실도 100점(20%)</strong></li>
+        <li><strong>교과이수 충실도</strong>는 기본교과(국·수·영·사·과·한국사) 이수 현황 + 계열별(인문/자연/인문·자연) 과목 이수 적절성을 정성평가</li>
+        <li>2명의 평가자가 독립 평가 → 등급 조합으로 점수 부여 / 반영점수 100점(최고)~70점(최저)</li>
+        <li>'세부능력 및 특기사항' 미반영 — <strong>과목 선택 자체</strong>가 핵심 (1·2학년 단계부터 전략적 접근 필요)</li>
+        <li>산림과학·조경학부, 아동학부, 간호학과, 컴퓨터학부(글로벌SW)는 인문·자연 통합 적용</li>
+      </ul>
+    </div>
+
+    <h2 class="section-title" style="margin-top:36px;">📊 정시모집 (1,056명, 가/나군)</h2>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>군</th><th>모집인원</th><th>주요 전형</th><th>반영방법</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>가군</strong></td><td>511명<br>(일반 473 / 지역 38)</td><td>일반학생·지역인재 / 예능계열 일부</td><td>일반학과·미술학과 수능 100% / 디자인 수능 60+실기 40 / 음악·국악 수능 20+실기 80 / 패션디자인 실기 100</td></tr>
+        <tr><td><strong>나군</strong></td><td>545명</td><td>일반학생 / 체능계열</td><td>일반학과 수능 100% / 체육교육 수능 80+실기 20 / 체육학부(체육학) 수능 70+실기 30</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card" style="border-left-color:#2563eb; margin-top:16px;">
+      <strong>📊 정시 수능 영역별 환산 표준점수</strong>
+      <table class="data-table" style="margin-top:8px;">
+        <thead><tr><th>계열</th><th>국어</th><th>수학</th><th>영어</th><th>탐구</th><th>합계</th></tr></thead>
+        <tbody>
+          <tr><td><strong>인문</strong></td><td>300</td><td>200</td><td>100</td><td>200</td><td>800</td></tr>
+          <tr><td><strong>자연</strong> (생환·과기 제외)</td><td>200</td><td>300</td><td>100</td><td>200</td><td>800</td></tr>
+          <tr><td>생태환경(관광 제외)·과학기술</td><td>250</td><td>250</td><td>100</td><td>200</td><td>800</td></tr>
+          <tr><td>예능</td><td>200</td><td>—</td><td>100</td><td>200</td><td>500</td></tr>
+        </tbody>
+      </table>
+      <ul style="margin-top:8px; padding-left:18px; color:#374151; line-height:1.8;">
+        <li><strong>자연계열 과탐 응시 시 1과목당 5% 가산점</strong> (전자공학부 모바일공학전공 제외)</li>
+        <li>영어 — 등급별 환산점수 (1등급 100 ~ 9등급 62)</li>
+        <li>한국사 — 등급별 가점 (1~4등급 10 / 5등급 9.8 / … / 9등급 9.0)</li>
+      </ul>
+    </div>
+
+    <h2 class="section-title" style="margin-top:36px;">🎯 수능최저학력기준 (수시·일반학과)</h2>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>전형</th><th>모집단위</th><th>기준</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="4"><strong>학생부교과<br>(교과우수자·지역인재)<br>+ 논술(AAT)</strong></td>
+          <td>IT대학</td>
+          <td>국·영·사/과탐 중 상위 1개 + 수학 등급 합 <strong>5 이내</strong></td>
+        </tr>
+        <tr>
+          <td>경상·사범·간호·행정·자율전공</td>
+          <td>국·수·영·사/과탐 중 상위 2개 영역 등급 합 <strong>5 이내</strong></td>
+        </tr>
+        <tr>
+          <td>공과·첨단기술융합·공학첨단자율</td>
+          <td>국·영·사/과탐 중 상위 1개 + 수학 등급 합 <strong>6 이내</strong></td>
+        </tr>
+        <tr>
+          <td>인문·사회과학·자연과학·농생명·생활과학</td>
+          <td>국·수·영·사/과탐 중 상위 2개 영역 등급 합 <strong>6 이내</strong></td>
+        </tr>
+        <tr>
+          <td><strong>학생부교과(지역인재 기초생활)<br>+ 학생부종합(일반학생)</strong></td>
+          <td>해당 모집단위</td>
+          <td>위의 기준에서 등급 합 <strong>1등급 하향 적용</strong></td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>생태환경·과학기술·자율미래인재학부</strong></td>
+          <td><strong>미적용</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card" style="border-left-color:#ef4444; margin-top:16px;">
+      <strong>🩺 의·치·수·약 수능최저 (학생부교과·학생부종합·논술 공통)</strong>
+      <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+        <li><strong>의예과·치의예과</strong> — 국·영·사/과탐 중 상위 2개 + 수학 등급 합 <strong>4 이내</strong></li>
+        <li><strong>수의예과·약학과</strong> — 국·영·사/과탐 중 상위 2개 + 수학 등급 합 <strong>5 이내</strong></li>
+        <li>탐구 2과목 평균 반영 — 의예 반올림 / 치·수·약 절사</li>
+        <li>지역인재 기초생활수급자·농어촌학생은 위 기준에서 1등급 하향 적용</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-left-color:#1e40af; margin-top:16px;">
+      <strong>📱 전자공학부 모바일공학전공 (LG전자 산학협력)</strong>
+      <p style="margin-top:8px; line-height:1.8;">모바일과학인재·논술(AAT)·정시 모두 — <strong>수학(미적분/기하), 과탐 영역 등급 합 3 이내</strong> 적용. 탐구 2과목 평균(절사) 반영.</p>
+    </div>
+
+    <h2 class="section-title" style="margin-top:36px;">📅 주요 일정</h2>
+
+    <table class="data-table">
+      <thead><tr><th>구분</th><th>일정</th></tr></thead>
+      <tbody>
+        <tr><td><strong>수시 원서접수</strong></td><td>2026. 9. 7(월) ~ 11(금) 중 3일 이상</td></tr>
+        <tr><td><strong>수시 면접·실기·논술</strong></td><td>2026. 9. 12(토) ~ 12. 17(목)</td></tr>
+        <tr><td><strong>수능</strong></td><td>2026. 11. (예정)</td></tr>
+        <tr><td><strong>수시 합격자 발표</strong></td><td>2026. 12. 18(금)까지</td></tr>
+        <tr><td><strong>수시 등록</strong></td><td>2026. 12. 21(월) ~ 23(수)</td></tr>
+        <tr><td><strong>정시 원서접수</strong></td><td>2027. 1. 4(월) ~ 7(목) 중 3일 이상</td></tr>
+        <tr><td><strong>정시 가군 면접·실기</strong></td><td>2027. 1. 11(월) ~ 17(월)</td></tr>
+        <tr><td><strong>정시 나군 면접·실기</strong></td><td>2027. 1. 18(월) ~ 24(일)</td></tr>
+        <tr><td><strong>정시 합격자 발표</strong></td><td>2027. 2. 5(금)까지</td></tr>
+        <tr><td><strong>정시 등록</strong></td><td>2027. 2. 10(수) ~ 12(금)</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-title" style="margin-top:36px;">💡 학생·학부모 실전 포인트</h2>
+
+    <div class="accordion">
+      <div class="accordion-item">
+        <button class="accordion-btn" onclick="toggleAccordion(this)">
+          ① 지역인재 — 대구·경북 고교 전 과정 이수자
+          <span class="accordion-arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <ul style="padding-left:18px; line-height:1.9;">
+            <li>지원자격 — 입학일부터 졸업일까지 <strong>고교 전 과정</strong>을 대구·경북 지역에서 이수</li>
+            <li>의·치·약·간호 지원자(2022년 중학교 입학자)는 <strong>중학교+고등학교 모두 비수도권/대구·경북 지역</strong>에서 입학~졸업 + 거주 요건 충족 필수</li>
+            <li>학생부교과 지역인재 610명 + 학생부종합 지역인재 395명 — <strong>모집 비중이 매우 큼</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-btn" onclick="toggleAccordion(this)">
+          ② 교과이수 충실도 — 우리 학교 교육과정 이수가 곧 점수
+          <span class="accordion-arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <ul style="padding-left:18px; line-height:1.9;">
+            <li>학생부교과 전형의 <strong>20%</strong>를 차지하는 정성평가 항목</li>
+            <li>기본교과 이수 현황 + 계열별 과목 이수 적절성 평가 ('세특'은 미반영)</li>
+            <li>과목 선택 자체가 점수에 직결 — <strong>1·2학년 단계의 과목 선택부터 전략적 접근</strong> 필요</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-btn" onclick="toggleAccordion(this)">
+          ③ 학생부종합 면접 — 10분 내외, 60% 미만은 불합격
+          <span class="accordion-arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <ul style="padding-left:18px; line-height:1.9;">
+            <li>지역인재·고졸재직자·SW특별·장애인등 — 1단계 서류 → 2단계 면접 30~50%</li>
+            <li>면접은 개인별 <strong>10분 내외</strong>, 다수 평가위원이 종합 평가</li>
+            <li><strong>면접 점수가 60% 미만이면 불합격</strong> — 최소 점수 확보 필수</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-btn" onclick="toggleAccordion(this)">
+          ④ 논술(AAT) — 560명 모집, 학생부 교과 30% 반영
+          <span class="accordion-arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <ul style="padding-left:18px; line-height:1.9;">
+            <li>경북대 자체 논술(AAT, Academic Aptitude Test) — <strong>논술 70% + 학생부 교과 30%</strong></li>
+            <li>수능최저 적용 — 일반학과는 학생부교과 기준과 동일</li>
+            <li>모집단위 560명으로 큰 규모 — <strong>내신이 다소 부족해도 도전 가능</strong>한 옵션</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-btn" onclick="toggleAccordion(this)">
+          ⑤ 학교폭력 조치사항 — 수시·정시 전 전형 감점
+          <span class="accordion-arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <ul style="padding-left:18px; line-height:1.9;">
+            <li>1·2·3호 → 10점 감점 / 4·5·6·7호 → 50점 감점 / <strong>8·9호 → 부적격 처리</strong></li>
+            <li>수시·정시 <strong>전 전형</strong>에 적용 (단계별 전형은 1단계에서 감점)</li>
+            <li>다수 호수 기재 시 가장 높은 호수 기준 적용</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title" style="margin-top:36px;">📎 원문 자료</h2>
+
+    <div class="card" style="border-left-color:#c41230;">
+      <strong>📄 2027학년도 대학입학전형 기본계획 (수정 공고용, 2025. 5.)</strong>
+      <p style="margin-top:8px; color:#374151; line-height:1.8;">아래 임베드된 PDF로 모집단위별 인원·평가 세부 내용을 확인할 수 있습니다. <a href="../../input/student/2027%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2027%ED%95%99%EB%85%84%EB%8F%84%20%EB%8C%80%ED%95%99%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%20%EA%B8%B0%EB%B3%B8%EA%B3%84%ED%9A%8D_%EC%88%98%EC%A0%95%20%EA%B3%B5%EA%B3%A0%EC%9A%A9%282025.%205.%29.pdf" target="_blank" rel="noopener">📥 새 창으로 열기</a></p>
+    </div>
+
+    <div style="margin-top:16px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; background:#f9fafb;">
+      <iframe
+        src="../../input/student/2027%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2027%ED%95%99%EB%85%84%EB%8F%84%20%EB%8C%80%ED%95%99%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%20%EA%B8%B0%EB%B3%B8%EA%B3%84%ED%9A%8D_%EC%88%98%EC%A0%95%20%EA%B3%B5%EA%B3%A0%EC%9A%A9%282025.%205.%29.pdf"
+        style="width:100%; height:780px; border:0;"
+        title="2027학년도 경북대학교 대학입학전형 기본계획"></iframe>
+    </div>
+
+  </div>
+  <!-- /uni27-knu -->
 
 </div>
 <!-- /univ-general -->
 
 <div class="univ-tab-panel" id="univ-2028">
 
-  <h2 class="section-title">🔄 2028 대입 제도 변화 — 지금 1·2학년 학생이라면 꼭 읽으세요</h2>
+  <div class="univ-sub-tab-nav">
+    <button class="univ-sub-tab-btn active" onclick="switchUnivSubTab('u28-overview',this)">🔄 제도 변화</button>
+    <button class="univ-sub-tab-btn" onclick="switchUnivSubTab('u28-schools',this)">🏫 주요 대학 전형</button>
+  </div>
+
+  <div class="univ-sub-tab-panel active" id="u28-overview">
+
+  <h2 class="section-title" style="margin-top:8px;">🔄 2028 대입 제도 변화</h2>
 
   <div class="card" style="border-left-color:#ef4444;">
     <strong>현재 1·2학년이 치를 수능은 완전히 바뀝니다</strong>
@@ -4212,6 +5152,497 @@ function switchUnivTab(id,btn){
       <li><strong>출결과 학교생활 태도</strong> — 출석·봉사·학교폭력 관련 사항 관리</li>
     </ul>
   </div>
+
+  </div>
+  <!-- /u28-overview -->
+
+  <div class="univ-sub-tab-panel" id="u28-schools">
+
+    <div class="card" style="border-left-color:#1e40af;">
+      <strong>🏫 2028 주요 대학 전형 — 한눈에</strong>
+      <p style="margin-top:8px; color:#374151; line-height:1.8;">정부 기여대학 지원사업 영향으로 SKY를 비롯한 상위 대학들이 정시 비중을 30%대로 축소했고, 학종은 서류형·면접형 분리 등 다양화됩니다. 이공계특성화대 6곳 중 KAIST·GIST·DGIST는 <strong>정시 모집을 폐지</strong>합니다. 아래 학교별 탭에서 변경 사항을 확인하세요.</p>
+    </div>
+
+    <div class="card" style="border-left-color:#f59e0b; margin-top:16px;">
+      <strong>📊 SKY 통합 — 수시 비중 5.5%p 확대</strong>
+      <p style="margin-top:8px; line-height:1.8;">SKY 합산 정원 내 <strong>11,657명</strong> · 수시 <strong>66.7%</strong>(7,774명) / 정시 <strong>33.3%</strong>(3,883명). 2027학년 수시 61.1%에서 5.5%p 확대.</p>
+    </div>
+
+    <div class="card" style="border-left-color:#7c3aed; margin-top:16px;">
+      <strong>📈 상위 15개 대학 — 정시 40% 기준 무너짐</strong>
+      <p style="margin-top:8px; line-height:1.8;">총 <strong>49,575명</strong> 모집 · 수시 <strong>62.2%</strong>(30,841명) / 정시 <strong>37.8%</strong>(18,734명). 2027학년 정시 40.7%에서 축소되어 40% 기준이 무너졌습니다.</p>
+    </div>
+
+    <div class="snu-tab-nav" style="margin-top:24px;">
+      <button class="snu-tab-btn active" onclick="switchSnuTab('u28-snu',this)">🎓 서울대</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-ku',this)">🎓 고려대</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-yu',this)">🎓 연세대</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-hyu',this)">🎓 한양대</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-dgu',this)">🎓 동국대</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-khu',this)">🎓 경희대</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-knu',this)">🏫 경북대</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-kaist',this)">🔬 KAIST</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-postech',this)">🔬 포스텍</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-gist',this)">🔬 GIST</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-dgist',this)">🔬 DGIST</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-unist',this)">🔬 UNIST</button>
+      <button class="snu-tab-btn" onclick="switchSnuTab('u28-kentech',this)">🔬 켄텍</button>
+    </div>
+
+    <div class="snu-tab-panel active" id="u28-snu">
+      <div class="card" style="border-left-color:#1e3a8a;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;">정원 내 <strong>3,603명</strong> · 수시 <strong>2,496명(69.3%)</strong> / 정시 'ᄂ'군 <strong>1,107명(30.7%)</strong></p>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 2028학년도 핵심 변화 (vs 2027)</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li><strong>수시 비중 61.8% → 69.3%로 확대</strong> (정시 지역균형 폐지)</li>
+        <li><strong>지역균형 학종 수능최저 완전 폐지</strong> — 수능 응시영역기준 포함 미적용</li>
+        <li><strong>고교당 추천 인원 2명 → 3명</strong>으로 확대</li>
+        <li><strong>자사고·외고·국제고·과학고·영재학교 지원 불가</strong> — 일반고 비중 강화</li>
+        <li>지역균형 728명(+214) · 일반 1,585 · 기균(사회통합) 183 — 학종 전반 확대</li>
+        <li>정시 일반전형: <strong>1단계 수능 100%(3배수) → 2단계 수능 60 + 교과역량평가 40</strong></li>
+        <li>정시 의대·수의대: <strong>수능 60 + 교과역량 20 + 적성·인성면접 20</strong> 신설</li>
+        <li>면접 — <strong>2022 개정 교육과정 핵심역량 평가</strong> (분석적 주제토론·심층적 문제해결·융합적 과제수행 등 학생부 기반)</li>
+      </ul>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">🎯 수시모집 (2,496명)</h3>
+      <table class="data-table">
+        <thead><tr><th>전형</th><th>인원</th><th>1단계</th><th>2단계</th><th>수능 최저</th></tr></thead>
+        <tbody>
+          <tr><td><strong>지역균형</strong> (학종)</td><td>728명</td><td>서류 100% (3배수)</td><td>1단계 70 + 면접 30</td><td><strong>미적용</strong></td></tr>
+          <tr><td><strong>일반전형</strong> (학종)<br>※ 미술·사범·음대 제외</td><td rowspan="4">1,585명</td><td>서류 100% (2배수)</td><td>서류 50 + 면접 50</td><td>미적용</td></tr>
+          <tr><td>일반전형 — 사범대</td><td>서류 100% (2배수)</td><td>서류 50 + 면접 30 + 교직적성·인성 20</td><td>미적용</td></tr>
+          <tr><td>일반전형 — 미술대 디자인과</td><td>서류 100% (2배수)</td><td>면접 100 (서류·1단계 미반영)</td><td>미적용</td></tr>
+          <tr><td>일반전형 — 음악대 국악과</td><td>서류 50 + 실기 50 (2.5배수)</td><td>서류 50 + 실기 40 + 면접 10</td><td>미적용</td></tr>
+          <tr><td><strong>실기위주 일반</strong> (음대 피아노·관현악)</td><td>(별도)</td><td>실기 100 (2.5배수)</td><td>서류 50 + 실기 50</td><td>미적용</td></tr>
+          <tr><td><strong>기회균형(사회통합)</strong></td><td>183명</td><td>서류 100% (2배수)</td><td>1단계 70 + 면접 30</td><td>미적용</td></tr>
+        </tbody>
+      </table>
+
+      <div class="card" style="border-left-color:#1e3a8a; margin-top:16px;">
+        <strong>🎤 면접 — 2022 개정 교육과정 핵심역량 평가</strong>
+        <p style="margin-top:8px; line-height:1.8;">서울대 일반전형 면접은 <strong>학생부 기반 + 공동 출제 문항</strong>을 활용하여 학생 개인의 학습 경험과 문제해결 능력·사고력을 종합 평가합니다.</p>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li><strong>분석적 주제토론</strong> (인문학·사회과학) — 인문대·사범대(국교·역사·지리 등)·생활과학(아동가족) — 20분 내외</li>
+          <li><strong>심층적 문제해결</strong> — 수학A·물리·화학·생명과학·지구과학 — 자연대·사범대 자연·약대(수학A 일부)</li>
+          <li><strong>융합적 과제수행</strong> — 수학B+융합(과학) / 수학C+융합(사회) — 공대·약대·자유전공·경영·농생명 등</li>
+          <li>의·치·수의·간호대 — 상황/제시문 면접 + 서류 기반 면접 (간호 30분 / 치의 40분 / 수의 50분 / 의 60분)</li>
+          <li>제시문 출제 범위 — 공통과목 + 일반선택 + 모집단위별 진로선택 일부 (예: 수학A는 기하·미적분Ⅱ)</li>
+        </ul>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📊 정시모집 'ᄂ'군 (1,107명)</h3>
+      <table class="data-table">
+        <thead><tr><th>모집단위</th><th>1단계</th><th>2단계</th></tr></thead>
+        <tbody>
+          <tr><td>전 모집단위 (미술·체육교육·수의·음대·의대 제외)</td><td>수능 100% (3배수)</td><td>수능 60 + <strong>교과역량평가 40</strong></td></tr>
+          <tr><td>수의과대학 · 의과대학</td><td>수능 100% (3배수)</td><td>수능 60 + 교과역량 20 + <strong>적성·인성면접 20</strong></td></tr>
+          <tr><td>미술대학</td><td>수능 100% (5배수)</td><td>수능 40 + 실기 30 + 면접 30</td></tr>
+          <tr><td>사범대학 체육교육과</td><td>수능 100% (3배수)</td><td>수능 60 + 실기 40 + 교직적성·인성 가산</td></tr>
+        </tbody>
+      </table>
+
+      <div class="card" style="border-left-color:#2563eb; margin-top:16px;">
+        <strong>📊 정시 1단계 수능 환산 (등급 점수)</strong>
+        <p style="margin-top:8px; line-height:1.8;">국어·수학·영어·한국사·탐구(사회·과학 등급 평균) 영역별 등급을 환산 후 합산:</p>
+        <p style="margin-top:6px; line-height:1.8;"><strong>1등급 10 / 2등급 9 / 3등급 8 / … / 9등급 2점</strong></p>
+        <p style="margin-top:6px; color:#374151; line-height:1.8;">2단계 수능 — 백분위 활용 (모집단위별 영역 가중치 상이)<br>· 인문 100/120/50/30 (국·수·탐사·탐과)<br>· 자연 100/120/30/50<br>· 학부대학·간호 100/120/40/40<br>영어는 1등급 0 ~ 9등급 -14 차등 감점</p>
+      </div>
+
+      <div class="card" style="border-left-color:#7c3aed; margin-top:16px;">
+        <strong>📋 정시 교과역량평가 (40점 / 의·수의 20점)</strong>
+        <p style="margin-top:8px; line-height:1.8;">평가 자료: 학교생활기록부 + 교육과정 편성표 / 4가지 평가 항목 — 2명의 평가자 독립 평가, 등급제 (A+ ~ C)</p>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>① <strong>과목 이수 내용</strong> — 위계·진로/적성·전공 연계 과목 이수</li>
+          <li>② <strong>교과 성취도</strong> — 학점·원점수·평균·표준편차·성취도 등 종합</li>
+          <li>③ <strong>학업 수행 내용</strong> — 세부능력 및 특기사항(세특)에 나타난 교과역량</li>
+          <li>④ <strong>공동체 역량</strong> — 행특·출결·학교폭력 조치 등 정성 반영</li>
+        </ul>
+        <p style="margin-top:6px; color:#374151; line-height:1.8;">등급별 점수 — A+ 40·A 39·B+ 38·B 37·C+ 36·C 35 (의·수의대는 절반 — A+ 20 ~ C 17.5)</p>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📚 전공 연계 권장 과목 (2028)</h3>
+      <table class="data-table">
+        <thead><tr><th>유형</th><th>모집단위</th><th>권장과목</th></tr></thead>
+        <tbody>
+          <tr><td><strong>유형 1</strong><br>(인문·사회)</td><td>인문대 · 사회과학 · 경영 · 사범대(인문) · 간호 · 농경제 · 생활과학 소비자아동/식영/의류 등</td><td><strong>제2외국어/한문 1과목 이상</strong> (수능 응시 필수)</td></tr>
+          <tr><td rowspan="2"><strong>유형 2</strong><br>(자연·공학·의약)</td><td rowspan="2">자연과학 · 공과 · 의 · 수의 · 치의 · 약 · 첨단융합 · 사범 자연계열 등</td><td><strong>수학</strong> 진로선택 — <strong>기하 · 미적분Ⅱ</strong> 권장 (간호 · 치의는 둘 중 하나)</td></tr>
+          <tr><td><strong>과학</strong> — 모집단위별 일반선택 우선 이수<br>· 물리·기계·전기·항공 → <strong>물리학</strong><br>· 화학·화학교 → <strong>화학</strong><br>· 생명·생물교·의대 → <strong>생명과학</strong><br>· 천문·지구과학 → <strong>지구과학</strong><br>· 약대 → 화학 또는 생명과학 3과목 이상</td></tr>
+          <tr><td colspan="2"><strong>의과대학 (특별)</strong></td><td>'세포와 물질대사', '생물의 유전' 포함 <strong>3과목 이상</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="card" style="border-left-color:#f59e0b; margin-top:16px;">
+        <strong>📌 수능 응시영역 핵심 포인트</strong>
+        <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+          <li>정시 + 기균(농어촌·저소득·특수·북한) <strong>전 모집단위 적용</strong> (음대 제외)</li>
+          <li>인문계열(인문·사회·경영·농경제·사범 인문계열·생활과학 소비자아동) — <strong>제2외국어/한문 응시 필수</strong></li>
+          <li>탐구는 사회·과학 영역 (1과목 또는 평균 반영, 모집단위별 상이)</li>
+        </ul>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📎 원문 자료</h3>
+      <div class="card" style="border-left-color:#1e3a8a;">
+        <strong>📄 2028학년도 서울대학교 대학 신입학생 입학전형 시행계획</strong>
+        <p style="margin-top:8px; color:#374151; line-height:1.8;">아래 임베드된 PDF로 모집단위별 인원·평가 세부 내용을 확인할 수 있습니다. <a href="../../input/student/2028%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2028%ED%95%99%EB%85%84%EB%8F%84%20%EB%8C%80%ED%95%99%20%EC%8B%A0%EC%9E%85%ED%95%99%EC%83%9D%20%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%20%EC%8B%9C%ED%96%89%EA%B3%84%ED%9A%8D%28%EC%84%9C%EC%9A%B8%EB%8C%80%29.pdf" target="_blank" rel="noopener">📥 새 창으로 열기</a></p>
+      </div>
+      <div style="margin-top:16px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; background:#f9fafb;">
+        <iframe
+          src="../../input/student/2028%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2028%ED%95%99%EB%85%84%EB%8F%84%20%EB%8C%80%ED%95%99%20%EC%8B%A0%EC%9E%85%ED%95%99%EC%83%9D%20%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%20%EC%8B%9C%ED%96%89%EA%B3%84%ED%9A%8D%28%EC%84%9C%EC%9A%B8%EB%8C%80%29.pdf"
+          style="width:100%; height:780px; border:0;"
+          title="2028학년도 서울대학교 대학 신입학생 입학전형 시행계획"></iframe>
+      </div>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-ku">
+      <div class="card" style="border-left-color:#8b1414;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;">입학정원 <strong>4,653명</strong> · 수시 <strong>2,721명(58.3%)</strong> / 정시 <strong>1,867명(40.0%)</strong> / 재외국민(3년) 78명(1.7%) — 기회균형 10%</p>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 2028학년도 핵심 변화 (vs 2027)</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li><strong>학교추천(교과)</strong> — 교과 90+서류 10 → <strong>교과 80 + 서류 20</strong> (서류 비중 확대) / <strong>수능최저 인문·자연 폐지</strong> (의학과만 유지)</li>
+        <li><strong>학업우수전형</strong> — 일괄 → <strong>단계별</strong>: 1단계 서류 100%(5배수) → 2단계 1단계 80 + <strong>면접 20 신설</strong> (학생부 기반)</li>
+        <li><strong>계열적합전형</strong> — 단계별·면접 → <strong>서류 100% 일괄 (면접 폐지)</strong></li>
+        <li>학교추천·학업우수 <strong>중복지원 가능</strong>으로 변경 (기존 불가)</li>
+        <li>정시 일반전형 — 탐구 영역 <strong>변환점수 → 표준점수</strong>로 변경</li>
+        <li>의예과(2년)+의학과(4년) → <strong>의학과(6년) 통합</strong> (학제 개편)</li>
+        <li>정시 학교폭력 감점 강화 — 1호 20점 / 4~9호 <strong>200점 감점</strong></li>
+      </ul>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">🎯 수시모집 (2,721명)</h3>
+      <table class="data-table">
+        <thead><tr><th>전형</th><th>인원</th><th>전형요소</th><th>수능 최저 (4개 영역 등급 합)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>학교추천</strong> (교과)</td><td>672</td><td>학생부 교과 80 + 서류 20 (일괄)<br>※ 학교당 최대 추천 12명, 인문·자연 무관</td><td>인문·자연 <strong>미적용</strong> / 의학과 <strong>5 이내</strong> + 한국사 4</td></tr>
+          <tr><td><strong>학업우수</strong> (학종)</td><td>823</td><td>1단계 서류 100% (5배수)<br>2단계 1단계 80 + <strong>면접 20</strong> (학생부 기반)</td><td>인문·자연 <strong>9 이내</strong> + 한국사 4 / 의학과 <strong>5 이내</strong> + 한국사 4 (탐구 상위 1과목)</td></tr>
+          <tr><td><strong>계열적합</strong> (학종)</td><td>556</td><td><strong>서류 100% 일괄</strong> (면접 폐지)</td><td>미적용</td></tr>
+          <tr><td>고른기회 (학종)</td><td>200</td><td>1단계 서류 (3배수) → 2단계 1단계 80 + 제시문 면접 20</td><td>미적용</td></tr>
+          <tr><td>다문화 (학종)</td><td>20</td><td>1단계 서류 (3배수) → 2단계 1단계 80 + 제시문 면접 20</td><td>미적용</td></tr>
+          <tr><td>재직자 (학종)</td><td>18</td><td>1단계 서류 (3배수) → 2단계 1단계 80 + 제시문 면접 20</td><td>미적용</td></tr>
+          <tr><td>사이버국방 (학종)</td><td>10</td><td>1단계 서류 (5배수) → 2단계 1단계 60 + 면접 20 + 기타* 20</td><td>미적용</td></tr>
+          <tr><td><strong>논술전형</strong></td><td>367</td><td>논술 100%</td><td>인문·자연 <strong>8 이내</strong> + 한국사 4</td></tr>
+          <tr><td>실기/실적 (특기자)</td><td>55</td><td>체육교육과(축구·럭비·야구 등) / 디자인조형학부</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:6px; color:#6b7280; font-size:0.85rem;">* 사이버국방 기타 — 신원조회·인성검사·신체검사·체력검정·군 면접</p>
+
+      <div class="card" style="border-left-color:#7c3aed; margin-top:16px;">
+        <strong>📋 학교추천 — 학생부(교과) 점수 산출</strong>
+        <p style="margin-top:8px; line-height:1.8;">5개 학기(1-1 ~ 3-1) 전 교과의 모든 과목 — 학년별 반영비율 없음.</p>
+        <p style="margin-top:6px; line-height:1.8;">석차등급 1=100·2=95·3=83·4=67·5=55점 / 성취도 A=100·B=95·C=83·D=67·E=55점</p>
+        <p style="margin-top:6px; color:#374151; line-height:1.8;">교과 평균 점수 = (석차등급/성취도별 점수 × 이수학점) / 이수학점 합 → 합산 후 ×0.8 (학생부 80% 반영)</p>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📊 정시모집 (1,867명, 가군)</h3>
+      <table class="data-table">
+        <thead><tr><th>전형</th><th>인원</th><th>전형요소</th><th>수능 반영</th></tr></thead>
+        <tbody>
+          <tr><td><strong>일반전형</strong></td><td>1,128</td><td>인문·자연 <strong>수능 100%</strong> / 의학과 수능 100 + 적성·인성 면접 / 사이버국방 수능 80 + 기타 20 / 체육·디자인 수능 70 + 실기 30</td><td>국·수·탐 <strong>표준점수</strong> + 영어·한국사 등급 감점</td></tr>
+          <tr><td><strong>교과우수</strong></td><td>489</td><td>일괄 — <strong>수능 80 + 학생부 교과 20</strong> / 의학과는 적성·인성 면접 추가</td><td>국·수·탐 <strong>백분위</strong> + 영어·한국사 등급 감점</td></tr>
+          <tr><td>농어촌 / 사회배려 / 특수교육 / 특성화고</td><td>120 / 69 / 36 / 25</td><td colspan="2">정원 외 — 수능 + 학생부 등 (요강 참조)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="card" style="border-left-color:#2563eb; margin-top:16px;">
+        <strong>📊 정시 수능 영역별 반영점수 (만점 기준)</strong>
+        <p style="margin-top:8px; line-height:1.8;">
+          <strong>자연계열</strong> (가정교육·간호 제외) — 국 200 / 수 240 / 탐구 200<br>
+          <strong>가정교육·간호</strong> — 국 200 / 수 200 / 탐구 160<br>
+          <strong>인문계열</strong> — 국 200 / 수 200 / 탐구 160<br>
+          <strong>체육교육과</strong> — 국 200 / 수 200 / 탐구 160<br>
+          <strong>디자인조형학부</strong> — 국 200 / 수 - / 탐구 160 (수학 미반영)
+        </p>
+        <p style="margin-top:6px; color:#374151; font-size:0.9rem;">영어 등급 감점 — 1등급 0 / 2등급 1 / 3등급 3 / 4등급 6 / 5등급 12 / 6등급 15 / 7등급 18 / 8등급 21 / 9등급 24<br>한국사 — 1~4등급 0 / 5등급 0.2 / 6등급 0.4 / 7등급 0.6 / 8등급 0.8 / 9등급 2.0</p>
+      </div>
+
+      <div class="card" style="border-left-color:#ef4444; margin-top:16px;">
+        <strong>⚠️ 학교폭력 조치사항 반영 (강화)</strong>
+        <p style="margin-top:8px; line-height:1.8;"><strong>수시</strong> — 학교추천: 1~9호 처분자 <strong>추천 불가</strong> / 논술전형: 1호 5점 ~ 9호 50점 감점 / 특기자(체육교육) 1단계 부적격 / 그 외 서류평가 정성 반영</p>
+        <p style="margin-top:6px; line-height:1.8;"><strong>정시 모든 전형</strong> — 1호 <strong>20점</strong> / 2호 40점 / 3호 100점 / 4~9호 <strong>200점 감점</strong></p>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📎 원문 자료</h3>
+      <div class="card" style="border-left-color:#8b1414;">
+        <strong>📄 2028학년도 고려대학교(서울) 입학전형시행계획 (2026. 4.)</strong>
+        <p style="margin-top:8px; color:#374151; line-height:1.8;">아래 임베드된 PDF로 모집단위별 인원·평가 세부 내용을 확인할 수 있습니다. <a href="../../input/student/2028%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2028%ED%95%99%EB%85%84%EB%8F%84_%EA%B3%A0%EB%A0%A4%EB%8C%80%28%EC%84%9C%EC%9A%B8%29_%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%EC%8B%9C%ED%96%89%EA%B3%84%ED%9A%8D%282026.04.%29.pdf" target="_blank" rel="noopener">📥 새 창으로 열기</a></p>
+      </div>
+      <div style="margin-top:16px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; background:#f9fafb;">
+        <iframe
+          src="../../input/student/2028%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/2028%ED%95%99%EB%85%84%EB%8F%84_%EA%B3%A0%EB%A0%A4%EB%8C%80%28%EC%84%9C%EC%9A%B8%29_%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%EC%8B%9C%ED%96%89%EA%B3%84%ED%9A%8D%282026.04.%29.pdf"
+          style="width:100%; height:780px; border:0;"
+          title="2028학년도 고려대학교(서울) 입학전형시행계획"></iframe>
+      </div>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-yu">
+      <div class="card" style="border-left-color:#003876;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;">정원 내 <strong>3,734명</strong> · 수시 <strong>69%</strong> / 정시 <strong>31%</strong></p>
+      </div>
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 핵심 변화</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li><strong>논술 전형 수능최저 신설</strong> (기존 미적용)</li>
+        <li>교과 <strong>추천형</strong>: 일괄합산 → <strong>단계별 전형</strong>으로 변경 (1단계 교과 100% 5배수 / 2단계 교과 80% + 서류 20%)</li>
+        <li>학종 전면 개편 — '활동우수형·국제형' <strong>폐지</strong></li>
+        <li>학종 <strong>종합인재(수능최저 적용)</strong> + <strong>탐구인재(미적용)</strong> 신설</li>
+        <li>정시: 학생부 교과 반영 폐지 → <strong>서류반영 도입</strong> (수능 90% + 서류 10%)</li>
+      </ul>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-hyu">
+      <div class="card" style="border-left-color:#005EB8;">
+        <strong>📊 정시 비중</strong>
+        <p style="margin-top:8px; line-height:1.8;">정시 <strong>31.1%</strong>로 축소 — 교육부 자율공모사업 선정으로 30% 수준 감축</p>
+      </div>
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 핵심 변화</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li>학종 <strong>서류형·면접형 이원화</strong></li>
+        <li>논술 전형: <strong>논술 90% + 출결 10%</strong> 반영 (학교생활 성실도 반영)</li>
+      </ul>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-dgu">
+      <div class="card" style="border-left-color:#1d4ed8;">
+        <strong>📊 정시 비중</strong>
+        <p style="margin-top:8px; line-height:1.8;">정시 <strong>29.2%</strong>로 축소 — 교육부 자율공모사업 선정으로 30% 수준 감축</p>
+      </div>
+      <p style="margin-top:16px; color:#6b7280; line-height:1.8;">세부 전형 변화는 추후 시행계획 공개 시점에 추가 안내됩니다.</p>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-khu">
+      <div class="card" style="border-left-color:#9d2235;">
+        <strong>⚡ 핵심 변화</strong>
+        <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+          <li>학종 <strong>네오르네상스</strong>: 면접형·서류형 <strong>이원화</strong></li>
+          <li>정시: <strong>수능 100%</strong> 전형 + <strong>수능 90% + 학생부 10%</strong> 전형 <strong>동시 운영</strong></li>
+          <li>전공 연계 과목: <strong>핵심과목</strong>(필수 권장) + <strong>권장과목</strong>(가급적 이수) 이원화 — 자연계열 수학·과학 중심</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-knu">
+      <div class="card" style="border-left-color:#c41230;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;">정원 내 <strong>5,586명</strong> · 수시 <strong>4,552명(81.5%)</strong> / 정시 <strong>1,034명(18.5%)</strong> — 수시 비중이 매우 높은 구조 유지</p>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 2028학년도 핵심 변화 (vs 2027)</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li><strong>정시 전 모집단위에 학생부 교과 10% 도입</strong> — 수능 100% → <strong>수능 90% + 교과 10%</strong> (예·체능 일부 제외, 큰 구조 변경)</li>
+        <li><strong>지역의사선발전형 신설</strong> — 의예과 33명, 포항·경주·안동·구미·영주·상주 진료권 + 광역권 / 의사면허 후 <strong>10년 의무복무</strong></li>
+        <li><strong>AI특별전형 신설</strong> — 컴퓨터학부 인공지능컴퓨팅전공 7명 (기존 SW특별 폐지·대체)</li>
+        <li>특성화고졸업자전형 — 교과 80+이수 20 → <strong>학생부 교과 100%</strong>로 단순화</li>
+        <li>농어촌학생전형 — 일괄 서류 → <strong>1단계(4~5배수) + 2단계 면접 30%</strong> 단계별 전환</li>
+        <li>학생부종합 지역인재 395 → <strong>360</strong> (-35명) / 논술(AAT) 560 → <strong>551</strong> (-9명)</li>
+        <li>수능 변경 반영 — 탐구는 <strong>통합사회·통합과학</strong>으로 적용 (수능최저 1과목 또는 2과목 평균)</li>
+      </ul>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📋 수시 주요 전형 (4,552명)</h3>
+      <table class="data-table">
+        <thead><tr><th>분류</th><th>전형</th><th>인원</th><th>평가방법</th><th>수능 최저</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="5"><strong>학생부<br>교과</strong></td><td>교과우수자</td><td>1,395</td><td>교과 80% + 이수 충실도 20%</td><td>○ (생환·과기·자율미래인재 ×)</td></tr>
+          <tr><td>지역인재</td><td>597</td><td>교과 80% + 이수 충실도 20%</td><td>○ (생환·과기·자율미래인재 ×)</td></tr>
+          <tr><td>지역인재 기초생활수급자등</td><td>9</td><td>교과 80% + 이수 충실도 20%</td><td>○</td></tr>
+          <tr><td>사회통합</td><td>119</td><td>교과 80% + 이수 충실도 20%</td><td>×</td></tr>
+          <tr><td><strong>특성화고졸업자 (변경)</strong></td><td>31</td><td><strong>교과 100%</strong></td><td>×</td></tr>
+          <tr><td rowspan="11"><strong>학생부<br>종합</strong></td><td>일반학생</td><td>911</td><td>서류평가 100%</td><td>○ (생환·과기 ×)</td></tr>
+          <tr><td>지역인재</td><td>360</td><td>1단계 서류 100% (4~5배수)<br>2단계 1단계 70 + 면접 30</td><td>× (의·치·수·약 ○)</td></tr>
+          <tr><td><strong>지역의사선발 (신설)</strong></td><td>33</td><td>1단계 서류 100% (5배수)<br>2단계 1단계 70 + 면접 30</td><td>○</td></tr>
+          <tr><td>지역인재 학교장추천 (치의예)</td><td>3</td><td>1단계 서류 100% (5배수)<br>2단계 1단계 70 + 면접 30</td><td>○</td></tr>
+          <tr><td>사회배려자</td><td>18</td><td>서류평가 100%</td><td>×</td></tr>
+          <tr><td><strong>AI특별 (신설)</strong></td><td>7</td><td>1단계 서류 100% (4배수)<br>2단계 1단계 70 + 면접 30</td><td>×</td></tr>
+          <tr><td>고졸재직자</td><td>5</td><td>1단계 서류 100% (4배수)<br>2단계 1단계 70 + 면접 30</td><td>×</td></tr>
+          <tr><td>영농창업인재</td><td>17</td><td>1단계 서류 100% (4배수)<br>2단계 1단계 70 + 면접 30</td><td>×</td></tr>
+          <tr><td><strong>농어촌학생 (변경)</strong></td><td>190</td><td><strong>1단계 서류 100% (4~5배수)<br>2단계 1단계 70 + 면접 30</strong></td><td>× (치·약 ○)</td></tr>
+          <tr><td>기초생활수급자등</td><td>51</td><td>서류평가 100%</td><td>×</td></tr>
+          <tr><td>장애인등대상자</td><td>20</td><td>1단계 서류 100% (3~4배수)<br>2단계 1단계 70 + 면접 30</td><td>×</td></tr>
+          <tr><td>특성화고졸재직자</td><td>25</td><td>서류평가 100%</td><td>×</td></tr>
+          <tr><td><strong>특별</strong></td><td>모바일과학인재 (전자공학부 모바일공학전공)</td><td>5</td><td>1단계 서류 100% (5배수)<br>2단계 1단계 50 + 면접 50</td><td>○</td></tr>
+          <tr><td><strong>논술</strong></td><td>논술(AAT)</td><td>551</td><td>논술 70% + 학생부 교과 30%</td><td>○</td></tr>
+          <tr><td><strong>실기</strong></td><td>실기/실적(예·체능) + 특기자(체육)</td><td>205</td><td>모집단위별 학생부+실기 비율 상이</td><td>일부만 ○</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📊 정시 (1,034명) — 교과 10% 신설</h3>
+      <table class="data-table">
+        <thead><tr><th>군</th><th>모집인원</th><th>주요 반영방법</th></tr></thead>
+        <tbody>
+          <tr><td><strong>가군</strong></td><td>535명<br>(일반/지역/지역의사)</td><td>일반학과 <strong>수능 90 + 교과 10</strong> / 음악학과(3명) 수능 20+실기 80 / 디자인학과(5명) 수능 60+실기 40 / 의예 인·적성면접(합·불)</td></tr>
+          <tr><td><strong>나군</strong></td><td>499명</td><td>일반학과 <strong>수능 90 + 교과 10</strong> / 체육교육 수능 80+실기 20 / 체육학부(체육학) 수능 70+실기 30</td></tr>
+        </tbody>
+      </table>
+
+      <div class="card" style="border-left-color:#1e40af; margin-top:16px;">
+        <strong>📊 정시 수능 영역별 표준점수 (인문·자연 합계 900점)</strong>
+        <p style="margin-top:8px; line-height:1.8;">
+          <strong>인문 (생환 관광학과 포함)</strong> — 국 300 / 수 200 / 영 100 / 통사 200 / 통과 100<br>
+          <strong>자연</strong> (생환·과기·자율미래인재 제외) — 국 200 / 수 300 / 영 100 / 통사 100 / 통과 200<br>
+          <strong>자율전공·생태환경(관광 제외)·과학기술·자율미래인재</strong> — 국 250 / 수 250 / 영 100 / 통사 150 / 통과 150
+        </p>
+        <p style="margin-top:6px; color:#374151; font-size:0.9rem;">※ 영어 등급 환산(1등급 100~9등급 62) / 한국사 등급 가점 / 의예과 인·적성면접은 합·불 자료 활용</p>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">🎯 수시 수능최저학력기준 (일반학과)</h3>
+      <table class="data-table">
+        <thead><tr><th>전형</th><th>모집단위</th><th>기준</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="4"><strong>교과우수자<br>지역인재<br>+ 논술(AAT)</strong></td><td>IT대학</td><td><strong>수학 포함 2개</strong> 영역 등급 합 <strong>5 이내</strong></td></tr>
+          <tr><td>경상·사범·간호·행정·자율전공</td><td>상위 2개 영역 등급 합 <strong>5 이내</strong></td></tr>
+          <tr><td>공과·첨단기술융합·공학첨단자율</td><td><strong>수학 포함 2개</strong> 영역 등급 합 <strong>6 이내</strong></td></tr>
+          <tr><td>인문·사회·자연과학·농생명·생활과학</td><td>상위 2개 영역 등급 합 <strong>6 이내</strong></td></tr>
+          <tr><td><strong>학생부종합 일반학생<br>+ 지역인재 기초(간호)</strong></td><td>해당 모집단위</td><td>위의 기준에서 <strong>1등급 하향 적용</strong></td></tr>
+          <tr><td colspan="2"><strong>생태환경·과학기술·자율미래인재학부</strong></td><td><strong>미적용</strong></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:6px; color:#6b7280; font-size:0.85rem;">※ 탐구는 통합사회·통합과학 중 상위 1과목 반영</p>
+
+      <div class="card" style="border-left-color:#ef4444; margin-top:16px;">
+        <strong>🩺 의·치·수·약 수능최저</strong>
+        <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+          <li><strong>의예과·치의예과</strong> — 수학 포함 3개 영역 등급 합 <strong>4 이내</strong></li>
+          <li><strong>수의예과·약학과</strong> — 수학 포함 3개 영역 등급 합 <strong>5 이내</strong></li>
+          <li>탐구 2과목(통합사회·통합과학) 평균 반영 — 의예 반올림 / 치·수·약 절사</li>
+          <li>지역인재 기초(의·치·약), 농어촌(치·약), 지역의사선발(의예)는 <strong>1등급 하향 적용</strong></li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-left-color:#1e40af; margin-top:16px;">
+        <strong>📱 전자공학부 모바일공학전공</strong>
+        <p style="margin-top:8px; line-height:1.8;">모바일과학인재·논술(AAT)·정시 모두 — <strong>수학·탐구 포함 3개 영역 등급 합 5 이내</strong></p>
+      </div>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📅 주요 일정 (수시 일정 변경)</h3>
+      <table class="data-table">
+        <thead><tr><th>구분</th><th>일정</th></tr></thead>
+        <tbody>
+          <tr><td><strong>수시 원서접수</strong></td><td><strong>2027. 9. 20(월) ~ 23(목)</strong> 중 3일 이상</td></tr>
+          <tr><td><strong>수시 면접·실기·논술</strong></td><td>2027. 9. 24(금) ~ 12. 20(월)</td></tr>
+          <tr><td><strong>수능</strong></td><td>2027. 11. (예정, 통합사회·통합과학 응시 필수)</td></tr>
+          <tr><td><strong>수시 합격자 발표</strong></td><td>2027. 12. 21(화)까지</td></tr>
+          <tr><td><strong>정시 원서접수</strong></td><td>2028. 1. 3(월) ~ 6(목)</td></tr>
+          <tr><td><strong>정시 가군 면접·실기</strong></td><td>2028. 1. 10(월) ~ 17(월)</td></tr>
+          <tr><td><strong>정시 나군 면접·실기</strong></td><td>2028. 1. 18(화) ~ 25(화)</td></tr>
+          <tr><td><strong>정시 합격자 발표</strong></td><td>2028. 2. 10(목)까지</td></tr>
+          <tr><td><strong>등록</strong></td><td>2028. 2. 11(금) ~ 14(월)</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📎 원문 자료</h3>
+      <div class="card" style="border-left-color:#c41230;">
+        <strong>📄 2028학년도 경북대학교 대학입학전형 시행계획(안)</strong>
+        <p style="margin-top:8px; color:#374151; line-height:1.8;">아래 임베드된 PDF로 모집단위별 인원·평가 세부 내용을 확인할 수 있습니다. <a href="../../input/student/2028%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/%E2%98%852028%ED%95%99%EB%85%84%EB%8F%84%20%EB%8C%80%ED%95%99%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%20%EC%8B%9C%ED%96%89%EA%B3%84%ED%9A%8D%28%EC%95%88%29.pdf" target="_blank" rel="noopener">📥 새 창으로 열기</a></p>
+      </div>
+      <div style="margin-top:16px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; background:#f9fafb;">
+        <iframe
+          src="../../input/student/2028%EB%8C%80%EC%9E%85%EC%A0%84%ED%98%95/%E2%98%852028%ED%95%99%EB%85%84%EB%8F%84%20%EB%8C%80%ED%95%99%EC%9E%85%ED%95%99%EC%A0%84%ED%98%95%20%EC%8B%9C%ED%96%89%EA%B3%84%ED%9A%8D%28%EC%95%88%29.pdf"
+          style="width:100%; height:780px; border:0;"
+          title="2028학년도 경북대학교 대학입학전형 시행계획"></iframe>
+      </div>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-kaist">
+      <div class="card" style="border-left-color:#004A93;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;"><strong>880명 전원 수시</strong> — 정시·특기자 폐지</p>
+      </div>
+      <div class="card" style="border-left-color:#7c3aed; margin-top:12px;">
+        <strong>💡 변화의 배경</strong>
+        <p style="margin-top:8px; line-height:1.8;">"수능 성적만으로 선발하기보다 <strong>이공계 분야에 대한 진정성</strong>을 갖춘 학생을 우선한다"는 입학 정책 변화. 2028 수능 변별력 저하·의대 열풍에 따른 자연계 최상위 이탈 방지가 배경입니다.</p>
+      </div>
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">📋 전형 구성</h3>
+      <table class="data-table">
+        <thead><tr><th>전형</th><th>인원</th><th>비율</th></tr></thead>
+        <tbody>
+          <tr><td><strong>일반전형</strong></td><td>380명</td><td>43.2%</td></tr>
+          <tr><td><strong>창의도전</strong></td><td>300명</td><td>34.1%</td></tr>
+          <tr><td><strong>학교장추천</strong></td><td>100명</td><td>11.4%</td></tr>
+        </tbody>
+      </table>
+      <ul style="padding-left:18px; line-height:1.9; margin-top:12px;">
+        <li>교사추천서 <strong>최대 3부</strong>까지 확대</li>
+        <li><strong>학업탐구역량 입증자료 5건</strong> 제출 가능</li>
+      </ul>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-postech">
+      <div class="card" style="border-left-color:#8e1c2c;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;"><strong>360명 전원 수시</strong></p>
+      </div>
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 핵심 변화</h3>
+      <table class="data-table">
+        <thead><tr><th>전형</th><th>구성</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td><strong>일반Ⅰ</strong></td><td>서류 40% + 면접 <strong>60%</strong></td><td>면접 비중 <strong>10%p 확대</strong></td></tr>
+          <tr><td><strong>일반Ⅱ</strong></td><td>서류 70% + 면접 <strong>30%</strong></td><td>면접 3%p 축소 / 6개 이공특 중 <strong>수능최저 유일 적용</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-gist">
+      <div class="card" style="border-left-color:#005EB8;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;"><strong>330명 전원 수시</strong> — 정시 폐지</p>
+      </div>
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 핵심 변화</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li><strong>반도체공학인재전형 신설</strong></li>
+      </ul>
+      <table class="data-table" style="margin-top:12px;">
+        <thead><tr><th>전형</th><th>인원</th></tr></thead>
+        <tbody>
+          <tr><td><strong>일반전형</strong></td><td>200명</td></tr>
+          <tr><td><strong>학교장추천</strong></td><td>65명</td></tr>
+          <tr><td><strong>반도체공학인재(신설)</strong></td><td>30명</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-dgist">
+      <div class="card" style="border-left-color:#0066B3;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;"><strong>330명 전원 수시</strong></p>
+      </div>
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 핵심 변화</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li><strong>반도체공학과 일반전형으로 일괄 선발</strong> — 학교장추천 폐지</li>
+        <li>일반전형 <strong>235명</strong> (AI대학·반도체공학과 포함)</li>
+        <li>과학인재전형 <strong>20명 증원</strong></li>
+      </ul>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-unist">
+      <div class="card" style="border-left-color:#004B85;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;"><strong>540명</strong> · 수시 530명 / 정시 10명</p>
+      </div>
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 핵심 변화</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li>반도체공학과 <strong>정시 선발 폐지</strong> — 40명 전원 수시로 선발</li>
+        <li>탐구우수전형 <strong>20명 증원</strong></li>
+        <li>일반전형 15명 축소</li>
+      </ul>
+    </div>
+
+    <div class="snu-tab-panel" id="u28-kentech">
+      <div class="card" style="border-left-color:#0E3674;">
+        <strong>📊 모집 규모</strong>
+        <p style="margin-top:8px; line-height:1.8;"><strong>100명</strong> · 수시 90명 / 정시 10명</p>
+      </div>
+      <h3 class="section-title" style="margin-top:24px; font-size:1.1rem;">⚡ 핵심 변화</h3>
+      <ul style="padding-left:18px; line-height:1.9;">
+        <li>정시 <strong>공학역량 정성평가 10% 신설</strong></li>
+        <li>정시 산출: <strong>수능 90% + 학생부 기반 정성평가 10%</strong></li>
+      </ul>
+    </div>
+
+  </div>
+  <!-- /u28-schools -->
 
 </div>
 <!-- /univ-2028 -->
@@ -5854,6 +7285,7 @@ function switchSpTab(id,btn){
       univ:     {id:'curr-univ',     fn:'switchCurrTab'}
     },
     'student/univ': {
+      '2026':   {id:'univ-2026',     fn:'switchUnivTab'},
       general:  {id:'univ-general',  fn:'switchUnivTab'},
       '2028':   {id:'univ-2028',     fn:'switchUnivTab'},
       regional: {id:'univ-regional', fn:'switchUnivTab'}

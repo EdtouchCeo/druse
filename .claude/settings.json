@@ -3,7 +3,25 @@
     "allow": [
       "Edit(/.claude/skills/html-writer/**)",
       "Bash(python -c ':*)",
-      "Bash(python .claude/skills/file-reader/scripts/read_pdf.py \"input/teacher/학교생활기록부 기재요령.pdf\")"
+      "Bash(python .claude/skills/file-reader/scripts/read_pdf.py \"input/teacher/학교생활기록부 기재요령.pdf\")",
+      "Bash(python -)",
+      "Bash(python -c \"import sys; sys.stdout.reconfigure\\(encoding='utf-8'\\); print\\(sys.stdin.read\\(\\)\\)\")",
+      "Bash(python build_with_school.py)",
+      "Bash(python \".claude/skills/html-writer/scripts/backup_html.py\")",
+      "Bash(python \".claude/skills/file-reader/scripts/read_txt.py\" \"input/student/교사 대상 입시 설명회.txt\")",
+      "Bash(python -c \"import sys; data = sys.stdin.buffer.read\\(\\); print\\(data.decode\\('utf-8', errors='replace'\\)\\)\")",
+      "Read(//tmp/**)",
+      "Bash(pip install:*)",
+      "Bash(python \".claude/skills/html-writer/scripts/parse_html.py\")",
+      "Bash(python \".claude/skills/html-writer/scripts/read_section_guide.py\")",
+      "Bash(python \".claude/skills/html-writer/scripts/build_html.py\" \"output/web/_teacher_content.html\" \"output/web/_student_content.html\")",
+      "Bash(python \".claude/skills/html-writer/scripts/build_html.py\" \"output/web/_school_content.html\" \"output/web/_student_content.html\")",
+      "Bash(python -c \"import sys; sys.stdout.buffer.write\\(sys.stdin.buffer.read\\(\\)\\)\")",
+      "Bash(python \".claude/skills/html-writer/scripts/build_html.py\" \"output/web/_teacher_content.html\" \"output/web/_student_content.html\" \"output/web/_school_content.html\")",
+      "Bash(python .claude/skills/html-writer/scripts/build_html.py \"output/web/_teacher_content.html\" \"output/web/_student_content.html\" \"output/web/_school_content.html\")"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }
