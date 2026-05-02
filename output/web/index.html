@@ -7422,6 +7422,7 @@ function switchSpTab(id,btn){
         <button id="ai-sub-btn-0" onclick="switchAiSub(0)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid var(--primary);background:var(--primary);color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
         <button id="ai-sub-btn-1" onclick="switchAiSub(1)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 AI</button>
         <button id="ai-sub-btn-2" onclick="switchAiSub(2)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
+        <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
       </div>
       <div id="ai-sub-0" style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
         <iframe src="https://ai-63986215827.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="교육일정 작성 AI"></iframe>
@@ -7431,6 +7432,15 @@ function switchSpTab(id,btn){
       </div>
       <div id="ai-sub-2" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
         <iframe src="https://edtouch.ai/score/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="학생 개별 점수 조회"></iframe>
+      </div>
+      <div id="ai-sub-3" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <p style="font-size:0.85rem;color:#6b7280;margin:0;">나이스(NEIS) 빠른 접속 · 자료 조회용 브라우저</p>
+          <a href="https://neisbrowser.hwaryong.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#1a3a6b;color:#fff;border-radius:18px;font-size:0.82rem;font-weight:600;text-decoration:none;">🔗 새 창으로 열기</a>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+          <iframe src="https://neisbrowser.hwaryong.com/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="나이스 브라우저"></iframe>
+        </div>
       </div>
     </div>
   </div>
@@ -7637,7 +7647,7 @@ function switchSpTab(id,btn){
   }
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 4; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;
