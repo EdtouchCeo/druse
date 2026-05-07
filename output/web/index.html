@@ -3725,6 +3725,7 @@ function switchSnuTab(id,btn){
 
 <div class="univ-tab-nav">
   <button class="univ-tab-btn active" onclick="switchUnivTab('univ-2026',this)">📋 진학 가이드</button>
+  <button class="univ-tab-btn" onclick="switchUnivTab('univ-cal2027',this)">🗓️ 2027 입시 캘린더</button>
   <button class="univ-tab-btn" onclick="switchUnivTab('univ-general',this)">📊 2027 대입 전형</button>
   <button class="univ-tab-btn" onclick="switchUnivTab('univ-2028',this)">📅 2028 대입 전형</button>
   <button class="univ-tab-btn" onclick="switchUnivTab('univ-regional',this)">🩺 지역의사제</button>
@@ -4123,6 +4124,185 @@ function switchSnuTab(id,btn){
 
 </div>
 <!-- /univ-2026 -->
+
+<!-- ═══ 2027 입시 캘린더 ═══ -->
+<div class="univ-tab-panel" id="univ-cal2027">
+
+  <h2 class="section-title">🗓️ 2027 대입 입시 캘린더 (현 고3 기준)</h2>
+  <p style="color:#6b7280; font-size:0.92rem; line-height:1.7; margin-bottom:20px;">
+    2027학년도 대입을 준비하는 학생을 위한 <strong>월별 학습 전략 + 주요 일정</strong>입니다.
+    중간시험·기말시험·모의평가·수시·정시 일정을 한눈에 확인하고, 시기별 핵심 전략을 점검하세요.
+  </p>
+
+  <div class="card" style="border-left-color:#f59e0b;">
+    <strong>💡 활용 팁</strong>
+    <ul style="margin:8px 0 0 18px; padding:0; line-height:1.8; font-size:0.9rem;">
+      <li>각 시기별 <strong>전략</strong>은 학생이 무엇을 준비해야 하는지를, <strong>일정</strong>은 학교·외부 일정을 의미합니다.</li>
+      <li>대입 일정은 매년 일부 변동될 수 있으니 <strong>담임·진학 교사 상담</strong>을 병행하세요.</li>
+    </ul>
+  </div>
+
+  <div style="overflow-x:auto; margin-top:20px;">
+    <table class="data-table" style="min-width:760px;">
+      <thead>
+        <tr style="background:#ede9fe; color:#5b21b6;">
+          <th style="width:90px;">시기</th>
+          <th>전략</th>
+          <th style="width:34%;">주요 일정</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="background:#fef3c7; vertical-align:top;"><strong>3~5월</strong></td>
+          <td style="vertical-align:top;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>자신에게 유리한 전형·대학·학과 탐색</li>
+              <li>학생부 분석 및 보완점 파악</li>
+              <li>수업 연계 <strong>심화 탐구 주제</strong> 선정</li>
+              <li>3월 학력평가 분석 → 수능 최저 충족 가능성 진단</li>
+              <li>내신(중간고사) 준비 철저</li>
+            </ul>
+          </td>
+          <td style="vertical-align:top; font-size:0.87rem;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>3/30(월) 학교 및 입시 설명회(3학년)</li>
+              <li>3/24(화) 전국연합학력평가(3학년, 서울)</li>
+              <li>4/27(월)~4/29(수) <strong>1학기 중간고사</strong></li>
+              <li>5/21(목) 전국연합학력평가(3학년, 경기)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#dbeafe; vertical-align:top;"><strong>6~7월</strong></td>
+          <td style="vertical-align:top;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li><strong>6월 모평</strong> 평가 분석 및 취약 부분 심화 학습</li>
+              <li>지원 희망 대학 (수시/정시) 설정</li>
+              <li>내신 마지막 기회 — <strong>기말고사</strong> 준비 철저</li>
+              <li>기말 이후 학교 활동(세특·창체) 마무리 및 기록 점검</li>
+            </ul>
+          </td>
+          <td style="vertical-align:top; font-size:0.87rem;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>6/4(목) <strong>대수능 모의평가</strong>(평가원)</li>
+              <li>6/30(화)~7/3(금) <strong>1학기 기말고사</strong></li>
+              <li>7/8(수) 전국연합학력평가(3학년, 인천)</li>
+              <li>7/20(월) 여름 방학식</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#fce7f3; vertical-align:top;"><strong>8월</strong></td>
+          <td style="vertical-align:top;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>취약 과목·단원 중심 복습 중요</li>
+              <li><strong>학생부 최종 점검 및 마감</strong></li>
+              <li>수시 지원 대학·학과·전형 결정 (담임 상담)<br><small style="color:#6b7280;">대학별 최종 내신 참고</small></li>
+              <li>수능 원서 접수 시 <strong>탐구 2과목 선택</strong> 결정</li>
+            </ul>
+          </td>
+          <td style="vertical-align:top; font-size:0.87rem;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>8/13(목) 2학기 개학</li>
+              <li>8월말 <strong>수능 원서 접수</strong></li>
+              <li>8/31(토) <strong>수시 학생부 작성 기준일</strong></li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#dcfce7; vertical-align:top;"><strong>9월</strong></td>
+          <td style="vertical-align:top;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>내신·모의수능 성적 참고하여 <strong>수시 지원 최종 대학·학과·전형 결정</strong></li>
+              <li>수시 원서 접수 (<strong>6회 지원 최대 활용</strong>)</li>
+              <li>수능 최저등급 전략 과목(2~3개) 선정</li>
+            </ul>
+          </td>
+          <td style="vertical-align:top; font-size:0.87rem;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>9/2(수) <strong>대수능 모의평가</strong>(평가원)</li>
+              <li>9/7(월)~9/11(금) <strong>수시 원서접수</strong>(4년제)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#fef3c7; vertical-align:top;"><strong>10~11월</strong></td>
+          <td style="vertical-align:top;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>수능 준비 (최저등급 전략 과목)에 매진</li>
+              <li>실전 수능 시간에 맞춰 <strong>주 2회 이상 실전 모의고사</strong> 풀이<br><small style="color:#6b7280;">기출문제·EBS교재 중심 취약 부분 최종 점검</small></li>
+              <li><strong>대학별 고사 준비</strong> (면접·논술 등)</li>
+            </ul>
+          </td>
+          <td style="vertical-align:top; font-size:0.87rem;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>10/1(목)~10/7(수) <strong>2학기 기말고사</strong>(3학년)</li>
+              <li>10/20(화) 전국연합학력평가(3학년, 서울)</li>
+              <li>11/5(목) 전국연합학력평가(3학년, 대구)</li>
+              <li style="background:#fef2f2; padding:4px 6px; border-radius:4px;">11/19(목) <strong>🎯 대학수학능력시험</strong></li>
+              <li>11/30(월) <strong>정시 학생부 작성 기준일</strong></li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#dbeafe; vertical-align:top;"><strong>12월</strong></td>
+          <td style="vertical-align:top;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>수시 복수 합격 중 <strong>최종 등록 대학·학과 결정</strong></li>
+              <li>정시 지원 희망자 <strong>수능 성적 철저 분석</strong></li>
+              <li>정시 희망 학과·대학 정보 수집 및 결정<br><small style="color:#6b7280;">가·나·다 군별 추가 합격 염두</small></li>
+            </ul>
+          </td>
+          <td style="vertical-align:top; font-size:0.87rem;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>12/11(금) <strong>수능 성적 통지일</strong></li>
+              <li>~12/18(금) 수시 최초 합격자 발표</li>
+              <li>12/21(월)~23(수) 수시 합격자 등록</li>
+              <li>~12/29(화) 18시 수시 충원 합격 통보 마감</li>
+              <li>12/30(수) 22시 수시 충원 합격자 등록 마감</li>
+              <li>12/31(목) 겨울 방학식</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ede9fe; vertical-align:top;"><strong>1~2월</strong></td>
+          <td style="vertical-align:top;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>정시 지원 희망자 수능 성적 철저 분석</li>
+              <li>정시 희망 학과·대학 정보 수집 및 결정<br><small style="color:#6b7280;">가·나·다 군별 추가합격 염두</small></li>
+              <li><strong>2월 말 추가 모집에도 기회는 충분히 있다!</strong><br><small style="color:#6b7280;">대학별 모집 방법·지원 횟수 확인</small></li>
+            </ul>
+          </td>
+          <td style="vertical-align:top; font-size:0.87rem;">
+            <ul style="margin:0; padding-left:18px; line-height:1.8;">
+              <li>1/4(월)~1/7(목) <strong>정시 접수</strong>(4년제)</li>
+              <li>2/4(목) 졸업식</li>
+              <li>~2/5(금) 정시 최초 합격자 발표</li>
+              <li>2/10(수)~2/12(금) 정시 합격자 등록</li>
+              <li>~2/17(수) 18시 정시 충원 합격 통보 마감</li>
+              <li>2/18(목) 22시 정시 충원 합격자 등록 마감</li>
+              <li>2/19(금)~26(금) <strong>추가 모집 기간</strong></li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="border-left-color:#dc2626; margin-top:24px;">
+    <strong>⚠️ 핵심 체크포인트</strong>
+    <ul style="margin:8px 0 0 18px; padding:0; line-height:1.9;">
+      <li><strong>8/31</strong> — 수시 학생부 작성 기준일: 이날 이후 학생부 변경 사항은 수시 평가에 반영되지 않음</li>
+      <li><strong>9/7~9/11</strong> — 수시 원서 접수 6회: 안정·적정·소신 균형 있게 배분</li>
+      <li><strong>11/19</strong> — 대학수학능력시험 (수능 D-Day)</li>
+      <li><strong>11/30</strong> — 정시 학생부 작성 기준일</li>
+      <li><strong>12/11</strong> — 수능 성적 통지: 수시·정시 전략 최종 결정의 기준점</li>
+      <li><strong>2/19~2/26</strong> — 추가 모집: 정시 불합격 시에도 기회 있음. 포기하지 말 것</li>
+    </ul>
+  </div>
+
+</div>
+<!-- /univ-cal2027 -->
 
 <div class="univ-tab-panel" id="univ-general">
 
@@ -8171,10 +8351,11 @@ function switchSpTab(id,btn){
       univ:     {id:'curr-univ',     fn:'switchCurrTab'}
     },
     'student/univ': {
-      '2026':   {id:'univ-2026',     fn:'switchUnivTab'},
-      general:  {id:'univ-general',  fn:'switchUnivTab'},
-      '2028':   {id:'univ-2028',     fn:'switchUnivTab'},
-      regional: {id:'univ-regional', fn:'switchUnivTab'}
+      '2026':    {id:'univ-2026',     fn:'switchUnivTab'},
+      cal2027:   {id:'univ-cal2027',  fn:'switchUnivTab'},
+      general:   {id:'univ-general',  fn:'switchUnivTab'},
+      '2028':    {id:'univ-2028',     fn:'switchUnivTab'},
+      regional:  {id:'univ-regional', fn:'switchUnivTab'}
     },
     'student/special': {
       family: {id:'sp-family', fn:'switchSpTab'},
