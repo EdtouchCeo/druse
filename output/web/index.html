@@ -759,6 +759,7 @@
   <button class="sub-nav-btn" onclick="switchSub('sub-leesh', this)">🌸 이상화 추모·백일장</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-grade', this)">📊 성적처리 선행작업</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-exam', this)">📝 정기시험 감독</button>
+  <button class="sub-nav-btn" onclick="switchSub('sub-grading', this)">📑 시험 출제·성적 처리</button>
 </div>
 
 <!-- ===== 1. 학생부 기재요령 ===== -->
@@ -2261,6 +2262,146 @@
       <tr><td>OMR 미수합 (학생 임의 소지)</td><td>퇴실 전 미회수</td><td>종료 벨 후 전원 착석 유지 → 답안지 전량 회수 확인 후 퇴실 허용</td></tr>
     </tbody>
   </table>
+
+</div>
+
+<!-- ===== 7. 시험 출제·성적 처리 요령 ===== -->
+<div class="sub-panel" id="sub-grading">
+
+  <h2 class="section-title">📑 정기시험 출제 및 성적 처리 요령</h2>
+
+  <div class="card">
+    <strong>📋 운영 목적</strong>
+    <p>정기시험의 원안 제출부터 OMR 스캔·서술형 채점·NEIS 이관·성적 산출·마감까지 전 과정을 표준화된 절차로 운영하기 위한 매뉴얼입니다. 매 학기 정기시험마다 본 절차를 따라 진행합니다.</p>
+    <ul style="margin-top:10px; padding-left:20px; line-height:2;">
+      <li><strong>담당:</strong> 출제·채점 — 교과별 담당 교사 / 성적 산출·마감 — 학반별 담당 교사</li>
+      <li><strong>OMR·서술형 통합 입력:</strong> 교과별 대표 교사 1인</li>
+      <li><strong>관련 부서:</strong> 교무부(성적 담당), 각 교과 교사</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📋 단계별 업무 흐름</h2>
+
+  <div class="flow-steps">
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>원안 제출</strong>
+        <p style="margin-top:6px;">정기시험 원안과 채점기준표를 성적 담당자에게 제출합니다.</p>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li><strong>기한:</strong> 학교에서 별도로 안내하는 기한까지 (보통 시험 시작 1~2주 전, 퇴근 전 마감)</li>
+          <li><strong>제출 자료:</strong> 원안 표지 / 원안 / 문항정보표 / 서답형 채점기준표 — <strong>모두 B4로 제출</strong></li>
+          <li><strong>유의사항:</strong> 양식은 반드시 <strong>해당 학년도 기준</strong>(용어 변경사항 포함) 사용, 교차 점검 및 철저한 사전 검토</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>OMR 스캔 프로그램 사용 — 사전 준비</strong>
+        <p style="margin-top:6px;">시험 전에 OMR 스캔 프로그램을 설치하고 로그인 상태를 점검합니다.</p>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li><strong>설치:</strong> OMR 스캔 프로그램 미보유 시 첨부의 <code>클라이언트_서술형평가설치프로그램.exe</code> 설치 (IP: <code>10.64.183.8</code>)</li>
+          <li><strong>아이디·초기 비밀번호:</strong> NEIS 아이디와 동일</li>
+          <li><strong>비밀번호 변경:</strong> OMR스캔프로그램 → 로그인 → 기초자료 → 비밀번호 변경</li>
+          <li><strong>시험 전 점검:</strong> 사전 로그인 테스트 → 문제 발생 시 성적 담당자에게 연락</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>서술형 채점자 지정</strong>
+        <p style="margin-top:6px;">서답형 문항의 최종 채점자를 지정합니다.</p>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>OMR스캔프로그램 → 로그인 → 기초자료 → <strong>시험 회차별 서술형 채점 선생님 선택</strong></li>
+          <li>학년/계열/과목 선택 → 학반별·문항별 기준 선택 → <strong>추가</strong></li>
+          <li><strong>최종 채점자</strong>에 담당 교사를 지정 — 1차 채점자·2차 채점자는 선택하지 않음</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>객관식 정답 및 배점 입력 ★시험 종료 후★</strong>
+        <p style="margin-top:6px;">시험 종료 후 문항정보표를 활용해 정답과 배점을 OMR 스캔 프로그램에 등록합니다.</p>
+        <ol style="margin-top:6px; padding-left:20px; line-height:1.85;">
+          <li>NEIS → 성적 → 지필평가 → <strong>문항정보표</strong> → 정답배점출력 클릭 → 경고 확인 → 저장 → <strong>'보고서 형태 유지' 체크 해제</strong> 후 파일 저장</li>
+          <li>배점·정답을 복사해 <strong>'정답 정보 예제' 파일</strong>에 붙여넣기 (첨부파일 참고)</li>
+          <li>OMR스캔프로그램 → 로그인 → 기초자료 → 과목정답 → 학년/과목 선택 → <strong>'정답 불러오기'</strong> → 작성 파일 열기 → 저장</li>
+        </ol>
+        <div class="card" style="margin-top:10px; border-left-color:#ef4444; background:#fef2f2;">
+          <strong>☆ 주의 ☆</strong>
+          <p style="margin-top:6px;"><strong>타 교과의 정답을 덮어쓰지 않도록</strong> 반드시 담당 과목을 확인하세요. 정답 정보 파일은 시험 종료 후 홈페이지에 탑재하여 제공 가능 (서술형 답안은 별도 첨부).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>답안지 봉투 겉면 날인</strong>
+        <p style="margin-top:6px;">정기시험 답안지 봉투 겉면에 출제자·재검자 도장을 날인합니다.</p>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li><strong>'재검'란:</strong> 출제 교과 내 <strong>다른 분의 도장</strong>을 찍습니다.</li>
+          <li><strong>출제자가 1인인 경우:</strong> '재검'까지 모두 한 분이 날인합니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>OMR 파일 업로드 → NEIS 이관</strong>
+        <p style="margin-top:6px;">OMR 스캔 결과를 NEIS로 이관합니다. <strong>교과별 담당 교사 한 분</strong>이 진행하면 됩니다.</p>
+        <ol style="margin-top:6px; padding-left:20px; line-height:1.85;">
+          <li>OMR스캔프로그램 → OMR → <strong>OMR자료관리</strong> → 학년 선택 / 학반 체크 해제 / 과목 선택 → <strong>NEIS 저장</strong> (CSV 파일 생성)</li>
+          <li>NEIS → 교과담임 → 지필/수행선행작업 → <strong>성적파일 올리기</strong> → 학년 선택, 지필/수행 '지필' 선택, <strong>'정기시험' 선택</strong> → 파일 추가(저장된 CSV) → <strong>파일 업로드 / 이관</strong></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <strong>NEIS 성적 채점 및 마감</strong>
+        <p style="margin-top:6px;"><strong>학반별 담당 교사가 각각</strong> 진행합니다.</p>
+        <ol style="margin-top:6px; padding-left:20px; line-height:1.85;">
+          <li>NEIS → 교과담임 → 지필평가 → <strong>지필평가채점</strong> → (정기시험)/학년/과목 선택 → 학생답안서답형 선택 → <strong>일괄채점</strong></li>
+          <li>NEIS → 교과담임 → 지필평가 → <strong>지필평가성적관리</strong> → (정기시험)/학년/과목 선택 → 학반별 선택 후 <strong>마감</strong></li>
+        </ol>
+        <div class="card" style="margin-top:10px; border-left-color:#f59e0b; background:#fffbeb;">
+          <strong>⚠️ 마감 전 확인 사항</strong>
+          <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+            <li>학생의 <strong>학적변동 사항</strong> 및 <strong>결시 현황</strong> 확인 후 마감</li>
+            <li><strong>복수 정답·성적 수정</strong>이 있는 교과는 점수가 올바르게 반영되었는지 재확인</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">8</div>
+      <div class="step-body">
+        <strong>성적 산출 및 마감</strong>
+        <p style="margin-top:6px;">학생별 정오표 배부·확인이 완료되면 교과별 성적 산출을 진행합니다. <strong>교과목별 한 분</strong>만 진행하면 됩니다.</p>
+        <ol style="margin-top:6px; padding-left:20px; line-height:1.85;">
+          <li><strong>대상자 검증:</strong> 교과담임 → 성적 → 성적처리선행작업 → 성적산출선행작업관리 → <strong>성적산출학생관리</strong> → 학년/정기시험/과목/포함여부(전체) → <strong>대상자 가져오기</strong> → 대상자료 검증</li>
+          <li><strong>성적 산출 및 마감:</strong> 교과담임 → 성적 → 성적처리 → 성적산출관리 → <strong>과목별 성적 산출</strong> → 학년/정기시험/과목 → 성적 산출 준비 → <strong>산출함</strong> → <strong>마감하기</strong> (마감까지 반드시 완료)</li>
+        </ol>
+        <div class="card" style="margin-top:10px; border-left-color:#2563eb;">
+          <strong>📌 참고 — 공결·병결 학생 처리</strong>
+          <p style="margin-top:6px;"><strong>'지필/수행 점수 누락자'</strong>에 표시되더라도 무시하고 산출을 진행합니다. 특별한 사유 없이 누락된 경우라면 성적 담당자에게 회신 바랍니다.</p>
+        </div>
+        <p style="margin-top:10px; font-size:0.88rem; color:#6b7280;">※ 산출·마감 기한은 학교에서 별도로 안내합니다.</p>
+      </div>
+    </div>
+
+  </div>
 
 </div>
     <!-- TAB:teacher:END -->
