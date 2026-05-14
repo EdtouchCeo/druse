@@ -650,6 +650,7 @@
     <button class="tab-btn" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
     <button class="tab-btn" onclick="switchTab('calendar', this)">📅 학사일정</button>
     <button class="tab-btn" id="tab-btn-ai" onclick="switchTab('ai', this)">⭐ 샛별AI</button>
+    <button class="tab-btn" onclick="switchTab('lounge', this)">🛋️ 교육 라운지</button>
   </div>
 </nav>
 
@@ -8893,6 +8894,191 @@ function switchSpTab(id,btn){
     </div>
   </div>
 
+  <!-- 교육 라운지 탭 패널 -->
+  <div class="tab-panel" id="tab-lounge">
+    <div style="margin-bottom:20px;">
+      <h2 style="font-size:1.2rem;font-weight:700;color:var(--primary);margin:0 0 4px;">🛋️ 교육 라운지</h2>
+      <p style="font-size:0.85rem;color:#6b7280;margin:0;">진로·미래 사회 변화·교육정책에 대해 함께 생각하고 질문을 나누는 공간입니다.</p>
+    </div>
+
+    <style>
+    .lounge-sub-nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+    .lounge-sub-btn{padding:9px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:8px;font-size:0.88rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
+    .lounge-sub-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+    .lounge-sub-panel{display:none;}
+    .lounge-sub-panel.active{display:block;}
+    </style>
+    <script>
+    function switchLoungeSub(id,btn){
+      document.querySelectorAll('.lounge-sub-panel').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('.lounge-sub-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+    }
+    </script>
+
+    <div class="lounge-sub-nav">
+      <button class="lounge-sub-btn active" onclick="switchLoungeSub('lounge-jobs',this)">💼 우리 시대 직업</button>
+      <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-skills',this)">🌱 미래 역량</button>
+    </div>
+
+    <!-- 우리 시대 직업 -->
+    <div class="lounge-sub-panel active" id="lounge-jobs">
+      <div class="placeholder-card" style="text-align:center;padding:60px 24px;background:#f8faff;border-radius:16px;border:1px solid #e5e7eb;">
+        <div class="placeholder-icon" style="font-size:3rem;margin-bottom:16px;">💼</div>
+        <p class="placeholder-title" style="font-size:1.1rem;font-weight:700;color:var(--primary);margin:0 0 10px;">우리 시대 직업 — 콘텐츠 준비 중</p>
+        <p class="placeholder-desc" style="font-size:0.9rem;color:#6b7280;line-height:1.7;margin:0;">
+          오늘날 새롭게 떠오르는 직업, 사라지는 직업, 그리고<br>
+          학교에서 미리 준비할 수 있는 진로 정보가 곧 채워질 예정입니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- 미래 역량 -->
+    <div class="lounge-sub-panel" id="lounge-skills">
+
+      <h2 class="section-title" style="margin-top:0;">🤖 AI를 쓸수록 똑똑해지는 사람, 멍청해지는 사람</h2>
+
+      <div class="card" style="border-left-color:#7c3aed;">
+        <strong>💭 큰 질문 — 시작하기 전에</strong>
+        <p style="margin-top:8px;line-height:1.8;">여러분은 AI를 쓸수록 똑똑해지고 있다고 느끼나요, 멍청해지고 있다고 느끼나요?</p>
+        <p style="margin-top:6px;line-height:1.8;color:#374151;">이 자료를 끝까지 읽고, 마지막에 자신의 답을 다시 생각해 보세요. 같은 AI를 쓰면서도 누군가는 더 똑똑해집니다 — 그 차이가 무엇인지 함께 살펴봅니다.</p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:40px;">⚠️ Part 1. AI 시대의 위협 — 인지 부채(Cognitive Debt)</h2>
+
+      <div class="card" style="border-left-color:#ef4444;">
+        <strong>🧪 MIT 미디어랩 실험 (2025)</strong>
+        <p style="margin-top:8px;line-height:1.8;">54명을 세 그룹으로 나눠 4개월 동안 글쓰기 실험을 했습니다. 뇌파(EEG)로 신경 연결성을 측정해 비교한 연구입니다.</p>
+        <ul style="margin-top:8px;padding-left:20px;line-height:1.9;">
+          <li><strong>챗GPT 그룹</strong> — 챗GPT만 사용해 글쓰기</li>
+          <li><strong>검색엔진 그룹</strong> — 구글 검색만 사용</li>
+          <li><strong>도구 미사용 그룹</strong> — 자기 머리로만</li>
+        </ul>
+      </div>
+
+      <div class="card" style="margin-top:16px;border-left-color:#f59e0b;background:#fffbeb;">
+        <strong>📊 결과 ① — 뇌 신경 연결성</strong>
+        <p style="margin-top:8px;line-height:1.8;">챗GPT 그룹이 알파파(주의)·베타파(논리)·세타파(기억) 영역에서 <strong>가장 약한 신경 연결성</strong>을 보였습니다. 도구 없이 글을 쓴 그룹이 <strong>가장 풍부하고 분산된 뇌 네트워크</strong>를 형성했습니다.</p>
+        <p style="margin-top:8px;line-height:1.8;color:#374151;">근육과 같습니다. 자동차로만 다니면 다리 근육이 빠지듯, AI에게 사고를 맡기면 사고 근육이 빠집니다.</p>
+      </div>
+
+      <div style="margin-top:20px;text-align:center;padding:28px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:16px;border:1px solid #fca5a5;">
+        <div style="font-size:3.5rem;font-weight:800;color:#b91c1c;line-height:1;">83%</div>
+        <p style="margin-top:14px;font-size:1rem;line-height:1.7;color:#7f1d1d;font-weight:600;">챗GPT 그룹 참가자의 <strong>83%</strong>가 방금 자기가 쓴 에세이에서 <strong>한 문장도 정확하게 인용하지 못했습니다.</strong></p>
+        <p style="margin-top:8px;font-size:0.88rem;color:#991b1b;">(도구 미사용·검색엔진 그룹은 약 10% 수준)</p>
+      </div>
+
+      <div class="card" style="margin-top:20px;border-left-color:#2563eb;">
+        <strong>🔄 결과 ② — 4번째 세션의 반전</strong>
+        <p style="margin-top:8px;line-height:1.8;">연구진은 4번째 세션에서 두 그룹의 도구를 서로 바꿨습니다.</p>
+        <ul style="margin-top:8px;padding-left:20px;line-height:1.9;">
+          <li><strong>챗GPT 그룹에서 도구를 빼앗자</strong> → 신경 연결성이 <strong>여전히 약함</strong> (누적된 인지 부채가 회복되지 않음)</li>
+          <li><strong>도구 없이 쓰던 그룹에게 챗GPT를 처음 주자</strong> → <strong>더 다양한 뇌 영역 활성화</strong>, 더 정교한 프롬프트 사용</li>
+        </ul>
+        <p style="margin-top:10px;line-height:1.8;color:#1e40af;font-weight:600;">→ AI 사용 자체가 문제가 아니라, <strong>'사고 근육 없이 AI에 먼저 의존하는 것'</strong>이 문제입니다.</p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:40px;">🎯 가장 무서운 함정 — '미묘하게 틀린 답'</h2>
+
+      <div class="card" style="border-left-color:#dc2626;">
+        <p style="line-height:1.8;font-style:italic;color:#374151;">"대규모 언어모델은 텍스트를 예측하는 기계이기 때문에, 그럴듯하고 만족스럽지만 <strong>미묘하게 틀린 답</strong>을 내놓는 데 아주 능숙하다." — 이선 몰릭</p>
+        <ul style="margin-top:12px;padding-left:20px;line-height:1.9;">
+          <li><strong>명백히 틀린 답</strong> → 누구나 의심하고 검증함</li>
+          <li><strong>미묘하게 틀린 답</strong> → "맞는 것 같다"며 그냥 통과시킴 → 보고서·수행평가에 슬그머니 섞임</li>
+        </ul>
+        <p style="margin-top:12px;line-height:1.8;background:#fef2f2;padding:10px 14px;border-radius:8px;color:#991b1b;">💡 AI는 본질적으로 <strong>'다음에 올 단어를 통계적으로 예측하는 기계'</strong>입니다. 무엇이 진실이고 무엇이 거짓인지 <strong>구분하지 않습니다 — 구분할 수 없습니다.</strong></p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:40px;">📐 들쭉날쭉한 경계 (Jagged Frontier)</h2>
+
+      <div class="card" style="border-left-color:#0891b2;">
+        <p style="line-height:1.8;">AI의 능력은 매끄러운 곡선이 아니라 <strong>들쭉날쭉한 경계</strong>를 가집니다. 같은 주제 안에서도 어떤 질문에는 천재처럼, 어떤 질문에는 어이없이 답합니다.</p>
+        <p style="margin-top:10px;line-height:1.8;">하버드·BCG 컨설턴트 758명 실험 결과:</p>
+        <ul style="margin-top:6px;padding-left:20px;line-height:1.9;">
+          <li><strong>AI 능력 안의 과제</strong> → 25% 더 빠르고 40% 이상 더 좋은 품질</li>
+          <li><strong>AI 능력 밖의 과제</strong> → 정답률이 <strong>19%p 낮음</strong> (그럴듯한 거짓 답을 의심 없이 수용)</li>
+        </ul>
+        <p style="margin-top:12px;line-height:1.8;color:#0e7490;font-weight:600;">→ 그 경계가 어디인지는 사용자에게 보이지 않습니다. <strong>자기 분야 전문성</strong>이 있어야 이 경계를 식별할 수 있습니다.</p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:48px;">🛡️ Part 2. AI 시대의 무기 — 6가지 특성</h2>
+
+      <p style="margin-bottom:20px;line-height:1.8;color:#374151;">같은 AI를 써도 누군가는 더 똑똑해집니다. 연구자들이 정리한 <strong>6가지 공통 특성</strong>입니다. 학생인 여러분에게도 그대로 적용됩니다.</p>
+
+      <div class="card-grid">
+        <div class="grid-card" style="border-top:4px solid #7c3aed;">
+          <div class="label" style="font-weight:700;color:#5b21b6;font-size:1rem;margin-bottom:10px;">① 자기 분야 전문성·맥락화</div>
+          <p style="font-size:0.88rem;color:#374151;line-height:1.7;margin:0;">AI 답이 맞는지 틀린지 판별하려면 <strong>본인이 그 과목·주제를 잘 알아야</strong> 합니다. 전문성은 사치품이 아니라 필수품입니다.</p>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #2563eb;">
+          <div class="label" style="font-weight:700;color:#1e40af;font-size:1rem;margin-bottom:10px;">② AI 작동 원리 이해</div>
+          <p style="font-size:0.88rem;color:#374151;line-height:1.7;margin:0;">"AI는 답을 모르는데도 답을 내놓는 기계." <strong>환각(hallucination)</strong>은 버그가 아니라 본질입니다.</p>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #059669;">
+          <div class="label" style="font-weight:700;color:#065f46;font-size:1rem;margin-bottom:10px;">③ 메타인지(Metacognition)</div>
+          <p style="font-size:0.88rem;color:#374151;line-height:1.7;margin:0;"><strong>내가 무엇을 알고 무엇을 모르는지를 아는 능력.</strong> 자기가 모르는 것을 모르면 AI 앞에서 무릎을 꿇어 버립니다.</p>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #f59e0b;">
+          <div class="label" style="font-weight:700;color:#92400e;font-size:1rem;margin-bottom:10px;">④ 질문(프롬프트) 설계</div>
+          <p style="font-size:0.88rem;color:#374151;line-height:1.7;margin:0;">답의 품질은 질문의 품질에 정비례합니다. <strong>맥락 + 제약 + 페르소나</strong>의 3요소를 명시하세요.</p>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #dc2626;">
+          <div class="label" style="font-weight:700;color:#991b1b;font-size:1rem;margin-bottom:10px;">⑤ 비판적 수용·검증</div>
+          <p style="font-size:0.88rem;color:#374151;line-height:1.7;margin:0;"><strong>출처 확인 → 반대 관점 요청 → 자기 언어 재구성.</strong> 복붙 금지. AI는 내 의도를 정확히 따르지 않습니다.</p>
+        </div>
+        <div class="grid-card" style="border-top:4px solid #0891b2;">
+          <div class="label" style="font-weight:700;color:#0e7490;font-size:1rem;margin-bottom:10px;">⑥ AI 안 쓰는 시간</div>
+          <p style="font-size:0.88rem;color:#374151;line-height:1.7;margin:0;"><strong>독서·사색·직접 경험·깊은 대화.</strong> 사고 근육은 직접 써야만 길러집니다. 다른 5가지를 떠받치는 토대입니다.</p>
+        </div>
+      </div>
+
+      <h2 class="section-title" style="margin-top:48px;">🎯 학생을 위한 실천 가이드</h2>
+
+      <div class="card" style="border-left-color:#2563eb;">
+        <strong>📝 수행평가·보고서·발표를 준비하는 여러분에게</strong>
+        <ul style="margin-top:10px;padding-left:20px;line-height:2;">
+          <li><strong>AI에게 묻기 전</strong> — 내가 모르는 것을 한 줄로 적기 ("나는 OO은 알지만, OO이 헷갈린다")</li>
+          <li><strong>AI 답변의 출처</strong> — 직접 검색해 실제로 존재하는지 확인 (AI는 가짜 논문·가짜 책 제목을 자주 만들어냅니다)</li>
+          <li><strong>반대 관점 요청</strong> — "방금 답에 대한 가장 강한 반박 3가지를 알려줘"라고 다시 묻기</li>
+          <li><strong>자기 언어로 재구성</strong> — 한 번 읽고 창을 닫은 뒤, 내 말로 다시 쓰기</li>
+          <li><strong>같은 질문·두 가지 방식</strong> — 단순한 프롬프트 vs 정교한 프롬프트로 비교 실습</li>
+          <li><strong>주 1회 'AI 없는 시간'</strong> — 글쓰기 한 편, 책 한 챕터, 사색 30분 — 사고 근육 단련</li>
+        </ul>
+      </div>
+
+      <div class="card" style="margin-top:16px;border-left-color:#f59e0b;background:#fffbeb;">
+        <strong>⚠️ 운전석에서 잠들지 마세요</strong>
+        <p style="margin-top:8px;line-height:1.8;">하버드 연구에 따르면 <strong>좋은 AI일수록 사용자가 검증을 줄여 더 안 좋은 결과</strong>를 냅니다. 자율주행이 좋아질수록 운전자가 핸들에서 손을 놓는 것과 같습니다. AI 자료가 너무 좋아 보일 때 — 그때가 더 의심해야 할 때입니다.</p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:48px;">💬 마지막 질문</h2>
+
+      <div class="card" style="border-left-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+        <p style="line-height:1.9;font-size:0.96rem;">처음 던졌던 질문을 다시 묻습니다.</p>
+        <p style="margin-top:10px;line-height:1.9;font-weight:700;color:#5b21b6;font-size:1.05rem;">"여러분은 AI를 쓰면서 똑똑해지고 있습니까, 멍청해지고 있습니까?"</p>
+        <p style="margin-top:14px;line-height:1.9;color:#374151;">답을 어떻게 만들어 갈 것인가는, 위 6가지 특성 중 <strong>어느 하나라도 오늘부터 시작하느냐</strong>에 달려 있습니다.</p>
+        <p style="margin-top:10px;line-height:1.9;color:#374151;font-style:italic;">"AI는 점점 강해질 것입니다. 그렇다면 우리는, 더 깊어져야 합니다."</p>
+      </div>
+
+      <h2 class="section-title" style="margin-top:48px;">📚 출처</h2>
+
+      <div class="card" style="font-size:0.84rem;color:#4b5563;line-height:1.85;">
+        <p style="margin:0 0 8px;"><strong>본 자료는 다음 연구·도서를 청소년 관점에 맞게 재구성한 것입니다.</strong></p>
+        <ul style="margin-top:8px;padding-left:20px;">
+          <li>Kosmyna, N. et al. (2025). <em>Your brain on ChatGPT: Accumulation of cognitive debt when using an AI assistant for essay writing task</em>. arXiv:2506.08872. <a href="https://arxiv.org/abs/2506.08872" target="_blank" rel="noopener" style="color:#2563eb;">arxiv.org/abs/2506.08872</a></li>
+          <li>Lee, H.-P. et al. (2025). <em>The impact of generative AI on critical thinking: Self-reported reductions in cognitive effort and confidence effects from a survey of knowledge workers</em>. CHI 2025. <a href="https://doi.org/10.1145/3706598.3713778" target="_blank" rel="noopener" style="color:#2563eb;">doi.org/10.1145/3706598.3713778</a></li>
+          <li>Dell'Acqua, F. et al. (2023). <em>Navigating the jagged technological frontier: Field experimental evidence of the effects of artificial intelligence on knowledge worker productivity and quality</em>. Harvard Business School Working Paper 24-013.</li>
+          <li>Dell'Acqua, F. (2022). <em>Falling asleep at the wheel: Human/AI collaboration in a field experiment on HR recruiters</em>. Harvard Business School.</li>
+          <li>Mollick, E. (2024). <em>Co-intelligence: Living and working with AI</em>. Portfolio. (한국어판: 이선 몰릭. 『듀얼 브레인: 인공지능과 함께 살아가고 일하기』. 상상스퀘어.)</li>
+          <li>Yudkowsky, E., &amp; Soares, N. (2025). <em>If anyone builds it, everyone dies: Why superhuman AI would kill us all</em>. Little, Brown and Company. (한국어판: 『AI 신의 탄생, 인간의 종말』.)</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+
   <!-- 회원가입 탭 패널 -->
   <div class="tab-panel" id="tab-register">
     <div style="max-width:480px;margin:48px auto;">
@@ -9464,7 +9650,7 @@ function switchSpTab(id,btn){
 (function() {
   'use strict';
 
-  var TOP_TABS = ['school','teacher','student','calendar','ai','register'];
+  var TOP_TABS = ['school','teacher','student','calendar','ai','lounge','register'];
 
   // 탭별 sub URL slug ↔ sub-panel id 매핑
   var SUB_MAP = {
