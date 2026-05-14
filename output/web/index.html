@@ -8924,14 +8924,324 @@ function switchSpTab(id,btn){
 
     <!-- 우리 시대 직업 -->
     <div class="lounge-sub-panel active" id="lounge-jobs">
-      <div class="placeholder-card" style="text-align:center;padding:60px 24px;background:#f8faff;border-radius:16px;border:1px solid #e5e7eb;">
-        <div class="placeholder-icon" style="font-size:3rem;margin-bottom:16px;">💼</div>
-        <p class="placeholder-title" style="font-size:1.1rem;font-weight:700;color:var(--primary);margin:0 0 10px;">우리 시대 직업 — 콘텐츠 준비 중</p>
-        <p class="placeholder-desc" style="font-size:0.9rem;color:#6b7280;line-height:1.7;margin:0;">
-          오늘날 새롭게 떠오르는 직업, 사라지는 직업, 그리고<br>
-          학교에서 미리 준비할 수 있는 진로 정보가 곧 채워질 예정입니다.
-        </p>
+
+      <h2 class="section-title" style="margin-top:0;">💼 우리 시대 직업 — 흔들리는 안정, 떠오르는 기회</h2>
+
+      <div class="card" style="border-left-color:#7c3aed;">
+        <strong>📌 이 코너에 대하여</strong>
+        <p style="margin-top:8px;line-height:1.8;">의사·변호사·회계사 같은 '안정적' 직업이 흔들리고, 새 기회가 떠오르는 중입니다. 고등학생인 여러분이 진로를 그릴 때 꼭 알아야 할 큰 흐름을 <strong>3가지 주제</strong>로 정리했습니다. 부모님 세대의 경험은 더 이상 정답이 아닐 수 있습니다.</p>
       </div>
+
+      <style>
+      .jobs-tab-nav{display:flex;gap:8px;margin:24px 0;flex-wrap:wrap;}
+      .jobs-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
+      .jobs-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+      .jobs-tab-panel{display:none;}
+      .jobs-tab-panel.active{display:block;}
+      </style>
+      <script>
+      function switchJobsTab(id,btn){
+        document.querySelectorAll('.jobs-tab-panel').forEach(p=>p.classList.remove('active'));
+        document.querySelectorAll('.jobs-tab-btn').forEach(b=>b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+      }
+      </script>
+
+      <div class="jobs-tab-nav">
+        <button class="jobs-tab-btn active" onclick="switchJobsTab('jobs-doctor',this)">🩺 연봉 3억 의사 불가능?</button>
+        <button class="jobs-tab-btn" onclick="switchJobsTab('jobs-major',this)">🎓 의대보다 더 뜨는 학과</button>
+        <button class="jobs-tab-btn" onclick="switchJobsTab('jobs-economy',this)">💰 일해서 돈 버는 시대 끝났다</button>
+      </div>
+
+      <!-- ① 의사 -->
+      <div class="jobs-tab-panel active" id="jobs-doctor">
+
+        <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🩺 AI 시대, 연봉 3억 의사 불가능 — 임상 의사의 몰락과 의과학자의 부상</h3>
+
+        <div class="card" style="border-left-color:#dc2626;">
+          <strong>💭 질문</strong>
+          <p style="margin-top:8px;line-height:1.8;">지금 한국 고등학생들은 의대에 들어가기 위해 인생을 갈아 넣고 있습니다. 그런데 정말 의사는 평생 안전할까요? 부모님이 권하는 의대가 10년 뒤에도 그 자리에 있을까요?</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">① 의대 쏠림의 배경 — 왜 다들 의대로 가는가</h4>
+        <div class="card">
+          <ul style="padding-left:20px;line-height:1.95;margin:0;">
+            <li><strong>지식 독점</strong> — 면허 없이 진료할 수 없으니 희소성이 보장됨</li>
+            <li><strong>고소득·하방 안정성</strong> — 망해도 페이닥터로 일하면 평균 이상 수입</li>
+            <li><strong>사회적 지위</strong> — '선생님' 호칭, 신뢰, 부모님의 자랑</li>
+            <li><strong>대체 불가 인식</strong> — 사람 몸을 다루니까 기계가 못 한다는 믿음</li>
+          </ul>
+          <p style="margin-top:12px;line-height:1.8;color:#6b7280;">이 4가지 전제 가운데 <strong>3가지가 AI 시대에 무너집니다.</strong></p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">② AI는 이미 의사를 넘어섰다</h4>
+
+        <div style="text-align:center;padding:24px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:16px;border:1px solid #fca5a5;margin-bottom:18px;">
+          <div style="font-size:2.6rem;font-weight:800;color:#b91c1c;line-height:1;">의사 국가시험 ≈ 만점</div>
+          <p style="margin-top:14px;font-size:0.95rem;line-height:1.7;color:#7f1d1d;">한국·미국 모두 AI가 의사 국가시험에서 <strong>거의 만점</strong>을 받는 수준에 도달. 의대생 6년이 쌓는 지식의 양을 AI는 수 초에 호출합니다.</p>
+        </div>
+
+        <p style="line-height:1.8;margin-bottom:12px;">한국은 로봇 수술 데이터가 세계 최고 수준입니다. 다빈치(da Vinci) 수술 영상·기록이 누적되면서, 10년 안에 AI 로봇이 외과 의사의 집도 능력을 <strong>능가</strong>할 것이라는 전망이 우세합니다.</p>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:24px;margin-bottom:12px;color:#1f2937;">③ 직종별로 본 AI의 영향</h4>
+        <table class="data-table">
+          <thead><tr><th>분야</th><th>AI 대체 가능성</th><th>이유</th></tr></thead>
+          <tbody>
+            <tr><td><strong>영상의학과</strong></td><td style="color:#b91c1c;font-weight:700;">★★★★★</td><td>이미지 패턴 인식이 핵심 — AI가 가장 잘하는 영역</td></tr>
+            <tr><td><strong>진단검사·병리</strong></td><td style="color:#b91c1c;font-weight:700;">★★★★★</td><td>수치 해석·패턴 매칭이 주 업무</td></tr>
+            <tr><td><strong>일반의·내과</strong></td><td style="color:#d97706;font-weight:700;">★★★★</td><td>증상→진단의 매뉴얼화 가능, AI 보조 진료 일상화</td></tr>
+            <tr><td><strong>외과 (집도)</strong></td><td style="color:#d97706;font-weight:700;">★★★★</td><td>로봇 수술 데이터 누적으로 10년 내 능가 전망</td></tr>
+            <tr><td><strong>정신과·재활의학</strong></td><td style="color:#059669;font-weight:700;">★★</td><td>공감·관계 기반 — 인간 영역 비중 큼 (단, 상담 AI도 발전 중)</td></tr>
+            <tr><td><strong>의과학·신약 개발</strong></td><td style="color:#0891b2;font-weight:700;">기회</td><td>AI가 도구로 활용됨 — 인간 연구자의 가치 상승</td></tr>
+          </tbody>
+        </table>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">④ 미래의 의사 = '진단 배달원' + '파일럿형 감독관'</h4>
+        <div class="card" style="border-left-color:#f59e0b;background:#fffbeb;">
+          <p style="line-height:1.85;margin:0;">미래의 임상 의사는 독자적 권위로 진단하는 존재가 아니라, <strong>AI 시스템이 제시한 가이드라인을 따라 처방·진료하는 '진단 배달원'</strong>에 가까워질 가능성이 큽니다. 동시에 의료 사고에 법적·윤리적 책임을 지는 <strong>'파일럿형 감독관'</strong> 역할은 남습니다 — 자동 비행 시스템을 켜고도 조종석에 앉아 있는 비행기 조종사처럼요.</p>
+          <p style="margin-top:12px;line-height:1.85;color:#92400e;font-weight:600;">→ 결과: 지식 독점·희소성에 기반한 의사의 경제적 하방 안정성과 수입이 무너집니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">⑤ 진짜 기회는 '의과학자(Medical Scientist)'</h4>
+        <div class="card" style="border-left-color:#059669;">
+          <p style="line-height:1.85;">AI에 종속되는 대다수 임상 의사와 달리, <strong>AI를 도구로 활용해 신약을 개발하고 새로운 의료 패러다임을 만드는 의과학자</strong>는 희소성이 극대화됩니다. 상한선 없는 부와 영향력을 거머쥘 수 있는 자리입니다.</p>
+          <p style="margin-top:12px;line-height:1.85;"><strong>의과학자가 되는 길 (한국)</strong></p>
+          <ul style="margin-top:6px;padding-left:20px;line-height:1.9;">
+            <li>서울대·KAIST·POSTECH·UNIST·GIST 등의 <strong>의과학과·의생명공학</strong> 학부 진학</li>
+            <li>의대 진학 후 <strong>MD-PhD 통합 과정</strong>(서울대·KAIST 의과학대학원·연세대 등)</li>
+            <li>학부 — 생명과학·생화학·생명공학·약학 → 의대원 진학 또는 박사 과정</li>
+          </ul>
+          <p style="margin-top:10px;font-size:0.85rem;color:#6b7280;">※ 임상 의사 자격증 없이도 의과학자가 될 수 있습니다. '의대 진학'만이 답이 아닙니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">⑥ 고등학생이 지금부터 해야 할 것</h4>
+        <div class="card-grid">
+          <div class="grid-card" style="border-top:4px solid #2563eb;">
+            <div class="label" style="font-weight:700;color:#1e40af;margin-bottom:8px;">🧪 과학·수학 기초</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">의과학·신약 개발은 <strong>생명과학·화학·수학</strong>이 토대. 단순 암기가 아니라 원리 이해 중심으로 공부하세요.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #059669;">
+            <div class="label" style="font-weight:700;color:#065f46;margin-bottom:8px;">🔬 연구 경험</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">학교 과학 동아리·R&amp;E·청소년 학술대회 참여. <strong>'무엇이 문제인지 찾아낸 경험'</strong>이 포트폴리오의 핵심.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #f59e0b;">
+            <div class="label" style="font-weight:700;color:#92400e;margin-bottom:8px;">🤔 능동적 학습</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">학원이 짜준 스케줄을 그대로 따라가는 수동적 학생은 AI 시대에 도태됩니다. 스스로 묻고 찾는 습관 필수.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #dc2626;">
+            <div class="label" style="font-weight:700;color:#991b1b;margin-bottom:8px;">✋ 손으로 풀기</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">AI에게 답을 묻기 전 <strong>먼저 손으로 풀고</strong> 시행착오를 겪으세요. 사고 근육은 직접 써야만 길러집니다.</p>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:24px;border-left-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+          <strong>💡 한 줄 정리</strong>
+          <p style="margin-top:8px;line-height:1.85;">의대 진학 자체가 나쁜 선택은 아닙니다. 하지만 <strong>'안정적 고소득'을 노리고 의대를 택하던 시대는 끝납니다.</strong> 의사가 되고 싶다면 <strong>의과학자</strong>의 길을, 또는 정신과·재활 등 인간 관계가 핵심인 분야를 고려하세요. 그리고 '왜' 의사가 되고 싶은지 스스로 답할 수 있어야 합니다.</p>
+        </div>
+
+      </div>
+      <!-- /jobs-doctor -->
+
+      <!-- ② 학과 -->
+      <div class="jobs-tab-panel" id="jobs-major">
+
+        <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🎓 AI 시대, 의대보다 더 뜨는 학과 — 핵심 역량과 미래 유망 산업</h3>
+
+        <div class="card" style="border-left-color:#7c3aed;">
+          <strong>💭 질문</strong>
+          <p style="margin-top:8px;line-height:1.8;">의대·로스쿨·회계사 — 부모님 세대가 '안정의 정점'으로 꼽은 직종은 모두 <strong>지식 기반 루틴 직종</strong>입니다. AI가 가장 빠르고 완벽하게 대체하는 영역이기도 합니다. 그럼 어디로 가야 할까요?</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">① 전통 전문직의 종말 — 그리고 시스템 설계자의 부상</h4>
+        <table class="data-table">
+          <thead><tr><th>직종</th><th>핵심 업무</th><th>AI 시대 운명</th></tr></thead>
+          <tbody>
+            <tr><td><strong>의사 (임상)</strong></td><td>증상·검사 → 진단·처방 매뉴얼화</td><td style="color:#b91c1c;">AI 매뉴얼 따라가는 '배달원'</td></tr>
+            <tr><td><strong>회계사</strong></td><td>회계기준 적용·세무 신고</td><td style="color:#b91c1c;">자동화 소프트웨어로 대체 가속</td></tr>
+            <tr><td><strong>변리사</strong></td><td>선행 특허 조사·명세서 작성</td><td style="color:#b91c1c;">AI 검색·문서 생성으로 대체</td></tr>
+            <tr><td><strong>변호사 (송무 외)</strong></td><td>판례 조사·계약서 검토</td><td style="color:#b91c1c;">초안 작성·리서치 AI 우위</td></tr>
+            <tr><td><strong>단순 코더</strong></td><td>요구사항 → 코드 작성</td><td style="color:#b91c1c;">AI가 24시간 코딩 — 가장 먼저 대체</td></tr>
+            <tr><td><strong>시스템 설계자</strong></td><td>'무엇을 만들 것인가' 상상·설계</td><td style="color:#059669;font-weight:700;">수요 폭발 — AI 초안을 튜닝하는 상위 역할</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:14px;line-height:1.8;color:#6b7280;font-size:0.92rem;">→ 핵심: <strong>'정해진 규칙을 적용하는 일'</strong>은 AI에 밀리고, <strong>'규칙을 만들고 시스템을 설계하는 일'</strong>은 더 귀해집니다.</p>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">② 새 시대를 지탱할 유망 학과</h4>
+        <p style="line-height:1.8;margin-bottom:14px;">AI라는 거대한 소프트웨어를 <strong>물리적으로 구현·유지</strong>하는 하드웨어·인프라 산업이 폭발적으로 성장합니다. 그리고 인간의 내밀한 만족을 채워주는 영역은 AI가 대체하지 못합니다.</p>
+        <div class="card-grid">
+          <div class="grid-card" style="border-top:4px solid #2563eb;">
+            <div class="label" style="font-weight:700;color:#1e40af;margin-bottom:8px;">🔌 반도체·전자공학</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">AI 가속기·메모리·전력 반도체 등 'AI를 굴리는 모든 칩'의 수요 폭발. <strong>설계·공정·소재</strong> 분야 모두 호황.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #f59e0b;">
+            <div class="label" style="font-weight:700;color:#92400e;margin-bottom:8px;">⚛️ 원자력·에너지공학</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">AI 데이터센터는 도시 하나의 전력을 잡아먹습니다. <strong>SMR(소형 모듈 원자로)</strong>·차세대 원전이 핵심 인프라.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #059669;">
+            <div class="label" style="font-weight:700;color:#065f46;margin-bottom:8px;">🧪 신소재·화학공학</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">친환경·고기능 소재, 배터리, 디스플레이, 의료 소재 — AI 설계로 개발 속도가 10배 빨라지는 분야.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #dc2626;">
+            <div class="label" style="font-weight:700;color:#991b1b;margin-bottom:8px;">🛡️ 방위·사이버 국방</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">AI 전쟁 시대 — 드론·자율 무기·사이버 방어. K-방산 수출 호황. <strong>제어공학·정보보안</strong> 인재 부족.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #0891b2;">
+            <div class="label" style="font-weight:700;color:#0e7490;margin-bottom:8px;">✈️ 기계·항공·로보틱스</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">휴머노이드 로봇·자율 비행·우주 산업. 물리 세계에서 움직이는 모든 것에 AI가 들어갑니다.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #7c3aed;">
+            <div class="label" style="font-weight:700;color:#5b21b6;margin-bottom:8px;">🎬 엔터테인먼트·콘텐츠</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">인간의 감정·취향·내밀한 만족은 대체 불가. K-콘텐츠·게임·웹툰·음악은 AI를 도구로 쓰는 <strong>창작 주체</strong>가 핵심.</p>
+          </div>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:36px;margin-bottom:12px;color:#1f2937;">③ 대체 불가 인재를 만드는 2가지 역량</h4>
+
+        <div class="card" style="border-left-color:#059669;">
+          <strong>1️⃣ 문제 정의 능력 — '자연 속의 고독'</strong>
+          <p style="margin-top:8px;line-height:1.85;">문제를 푸는 것은 AI가 더 잘합니다. 인간의 진짜 역할은 <strong>'무엇이 진짜 문제인가'를 찾아내는 것</strong>. 이를 위해 외부 소음(스마트폰·SNS)을 끊고, <strong>하루 1~2시간 자기만의 텅 빈 시간</strong>을 가져야 합니다. 산책·사색·일기 — 뇌가 비어야 새로운 연결이 생깁니다.</p>
+        </div>
+
+        <div class="card" style="margin-top:14px;border-left-color:#2563eb;">
+          <strong>2️⃣ 네트워킹 역량 — 협업</strong>
+          <p style="margin-top:8px;line-height:1.85;">지식(콘텐츠)과 네트워킹의 비중이 <strong>50:50</strong>이 되는 시대. 혼자 모든 걸 짊어지려 하지 말고, 사람·AI 초지능과 협업해 문제를 푸는 능력이 필수입니다. 학교에서 동아리·팀 프로젝트·발표를 통해 의식적으로 훈련하세요.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">④ 학벌의 붕괴, 포트폴리오의 시대</h4>
+        <div class="card" style="border-left-color:#f59e0b;background:#fffbeb;">
+          <p style="line-height:1.85;">지식 자체는 초지능이 제공합니다. <strong>명문대 졸업장</strong>이나 머릿속 지식의 가치는 빠르게 하락합니다. 앞으로 핵심은 <strong>"AI를 활용해 세상의 어떤 문제를 풀었는가"를 보여주는 포트폴리오</strong>입니다.</p>
+          <ul style="margin-top:12px;padding-left:20px;line-height:1.9;">
+            <li>GitHub에 코드·프로젝트 공개</li>
+            <li>블로그·노션에 학습 기록·탐구 보고서 축적</li>
+            <li>유튜브·인스타에 작품·콘텐츠 시리즈 운영</li>
+            <li>고등학생이라도 — <strong>지금부터</strong> 시작하면 4년 뒤 압도적 차이</li>
+          </ul>
+        </div>
+
+        <div class="card" style="margin-top:24px;border-left-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+          <strong>💡 한 줄 정리</strong>
+          <p style="margin-top:8px;line-height:1.85;">의대가 정답인 시대는 끝났습니다. <strong>'AI를 도구로 쓰는 시스템 설계자'</strong>가 새로운 정답입니다. 반도체·에너지·신소재·방위·로봇·엔터 산업에서, <strong>문제 정의 + 네트워킹 + 포트폴리오</strong>로 자신을 증명하는 사람이 미래를 가져갑니다.</p>
+        </div>
+
+      </div>
+      <!-- /jobs-major -->
+
+      <!-- ③ 경제 -->
+      <div class="jobs-tab-panel" id="jobs-economy">
+
+        <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">💰 일해서 돈 버는 시대 끝났다 — AI 시대의 경제 흐름과 투자·창업 전략</h3>
+
+        <div class="card" style="border-left-color:#7c3aed;">
+          <strong>💭 질문</strong>
+          <p style="margin-top:8px;line-height:1.8;">부모님 세대는 <strong>"좋은 직장 → 월급 → 안정된 노후"</strong> 공식으로 살았습니다. 여러분의 30~40대에도 그 공식이 유효할까요? AI 시대는 노동·자본·창업의 규칙을 다시 씁니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">① 에이전틱 AI(Agentic AI)의 등장</h4>
+        <div class="card">
+          <p style="line-height:1.85;">단순히 답을 생성하는 챗GPT를 넘어, <strong>사용자를 대신해 웹사이트에 접속하고 결제까지 수행하는 'AI 에이전트'</strong>가 현실화됐습니다. 항공권 검색→예약→결제까지 한 번에. 이는 <strong>중간 에이전트 비즈니스</strong>(여행사·보험설계사·중개·일부 법률·보안 서비스 등)를 직접 위협합니다.</p>
+        </div>
+
+        <div style="text-align:center;padding:28px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:16px;border:1px solid #fca5a5;margin-top:18px;">
+          <div style="font-size:3rem;font-weight:800;color:#b91c1c;line-height:1;">화이트칼라 −50%</div>
+          <p style="margin-top:14px;font-size:0.95rem;line-height:1.7;color:#7f1d1d;">사무직·지식 노동자 일자리의 <strong>최대 절반</strong>이 사라질 수 있다는 전망. 역설적으로 '안정적'으로 여겨진 직군이 가장 위험합니다.</p>
+        </div>
+
+        <p style="margin-top:18px;line-height:1.85;">더 충격적인 사실: AI 시대에 유망할 것이라 여겨졌던 <strong>개발자·AI 전문가조차 가장 먼저 대체</strong>되고 있습니다. 30시간씩 쉬지 않고 코딩하는 AI는 평균 신입 개발자보다 빠르고 정확합니다.</p>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">② 노동 소득 → 자본 소득의 시대</h4>
+        <table class="data-table">
+          <thead><tr><th>구분</th><th>과거 (부모 세대)</th><th>AI 시대</th></tr></thead>
+          <tbody>
+            <tr><td>주된 소득원</td><td>노동 소득 (월급)</td><td><strong>자본 소득 (투자)</strong> 비중 급상승</td></tr>
+            <tr><td>일자리 수명</td><td>30~40년 (정년)</td><td>5~10년 단위로 변동</td></tr>
+            <tr><td>안정성 출처</td><td>대기업 소속</td><td><strong>분산된 수익원 직접 설계</strong></td></tr>
+            <tr><td>핵심 자산</td><td>경력·학벌</td><td>포트폴리오·시스템·자본</td></tr>
+          </tbody>
+        </table>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">③ '항상 소득' 만들기 — 투자를 월급처럼</h4>
+        <div class="card" style="border-left-color:#059669;">
+          <p style="line-height:1.85;">주식 투자는 변동성이 크지만, <strong>매월 일정한 배당·이자가 들어오는 포트폴리오</strong>를 설계하면 월급처럼 만들 수 있습니다. 이를 '항상 소득(Constant Income)'이라 부릅니다.</p>
+          <p style="margin-top:12px;line-height:1.85;"><strong>10~20대를 위한 시작점</strong></p>
+          <ul style="margin-top:6px;padding-left:20px;line-height:1.95;">
+            <li><strong>소액부터</strong> — 월 1~5만 원이라도 시작. 단리·복리의 차이를 직접 체감</li>
+            <li><strong>ETF 초분산</strong> — 개별 종목이 아니라 <strong>지수(예: S&amp;P 500, MSCI World)</strong>를 한 번에 사는 상품. 한 번의 결정으로 수백 개 회사에 분산 투자</li>
+            <li><strong>장기 보유</strong> — 단타·테마주 금지. 10년 이상 장기 보유로 시장 평균 수익 누리기</li>
+            <li><strong>경제 신문 30분</strong> — 매일 헤드라인만이라도 읽으며 '시장의 언어'에 익숙해지기</li>
+          </ul>
+          <p style="margin-top:12px;font-size:0.85rem;color:#6b7280;">※ 청소년은 부모님 동의 하에 미성년자 계좌(증권사 비대면 개설 가능)로 시작할 수 있습니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">④ AI 투자 지형의 변화 — 학습에서 추론으로</h4>
+        <table class="data-table">
+          <thead><tr><th>단계</th><th>핵심 칩</th><th>핵심 메모리</th><th>주도 기업·기술</th></tr></thead>
+          <tbody>
+            <tr><td><strong>지금까지 (학습)</strong></td><td>GPU</td><td>HBM (고대역폭 메모리)</td><td>엔비디아·SK하이닉스·삼성전자</td></tr>
+            <tr><td><strong>앞으로 (추론)</strong></td><td><strong>NPU·LPU</strong> (가볍고 빠름, 저전력)</td><td><strong>HBF</strong> (넓고 빠른 저장)</td><td>맞춤형 추론 가속기 신생 기업·메모리 차세대 강자</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:14px;line-height:1.8;color:#6b7280;">에이전틱 AI가 24시간 쉬지 않고 스스로 돌아가는 <strong>'추론'</strong> 단계로 넘어가면서, 전력을 적게 쓰고 응답이 빠른 칩이 주도권을 가져갑니다. 투자 흐름도 그 방향으로 이동 중입니다.</p>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">⑤ 무비용 1인 창업의 기회</h4>
+        <div class="card" style="border-left-color:#2563eb;">
+          <p style="line-height:1.85;">자본·인맥·경력이 없는 10~20대에게 AI는 위기인 동시에 <strong>가장 강력한 레버리지</strong>입니다. 과거에는 개발자·디자이너·마케터·회계 인력을 다 모아야 했지만, 이제는 <strong>기획자 한 명이 AI를 부려</strong> 디자인·코딩·광고·고객응대까지 전 과정을 거의 무료로 해결합니다.</p>
+          <p style="margin-top:12px;line-height:1.85;"><strong>핵심은 '안목' = 도메인 지식</strong></p>
+          <ul style="margin-top:6px;padding-left:20px;line-height:1.95;">
+            <li>AI가 100개의 결과물을 1초에 만들어내도, <strong>그중 가장 좋은 것을 골라내는 안목</strong>이 없으면 무용지물</li>
+            <li>그 안목은 <strong>특정 분야에 깊이 파고든 경험</strong>에서 나옴</li>
+            <li>고등학생이라도 — 좋아하는 분야 하나를 깊게(영화·게임·만화·운동·요리·역사 등) 파면 그것이 미래 자본이 됨</li>
+          </ul>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">⑥ 고등학생을 위한 첫걸음 5가지</h4>
+        <div class="card-grid">
+          <div class="grid-card" style="border-top:4px solid #2563eb;">
+            <div class="label" style="font-weight:700;color:#1e40af;margin-bottom:8px;">📰 경제 흐름 익히기</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">매일 경제 신문 헤드라인 + 주말 1편 심층 기사. <strong>시장의 언어</strong>가 친숙해질 때까지.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #059669;">
+            <div class="label" style="font-weight:700;color:#065f46;margin-bottom:8px;">💸 소액 ETF 시작</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">부모님 동의 하에 미성년자 계좌 개설. <strong>월 1만 원이라도</strong> 글로벌 지수 ETF에 적립.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #f59e0b;">
+            <div class="label" style="font-weight:700;color:#92400e;margin-bottom:8px;">🎯 한 분야 깊게</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">좋아하는 분야 하나를 <strong>'전문가 수준'</strong>으로 파고들기. 이것이 미래 1인 비즈니스의 자본.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #dc2626;">
+            <div class="label" style="font-weight:700;color:#991b1b;margin-bottom:8px;">🛠️ AI 도구 익히기</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">ChatGPT·Claude·Midjourney·Cursor — 흉내 내며 따라 하지 말고, <strong>내 프로젝트를 만들 때만</strong> 쓰며 익히기.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #7c3aed;">
+            <div class="label" style="font-weight:700;color:#5b21b6;margin-bottom:8px;">📂 포트폴리오 축적</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">블로그·GitHub·노션·인스타에 <strong>'내가 만든 것'</strong>을 꾸준히 쌓기. 학벌보다 강력한 무기.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #0891b2;">
+            <div class="label" style="font-weight:700;color:#0e7490;margin-bottom:8px;">🤝 사람·AI와 협업</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">동아리·팀 프로젝트·온라인 커뮤니티에서 의식적으로 협업 훈련. <strong>혼자 가는 시대는 끝</strong>.</p>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:24px;border-left-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+          <strong>💡 한 줄 정리</strong>
+          <p style="margin-top:8px;line-height:1.85;">"평생 직장 → 월급 → 노후"는 부모님 세대의 공식입니다. AI 시대의 공식은 <strong>"포트폴리오 + 자본 소득 + 1인 비즈니스"</strong>. 학교 공부를 게을리하라는 뜻이 아니라, <strong>학교 공부와 동시에</strong> 새로운 자본을 쌓기 시작하라는 뜻입니다.</p>
+        </div>
+
+      </div>
+      <!-- /jobs-economy -->
+
+      <h2 class="section-title" style="margin-top:48px;">📚 출처</h2>
+      <div class="card" style="font-size:0.84rem;color:#4b5563;line-height:1.85;">
+        <p style="margin:0 0 8px;"><strong>본 자료는 다음 전문가들의 통찰과 공개 인터뷰·강의를 청소년 관점에 맞게 재구성한 것입니다.</strong></p>
+        <ul style="margin-top:8px;padding-left:20px;">
+          <li><strong>정재훈 교수</strong> — "AI 시대, 연봉 3억 의사 불가능": 임상 의사의 몰락과 의과학자의 부상에 관한 통찰</li>
+          <li><strong>유기훈 교수</strong> — "AI 시대, 의대보다 더 뜨는 학과": 핵심 역량과 유망 산업, 시스템 설계자의 부상에 관한 분석</li>
+          <li>AI 시대 경제 전망 — 에이전틱 AI, 화이트칼라 직군 변화, 자본 소득 전환, NPU·LPU·HBF 등 차세대 반도체 흐름에 관한 산업 보고서 종합</li>
+          <li>관련 도서·연구: Mollick, E. (2024). <em>Co-intelligence</em>. Portfolio. / Dell'Acqua, F. et al. (2023). <em>Navigating the jagged technological frontier</em>. Harvard Business School.</li>
+        </ul>
+        <p style="margin-top:10px;font-size:0.82rem;color:#6b7280;">※ 본 자료는 학생 진로 탐색을 위한 참고 자료로, 특정 직업·학과·투자에 대한 권유나 보장이 아닙니다. 진학·진로·투자 결정 시 반드시 보호자·전문가와 상의하세요.</p>
+      </div>
+
     </div>
 
     <!-- 미래 역량 -->
