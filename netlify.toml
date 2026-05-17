@@ -3,3 +3,31 @@
 
 [functions]
   directory = "netlify/functions"
+
+# HTML 문서를 항상 브라우저에 표시 (다운로드 방지)
+[[headers]]
+  for = "/"
+  [headers.values]
+    Content-Type = "text/html; charset=UTF-8"
+    Content-Disposition = "inline"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Content-Type = "text/html; charset=UTF-8"
+    Content-Disposition = "inline"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Content-Type = "text/html; charset=UTF-8"
+    Content-Disposition = "inline"
+
+# OG 미리보기 이미지
+[[headers]]
+  for = "/logo.jpg"
+  [headers.values]
+    Content-Type = "image/jpeg"
+    Content-Disposition = "inline"

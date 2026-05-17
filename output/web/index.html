@@ -547,6 +547,22 @@
       .cal-cell { padding: 4px 4px; }
       .cal-event { font-size: 0.6rem; padding: 1px 3px; }
       .cal-title { font-size: 1.1rem; }
+    }
+    /* 모바일: 인증바가 줄바꿈 시 탭 메뉴와 겹치지 않도록 */
+    @media (max-width: 760px) {
+      #auth-bar-inner {
+        height: auto !important;
+        min-height: 44px;
+        flex-direction: column;
+        align-items: stretch !important;
+        padding: 8px 0;
+        gap: 8px !important;
+      }
+      #auth-bar-inner > div {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      #tt-search-wrap { width: 100%; }
     }  </style>
 </head>
 <body>
@@ -569,7 +585,7 @@
 
 <!-- ===== 시간표 검색 바 + 회원 인증 바 ===== -->
 <div id="auth-bar" style="background:#f8faff;border-bottom:1px solid #e5e7eb;padding:0 16px;">
-  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px;flex-wrap:wrap;">
+  <div id="auth-bar-inner" style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px;flex-wrap:wrap;">
     <!-- 시간표 검색 위젯 -->
     <div id="tt-search-wrap" style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
       <span style="font-size:0.8rem;font-weight:700;color:#1a3a6b;white-space:nowrap;">🗓 시간표</span>
@@ -1491,7 +1507,7 @@
       <div class="accordion-body">
         <ul style="padding-left:18px;">
           <li><strong>교육부 학사평가지원과</strong> 학생부 기재요령 유권해석</li>
-          <li><strong>경상북도교육청 중등교육과</strong> 시·도 단위 세부 사항</li>
+          <li><strong>시·도 교육청 학교생활기록부 담당부서</strong> 시·도 단위 세부 사항</li>
           <li><strong>나이스(NEIS) 헬프데스크</strong> 시스템 입력 오류, 누가기록 전송</li>
           <li><strong>교내 학업성적관리위원회</strong> 학교 단위 심의 (정정·예외처리)</li>
         </ul>
