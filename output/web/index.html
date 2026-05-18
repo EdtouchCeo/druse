@@ -9050,6 +9050,7 @@ function switchSpTab(id,btn){
     <div class="lounge-sub-nav">
       <button class="lounge-sub-btn active" onclick="switchLoungeSub('lounge-jobs',this)">💼 우리 시대 직업</button>
       <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-skills',this)">🌱 미래 역량</button>
+      <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-ax',this)">🔄 AX 대전환</button>
     </div>
 
     <!-- 우리 시대 직업 -->
@@ -9514,6 +9515,158 @@ function switchSpTab(id,btn){
           <li>Yudkowsky, E., &amp; Soares, N. (2025). <em>If anyone builds it, everyone dies: Why superhuman AI would kill us all</em>. Little, Brown and Company. (한국어판: 『AI 신의 탄생, 인간의 종말』.)</li>
         </ul>
       </div>
+
+    </div>
+
+    <!-- AX 대전환 -->
+    <div class="lounge-sub-panel" id="lounge-ax">
+
+      <h2 class="section-title" style="margin-top:0;">🔄 AX 대전환 — AI Transformation</h2>
+
+      <div class="card" style="border-left-color:#7c3aed;">
+        <strong>📌 AX(AI Transformation)란?</strong>
+        <p style="margin-top:8px;line-height:1.8;">DX(디지털 전환)를 넘어, AI가 산업·사회·교육의 작동 방식 자체를 근본적으로 바꾸는 흐름을 <strong>AX(AI 대전환)</strong>라고 합니다. 이 코너는 분야별로 그 변화를 데이터와 함께 정리합니다.</p>
+      </div>
+
+      <style>
+      .ax-tab-nav{display:flex;gap:8px;margin:24px 0;flex-wrap:wrap;}
+      .ax-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
+      .ax-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+      .ax-tab-panel{display:none;}
+      .ax-tab-panel.active{display:block;}
+      </style>
+      <script>
+      function switchAxTab(id,btn){
+        document.querySelectorAll('.ax-tab-panel').forEach(p=>p.classList.remove('active'));
+        document.querySelectorAll('.ax-tab-btn').forEach(b=>b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+      }
+      </script>
+
+      <div class="ax-tab-nav">
+        <button class="ax-tab-btn active" onclick="switchAxTab('ax-edu',this)">🎓 교육 분야</button>
+      </div>
+
+      <!-- 교육 분야 -->
+      <div class="ax-tab-panel active" id="ax-edu">
+
+        <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🎓 교육 분야의 AI 대전환 — 현황과 미래 전망</h3>
+
+        <div class="card" style="border-left-color:#7c3aed;">
+          <strong>💭 들어가며</strong>
+          <p style="margin-top:8px;line-height:1.8;">"AI 튜터가 곧 교사 역할의 일부를 대체하고, 대학 입시에서 표준화 시험이 사라질 수 있다." — 교육계에서 나온 이런 주장들은 얼마나 근거가 있을까요? 이 자료는 데이터와 연구로 그 주장들을 검증하고, 향후 5~10년의 시나리오를 전망합니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:30px;margin-bottom:12px;color:#1f2937;">📊 한눈에 보는 핵심 4가지</h4>
+        <div class="card-grid">
+          <div class="grid-card" style="border-top:4px solid #2563eb;">
+            <div class="label" style="font-weight:700;color:#1e40af;margin-bottom:8px;">① AI 튜터 — 학습 효과 비약</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">랜덤 대조 실험(RCT)에서 AI 튜터 학습이 <strong>대면 수업의 절반 시간으로 2배 이상</strong>의 성과를 기록.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #f59e0b;">
+            <div class="label" style="font-weight:700;color:#92400e;margin-bottom:8px;">② 표준화 시험의 재고</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">전 세계 수천 개 대학이 SAT·ACT를 <strong>필수에서 제외</strong>. 포트폴리오·과정 평가가 부상.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #dc2626;">
+            <div class="label" style="font-weight:700;color:#991b1b;margin-bottom:8px;">③ 기회와 격차의 양면</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">교육 민주화 가능성 ↔ 디지털 접근성·편향으로 <strong>격차 심화</strong> 우려 공존.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #059669;">
+            <div class="label" style="font-weight:700;color:#065f46;margin-bottom:8px;">④ 데이터·프라이버시</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">학생 학습 데이터의 축적·활용은 기회인 동시에 <strong>프라이버시·남용</strong> 대비가 필수.</p>
+          </div>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:36px;margin-bottom:12px;color:#1f2937;">1. AI와 개인맞춤형 학습의 부상</h4>
+        <div class="card" style="border-left-color:#2563eb;">
+          <p style="line-height:1.85;"><strong>AI 튜터·지능형 교습 시스템(ITS)</strong> — 켄싱턴대 RCT 실험에서 AI 튜터는 대면 수업보다 <strong>2배 이상 효과적</strong>이며 학습 시간은 더 적게 들었습니다. 학생의 이해도·오개념을 실시간 진단해 개인별 피드백을 제공합니다.</p>
+          <p style="margin-top:12px;line-height:1.85;"><strong>대표 도구</strong></p>
+          <ul style="margin-top:6px;padding-left:20px;line-height:1.9;">
+            <li><strong>칸미고(Khanmigo)</strong> — 칸아카데미 + GPT-4. 정답을 바로 주지 않고 <strong>소크라테스식 질문</strong>으로 사고 유도</li>
+            <li><strong>듀오링고 Max</strong> — AI 역할극·오답 설명으로 실전형 언어 연습</li>
+            <li><strong>산타토익(뤼이드)</strong> — 20여 문제로 토익 점수를 <strong>90% 정확도</strong> 예측, 약점 맞춤 문제 제공</li>
+            <li><strong>콴다(Qanda)</strong> — 문제 사진을 3초 내 풀이, 글로벌 1억+ 다운로드</li>
+          </ul>
+          <p style="margin-top:12px;line-height:1.85;background:#eff6ff;padding:10px 14px;border-radius:8px;color:#1e40af;">💡 <strong>교사 역할의 변화</strong> — WEF는 "AI가 채점·관리 등 루틴을 줄여, 교사가 동기 부여·인간적 상호작용에 집중하게 한다"고 분석. 미래 교사는 <strong>지식 전달자에서 코치·멘토</strong>로 이동합니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">2. 표준화 시험의 미래 — 평가·입시의 전환</h4>
+        <div class="card" style="border-left-color:#f59e0b;background:#fffbeb;">
+          <ul style="padding-left:20px;line-height:1.95;margin:0;">
+            <li>AI(ChatGPT 등)가 시험에서 고득점하면서 <strong>"점수만으로 능력 판단"</strong> 방식이 한계 노출</li>
+            <li>미국 <strong>1,600개 이상 대학</strong>이 SAT·ACT 점수 제출을 필수에서 제외 또는 폐지</li>
+            <li>2023년 미국 ETS는 SAT 시행 업무 중단 → 태도·흥미 등 <strong>행동 데이터 측정</strong> 방향 개편</li>
+            <li>유네스코(2025): "암기 지식 평가에서 <strong>창의적 문제 해결·윤리적 추론</strong> 평가로 전환 필요"</li>
+            <li>카네기재단: 5개 주에서 학업+활동 데이터로 <strong>소통·협업·비판적 사고를 시각화</strong>하는 평가 시스템 도입</li>
+          </ul>
+          <p style="margin-top:12px;line-height:1.85;color:#92400e;font-weight:600;">→ 향후 10년 내 수능 등 표준화 시험의 근본적 개편·축소 가능성은 일리가 있으나, 사회·정책적 결정이 필요해 국가별 시간표는 다를 것입니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">3. 사교육의 미래 — 시장 재편과 양극화</h4>
+        <div class="card">
+          <ul style="padding-left:20px;line-height:1.95;margin:0;">
+            <li>2022년 한국 사교육비 총액 <strong>26조 원</strong>, 1인당 월평균 약 41만 원 — 역대 최고</li>
+            <li>중국 <strong>'쌍감(雙減) 정책'(2021)</strong> — 영리 K-12 학원 전면 금지, 4개월 만에 일자리 300만 개·세수 3.4조 원 손실</li>
+            <li>AI 학습 도구의 무료·저비용화로 <strong>시험 점수의 '신호 가치'가 희석</strong> → 대학은 점수 외 요인 중시</li>
+            <li><strong>양극화 우려</strong> — 상위권·고소득층은 프리미엄 인간 교사 + 첨단 AI 모두 활용, 일반층은 온라인 AI 플랫폼 의존</li>
+          </ul>
+          <p style="margin-top:12px;line-height:1.85;background:#fef2f2;padding:10px 14px;border-radius:8px;color:#991b1b;">⚠️ AI가 사교육비를 낮추고 기회를 넓힐 수 있지만, <strong>디지털 격차(Digital Divide) 해소가 선행</strong>되지 않으면 교육 불평등이 오히려 악화될 수 있습니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">4. 학업 성취 — 유전 vs 환경 (과학적 검증)</h4>
+        <div class="card" style="border-left-color:#0891b2;">
+          <p style="line-height:1.85;">"타고난 유전자가 80% 결정"이라는 주장의 검증:</p>
+          <ul style="margin-top:8px;padding-left:20px;line-height:1.9;">
+            <li>독일 TwinLife 연구(2026.5) — 23세 지능지수의 <strong>약 75%가 유전</strong>으로 설명, 지능–사회경제적 지위 연관도 69~98%가 유전 영향</li>
+            <li>그러나 같은 연구가 <strong>"유전 효과가 최대 15%p 과대추정 가능"</strong>, 유전·환경은 복잡하게 상호작용한다고 명시</li>
+            <li>핀란드·한국처럼 <strong>평등한 교육 환경</strong>에서는 유전 영향이 더 드러나고, 교육이 취약하면 환경이 잠재력 발휘를 제한</li>
+          </ul>
+          <p style="margin-top:12px;line-height:1.85;color:#0e7490;font-weight:600;">→ 선천적 영향은 분명 존재하지만, <strong>적절한 교육·지원으로 역량을 끌어올리는 것은 충분히 가능</strong>합니다. 교육 정책이 여전히 중요한 이유입니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">5. '언러닝(Unlearning)'의 중요성</h4>
+        <div class="card" style="border-left-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+          <p style="line-height:1.85;font-style:italic;color:#5b21b6;">"21세기의 문맹자는 글을 읽지 못하는 사람이 아니라, <strong>배우고, 버리고, 다시 배우지 못하는 사람</strong>이다." — 앨빈 토플러</p>
+          <p style="margin-top:12px;line-height:1.85;">AI가 루틴 업무·정보처리를 대체하면서, WEF 미래직업보고서(2025)는 핵심 역량으로 <strong>창의적 사고·비판적 사고·문제 해결·적응력</strong>을 꼽았습니다. 기존 지식·습관을 과감히 버리고 새로 배우는 <strong>'언러닝'</strong> 역량, 그리고 <strong>'학습하는 방법을 배우는 것(learning to learn)'</strong>이 점점 중요해집니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">6. AI와 학생 데이터 — 입시·평가의 새 패러다임</h4>
+        <div class="card" style="border-left-color:#dc2626;">
+          <p style="line-height:1.85;">AI 교습이 일상화되면 학생들은 초등~고등 12년간 방대한 학습 데이터(성취도·학습 습관·역량 변화)를 축적하게 됩니다. 알고리즘이 이를 분석해 능력을 판단하고, 대학이 입시에 활용하는 시나리오가 거론됩니다.</p>
+          <p style="margin-top:12px;line-height:1.85;background:#fef2f2;padding:10px 14px;border-radius:8px;color:#991b1b;">⚠️ <strong>편향 주의 — IB 2020 사태</strong> — 코로나로 시험이 취소되자 국제바칼로레아(IB)가 알고리즘으로 성적을 예측했으나, 학교 위치·자원 격차를 충분히 반영하지 못해 <strong>불공정 논란</strong>이 일었습니다. 데이터 기반 평가는 반드시 <strong>편향 검증·투명성·이의 절차</strong>를 동반해야 합니다.</p>
+        </div>
+
+        <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">🔭 향후 5~10년 시나리오</h4>
+        <table class="data-table">
+          <thead><tr><th>영역</th><th>예상 변화</th></tr></thead>
+          <tbody>
+            <tr><td><strong>학습</strong></td><td>AI 튜터가 보편화 — 개인 맞춤형 학습이 표준, 교사는 코치·멘토로 재정의</td></tr>
+            <tr><td><strong>평가</strong></td><td>단회성 고부담 시험 약화, 과정·포트폴리오·역량 데이터 기반 평가 확대</td></tr>
+            <tr><td><strong>입시</strong></td><td>표준화 시험 영향력 축소, 지속 관찰 자료 기반 선발 시도 증가 (국가별 속도 차이)</td></tr>
+            <tr><td><strong>사교육</strong></td><td>전통 강의형 한계, 에듀테크 재편 — 접근성 정책이 양극화 완화의 관건</td></tr>
+            <tr><td><strong>역량</strong></td><td>암기보다 창의·비판·문제해결·언러닝 — '배우는 법을 배우는' 교육으로 전환</td></tr>
+          </tbody>
+        </table>
+
+        <div class="card" style="margin-top:24px;border-left-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+          <strong>💡 고등학생을 위한 시사점</strong>
+          <ul style="margin-top:8px;padding-left:20px;line-height:1.95;">
+            <li>AI 튜터는 강력한 도구 — 단, '정답 받기'가 아니라 <strong>'스스로 사고하도록 묻는'</strong> 방식으로 활용</li>
+            <li>시험 점수만이 아니라 <strong>꾸준한 학습 기록·포트폴리오</strong>를 지금부터 쌓기</li>
+            <li>유전이 전부가 아님 — <strong>환경과 노력으로 잠재력을 끌어올릴 수 있음</strong></li>
+            <li>가장 중요한 미래 역량 = <strong>창의·비판적 사고 + 언러닝(낡은 것을 버리고 다시 배우는 힘)</strong></li>
+          </ul>
+        </div>
+
+        <h2 class="section-title" style="margin-top:40px;">📚 출처</h2>
+        <div class="card" style="font-size:0.84rem;color:#4b5563;line-height:1.85;">
+          <p style="margin:0 0 8px;"><strong>출처:</strong> 「교육 분야의 AI 대전환: 현황과 미래 전망」 보고서 (대륜고 자체 정리 자료)</p>
+          <p style="margin:0;">주요 근거 자료: 켄싱턴대 AI 튜터 RCT 연구 / 칸아카데미 칸미고·듀오링고·뤼이드·콴다 사례 / EdSurge·UNESCO(2025)·WEF 미래직업보고서(2025) / 미국 ETS·카네기재단 평가 개편 / 독일 TwinLife 쌍둥이 연구(2026) / 앨빈 토플러 『권력 이동』 / 국제바칼로레아(IB) 2020 성적 산출 사례. ※ 일부 통계·인용은 보고서 원문 기준이며, 학생 진로·학습 참고용 자료입니다.</p>
+        </div>
+
+      </div>
+      <!-- /ax-edu -->
 
     </div>
 
