@@ -10170,9 +10170,21 @@ function switchSpTab(id,btn){
   function getSess() {
     try { return JSON.parse(localStorage.getItem('dr_sess_v1')); } catch(e) { return null; }
   }
+  function _jwtEmail(token) {
+    try {
+      var b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      var c = JSON.parse(decodeURIComponent(escape(atob(b64))));
+      return (c && c.email) ? String(c.email).toLowerCase() : '';
+    } catch(e) { return ''; }
+  }
   function isAdminUser() {
     var s = getSess();
-    return !!(s && s.user && (s.user.email || '').toLowerCase() === ADMIN_EMAIL);
+    if (!s) return false;
+    var em = (s.user && s.user.email ? String(s.user.email) : '').toLowerCase();
+    if (em === ADMIN_EMAIL) return true;
+    // 세션에 email 이 없으면 JWT 토큰에서 직접 확인
+    if (s.token && _jwtEmail(s.token) === ADMIN_EMAIL) return true;
+    return false;
   }
   // 교사 + 승인 완료 시에만 이용 가능 (관리자는 항상 허용)
   function isTeacherLoggedIn() {
