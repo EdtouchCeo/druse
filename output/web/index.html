@@ -10274,8 +10274,15 @@ function switchSpTab(id,btn){
     document.getElementById('admin-recent').innerHTML =
       (d.recent && d.recent.length)
         ? d.recent.map(function(r){
+            var t = '';
+            if (r.timestamp) {
+              var dt = new Date(r.timestamp);
+              if (!isNaN(dt)) t = ' <span style="color:#9ca3af;font-size:0.78rem;">' +
+                (dt.getMonth()+1) + '/' + dt.getDate() + ' ' +
+                String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0') + '</span>';
+            }
             return '<div>· <strong>' + esc(r.name) + '</strong> — ' + esc(r.event_type) +
-                   (r.detail ? ' (' + esc(r.detail) + ')' : '') + '</div>';
+                   (r.detail ? ' (' + esc(r.detail) + ')' : '') + t + '</div>';
           }).join('')
         : '<span style="color:#9ca3af;">활동 없음</span>';
 

@@ -36,7 +36,7 @@ exports.handler = async (event) => {
   const h = { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}` };
 
   // 2) 회원 목록
-  const usersRes = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*&order=id.desc`, { headers: h });
+  const usersRes = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc`, { headers: h });
   const users = usersRes.ok ? await usersRes.json() : [];
 
   // 3) 활동 로그 (최근 1000건)
@@ -65,14 +65,14 @@ exports.handler = async (event) => {
   const topTabs = Object.entries(tabCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const topSearches = Object.entries(searchCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
-  // user_id → 이름 매핑 (최근 활동 표시용)
+  // logs.user_id 는 users.id(uuid) 참조 → id 기준 매핑
   const idName = {};
-  users.forEach(u => { idName[u.google_id] = u.name; });
+  users.forEach(u => { idName[u.id] = u.name; });
   const recent = logs.slice(0, 40).map(l => ({
     name: idName[l.user_id] || '(알 수 없음)',
     event_type: l.event_type,
     detail: l.detail,
-    created_at: l.created_at || null
+    timestamp: l.timestamp || null
   }));
 
   return {
