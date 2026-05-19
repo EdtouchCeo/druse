@@ -667,6 +667,7 @@
     <button class="tab-btn" onclick="switchTab('calendar', this)">📅 학사일정</button>
     <button class="tab-btn" id="tab-btn-ai" onclick="switchTab('ai', this)">⭐ 샛별AI</button>
     <button class="tab-btn" onclick="switchTab('lounge', this)">🛋️ 교육 라운지</button>
+    <button class="tab-btn" id="tab-btn-admin" onclick="switchTab('admin', this)" style="display:none;">🛠 관리자</button>
   </div>
 </nav>
 
@@ -9970,6 +9971,63 @@ function switchSpTab(id,btn){
     </div>
   </div>
 
+  <!-- 관리자 탭 패널 -->
+  <div class="tab-panel" id="tab-admin">
+    <div id="admin-denied" style="display:none;text-align:center;padding:60px 24px;background:#f8faff;border-radius:16px;border:1px solid #e5e7eb;">
+      <div style="font-size:3rem;margin-bottom:16px;">⛔</div>
+      <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 10px;">접근 권한이 없습니다</h3>
+      <p style="font-size:0.88rem;color:#6b7280;margin:0;line-height:1.7;">관리자 전용 페이지입니다.</p>
+    </div>
+
+    <div id="admin-body" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
+        <div>
+          <h2 style="font-size:1.25rem;font-weight:700;color:var(--primary);margin:0 0 4px;">🛠 관리자 페이지</h2>
+          <p style="font-size:0.85rem;color:#6b7280;margin:0;">회원 관리·승인 및 활동 대시보드</p>
+        </div>
+        <button onclick="loadAdminData()" style="height:34px;padding:0 16px;font-size:0.82rem;font-weight:600;font-family:inherit;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;">🔄 새로고침</button>
+      </div>
+
+      <div id="admin-loading" style="text-align:center;padding:40px;color:#9ca3af;">불러오는 중…</div>
+
+      <div id="admin-content" style="display:none;">
+        <!-- 대시보드 -->
+        <h3 style="font-size:1.05rem;font-weight:700;color:var(--primary);margin:8px 0 14px;">📊 대시보드</h3>
+        <div id="admin-stats" class="card-grid" style="margin-bottom:8px;"></div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0 32px;">
+          <div class="card" style="border-left-color:#2563eb;">
+            <strong>🔥 인기 탭 (클릭 상위 10)</strong>
+            <div id="admin-top-tabs" style="margin-top:10px;font-size:0.86rem;line-height:1.9;"></div>
+          </div>
+          <div class="card" style="border-left-color:#16a34a;">
+            <strong>🔎 검색어 상위 10</strong>
+            <div id="admin-top-searches" style="margin-top:10px;font-size:0.86rem;line-height:1.9;"></div>
+          </div>
+        </div>
+
+        <div class="card" style="border-left-color:#7c3aed;margin-bottom:32px;">
+          <strong>🕘 최근 활동 (40건)</strong>
+          <div id="admin-recent" style="margin-top:10px;font-size:0.84rem;line-height:1.8;max-height:280px;overflow-y:auto;"></div>
+        </div>
+
+        <!-- 회원 관리 -->
+        <h3 style="font-size:1.05rem;font-weight:700;color:var(--primary);margin:8px 0 6px;">👥 회원 관리</h3>
+        <p style="font-size:0.82rem;color:#6b7280;margin:0 0 14px;">승인 대기 회원은 <span style="color:#dc2626;font-weight:700;">노란색</span>으로 표시됩니다.</p>
+        <div style="overflow-x:auto;">
+          <table class="data-table" style="min-width:760px;">
+            <thead>
+              <tr style="background:#f1f5f9;">
+                <th>이름</th><th>이메일</th><th>구분</th><th>학년/반</th><th>승인</th><th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="admin-user-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- ===== 시간표 검색 패널 ===== -->
@@ -10107,14 +10165,24 @@ function switchSpTab(id,btn){
   }
 
   // 교사 로그인 여부 확인
+  var ADMIN_EMAIL = 'drhong81@gmail.com';
+
+  function getSess() {
+    try { return JSON.parse(localStorage.getItem('dr_sess_v1')); } catch(e) { return null; }
+  }
+  function isAdminUser() {
+    var s = getSess();
+    return !!(s && s.user && (s.user.email || '').toLowerCase() === ADMIN_EMAIL);
+  }
+  // 교사 + 승인 완료 시에만 이용 가능 (관리자는 항상 허용)
   function isTeacherLoggedIn() {
-    try {
-      var s = JSON.parse(localStorage.getItem('dr_sess_v1'));
-      return !!(s && s.user && s.user.role === '교사');
-    } catch(e) { return null; }
+    var s = getSess();
+    if (!s || !s.user) return false;
+    if (isAdminUser()) return true;
+    return s.user.role === '교사' && s.user.approved !== false;
   }
 
-  // 업무 매뉴얼·샛별AI는 교사 로그인 시에만 이용 가능
+  // 업무 매뉴얼·샛별AI는 교사(승인 완료) 로그인 시에만 이용 가능
   function applyTabGate(tabId) {
     var teacher = isTeacherLoggedIn();
     if (tabId === 'teacher') {
@@ -10129,15 +10197,136 @@ function switchSpTab(id,btn){
       if (aGate) aGate.style.display = teacher ? 'none' : '';
       if (aBody) aBody.style.display = teacher ? '' : 'none';
     }
+    if (tabId === 'admin') {
+      var admin   = isAdminUser();
+      var dDenied = document.getElementById('admin-denied');
+      var dBody   = document.getElementById('admin-body');
+      if (dDenied) dDenied.style.display = admin ? 'none' : '';
+      if (dBody)   dBody.style.display   = admin ? '' : 'none';
+      if (admin) loadAdminData();
+    }
+  }
+
+  // 관리자 탭 버튼 노출 제어
+  function refreshAdminTabVisibility() {
+    var btn = document.getElementById('tab-btn-admin');
+    if (btn) btn.style.display = isAdminUser() ? '' : 'none';
   }
 
   // 로그인/로그아웃 후 현재 탭 게이트 재평가
   function refreshActiveTabGate() {
+    refreshAdminTabVisibility();
     var active = document.querySelector('.tab-panel.active');
     if (!active) return;
     var id = active.id.replace(/^tab-/, '');
     applyTabGate(id);
   }
+
+  // ===== 관리자 데이터 로드/렌더 =====
+  var _adminLoaded = false;
+  function loadAdminData() {
+    var s = getSess();
+    if (!s || !s.token) return;
+    var loading = document.getElementById('admin-loading');
+    var content = document.getElementById('admin-content');
+    if (loading) loading.style.display = '';
+    if (content) content.style.display = 'none';
+    fetch('/.netlify/functions/admin-data', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: s.token })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) { if (loading) loading.textContent = '오류: ' + d.error; return; }
+      renderAdmin(d);
+      if (loading) loading.style.display = 'none';
+      if (content) content.style.display = '';
+      _adminLoaded = true;
+    })
+    .catch(function() { if (loading) loading.textContent = '데이터를 불러오지 못했습니다.'; });
+  }
+
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"]/g, function(c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c];
+    });
+  }
+
+  function renderAdmin(d) {
+    var st = d.stats || {};
+    // 통계 카드
+    var roleStr = Object.entries(st.by_role || {}).map(function(e){ return e[0]+' '+e[1]; }).join(' / ') || '-';
+    document.getElementById('admin-stats').innerHTML =
+      adminCard('총 회원', st.total_users || 0, '#2563eb', roleStr) +
+      adminCard('승인 대기', st.pending || 0, (st.pending ? '#dc2626' : '#16a34a'), '관리 탭에서 승인') +
+      adminCard('총 활동 로그', st.total_logs || 0, '#7c3aed', '') +
+      adminCard('접속 횟수', (st.by_event && st.by_event['접속']) || 0, '#0ea5e9', '');
+
+    document.getElementById('admin-top-tabs').innerHTML =
+      (st.top_tabs && st.top_tabs.length)
+        ? st.top_tabs.map(function(e){ return esc(e[0]) + ' <strong>' + e[1] + '</strong>'; }).join('<br>')
+        : '<span style="color:#9ca3af;">데이터 없음</span>';
+    document.getElementById('admin-top-searches').innerHTML =
+      (st.top_searches && st.top_searches.length)
+        ? st.top_searches.map(function(e){ return esc(e[0]) + ' <strong>' + e[1] + '</strong>'; }).join('<br>')
+        : '<span style="color:#9ca3af;">데이터 없음</span>';
+
+    document.getElementById('admin-recent').innerHTML =
+      (d.recent && d.recent.length)
+        ? d.recent.map(function(r){
+            return '<div>· <strong>' + esc(r.name) + '</strong> — ' + esc(r.event_type) +
+                   (r.detail ? ' (' + esc(r.detail) + ')' : '') + '</div>';
+          }).join('')
+        : '<span style="color:#9ca3af;">활동 없음</span>';
+
+    // 회원 표
+    var rows = (d.users || []).map(function(u) {
+      var pending = (u.approved === false);
+      var loc = (u.grade ? u.grade + '학년 ' : '') + (u.class ? u.class + '반' : '');
+      var gid = esc(u.google_id);
+      var btns =
+        (pending
+          ? '<button onclick="adminAct(\'' + gid + '\',\'approve\')" style="background:#16a34a;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:600;cursor:pointer;margin-right:4px;">승인</button>'
+          : '<button onclick="adminAct(\'' + gid + '\',\'unapprove\')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:600;cursor:pointer;margin-right:4px;">승인 해제</button>') +
+        '<button onclick="adminAct(\'' + gid + '\',\'delete\')" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:600;cursor:pointer;">삭제</button>';
+      return '<tr style="' + (pending ? 'background:#fffbeb;' : '') + '">' +
+        '<td>' + esc(u.name) + '</td>' +
+        '<td style="font-size:0.8rem;">' + esc(u.email) + '</td>' +
+        '<td>' + esc(u.role) + '</td>' +
+        '<td>' + esc(loc) + '</td>' +
+        '<td>' + (pending ? '<span style="color:#dc2626;font-weight:700;">대기</span>' : '<span style="color:#16a34a;font-weight:700;">완료</span>') + '</td>' +
+        '<td style="white-space:nowrap;">' + btns + '</td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('admin-user-rows').innerHTML =
+      rows || '<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:20px;">회원이 없습니다.</td></tr>';
+  }
+
+  function adminCard(label, value, color, sub) {
+    return '<div class="grid-card" style="border-top:4px solid ' + color + ';">' +
+      '<div class="value" style="color:' + color + ';">' + value + '</div>' +
+      '<div class="label">' + label + (sub ? '<br><small style="font-size:0.72rem;font-weight:400;">' + esc(sub) + '</small>' : '') + '</div>' +
+    '</div>';
+  }
+
+  window.adminAct = function(googleId, action) {
+    var s = getSess();
+    if (!s || !s.token) return;
+    var msg = action === 'delete' ? '이 회원을 삭제하시겠습니까?'
+            : action === 'approve' ? '이 회원을 승인하시겠습니까?'
+            : '이 회원의 승인을 해제하시겠습니까?';
+    if (!confirm(msg)) return;
+    fetch('/.netlify/functions/admin-update', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: s.token, google_id: googleId, action: action })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res && res.ok) { loadAdminData(); }
+      else { alert('처리 실패: ' + (res && res.error ? JSON.stringify(res.error) : '알 수 없는 오류')); }
+    })
+    .catch(function() { alert('네트워크 오류가 발생했습니다.'); });
+  };
 
   function switchAiSub(idx) {
     for (var i = 0; i < 3; i++) {
@@ -10509,7 +10698,7 @@ function switchSpTab(id,btn){
 (function() {
   'use strict';
 
-  var TOP_TABS = ['school','teacher','student','calendar','ai','lounge','register'];
+  var TOP_TABS = ['school','teacher','student','calendar','ai','lounge','register','admin'];
 
   // 탭별 sub URL slug ↔ sub-panel id 매핑
   var SUB_MAP = {
