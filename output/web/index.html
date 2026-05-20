@@ -871,7 +871,7 @@
   <button class="sub-nav-btn active" onclick="switchSub('sub-records', this)">📋 학생부 기재요령</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-club', this)">🎯 동아리 개설</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-check', this)">🔍 학생부 교차점검</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-transfer', this)">🔄 전입생 세특 입력</button>
+  <button class="sub-nav-btn" onclick="switchSub('sub-transfer', this)">🔄 전입생 수행평가 및 세특</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-culture', this)">🎭 문화예술공연관람</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-leesh', this)">🌸 이상화 추모·백일장</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-grade', this)">📊 성적처리 선행작업</button>
@@ -1837,10 +1837,49 @@
 
 </div>
 
-<!-- ===== 3-2. 전입생 세특 입력 ===== -->
+<!-- ===== 3-2. 전입생 수행평가 및 세특 ===== -->
 <div class="sub-panel" id="sub-transfer">
 
-  <h2 class="section-title">🔄 전입생 세특 입력</h2>
+  <h2 class="section-title">🔄 전입생 수행평가 및 세특</h2>
+
+  <h2 class="section-title" style="margin-top:24px;">📝 전입생·추가입학생 수행평가 운영</h2>
+
+  <div class="card" style="border-left-color:#dc2626;">
+    <strong>⚠️ 핵심 원칙</strong>
+    <p style="margin-top:8px;line-height:1.85;">전적교에서의 과정형 수행평가는 <strong>영어듣기를 제외하면 성적으로 활용할 수 있는 부분이 없습니다.</strong> 따라서 전입생은 <strong>전입 시점부터</strong>, 본교 학생들과 동일하게 <strong>전 교과·전 영역에 대한 과정형 수행평가</strong>를 실시해 주셔야 합니다.</p>
+  </div>
+
+  <div style="overflow-x:auto;margin-top:14px;">
+    <table class="data-table" style="min-width:620px;">
+      <thead>
+        <tr style="background:#dbeafe;"><th style="width:130px;">구분</th><th>처리 방법</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>전입생</strong></td>
+          <td>전입 시점부터 <strong>전 교과의 전 영역</strong>에 대해 본교 학생과 동일하게 과정형 수행평가를 실시</td>
+        </tr>
+        <tr>
+          <td><strong>추가입학생</strong></td>
+          <td>
+            <strong>영어듣기</strong> — 시험일 이후 입학이므로 영어교과 과정형 수행평가를 이용해 <strong>결시생 인정점</strong>을 수동 입력
+            <span style="color:#6b7280;font-size:0.85rem;">(학업성적관리위원회 심의 후)</span><br>
+            <strong>그 외 모든 교과</strong> — 전입생과 동일하게 모든 영역을 실시
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:14px;border-left-color:#f59e0b;background:#fffbeb;">
+    <strong>⏱️ 평가 시간·기회 보장</strong>
+    <ul style="margin-top:8px;padding-left:20px;line-height:1.95;">
+      <li>본교 학생에게 제공된 <strong>준비 시간만큼 동일하게 제공 가능한 경우</strong> — 동일한 기회와 동일한 방법으로 평가</li>
+      <li>그렇지 못할 경우 — 전입생·추가입학생에게 <strong>충분히 설명</strong>한 후, <strong>민원이 발생하지 않는 범위 내에서 해당 학생과 합의</strong>하에 실시</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:36px;">📚 전입생 세특 입력</h2>
 
   <div class="card" style="border-left-color:#2563eb;">
     <strong>📌 개요</strong>
@@ -4667,10 +4706,25 @@ function switchCurrTab(id,btn){
 <!-- ═══ 탭: 교과목 선택 및 수강 신청 요령 ═══ -->
 <div class="curr-tab-panel" id="curr-select">
   <h2 class="section-title">📝 교과목 선택 및 수강 신청 요령</h2>
-  <p style="color:#6b7280; font-size:0.92rem; line-height:1.7; margin-bottom:24px;">
+  <p style="color:#6b7280; font-size:0.92rem; line-height:1.7; margin-bottom:16px;">
     2022 개정 교육과정·고교학점제에 따라 학생이 직접 수강할 과목을 선택합니다.
     아래 시스템 이용 방법·필수 규칙·추천 조합·내신 관리 팁을 숙지하고 신청하세요.
   </p>
+
+  <!-- 📣 학부모 설명회 핵심 요약 -->
+  <div class="card" style="border-left-color:#dc2626; background:#fef2f2; margin-bottom:24px;">
+    <strong>📣 학부모 설명회(2026.5.20) 핵심 강조 사항</strong>
+    <ul style="margin:10px 0 0 18px; padding:0; line-height:1.95;">
+      <li><strong>① 신청 주체는 '학생 본인'</strong> — 학부모가 아닌 학생이 리로스쿨에 로그인해 직접 신청·저장·제출합니다. 학급에 방법 안내 완료.</li>
+      <li><strong>② 신청 대상은 '2학년 1·2학기' 선택 과목</strong> — 3학년 과목이 아닙니다. (오해 빈번)</li>
+      <li><strong>③ 신청 = 수목금(3일)</strong> → <strong>변경 = 다음 주 화수목금(4일)</strong>. 이후 <strong>2학기 기말고사 직후(12월)에 마지막 1회</strong>만 변경 가능.<br>
+          <span style="color:#dc2626; font-weight:700;">중간(6~11월) 수시 변경 요청은 수용되지 않습니다.</span> 교과서·시간표·교사 배정이 끝나기 때문에 학교 운영 차원에서 불가합니다.</li>
+      <li><strong>④ 한 번 폐강된 과목은 재신청 불가</strong> — 변경 기간에도 부활하지 않습니다.</li>
+      <li><strong>⑤ 학교에서 못 듣게 된 과목은 '공동교육과정'으로 대안 가능</strong> (아래 §6 참고).</li>
+      <li><strong>⑥ 자녀에게만 묻지 마세요</strong> — 학생이 잘 모를 수 있습니다. 모르면 <strong>학교(교육과정부)로 직접 전화</strong>주시는 것이 가장 정확합니다.</li>
+      <li><strong>⑦ 리로스쿨 등록 연락처 확인</strong> — 안내 문자·앱 알림이 오지 않았다면 등록된 전화번호가 맞는지 점검.</li>
+    </ul>
+  </div>
 
   <!-- 1. 수강 신청 시스템 -->
   <h3 style="color:#1a3a6b; font-size:1.1rem; margin:24px 0 12px; padding-left:8px; border-left:4px solid #2a5298;">1️⃣ 수강 신청 시스템 이용 방법</h3>
@@ -4750,6 +4804,94 @@ function switchCurrTab(id,btn){
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- 신규: 선택 과목 vs 지정 과목 -->
+  <div class="card" style="margin-top:16px; border-left-color:#7c3aed;">
+    <strong>🎯 '선택' 과목 vs '지정' 과목 — 헷갈리지 마세요</strong>
+    <p style="margin-top:8px; line-height:1.85;">
+      이번에 신청하는 것은 <strong>'선택 과목'</strong>만입니다. 편제표 상단의 <strong>'지정' 과목</strong>은
+      학교에서 이미 못박아 놓아 <strong>모든 학생이 자동 수강</strong>합니다.
+    </p>
+    <table style="width:100%; margin-top:10px; border-collapse:collapse; font-size:0.9rem;">
+      <thead>
+        <tr style="background:#ede9fe;">
+          <th style="padding:8px; text-align:left; border:1px solid #d1d5db; width:18%;">구분</th>
+          <th style="padding:8px; text-align:left; border:1px solid #d1d5db;">대표 과목</th>
+          <th style="padding:8px; text-align:left; border:1px solid #d1d5db; width:34%;">지정 이유</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:8px; border:1px solid #e5e7eb;"><strong>국어·영어</strong></td>
+          <td style="padding:8px; border:1px solid #e5e7eb;">문학, 화법과 언어, 영어Ⅰ·Ⅱ</td>
+          <td style="padding:8px; border:1px solid #e5e7eb;" rowspan="3">2028 수능 출제 과목 — 전 학생이 반드시 이수해야 응시 가능</td>
+        </tr>
+        <tr>
+          <td style="padding:8px; border:1px solid #e5e7eb;"><strong>수학</strong></td>
+          <td style="padding:8px; border:1px solid #e5e7eb;">대수, 미적분Ⅰ, 확률과 통계</td>
+        </tr>
+        <tr>
+          <td style="padding:8px; border:1px solid #e5e7eb;"><strong>통합</strong></td>
+          <td style="padding:8px; border:1px solid #e5e7eb;">통합사회, 통합과학</td>
+        </tr>
+        <tr>
+          <td style="padding:8px; border:1px solid #e5e7eb;"><strong>체육</strong></td>
+          <td style="padding:8px; border:1px solid #e5e7eb;">체육·운동과 건강 등</td>
+          <td style="padding:8px; border:1px solid #e5e7eb;">졸업 학점(예체능 영역) 충족 요건</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 신규: 5단계 5등급 평가 -->
+  <h3 style="color:#1a3a6b; font-size:1.1rem; margin:32px 0 12px; padding-left:8px; border-left:4px solid #2a5298;">📊 평가 — 5단계 + 5등급 동시 표기</h3>
+
+  <p style="color:#6b7280; font-size:0.9rem; margin-bottom:12px;">선택 과목은 모두 두 가지 평가가 함께 학생부에 기록됩니다.</p>
+
+  <table class="data-table">
+    <thead>
+      <tr style="background:#f1f5f9;">
+        <th style="width:18%;">구분</th><th>의미</th><th style="width:22%;">예시</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>5단계 (성취도)</strong></td>
+        <td><strong>절대평가</strong>: A(90↑)·B(80↑)·C(70↑)·D(60↑)·E(60↓) — 원점수 기준</td>
+        <td>"90점 = A"</td>
+      </tr>
+      <tr>
+        <td><strong>5등급 (석차)</strong></td>
+        <td><strong>상대평가</strong>: 1등급 10% / 2등급 24% / 3등급 32% / 4등급 24% / 5등급 10%</td>
+        <td>"상위 10% = 1등급"</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:14px; border-left-color:#dc2626;">
+    <strong>⚠️ 대륜고 특성 — 90점 넘어도 1등급이 아닐 수 있음</strong>
+    <p style="margin-top:8px; line-height:1.9;">
+      본교는 평균 점수가 타교 대비 높습니다. <strong>90점을 넘어도 2~3등급</strong>이 될 수 있고,
+      반대로 매우 어려운 시험은 <strong>전교 1등 88점 → 1등급 + B</strong>가 나올 수 있습니다.<br>
+      대학은 <strong>성취도(A/B)와 등급(1~5)을 함께</strong> 보므로 두 정보를 모두 신경 써야 합니다.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:14px; border-left-color:#f59e0b;">
+    <strong>🏃 체육 '기초 체육 전공 실기' 주의</strong>
+    <p style="margin-top:8px; line-height:1.9;">
+      체대·사관학교 등 실기가 필요한 학생용 과목입니다. 단순 절대평가가 아니라
+      <strong>5등급이 매겨지는 과목</strong>이므로 비전공 학생이 부담 없이 듣다가는 등급에 영향을 받을 수 있습니다.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:14px; border-left-color:#2563eb;">
+    <strong>🚫 동일 과목 중복 이수 불가</strong>
+    <p style="margin-top:8px; line-height:1.9;">
+      한 번 들은 과목은 다음 학기에 다시 신청할 수 없습니다. (예: 1학기 일본어 → 2학기 일본어 X)
+      리로스쿨에서 시스템적으로 차단됩니다.
+    </p>
   </div>
 
   <!-- 3. 추천 조합 -->
@@ -4852,6 +4994,79 @@ function switchCurrTab(id,btn){
       <strong>희망 전공</strong>을 알려주세요.<br>
       그에 딱 맞는 <strong>1·2학기 과목 조합</strong>을 추천받을 수 있습니다.
     </p>
+  </div>
+
+  <!-- 5. 위계 보충 -->
+  <h3 style="color:#1a3a6b; font-size:1.1rem; margin:32px 0 12px; padding-left:8px; border-left:4px solid #2a5298;">5️⃣ 위계 — '시스템 차단'과 '권장'의 차이</h3>
+
+  <table class="data-table">
+    <thead>
+      <tr style="background:#f1f5f9;">
+        <th style="width:22%;">유형</th><th>의미</th><th style="width:38%;">대표 예</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:#dc2626;">시스템 차단 (필수)</strong></td>
+        <td>선수 과목 미이수 시 리로스쿨에서 <strong>신청 자체 불가</strong></td>
+        <td>'물리학' 미수강 → '역학과 에너지' 신청 불가<br>'화학' 미수강 → '화학 반응의 세계' 신청 불가</td>
+      </tr>
+      <tr>
+        <td><strong style="color:#f59e0b;">권장 (강력 권유)</strong></td>
+        <td>신청은 가능하지만 <strong>수업 따라가기 어려움</strong></td>
+        <td>'사회와 문화' 미수강 → '법과 사회·정치·경제' 수강 가능하나 배경 지식 부족</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 6. 공동교육과정 -->
+  <h3 style="color:#1a3a6b; font-size:1.1rem; margin:32px 0 12px; padding-left:8px; border-left:4px solid #2a5298;">6️⃣ 공동교육과정 — 학교에서 못 듣는 과목의 대안</h3>
+
+  <div class="card" style="border-left-color:#0ea5e9;">
+    <strong>🌐 공동교육과정이란?</strong>
+    <p style="margin-top:8px; line-height:1.9;">
+      우리 학교에 개설되지 않은 과목(폐강·미개설)을 <strong>다른 학교 또는 우리 학교의 별도 강좌</strong>에서
+      수강해 <strong>정규 과목으로 학생부에 인정</strong>받는 제도입니다. 야간·주말·방학 중 운영됩니다.
+    </p>
+  </div>
+
+  <table class="data-table" style="margin-top:14px;">
+    <thead>
+      <tr style="background:#f1f5f9;"><th style="width:34%;">항목</th><th>내용</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>신청 시작 시점</strong></td><td>1학년 <strong>2학기부터(교양 과목만)</strong> / <strong>2학년 1학기부터 전공 과목 가능</strong></td></tr>
+      <tr><td><strong>학기당 신청 한도</strong></td><td>최대 <strong>2과목</strong> (실제 승인은 1과목도 어려운 경우 많음)</td></tr>
+      <tr><td><strong>운영 시간</strong></td><td>야간 · 주말 · 방학 (정규 수업 외)</td></tr>
+      <tr><td><strong>정원</strong></td><td>강좌당 <strong>15명</strong> (개설교 10명 + 타교 5명 비율)</td></tr>
+      <tr><td><strong>평가</strong></td><td>시험 응시 + 5등급 산출됨. 다만 <strong>학생부에 등급은 표시되지 않음</strong> (성취도만 표시)</td></tr>
+      <tr><td><strong>경쟁률</strong></td><td>매우 치열 — 신청해도 미승인이 빈번. <strong>승인되면 행운</strong>으로 여기고 적극 활용</td></tr>
+      <tr><td><strong>방학 강좌 장점</strong></td><td>학기 중 내신 부담 적음. 가능하면 <strong>방학 강좌 우선 신청</strong> 권장</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:14px; border-left-color:#16a34a;">
+    <strong>💡 활용 시나리오</strong>
+    <ul style="margin:8px 0 0 18px; padding:0; line-height:1.9;">
+      <li>희망 대학·학과의 <strong>권장 이수 과목</strong>이 우리 학교에 없는 경우</li>
+      <li>듣고 싶었던 선택 과목이 인원 부족으로 <strong>폐강된 경우</strong></li>
+      <li>다양한 영역 학습으로 학생부 폭을 넓히고자 하는 경우 (학종에서 유리)</li>
+    </ul>
+  </div>
+
+  <!-- 7. 학부모용 점검 체크리스트 -->
+  <h3 style="color:#1a3a6b; font-size:1.1rem; margin:32px 0 12px; padding-left:8px; border-left:4px solid #2a5298;">7️⃣ 학부모용 점검 체크리스트</h3>
+
+  <div class="card" style="border-left-color:#7c3aed;">
+    <ul style="margin:0 0 0 18px; padding:0; line-height:2;">
+      <li>☐ 자녀와 함께 <strong>희망 진로·전공</strong>을 한 번 더 확인했는가</li>
+      <li>☐ 희망 전공의 <strong>대학별 권장 이수 과목</strong>을 확인했는가 (옆 탭 '🎯 대학별 권장과목' 참고)</li>
+      <li>☐ 자녀가 잘하는·좋아하는 과목 영역(국·영·수·사·과)이 무엇인지 함께 정리했는가</li>
+      <li>☐ <strong>국·영·수는 학기당 2개</strong> 이내로 균형을 잡았는가</li>
+      <li>☐ 폐강 위험 과목(신청 인원 적은 과목)을 피했는가</li>
+      <li>☐ 선수 과목 위계가 깨지지 않았는가</li>
+      <li>☐ 모르는 점은 <strong>학교(교육과정부)로 직접 문의</strong>했는가</li>
+    </ul>
   </div>
 
 </div>
