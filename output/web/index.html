@@ -407,6 +407,36 @@
       font-family: inherit;
     }
     .sub-nav-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+    .cat-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0 10px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+    .cat-nav-btn {
+      padding: 10px 22px;
+      background: #f0f4fb;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .cat-nav-btn:hover { background: #e3ebf7; }
+    .cat-nav-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(42,82,152,0.25);
+    }
+    .sub-nav-group { display: none; }
+    .sub-nav-group.active { display: block; }
+    .sub-nav-group .sub-nav { margin-top: 4px; }
     .sub-nav-btn.active {
       background: var(--primary);
       color: #fff;
@@ -880,19 +910,48 @@
 <!-- 교사 콘텐츠 래퍼 -->
 <div id="teacher-content">
 <!-- 교사 탭 내비게이션 -->
-<div class="sub-nav">
-  <button class="sub-nav-btn active" onclick="switchSub('sub-records', this)">📋 학생부 기재요령</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-club', this)">🎯 동아리 개설</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-check', this)">🔍 학생부 교차점검</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-transfer', this)">🔄 전입생 수행평가 및 세특</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-culture', this)">🎭 문화예술공연관람</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-leesh', this)">🌸 이상화 추모·백일장</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-grade', this)">📊 성적처리 선행작업</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-exam', this)">📝 정기시험 감독</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-grading', this)">📑 시험 출제·성적 처리</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-exam-guide', this)">✍️ 출제 유의사항</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-univ-data', this)">🎓 대입전형자료 온라인 제공</button>
-  <button class="sub-nav-btn" onclick="switchSub('sub-required', this)">📚 필수 교육(연수)</button>
+<!-- 카테고리 네비게이션 -->
+<div class="cat-nav">
+  <button class="cat-nav-btn active" onclick="switchCat('cat-records', this)">🗂️ 학생부&나이스</button>
+  <button class="cat-nav-btn" onclick="switchCat('cat-eval', this)">📊 평가</button>
+  <button class="cat-nav-btn" onclick="switchCat('cat-activity', this)">🎨 창체&특색활동</button>
+  <button class="cat-nav-btn" onclick="switchCat('cat-etc', this)">📌 기타</button>
+</div>
+
+<!-- 학생부&나이스 -->
+<div class="sub-nav-group active" id="cat-records">
+  <div class="sub-nav">
+    <button class="sub-nav-btn active" onclick="switchSub('sub-records', this)">📋 학생부 기재요령</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-check', this)">🔍 학생부 교차점검</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-univ-data', this)">🎓 대입전형자료 온라인 제공</button>
+  </div>
+</div>
+
+<!-- 평가 -->
+<div class="sub-nav-group" id="cat-eval">
+  <div class="sub-nav">
+    <button class="sub-nav-btn" onclick="switchSub('sub-exam', this)">📝 정기시험 감독</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-grading', this)">📑 시험 출제·성적 처리</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-exam-guide', this)">✍️ 출제 유의사항</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-grade', this)">📊 성적처리 선행작업</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-transfer', this)">🔄 전입생 수행평가 및 세특</button>
+  </div>
+</div>
+
+<!-- 창체&특색활동 -->
+<div class="sub-nav-group" id="cat-activity">
+  <div class="sub-nav">
+    <button class="sub-nav-btn" onclick="switchSub('sub-club', this)">🎯 동아리 개설</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-culture', this)">🎭 문화예술공연관람</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-leesh', this)">🌸 이상화 추모·백일장</button>
+  </div>
+</div>
+
+<!-- 기타 -->
+<div class="sub-nav-group" id="cat-etc">
+  <div class="sub-nav">
+    <button class="sub-nav-btn" onclick="switchSub('sub-required', this)">📚 필수 교육(연수)</button>
+  </div>
 </div>
 
 <!-- ===== 1. 학생부 기재요령 ===== -->
@@ -11170,6 +11229,24 @@ function switchSpTab(id,btn){
       b.classList.remove('active');
     });
     btn.classList.add('active');
+  }
+
+  function switchCat(groupId, btn) {
+    var parent = btn.closest('.tab-panel');
+    // 카테고리 버튼 활성 토글
+    parent.querySelectorAll('.cat-nav-btn').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    // 해당 카테고리의 하위 네비 그룹만 표시
+    parent.querySelectorAll('.sub-nav-group').forEach(function(g) {
+      g.classList.remove('active');
+    });
+    var group = document.getElementById(groupId);
+    group.classList.add('active');
+    // 그룹의 첫 항목을 선택하여 패널 표시
+    var first = group.querySelector('.sub-nav-btn');
+    if (first) first.click();
   }
 
   // 아코디언 (accordion-btn + toggleAccordion 방식)
