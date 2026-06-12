@@ -10904,14 +10904,39 @@ function switchSpTab(id,btn){
     if (!s || !s.token) return;
     var loading = document.getElementById('admin-loading');
     var content = document.getElementById('admin-content');
-    if (loading) loading.style.display = '';
+    if (loading) { loading.style.display = ''; loading.textContent = '불러오는 중...'; }
     if (content) content.style.display = 'none';
-    fetch('/.netlify/functions/admin-data', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: s.token })
+
+    function call(token) {
+      return fetch('/.netlify/functions/admin-data', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token })
+      }).then(function(r) {
+        return r.json().then(function(j) { return { status: r.status, data: j }; });
+      });
+    }
+    function tokenErr(res) {
+      return res.status === 401 || (res.data && /token/i.test(res.data.error || ''));
+    }
+    function sessionExpired() {
+      if (typeof window.clearSession === 'function') window.clearSession();
+      if (loading) {
+        loading.style.display = '';
+        loading.innerHTML = '세션이 만료되었습니다. <a href="#" onclick="startLogin();return false;" style="color:#2563eb;font-weight:700;">다시 로그인</a> 후 이용해 주세요.';
+      }
+    }
+
+    var ensure = (typeof window.ensureToken === 'function') ? window.ensureToken() : Promise.resolve(s.token);
+    ensure.then(function(tok) { return call(tok || s.token); })
+    .then(function(res) {
+      if (tokenErr(res) && typeof window.refreshSession === 'function') {
+        return window.refreshSession().then(function(ns) { return (ns && ns.token) ? call(ns.token) : res; });
+      }
+      return res;
     })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
+    .then(function(res) {
+      if (tokenErr(res)) { sessionExpired(); return; }
+      var d = res.data;
       if (d.error) { if (loading) loading.textContent = '오류: ' + d.error; return; }
       renderAdmin(d);
       if (loading) loading.style.display = 'none';
@@ -10998,14 +11023,26 @@ function switchSpTab(id,btn){
             : action === 'approve' ? '이 회원을 승인하시겠습니까?'
             : '이 회원의 승인을 해제하시겠습니까?';
     if (!confirm(msg)) return;
-    fetch('/.netlify/functions/admin-update', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: s.token, google_id: googleId, action: action })
-    })
-    .then(function(r) { return r.json(); })
+    function call(token) {
+      return fetch('/.netlify/functions/admin-update', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token, google_id: googleId, action: action })
+      }).then(function(r) { return r.json().then(function(j) { return { status: r.status, data: j }; }); });
+    }
+    function tokenErr(res) { return res.status === 401 || (res.data && /token/i.test(res.data.error || '')); }
+    var ensure = (typeof window.ensureToken === 'function') ? window.ensureToken() : Promise.resolve(s.token);
+    ensure.then(function(tok) { return call(tok || s.token); })
     .then(function(res) {
-      if (res && res.ok) { loadAdminData(); }
-      else { alert('처리 실패: ' + (res && res.error ? JSON.stringify(res.error) : '알 수 없는 오류')); }
+      if (tokenErr(res) && typeof window.refreshSession === 'function') {
+        return window.refreshSession().then(function(ns) { return (ns && ns.token) ? call(ns.token) : res; });
+      }
+      return res;
+    })
+    .then(function(res) {
+      if (tokenErr(res)) { alert('세션이 만료되었습니다. 다시 로그인해 주세요.'); if (typeof window.clearSession === 'function') window.clearSession(); return; }
+      var r = res.data;
+      if (r && r.ok) { loadAdminData(); }
+      else { alert('처리 실패: ' + (r && r.error ? JSON.stringify(r.error) : '알 수 없는 오류')); }
     })
     .catch(function() { alert('네트워크 오류가 발생했습니다.'); });
   };
@@ -11571,6 +11608,8 @@ function switchSpTab(id,btn){
   var SB_KEY      = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhZnBrZmN4emRyZ3V1Y3Rkd3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEwNjYsImV4cCI6MjA5MjMwNzA2Nn0.1VWheZHC2qNwWJhJ6KTFhjfFf9-bAfAdjzja2cD-xmw';
   var SESSION_KEY = 'dr_sess_v1';
   var _pendingToken = null;
+  var _pendingRefresh = null;
+  var _pendingExpiresAt = null;
   var _pendingAuth  = null;
 
   function decodeJWT(token) {
@@ -11595,6 +11634,39 @@ function switchSpTab(id,btn){
   }
   function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
   function clearSession()  { localStorage.removeItem(SESSION_KEY); }
+  window.clearSession = clearSession;
+
+  // refresh_token으로 access token 갱신 → 갱신된 세션 반환(실패 시 null)
+  function refreshSession() {
+    var s = getSession();
+    if (!s || !s.refresh_token) return Promise.resolve(null);
+    return fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+      body: JSON.stringify({ refresh_token: s.refresh_token })
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data || !data.access_token) return null;
+      s.token = data.access_token;
+      if (data.refresh_token) s.refresh_token = data.refresh_token;
+      s.expires_at = Date.now() + ((data.expires_in || 3600) * 1000);
+      saveSession(s);
+      return s;
+    })
+    .catch(function() { return null; });
+  }
+  window.refreshSession = refreshSession;
+
+  // 만료 임박/만료 시 선제 갱신 후 유효 토큰 반환(없으면 기존 토큰)
+  window.ensureToken = function () {
+    var s = getSession();
+    if (!s) return Promise.resolve(null);
+    if (s.refresh_token && (!s.expires_at || Date.now() > s.expires_at - 60000)) {
+      return refreshSession().then(function(ns) { return (ns && ns.token) ? ns.token : s.token; });
+    }
+    return Promise.resolve(s.token);
+  };
 
   // 업무 매뉴얼·샛별AI 탭은 교사 로그인 시에만 이용 가능 (applyTabGate에서 토글)
   function showUserBadge(user) {
@@ -11675,7 +11747,7 @@ function switchSpTab(id,btn){
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var user = Array.isArray(data) ? data[0] : data;
-      var session = { token: _pendingToken, user: user };
+      var session = { token: _pendingToken, refresh_token: _pendingRefresh, expires_at: _pendingExpiresAt, user: user };
       saveSession(session); applyAuth(session); gotoSchoolTab();
     })
     .catch(function() {
@@ -11698,17 +11770,22 @@ function switchSpTab(id,btn){
     }).catch(function() {});
   }
 
-  function handleOAuthCallback(token) {
+  function handleOAuthCallback(token, refreshToken, expiresIn) {
     var claims = decodeJWT(token);
     var authId = claims ? claims.sub : null;
     var meta   = (claims && claims.user_metadata) ? claims.user_metadata : {};
     var gName  = meta.full_name || meta.name || '';
     if (!authId) { showLoginBtn(); return; }
     _pendingToken = token;
+    _pendingRefresh = refreshToken || null;
+    _pendingExpiresAt = expiresIn ? (Date.now() + parseInt(expiresIn) * 1000) : null;
     _pendingAuth  = { id: authId, email: (claims && claims.email) || '', user_metadata: meta };
     var stored = getSession();
     if (stored && stored.user && stored.user.google_id === authId) {
-      stored.token = token; saveSession(stored); finishLogin(stored); return;
+      stored.token = token;
+      if (_pendingRefresh) stored.refresh_token = _pendingRefresh;
+      stored.expires_at = _pendingExpiresAt;
+      saveSession(stored); finishLogin(stored); return;
     }
     fetch('/.netlify/functions/get-user', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -11717,7 +11794,7 @@ function switchSpTab(id,btn){
     .then(function(r) { return r.json(); })
     .then(function(profiles) {
       if (profiles && profiles.length > 0) {
-        var session = { token: token, user: profiles[0] };
+        var session = { token: token, refresh_token: _pendingRefresh, expires_at: _pendingExpiresAt, user: profiles[0] };
         saveSession(session); finishLogin(session);
       } else {
         var nameInput = document.getElementById('reg-name-t');
@@ -11727,7 +11804,7 @@ function switchSpTab(id,btn){
     })
     .catch(function() {
       var tempUser = { google_id: authId, name: gName || '사용자', role: '', id: authId };
-      var session  = { token: token, user: tempUser };
+      var session  = { token: token, refresh_token: _pendingRefresh, expires_at: _pendingExpiresAt, user: tempUser };
       saveSession(session); finishLogin(session);
       showRegStep('form'); gotoRegTab();
     });
@@ -11779,7 +11856,7 @@ function switchSpTab(id,btn){
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data.access_token) { showLoginBtn(); return; }
-      handleOAuthCallback(data.access_token);
+      handleOAuthCallback(data.access_token, data.refresh_token, data.expires_in);
     })
     .catch(function() { showLoginBtn(); });
   }
@@ -11797,7 +11874,7 @@ function switchSpTab(id,btn){
     var token = hash.get('access_token');
     if (token) {
       history.replaceState(null, '', window.location.pathname);
-      handleOAuthCallback(token); return;
+      handleOAuthCallback(token, hash.get('refresh_token'), hash.get('expires_in')); return;
     }
     var session = getSession();
     if (session) { applyAuth(session); } else { showLoginBtn(); }
