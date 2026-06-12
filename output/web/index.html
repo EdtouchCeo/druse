@@ -82,6 +82,18 @@
       box-shadow: 0 3px 16px rgba(42,82,152,0.20);
     }
     .header-inner { max-width: 1100px; margin: 0 auto; }
+    header .eyebrow {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--accent);
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(232,160,32,0.55);
+      padding: 2px 9px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
     header h1 {
       font-size: 1.7rem;
       font-weight: 700;
@@ -580,6 +592,7 @@
   <div class="header-inner" style="display:flex;align-items:center;gap:16px;">
     <img src="logo.png" alt="대륜고등학교 로고" style="height:52px;flex-shrink:0;cursor:pointer;image-rendering:-webkit-optimize-contrast;" onclick="var b=document.querySelector('.tab-btn[onclick*=\'school\']');if(b){switchTab('school',b);window.scrollTo({top:0,behavior:'smooth'});}" title="메인 페이지로 이동">
     <div style="cursor:pointer;" onclick="var b=document.querySelector('.tab-btn[onclick*=\'school\']');if(b){switchTab('school',b);window.scrollTo({top:0,behavior:'smooth'});}" title="메인 페이지로 이동">
+      <span class="eyebrow">2026 AI·디지털 활용 선도학교</span>
       <h1><span class="school">대륜고</span> 사용 설명서</h1>
       <p class="subtitle">교사의 업무 지원 및 학생, 학부모에게 정확한 정보 제공</p>
     </div>
@@ -877,6 +890,8 @@
   <button class="sub-nav-btn" onclick="switchSub('sub-grade', this)">📊 성적처리 선행작업</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-exam', this)">📝 정기시험 감독</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-grading', this)">📑 시험 출제·성적 처리</button>
+  <button class="sub-nav-btn" onclick="switchSub('sub-exam-guide', this)">✍️ 출제 유의사항</button>
+  <button class="sub-nav-btn" onclick="switchSub('sub-univ-data', this)">🎓 대입전형자료 온라인 제공</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-required', this)">📚 필수 교육(연수)</button>
 </div>
 
@@ -2682,6 +2697,361 @@
     </div>
 
   </div>
+
+</div>
+<!-- ===== 출제 유의사항 ===== -->
+<div class="sub-panel" id="sub-exam-guide">
+
+  <h2 class="section-title">✍️ 정기시험 출제 유의사항</h2>
+
+  <div class="card">
+    <strong>📋 운영 목적</strong>
+    <p>정기시험 문제지 출제부터 제출 전 확인, 배점 안내, 문항정보표 작성까지 출제 단계에서 지켜야 할 기준을 정리한 매뉴얼입니다. 학기 초 제출한 <strong>교수학습 및 평가 운영 계획</strong>에 따라 출제하며, 매 정기시험마다 본 기준을 따릅니다.</p>
+    <ul style="margin-top:10px; padding-left:20px; line-height:2;">
+      <li><strong>담당:</strong> 교과별 출제 교사 (최소 25문항 이상 <strong>공동출제·공동검토</strong>)</li>
+      <li><strong>관련 부서:</strong> 연구부(평가 담당)</li>
+      <li><strong>예시 기준:</strong> 선택형 20문항 + 서술형 5문항 = 100점 만점, 평균 60~65점 수준</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📝 1. 문제지 출제 시 유의사항</h2>
+
+  <div class="card">
+    <strong>🎯 성취기준 기반 출제</strong>
+    <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+      <li>학기 초 결재받은 <strong>교수학습 및 평가 운영 계획</strong>의 진도 계획·성취기준·성취수준·관련 단원에 따라 출제</li>
+      <li>가능한 한 학기 초 제출한 <strong>모든 성취기준</strong>에 대하여 평가문항 출제</li>
+      <li>성취기준 수 ≤ 문항 수: 중요도 높은 성취기준은 <strong>2개 이상 문항</strong> 출제 가능</li>
+      <li>성취기준 수 &gt; 문항 수: 교과협의회에서 중요 성취기준을 우선 선택하거나 <strong>통합하여 1문항</strong>으로 출제 가능</li>
+    </ul>
+  </div>
+
+  <div class="card" style="border-left-color:#ef4444; background:#fef2f2; margin-top:16px;">
+    <strong>☆ 출제 시 반드시 지킬 사항 ☆</strong>
+    <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+      <li><strong>최소 25문항 이상</strong> '공동출제'와 철저한 공동 검토</li>
+      <li>참고서 문제 전재 및 <strong>전년도 출제 문제 재출제 금지</strong> (사교육 관련 교육청 강조사항)</li>
+      <li>정답이 '둘' 또는 '모두'가 되거나 <strong>답이 없는 경우가 없도록</strong> 철저히 검토</li>
+      <li><strong>역배점 금지</strong> — 문항 난이도에 따른 배점 필수</li>
+      <li>동점자·동석차가 생기지 않도록 <strong>차등(소수점) 배점</strong>으로 다양화, 각 문항 문두 마지막에 배점 표기</li>
+      <li><strong>선행학습 내용 출제 절대 금지</strong></li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📐 2. 출제 원안 작성 요령</h2>
+
+  <div class="flow-steps">
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>양식 준비</strong>
+        <p style="margin-top:6px;">출제원안·문항정보표(NEIS 입력 후 출력)·서답형채점기준표를 이용하며, <strong>연구부에서 제공한 해당 학년도 양식</strong>을 반드시 사용합니다.</p>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>원안 작성 규칙</strong>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>마지막 문항 다음에 <strong>저작권 관련 글상자</strong> 삽입 후 <code>- 끝 -</code>만 표시</li>
+          <li>모든 출력물은 <strong>'B4 단면'</strong>으로 출력 후 제출</li>
+          <li>'부정'적 표현의 발문은 <strong>밑줄 + 진하게</strong> 표시 (부정 표현은 가급적 지양)</li>
+          <li>교과목명은 교육과정상 교과목명으로 표기('과목번호표' 참조)</li>
+          <li>문항 난이도에 따른 배점 적용</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>서술형(서답형) 문항 출제</strong>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>단순 암기식 완성형(빈칸채우기)·단답형이 아닌 <strong>서술형</strong>(요약·개념이해·설명·풀이과정 등을 한 단락 이하로 기술)으로 출제</li>
+          <li>문항정보표에는 <strong>"내용영역/성취기준/난이도/배점"만</strong> 작성</li>
+          <li>정답 및 세부 채점 기준은 <strong>'서답형채점기준표'</strong>에 별지 서식으로 작성하여 문항정보표와 함께 제출</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>난이도 분포 관리</strong>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>평균이 <strong>60~65점</strong> 정도가 나오도록 출제</li>
+          <li>5단계(A/B/C/D/E) 또는 3단계(A/B/C)에서 <strong>특정 한 단계가 40% 이상</strong> 나오지 않도록 유의</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card" style="border-left-color:#2563eb; margin-top:20px;">
+    <strong>🔒 출제 보안 관련 안내</strong>
+    <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+      <li>출제·저장은 <strong>전산실 등록 USB</strong>에만 저장(비밀번호 지정), 서랍·캐비닛 잠금 철저</li>
+      <li>출제 관련 폐지·파지는 <strong>파쇄기로 파쇄</strong>(쓰레기통에 그냥 버리지 않기)</li>
+      <li>지필평가 종료 전까지 원안 파일을 <strong>하드디스크·네트워크에 저장·공유 금지</strong></li>
+      <li>컴퓨터 화면 보안 및 <strong>프린터 출력물 수거 확인</strong> 후 퇴근</li>
+      <li>출제·시험 기간 중 학생의 <strong>교무실 출입 절대 금지</strong> 지도, 출석부는 담임이 직접 취급</li>
+      <li>성취도를 추정분할점수로 선택한 과목은 원안 제출 후 분할점수 산출 → <strong>학교장 내부결재</strong></li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">✅ 3. 문제지 제출 전 확인사항</h2>
+
+  <div class="card">
+    <strong>표지 표기</strong>
+    <p style="margin-top:6px;">표지에 <strong>출제연도·학기·시험구분·학년·교과명·과목코드·시험일시·출제자명</strong>을 정확하게 표기한 후 날인(출제자·부장·교감·교장).</p>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <strong>📋 제출 전 체크리스트</strong>
+    <ul style="margin-top:8px; padding-left:18px; line-height:2;">
+      <li>☐ 시험지 상단·하단에 <strong>학년·학기·과목명·쪽수</strong> 기록 확인</li>
+      <li>☐ 부정적인 물음에 반드시 <strong>밑줄·진하게</strong> 적용</li>
+      <li>☐ 문항 번호 순서·중복 없는지 확인, 보기 중복 없는지 확인</li>
+      <li>☐ (수학과) 보기에 숫자를 순차 표시 — 예) ① 3 ② 4 ③ 5 ④ 6 ⑤ 7</li>
+      <li>☐ 보기 띄어쓰기·여백이 일치하지 않아 <strong>답을 암시하는 일</strong>이 없도록 확인</li>
+      <li>☐ 맞춤법 정확성 확인</li>
+      <li>☐ 지문 밑줄 내용 및 기호(ㄱ,ㄴ / ㉠,㉡)가 문제와 일치하는지 확인</li>
+      <li>☐ 서답형 문제가 있으면 원안에 고지</li>
+      <li>☐ 다음 쪽 넘어갈 때 <strong>&lt;뒷면 계속&gt; / &lt;뒷장 계속&gt;</strong> 표시 (표지 제외 홀수면 끝 → 뒷장 계속 / 짝수면 끝 → 뒷면 계속)</li>
+      <li>☐ 마지막 문항 다음 <code>-끝-</code> 표시, 저작권 문구는 표지 제외 모든 면에 첨부(삭제 금지)</li>
+      <li>☐ 문제지 편집 양식 통일, '그림' 보기는 <strong>선명한 이미지 파일</strong> 사용</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">🔢 배점 안내 (예시)</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>구분</th>
+        <th>배점 범위</th>
+        <th>문항 수</th>
+        <th>소계</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>선택형</td><td>2.3 ~ 4.2점 (0.1점 단위 차등)</td><td>20문항</td><td>65점</td></tr>
+      <tr><td>서술형</td><td>7점</td><td>5문항</td><td>35점</td></tr>
+      <tr><td><strong>합계</strong></td><td>—</td><td><strong>25문항</strong></td><td><strong>100점</strong></td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:10px; font-size:0.88rem; color:#6b7280;">※ 각 문항 끝에 점수를 표기하며, 음영부(양식)에 입력하면 유형별 점수·문항수·만점이 자동 계산됩니다. 위 배점은 예시이며 과목별로 조정될 수 있습니다.</p>
+
+  <h2 class="section-title" style="margin-top:40px;">🗂️ 4. 문항정보표 작성 (NEIS)</h2>
+
+  <div class="card">
+    <ul style="margin-top:4px; padding-left:18px; line-height:1.9;">
+      <li>문항정보표는 <strong>과목당 한 분만</strong> 입력·수정·마감·출력 가능</li>
+      <li>서답형 문항은 <strong>"내용영역/성취기준/난이도/배점"만</strong> 작성, 정답·세부 채점 기준은 '서답형채점기준표'에 작성</li>
+      <li>모든 항목 입력 후 마감 처리 → <strong>'B4 단면' 출력</strong> → 담당교사 날인 후 제출 (시험일시·교시 입력 확인)</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">⚠️ 오류 대처 — 상황별 조치</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>상황</th>
+        <th>직접 조치 방법</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>정답이 둘 이상이거나 답이 없음</td><td>공동검토 단계에서 발견 시 즉시 수정, 시행 후 발견 시 연구부(평가 담당)에 보고하여 정답 처리 협의</td></tr>
+      <tr><td>전년도·참고서 문제와 유사</td><td>수업 시간 내 해당 문제를 직접 언급했는지 확인, 재출제로 판단되면 문항 교체</td></tr>
+      <tr><td>난이도 편중(특정 등급 40% 초과 예상)</td><td>교과협의회에서 문항 난이도·배점 재조정</td></tr>
+      <tr><td>양식·용어가 전년도 기준</td><td>연구부 제공 <strong>해당 학년도 양식</strong>으로 다시 작성</td></tr>
+      <tr><td>USB·출력물 보안 사고 우려</td><td>전산실 등록 USB만 사용, 파지 즉시 파쇄, 출력물 수거 확인 후 퇴근</td></tr>
+    </tbody>
+  </table>
+
+</div>
+<!-- ===== 대입전형자료 온라인 제공 ===== -->
+<div class="sub-panel" id="sub-univ-data">
+
+  <h2 class="section-title">🎓 대입전형자료(학교생활기록부) 온라인 제공 사전 운영</h2>
+
+  <div class="card">
+    <strong>📋 추진 목적</strong>
+    <p>대입전형자료(학교생활기록부)의 안정적인 온라인 제공을 위한 <strong>사전 운영(점검)</strong> 매뉴얼입니다. 자료의 무결성·신뢰성을 검증하여 대입전형의 공정성을 높이며, <strong>사전 운영에 미참여(미완료)한 학교는 대입전형 자료 온라인 제공 학교 목록에서 제외될 수 있습니다.</strong></p>
+    <ul style="margin-top:10px; padding-left:20px; line-height:2;">
+      <li><strong>사전 운영(점검) 기간:</strong> 매년 교육부·교육청이 안내하는 사전 운영 기간 내</li>
+      <li><strong>대상:</strong> 3학년 재학생(조기졸업예정자 포함) + 최근 3개 학년도 졸업생</li>
+      <li><strong>자료생성 기준일(예시):</strong> 재학생 5. 31. / 졸업생 졸업연도 졸업일</li>
+      <li><strong>주관 부서:</strong> 과학정보부(전산자료 대조·확인), 교무·창의인성·진로상담부, 3학년부</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📦 제공 항목 (학교생활기록부)</h2>
+
+  <div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+    <div class="grid-card"><div class="label">① 인적사항(일부)</div></div>
+    <div class="grid-card"><div class="label">② 학적사항</div></div>
+    <div class="grid-card"><div class="label">③ 출결상황</div></div>
+    <div class="grid-card"><div class="label">④ 자격증·인증 / NCS 이수상황</div></div>
+    <div class="grid-card"><div class="label">⑤ 학교폭력 조치상황 관리</div></div>
+    <div class="grid-card"><div class="label">⑥ 창의적 체험활동 상황</div></div>
+    <div class="grid-card"><div class="label">⑦ 교과학습발달상황</div></div>
+    <div class="grid-card"><div class="label">⑧ 행동특성 및 종합의견</div></div>
+  </div>
+  <p style="margin-top:10px; font-size:0.88rem; color:#6b7280;">※ '인적사항'은 성별·주소·특기사항을 제외한 일부(성명·주민등록번호·사진 등)만 제공됩니다.</p>
+
+  <h2 class="section-title" style="margin-top:40px;">📋 단계별 업무 흐름</h2>
+
+  <div class="flow-steps">
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>사전 운영 안내 및 연수</strong>
+        <p style="margin-top:6px;">교육부·교육청 연수를 통해 업무 담당자가 절차를 숙지하고, 기관별 준비 사항을 완료합니다.</p>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>준비 사항 완료 (사전 운영 전까지)</strong>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>사전 운영 학교 <strong>총괄 담당자 지정</strong></li>
+          <li>대입전형 대상 학생 <strong>사진 등록</strong>(3학년 졸업예정자·조기졸업예정자) — <strong>미등록 시 자료 생성 불가</strong></li>
+          <li>학생부 자료 정비·검증·반마감 후 <strong>학생부 마감(대입전형 업무용)</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>대입전형자료 점검 (사전 운영 기간)</strong>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>재학생·졸업생 전체 <strong>신규 생성</strong> → 검증 및 검증결과 조회 → 암호화 → 조회</li>
+          <li><strong>업무마감(내부 결재 승인)</strong> — '업무마감점검' 이후 '승인요청' 활성화</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>결과 보고서 제출</strong>
+        <p style="margin-top:6px;">[붙임2] '사전 운영 결과(학교용)'를 <strong>교육행정데이터통합관리시스템</strong>에 파일 첨부로 제출합니다. (이후 시도교육청이 교육부로 보고)</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card" style="border-left-color:#ef4444; background:#fef2f2; margin-top:20px;">
+    <strong>☆ 핵심 주의 ☆</strong>
+    <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+      <li>개인정보보호 강화 정책에 따라 사전 운영 점검 종료 시 <strong>생성 자료는 일괄 폐기</strong>됩니다.</li>
+      <li>사전 운영 중 발견된 학생부 오류는 <strong>수시전형 자료생성 기준일 전까지</strong> 수정합니다.</li>
+      <li>외국 전입 등 인정 오류로 오프라인 서류 제출이 필요한 학생은 <strong>[미제공자 등록]</strong>하여 생성 제외 관리합니다.</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">👥 점검 기간 역할별 협조 사항</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>역할</th>
+        <th>협조 내용</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>3학년 담임 교사</strong></td>
+        <td>자료생성 기준일 이후 <strong>어떠한 자료(출결·수상 등)도 NEIS에 입력 금지</strong>. 교무/창체/진로 부장의 '최종 완료' 쪽지를 받으면 <strong>학생부 반영 및 마감</strong> 처리</td>
+      </tr>
+      <tr>
+        <td><strong>교무·진로·창의인성 부장</strong></td>
+        <td>자료생성 기준일까지의 출결·진로·창체 활동 내역 및 특기사항에 <strong>빈 곳이 없는지 점검 기간 내 확인</strong> → 담당 교사 안내 → 완료 시 담임에게 '반영·마감' 쪽지 발송</td>
+      </tr>
+      <tr>
+        <td><strong>3학년 부장</strong></td>
+        <td>전 담임의 반영·마감 독려, 마감 완료 후 다음 절차 진행 안내</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="border-left-color:#2563eb; margin-top:20px;">
+    <strong>📌 창체 입력 참고 (자료생성 기준일 기준)</strong>
+    <ul style="margin-top:8px; padding-left:18px; line-height:1.9;">
+      <li><strong>동아리활동:</strong> NEIS → 창의적체험활동 → 동아리활동관리 → 학생부자료기록 → 이수시간 기준일 직접 입력(자료생성 기준일, 예시 5. 31.) → 이수시간 반영, 특기사항 입력</li>
+      <li><strong>자율·자치활동:</strong> 출결 마감 후 누가기록 입력 → 특기사항 입력 → 이수시간 반영(자료생성 기준일 기준) → 저장</li>
+      <li>누가기록·특기사항은 운영 계획 시트를 참고하여 입력(테스트 단계에서는 간략히 한 줄 가능)</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📂 고등학교 수행 내용 (체크리스트)</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>순번</th>
+        <th>수행 내용</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>대입전형자료 사전작업(온라인 제공 관리)</td><td>—</td></tr>
+      <tr><td>2</td><td>조기졸업예정자 등록</td><td>해당자가 있는 경우</td></tr>
+      <tr><td>3</td><td>미제공자 등록</td><td>온라인 제공 비희망 학생</td></tr>
+      <tr><td>4</td><td>대입전형자료 생성</td><td>재학생·졸업생 전체 신규 생성</td></tr>
+      <tr><td>5</td><td>검증 및 검증 결과 조회</td><td>—</td></tr>
+      <tr><td>6</td><td>대입전형자료 암호화</td><td>—</td></tr>
+      <tr><td>7</td><td>대입전형자료 조회</td><td>적용 훈령별 서식 조회</td></tr>
+      <tr><td>8</td><td>업무마감(내부 결재 승인)</td><td>'업무마감점검' 후 '승인요청' 활성화</td></tr>
+      <tr><td>9</td><td>업무 이력 조회</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section-title" style="margin-top:40px;">🗓️ 추진 절차(순서)</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>단계</th>
+        <th>내용</th>
+        <th>주체</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>① 사전 운영 전</td><td>사전 운영 안내 및 연수</td><td>교육부·교육청</td></tr>
+      <tr><td>① 사전 운영 전</td><td>기관별 준비 사항 완료(사진 등록·학생부 마감 등)</td><td>고등학교</td></tr>
+      <tr><td>② 사전 운영 기간</td><td>대입전형자료 생성·검증·마감</td><td>고등학교</td></tr>
+      <tr><td>③ 사전 운영 후</td><td>사전 운영 결과 보고서 제출</td><td>고등학교 → 시도교육청</td></tr>
+      <tr><td>③ 사전 운영 후</td><td>결과 보고</td><td>시도교육청 → 교육부</td></tr>
+      <tr><td>④ 기준일(예시)</td><td>수시전형 자료생성 기준일 — 오류 수정 마감</td><td>고등학교</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section-title" style="margin-top:40px;">⚠️ 오류 대처 — 상황별 조치</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>상황</th>
+        <th>직접 조치 방법</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>학생 사진 미등록으로 자료 생성 진행 안 됨</td><td>사전 운영 전 3학년 졸업예정자·조기졸업예정자 <strong>사진 등록 완료</strong> 후 재시도</td></tr>
+      <tr><td>자료생성 기준일 이후 NEIS 입력으로 자료 충돌</td><td>3학년 담임은 입력 중단, 부장 '최종 완료' 쪽지 수신 후에만 반영·마감</td></tr>
+      <tr><td>특기사항·활동 내역 누락</td><td>부장이 점검 기간 내 점검, 담당 교사에게 안내하여 자료생성 기준일 기준으로 보완 입력</td></tr>
+      <tr><td>외국 전입 등 인정 오류 학생</td><td>[미제공자 관리]에 등록하여 생성 제외(오프라인 서류 제출)</td></tr>
+      <tr><td>사전 운영 중 학생부 오류 발견</td><td>수시전형 자료생성 기준일 전까지 수정 완료</td></tr>
+      <tr><td>기능·절차 문의</td><td>NEIS 사용자 지원 시스템(help.neis.go.kr) '질의사항 등록' → 업무구분 '대입전형' 선택 후 질의</td></tr>
+    </tbody>
+  </table>
 
 </div>
 <!-- ===== 8. 학생·학부모·교사 대상 필수 교육(연수) ===== -->
