@@ -734,7 +734,7 @@
         <option value="3-11">3-11</option>
         <option value="3-12">3-12</option>
       </select>
-      <button onclick="ttSearch()" style="height:30px;padding:0 14px;font-size:0.75rem;font-weight:600;font-family:inherit;background:#1a3a6b;color:#fff;border:none;border-radius:20px;cursor:pointer;white-space:nowrap;">검색</button>
+      <button id="tt-search-btn" onclick="ttSearch()" style="height:30px;padding:0 14px;font-size:0.75rem;font-weight:600;font-family:inherit;background:#1a3a6b;color:#fff;border:none;border-radius:20px;cursor:pointer;white-space:nowrap;">검색</button>
     </div>
     <!-- 우측 인증 영역 -->
     <div style="display:flex;align-items:center;gap:8px;">
@@ -11722,12 +11722,14 @@ function switchSpTab(id,btn){
     var role = (user && user.role) ? user.role : '';
     var nd = document.getElementById('user-name-display');
     if (nd) nd.textContent = name + (role ? ' (' + role + ')' : '');
+    try { window.dispatchEvent(new Event('dr-auth-change')); } catch (e) {}
   }
   function showLoginBtn() {
     var lb = document.getElementById('login-btn');
     if (lb) lb.style.display = '';
     var badge = document.getElementById('user-badge');
     if (badge) badge.style.display = 'none';
+    try { window.dispatchEvent(new Event('dr-auth-change')); } catch (e) {}
   }
 
   window.startLogin = function () {
@@ -11956,6 +11958,7 @@ function switchSpTab(id,btn){
   /* ── 자동완성 ──────────────────────────── */
   const TL=["강상호","고덕민","구교원","구자용","김경환","김기철A","김기철B","김대도","김대연","김민채","김영진","김유성","김재익","김정우","김종목","김지혜","김태수","김해영","남상훈","노광수","문형선","박선영","박성근","박주생","박혜영","배승현","서혜리","석은동","손동인","손선미","손세욱","손예진","송준원","신동철","신화룡","안홍엽","양해준","오상승","윤신영","이강산","이경인","이병을","이상범","이영권","이재균","이종환","이희순","임재우","장성원","장진환","장하영","전상식","전성환","전혜진","전희규","정민석","정용석","정지원","정호재","최병권","최승호","최영은","최유리B","최정현","하도균","한상우","허진","홍대화","홍성수","홍예설","홍원의"];
   window.ttSuggest=function(){
+    if(!isLoggedIn()){document.getElementById('tt-suggest').style.display='none';return;}
     const q=document.getElementById('tt-input').value.trim().toLowerCase();
     const box=document.getElementById('tt-suggest');
     if(!q){box.style.display='none';return;}
@@ -11977,9 +11980,33 @@ function switchSpTab(id,btn){
 
   function isLoggedIn(){try{return!!JSON.parse(localStorage.getItem('dr_sess_v1'));}catch{return false;}}
 
+  /* ── 시간표 검색 잠금(로그인 사용자 전용) ── */
+  window.applyTtGate=function(){
+    const on=isLoggedIn();
+    ['tt-type','tt-input','tt-class-select','tt-search-btn'].forEach(function(id){
+      const el=document.getElementById(id); if(el) el.disabled=!on;
+    });
+    const wrap=document.getElementById('tt-search-wrap');
+    if(wrap){
+      wrap.style.opacity=on?'':'0.5';
+      wrap.style.cursor=on?'':'not-allowed';
+      wrap.title=on?'':'시간표 검색은 로그인 후 이용할 수 있습니다.';
+    }
+    const inp=document.getElementById('tt-input');
+    if(inp) inp.placeholder=on?'교사 이름 검색...':'로그인 후 이용 가능';
+    if(!on){ const sg=document.getElementById('tt-suggest'); if(sg) sg.style.display='none'; }
+  };
+  window.addEventListener('dr-auth-change',function(){window.applyTtGate();});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',window.applyTtGate);else window.applyTtGate();
+
   /* ── 검색 ──────────────────────────────── */
   let _name='',_type='';
   window.ttSearch=function(){
+    if(!isLoggedIn()){
+      alert('시간표 검색은 로그인 후 이용할 수 있습니다.');
+      if(typeof window.startLogin==='function') window.startLogin();
+      return;
+    }
     document.getElementById('tt-suggest').style.display='none';
     const type=document.getElementById('tt-type').value;
     let name='';
