@@ -959,6 +959,7 @@
   <button class="cat-nav-btn" onclick="switchCat('cat-eval', this)">📊 평가</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-activity', this)">🎨 창체&특색활동</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-etc', this)">📌 기타</button>
+  <button class="cat-nav-btn" onclick="switchCat('cat-search', this)">🔎 통합검색</button>
 </div>
 
 <!-- 학생부&나이스 -->
@@ -994,6 +995,14 @@
 <div class="sub-nav-group" id="cat-etc">
   <div class="sub-nav">
     <button class="sub-nav-btn" onclick="switchSub('sub-required', this)">📚 필수 교육(연수)</button>
+  </div>
+</div>
+
+<!-- 통합검색 -->
+<div class="sub-nav-group" id="cat-search">
+  <div class="sub-nav">
+    <button class="sub-nav-btn" onclick="switchSub('sub-law-search', this); ensureSearchData('law')">📜 법령·지침 검색</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-curr-search', this); ensureSearchData('curr')">📖 교육과정 검색</button>
   </div>
 </div>
 
@@ -3292,6 +3301,34 @@
     </ul>
   </div>
 
+</div>
+
+<!-- ===== 법령·지침 검색 ===== -->
+<div class="sub-panel" id="sub-law-search">
+  <h2 class="section-title">📜 법령 · 지침 검색</h2>
+  <p style="color:var(--text-secondary);margin-bottom:4px;">초·중등교육법, 학교폭력예방법, 국가공무원 복무규정, 학생부 기재요령, 전·편입학 지침 등 <strong>17개 법령·지침 원문</strong>을 키워드로 검색합니다.</p>
+  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">여러 단어를 공백으로 입력하면 <strong>모두 포함</strong>된 조문·문단을 찾습니다. (예: <code>경조사 휴가</code>, <code>학교폭력 가해학생 조치</code>)</p>
+  <div class="srch-bar">
+    <input id="law-q" class="srch-input" type="search" placeholder="검색어 입력 후 Enter… (예: 교사 자격, 특별휴가)" autocomplete="off">
+    <select id="law-src" class="srch-src"><option value="">전체 문서</option></select>
+    <button class="srch-btn" onclick="runSearch('law')">검색</button>
+  </div>
+  <div id="law-status" class="srch-status">검색어를 입력하세요.</div>
+  <div id="law-results" class="srch-results"></div>
+</div>
+
+<!-- ===== 교육과정 검색 ===== -->
+<div class="sub-panel" id="sub-curr-search">
+  <h2 class="section-title">📖 교육과정 검색</h2>
+  <p style="color:var(--text-secondary);margin-bottom:4px;">2022 개정 고등학교 교육과정 <strong>16개 별책(국어·수학·영어·과학·예체능·제2외국어 등)</strong> 원문을 키워드로 검색합니다.</p>
+  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">여러 단어를 공백으로 입력하면 <strong>모두 포함</strong>된 문단을 찾습니다. (예: <code>미적분 성취기준</code>, <code>영어 말하기 평가</code>)</p>
+  <div class="srch-bar">
+    <input id="curr-q" class="srch-input" type="search" placeholder="검색어 입력 후 Enter… (예: 화법과 언어, 탐구 실험)" autocomplete="off">
+    <select id="curr-src" class="srch-src"><option value="">전체 별책</option></select>
+    <button class="srch-btn" onclick="runSearch('curr')">검색</button>
+  </div>
+  <div id="curr-status" class="srch-status">검색어를 입력하세요.</div>
+  <div id="curr-results" class="srch-results"></div>
 </div>
 </div><!-- /teacher-content -->
     <!-- TAB:teacher:END -->
@@ -12453,6 +12490,127 @@ function switchSpTab(id,btn){
 })();
 </script>
 
+
+<!-- ===== 통합검색(법령·교육과정) 스타일 ===== -->
+<style>
+  .srch-bar { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 4px; }
+  .srch-input { flex:1; min-width:200px; height:42px; padding:0 16px; border:1px solid var(--border); border-radius:var(--radius); font-size:0.95rem; font-family:inherit; outline:none; background:var(--surface); color:var(--text); }
+  .srch-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(42,82,152,0.12); }
+  .srch-src { height:42px; padding:0 12px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text); font-family:inherit; font-size:0.88rem; max-width:260px; cursor:pointer; }
+  .srch-btn { height:42px; padding:0 22px; background:var(--primary); color:#fff; border:none; border-radius:var(--radius); font-weight:600; font-family:inherit; cursor:pointer; font-size:0.92rem; transition:background 0.15s; }
+  .srch-btn:hover { background:var(--primary-light); }
+  .srch-status { font-size:0.85rem; color:var(--text-secondary); margin:6px 2px 14px; }
+  .srch-results { display:flex; flex-direction:column; gap:10px; }
+  .srch-hit { border:1px solid var(--border); border-radius:var(--radius); padding:13px 16px; background:var(--surface); box-shadow:var(--shadow-sm); transition:box-shadow 0.15s; }
+  .srch-hit:hover { box-shadow:var(--shadow-md); }
+  .srch-hit-head { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:7px; }
+  .srch-badge { font-size:0.72rem; font-weight:700; color:var(--primary); background:var(--muted); border:1px solid var(--border); padding:2px 9px; border-radius:999px; white-space:nowrap; }
+  .srch-ref { font-size:0.74rem; color:var(--text-secondary); }
+  .srch-snip { font-size:0.88rem; color:var(--text); line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+  .srch-snip mark { background:#fde68a; color:#7c2d12; padding:0 1px; border-radius:2px; }
+</style>
+
+<!-- ===== 통합검색 엔진 JS ===== -->
+<script>
+(function(){
+  var SRCH = {
+    law:  { url:'data/law_search.json',  data:null, loading:false,
+            q:'law-q',  src:'law-src',  status:'law-status',  results:'law-results' },
+    curr: { url:'data/curr_search.json', data:null, loading:false,
+            q:'curr-q', src:'curr-src', status:'curr-status', results:'curr-results' }
+  };
+  var MAX_SHOW = 80;
+
+  function el(id){ return document.getElementById(id); }
+  function setStatus(k, msg){ var e=el(SRCH[k].status); if(e) e.textContent = msg; }
+  function escapeHtml(s){ return s.replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  function escapeReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function highlight(escaped, terms){
+    if(!terms.length) return escaped;
+    var re = new RegExp('(' + terms.map(escapeReg).join('|') + ')', 'gi');
+    return escaped.replace(re, '<mark>$1</mark>');
+  }
+
+  function snippet(text, terms){
+    var lower = text.toLowerCase(), pos = -1;
+    for(var i=0;i<terms.length;i++){ var p = lower.indexOf(terms[i]); if(p>=0 && (pos<0 || p<pos)) pos = p; }
+    if(pos<0) pos = 0;
+    var start = Math.max(0, pos-90), end = Math.min(text.length, pos+260);
+    var seg = (start>0?'… ':'') + text.slice(start, end) + (end<text.length?' …':'');
+    return highlight(escapeHtml(seg), terms);
+  }
+
+  window.ensureSearchData = function(k){
+    var s = SRCH[k];
+    if(s.data || s.loading) return Promise.resolve(s.data);
+    s.loading = true;
+    setStatus(k, '🔄 검색 데이터를 불러오는 중입니다…');
+    return fetch(s.url)
+      .then(function(r){ if(!r.ok) throw new Error('http'); return r.json(); })
+      .then(function(j){
+        s.data = j; s.loading = false;
+        var sel = el(s.src);
+        if(sel && j.docs){
+          j.docs.forEach(function(name, idx){
+            var o = document.createElement('option');
+            o.value = idx; o.textContent = name;
+            sel.appendChild(o);
+          });
+        }
+        setStatus(k, '준비 완료 — 검색어를 입력하세요. (수록 ' + (j.docs?j.docs.length:0) + '개 문서 / ' + (j.chunks?j.chunks.length.toLocaleString():0) + '개 단락)');
+        return j;
+      })
+      .catch(function(){
+        s.loading = false;
+        setStatus(k, '⚠️ 검색 데이터를 불러오지 못했습니다. 인터넷에 연결된 상태(daeryun.life)에서 이용해 주세요. (로컬 파일 열기에서는 검색이 동작하지 않습니다.)');
+      });
+  };
+
+  window.runSearch = function(k){
+    var s = SRCH[k];
+    window.ensureSearchData(k).then(function(j){
+      if(!j) return;
+      var q = (el(s.q).value || '').trim();
+      var box = el(s.results);
+      if(!q){ box.innerHTML=''; setStatus(k, '검색어를 입력하세요.'); return; }
+      var srcFilter = el(s.src).value;
+      var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+      var hits = [], total = 0;
+      for(var i=0;i<j.chunks.length;i++){
+        var c = j.chunks[i];
+        if(srcFilter !== '' && String(c[0]) !== srcFilter) continue;
+        var lt = c[2].toLowerCase(), ok = true;
+        for(var t=0;t<terms.length;t++){ if(lt.indexOf(terms[t])<0){ ok=false; break; } }
+        if(ok){ total++; if(hits.length<MAX_SHOW) hits.push(c); }
+      }
+      if(!total){ box.innerHTML=''; setStatus(k, '‘' + q + '’ 에 대한 검색 결과가 없습니다.'); return; }
+      setStatus(k, '총 ' + total.toLocaleString() + '건' + (total>MAX_SHOW ? (' 중 상위 ' + MAX_SHOW + '건 표시 (검색어를 더 좁혀 보세요)') : ''));
+      var html = '';
+      for(var h=0;h<hits.length;h++){
+        var hc = hits[h], label = j.docs[hc[0]] || '', ref = hc[1] || '';
+        html += '<div class="srch-hit"><div class="srch-hit-head">'
+              + '<span class="srch-badge">' + escapeHtml(label) + '</span>'
+              + (ref ? '<span class="srch-ref">' + escapeHtml(ref) + '</span>' : '')
+              + '</div><div class="srch-snip">' + snippet(hc[2], terms) + '</div></div>';
+      }
+      box.innerHTML = html;
+    });
+  };
+
+  // 입력 바인딩: Enter 즉시 / 입력 중 디바운스
+  function bind(k){
+    var inp = el(SRCH[k].q), sel = el(SRCH[k].src);
+    if(!inp) return;
+    var timer = null;
+    inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); clearTimeout(timer); window.runSearch(k); } });
+    inp.addEventListener('input', function(){ clearTimeout(timer); timer = setTimeout(function(){ window.runSearch(k); }, 220); });
+    if(sel) sel.addEventListener('change', function(){ window.runSearch(k); });
+  }
+  function init(){ bind('law'); bind('curr'); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
 
 <!-- ===== 푸터 ===== -->
 <footer>
