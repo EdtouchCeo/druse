@@ -959,8 +959,6 @@
   <button class="cat-nav-btn" onclick="switchCat('cat-eval', this)">📊 평가</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-activity', this)">🎨 창체&특색활동</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-etc', this)">📌 기타</button>
-  <button class="cat-nav-btn" onclick="switchCat('cat-law-ai', this)">📜 법령·지침 AI</button>
-  <button class="cat-nav-btn" onclick="switchCat('cat-curr-ai', this)">📖 국가교육과정 AI</button>
 </div>
 
 <!-- 학생부&나이스 -->
@@ -1000,17 +998,6 @@
 </div>
 
 <!-- 통합검색 -->
-<div class="sub-nav-group" id="cat-law-ai">
-  <div class="sub-nav">
-    <button class="sub-nav-btn" onclick="switchSub('sub-law-ai', this); ensureSearchData('law')">📜 법령·지침 AI</button>
-  </div>
-</div>
-<div class="sub-nav-group" id="cat-curr-ai">
-  <div class="sub-nav">
-    <button class="sub-nav-btn" onclick="switchSub('sub-curr-ai', this); ensureSearchData('curr')">📖 국가교육과정 AI</button>
-  </div>
-</div>
-
 <!-- ===== 1. 학생부 기재요령 ===== -->
 <div class="sub-panel active" id="sub-records">
 
@@ -3308,31 +3295,6 @@
 
 </div>
 
-<!-- ===== 법령·지침 AI ===== -->
-<div class="sub-panel" id="sub-law-ai">
-  <h2 class="section-title">📜 법령·지침 AI <span style="font-size:0.7rem;font-weight:600;color:#fff;background:var(--accent);padding:2px 8px;border-radius:999px;vertical-align:middle;">BETA</span></h2>
-  <p style="color:var(--text-secondary);margin-bottom:4px;">초·중등교육법, 학교폭력예방법, 국가공무원 복무규정, 학생부 기재요령, 전·편입학 지침 등 <strong>17개 법령·지침 원문에 근거</strong>해 답변합니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.</p>
-  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">예: <code>경조사 휴가는 며칠인가요?</code> · <code>학교폭력 가해학생 조치 종류는?</code> · <code>교사 자격 기준 알려줘</code></p>
-  <div id="law-ai-log" class="chat-log"></div>
-  <div class="chat-input-bar">
-    <textarea id="law-ai-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
-    <button id="law-ai-send" class="srch-btn" onclick="chatAsk('law')">전송</button>
-  </div>
-  <p class="chat-disclaimer">⚠️ AI 답변은 참고용입니다. 법적·행정적 효력은 원문 기준이며, 중요한 사안은 반드시 원문·담당부서를 확인하세요.</p>
-</div>
-
-<!-- ===== 국가교육과정 AI ===== -->
-<div class="sub-panel" id="sub-curr-ai">
-  <h2 class="section-title">📖 국가교육과정 AI <span style="font-size:0.7rem;font-weight:600;color:#fff;background:var(--accent);padding:2px 8px;border-radius:999px;vertical-align:middle;">BETA</span></h2>
-  <p style="color:var(--text-secondary);margin-bottom:4px;">2022 개정 고등학교 교육과정 <strong>16개 별책(국어·수학·영어·과학·예체능·제2외국어 등) 원문에 근거</strong>해 답변합니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.</p>
-  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">예: <code>미적분Ⅰ 성취기준 알려줘</code> · <code>영어 말하기 평가 방법은?</code> · <code>통합과학 탐구 영역 알려줘</code></p>
-  <div id="curr-ai-log" class="chat-log"></div>
-  <div class="chat-input-bar">
-    <textarea id="curr-ai-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
-    <button id="curr-ai-send" class="srch-btn" onclick="chatAsk('curr')">전송</button>
-  </div>
-  <p class="chat-disclaimer">⚠️ AI 답변은 참고용입니다. 교육과정 운영의 공식 기준은 원문이며, 중요한 사안은 반드시 원문·담당부서를 확인하세요.</p>
-</div>
 </div><!-- /teacher-content -->
     <!-- TAB:teacher:END -->
   </div>
@@ -9856,21 +9818,52 @@ function switchSpTab(id,btn){
     <!-- AI 콘텐츠 (로그인 후 표시) -->
     <div id="ai-content">
       <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
-        <button id="ai-sub-btn-0" onclick="switchAiSub(0)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid var(--primary);background:var(--primary);color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
-        <button id="ai-sub-btn-1" onclick="switchAiSub(1)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 AI</button>
-        <button id="ai-sub-btn-2" onclick="switchAiSub(2)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
-        <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
+        <button id="ai-sub-btn-0" onclick="switchAiSub(0); window.ensureSearchData && window.ensureSearchData('law')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid var(--primary);background:var(--primary);color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">📜 법령·지침 AI</button>
+        <button id="ai-sub-btn-1" onclick="switchAiSub(1); window.ensureSearchData && window.ensureSearchData('curr')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📖 국가교육과정 AI</button>
+        <button id="ai-sub-btn-2" onclick="switchAiSub(2)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
+        <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 AI</button>
+        <button id="ai-sub-btn-4" onclick="switchAiSub(4)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
+        <button id="ai-sub-btn-5" onclick="switchAiSub(5)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
       </div>
-      <div id="ai-sub-0" style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+
+      <!-- 0: 법령·지침 AI (RAG 챗봇) -->
+      <div id="ai-sub-0">
+        <p style="color:var(--text-secondary);margin:0 0 4px;">초·중등교육법, 학교폭력예방법, 국가공무원 복무규정, 학생부 기재요령, 전·편입학 지침 등 <strong>17개 법령·지침 원문에 근거</strong>해 답변합니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.</p>
+        <p style="color:var(--text-secondary);font-size:0.84rem;margin:0 0 12px;">예: <code>경조사 휴가는 며칠인가요?</code> · <code>학교폭력 가해학생 조치 종류는?</code> · <code>교사 자격 기준 알려줘</code></p>
+        <div id="law-ai-log" class="chat-log"></div>
+        <div class="chat-input-bar">
+          <textarea id="law-ai-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
+          <button id="law-ai-send" class="srch-btn" onclick="chatAsk('law')">전송</button>
+        </div>
+        <p class="chat-disclaimer">⚠️ AI 답변은 참고용입니다. 법적·행정적 효력은 원문 기준이며, 중요한 사안은 반드시 원문·담당부서를 확인하세요.</p>
+      </div>
+
+      <!-- 1: 국가교육과정 AI (RAG 챗봇) -->
+      <div id="ai-sub-1" style="display:none;">
+        <p style="color:var(--text-secondary);margin:0 0 4px;">2022 개정 고등학교 교육과정 <strong>16개 별책(국어·수학·영어·과학·예체능·제2외국어 등) 원문에 근거</strong>해 답변합니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.</p>
+        <p style="color:var(--text-secondary);font-size:0.84rem;margin:0 0 12px;">예: <code>미적분Ⅰ 성취기준 알려줘</code> · <code>영어 말하기 평가 방법은?</code> · <code>통합과학 탐구 영역 알려줘</code></p>
+        <div id="curr-ai-log" class="chat-log"></div>
+        <div class="chat-input-bar">
+          <textarea id="curr-ai-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
+          <button id="curr-ai-send" class="srch-btn" onclick="chatAsk('curr')">전송</button>
+        </div>
+        <p class="chat-disclaimer">⚠️ AI 답변은 참고용입니다. 교육과정 운영의 공식 기준은 원문이며, 중요한 사안은 반드시 원문·담당부서를 확인하세요.</p>
+      </div>
+
+      <!-- 2: 교육일정 작성 AI -->
+      <div id="ai-sub-2" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
         <iframe src="https://ai-63986215827.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="교육일정 작성 AI"></iframe>
       </div>
-      <div id="ai-sub-1" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+      <!-- 3: 수행평가 AI -->
+      <div id="ai-sub-3" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
         <iframe src="https://ai-888834700673.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="수행평가 AI"></iframe>
       </div>
-      <div id="ai-sub-2" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+      <!-- 4: 학생 개별 점수 조회 -->
+      <div id="ai-sub-4" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
         <iframe src="https://edtouch.ai/score/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="학생 개별 점수 조회"></iframe>
       </div>
-      <div id="ai-sub-3" style="display:none;">
+      <!-- 5: 나이스 브라우저 -->
+      <div id="ai-sub-5" style="display:none;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
           <p style="font-size:0.85rem;color:#6b7280;margin:0;">나이스(NEIS) 빠른 접속 · 자료 조회용 브라우저</p>
           <a href="https://neisbrowser.hwaryong.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#1a3a6b;color:#fff;border-radius:18px;font-size:0.82rem;font-weight:600;text-decoration:none;">🔗 새 창으로 열기</a>
@@ -11133,7 +11126,7 @@ function switchSpTab(id,btn){
   };
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < 6; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;
