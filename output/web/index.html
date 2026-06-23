@@ -959,7 +959,8 @@
   <button class="cat-nav-btn" onclick="switchCat('cat-eval', this)">📊 평가</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-activity', this)">🎨 창체&특색활동</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-etc', this)">📌 기타</button>
-  <button class="cat-nav-btn" onclick="switchCat('cat-search', this)">🔎 통합검색</button>
+  <button class="cat-nav-btn" onclick="switchCat('cat-law-ai', this)">📜 법령·지침 AI</button>
+  <button class="cat-nav-btn" onclick="switchCat('cat-curr-ai', this)">📖 국가교육과정 AI</button>
 </div>
 
 <!-- 학생부&나이스 -->
@@ -999,11 +1000,14 @@
 </div>
 
 <!-- 통합검색 -->
-<div class="sub-nav-group" id="cat-search">
+<div class="sub-nav-group" id="cat-law-ai">
   <div class="sub-nav">
-    <button class="sub-nav-btn" onclick="switchSub('sub-ai-chat', this)">🤖 AI 질문</button>
-    <button class="sub-nav-btn" onclick="switchSub('sub-law-search', this); ensureSearchData('law')">📜 법령·지침 검색</button>
-    <button class="sub-nav-btn" onclick="switchSub('sub-curr-search', this); ensureSearchData('curr')">📖 교육과정 검색</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-law-ai', this); ensureSearchData('law')">📜 법령·지침 AI</button>
+  </div>
+</div>
+<div class="sub-nav-group" id="cat-curr-ai">
+  <div class="sub-nav">
+    <button class="sub-nav-btn" onclick="switchSub('sub-curr-ai', this); ensureSearchData('curr')">📖 국가교육과정 AI</button>
   </div>
 </div>
 
@@ -3304,51 +3308,30 @@
 
 </div>
 
-<!-- ===== 법령·지침 검색 ===== -->
-<div class="sub-panel" id="sub-law-search">
-  <h2 class="section-title">📜 법령 · 지침 검색</h2>
-  <p style="color:var(--text-secondary);margin-bottom:4px;">초·중등교육법, 학교폭력예방법, 국가공무원 복무규정, 학생부 기재요령, 전·편입학 지침 등 <strong>17개 법령·지침 원문</strong>을 키워드로 검색합니다.</p>
-  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">여러 단어를 공백으로 입력하면 <strong>모두 포함</strong>된 조문·문단을 찾습니다. (예: <code>경조사 휴가</code>, <code>학교폭력 가해학생 조치</code>)</p>
-  <div class="srch-bar">
-    <input id="law-q" class="srch-input" type="search" placeholder="검색어 입력 후 Enter… (예: 교사 자격, 특별휴가)" autocomplete="off">
-    <select id="law-src" class="srch-src"><option value="">전체 문서</option></select>
-    <button class="srch-btn" onclick="runSearch('law')">검색</button>
-  </div>
-  <div id="law-status" class="srch-status">검색어를 입력하세요.</div>
-  <div id="law-results" class="srch-results"></div>
-</div>
-
-<!-- ===== 교육과정 검색 ===== -->
-<div class="sub-panel" id="sub-curr-search">
-  <h2 class="section-title">📖 교육과정 검색</h2>
-  <p style="color:var(--text-secondary);margin-bottom:4px;">2022 개정 고등학교 교육과정 <strong>16개 별책(국어·수학·영어·과학·예체능·제2외국어 등)</strong> 원문을 키워드로 검색합니다.</p>
-  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">여러 단어를 공백으로 입력하면 <strong>모두 포함</strong>된 문단을 찾습니다. (예: <code>미적분 성취기준</code>, <code>영어 말하기 평가</code>)</p>
-  <div class="srch-bar">
-    <input id="curr-q" class="srch-input" type="search" placeholder="검색어 입력 후 Enter… (예: 화법과 언어, 탐구 실험)" autocomplete="off">
-    <select id="curr-src" class="srch-src"><option value="">전체 별책</option></select>
-    <button class="srch-btn" onclick="runSearch('curr')">검색</button>
-  </div>
-  <div id="curr-status" class="srch-status">검색어를 입력하세요.</div>
-  <div id="curr-results" class="srch-results"></div>
-</div>
-
-<!-- ===== AI 질문 (RAG 챗봇) ===== -->
-<div class="sub-panel" id="sub-ai-chat">
-  <h2 class="section-title">🤖 AI 업무도우미 <span style="font-size:0.7rem;font-weight:600;color:#fff;background:var(--accent);padding:2px 8px;border-radius:999px;vertical-align:middle;">BETA</span></h2>
-  <p style="color:var(--text-secondary);margin-bottom:4px;">법령·지침·교육과정 <strong>원문에 근거</strong>해 답변합니다. 근거가 없으면 모른다고 답하며, 답변 끝에 출처를 표시합니다.</p>
-  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">예: <code>경조사 휴가는 며칠인가요?</code> · <code>학교폭력 가해학생 조치 종류는?</code> · <code>미적분Ⅰ 성취기준 알려줘</code></p>
-  <div class="chat-ds">
-    <span style="font-weight:600;">참고 자료:</span>
-    <label><input type="radio" name="chat-ds" value="all" checked> 전체</label>
-    <label><input type="radio" name="chat-ds" value="law"> 법령·지침</label>
-    <label><input type="radio" name="chat-ds" value="curr"> 교육과정</label>
-  </div>
-  <div id="chat-log" class="chat-log"></div>
+<!-- ===== 법령·지침 AI ===== -->
+<div class="sub-panel" id="sub-law-ai">
+  <h2 class="section-title">📜 법령·지침 AI <span style="font-size:0.7rem;font-weight:600;color:#fff;background:var(--accent);padding:2px 8px;border-radius:999px;vertical-align:middle;">BETA</span></h2>
+  <p style="color:var(--text-secondary);margin-bottom:4px;">초·중등교육법, 학교폭력예방법, 국가공무원 복무규정, 학생부 기재요령, 전·편입학 지침 등 <strong>17개 법령·지침 원문에 근거</strong>해 답변합니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.</p>
+  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">예: <code>경조사 휴가는 며칠인가요?</code> · <code>학교폭력 가해학생 조치 종류는?</code> · <code>교사 자격 기준 알려줘</code></p>
+  <div id="law-ai-log" class="chat-log"></div>
   <div class="chat-input-bar">
-    <textarea id="chat-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
-    <button id="chat-send" class="srch-btn" onclick="chatSend()">전송</button>
+    <textarea id="law-ai-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
+    <button id="law-ai-send" class="srch-btn" onclick="chatAsk('law')">전송</button>
   </div>
   <p class="chat-disclaimer">⚠️ AI 답변은 참고용입니다. 법적·행정적 효력은 원문 기준이며, 중요한 사안은 반드시 원문·담당부서를 확인하세요.</p>
+</div>
+
+<!-- ===== 국가교육과정 AI ===== -->
+<div class="sub-panel" id="sub-curr-ai">
+  <h2 class="section-title">📖 국가교육과정 AI <span style="font-size:0.7rem;font-weight:600;color:#fff;background:var(--accent);padding:2px 8px;border-radius:999px;vertical-align:middle;">BETA</span></h2>
+  <p style="color:var(--text-secondary);margin-bottom:4px;">2022 개정 고등학교 교육과정 <strong>16개 별책(국어·수학·영어·과학·예체능·제2외국어 등) 원문에 근거</strong>해 답변합니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.</p>
+  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">예: <code>미적분Ⅰ 성취기준 알려줘</code> · <code>영어 말하기 평가 방법은?</code> · <code>통합과학 탐구 영역 알려줘</code></p>
+  <div id="curr-ai-log" class="chat-log"></div>
+  <div class="chat-input-bar">
+    <textarea id="curr-ai-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
+    <button id="curr-ai-send" class="srch-btn" onclick="chatAsk('curr')">전송</button>
+  </div>
+  <p class="chat-disclaimer">⚠️ AI 답변은 참고용입니다. 교육과정 운영의 공식 기준은 원문이며, 중요한 사안은 반드시 원문·담당부서를 확인하세요.</p>
 </div>
 </div><!-- /teacher-content -->
     <!-- TAB:teacher:END -->
@@ -12532,8 +12515,6 @@ function switchSpTab(id,btn){
   .srch-snip mark { background:#fde68a; color:#7c2d12; padding:0 1px; border-radius:2px; }
 
   /* RAG 챗봇 */
-  .chat-ds { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:10px 0 14px; font-size:0.86rem; color:var(--text-secondary); }
-  .chat-ds label { display:inline-flex; align-items:center; gap:5px; cursor:pointer; }
   .chat-log { display:flex; flex-direction:column; gap:12px; min-height:90px; max-height:58vh; overflow-y:auto; padding:8px 2px; }
   .chat-msg { max-width:88%; padding:11px 15px; border-radius:14px; font-size:0.9rem; line-height:1.7; word-break:break-word; }
   .chat-msg.user { align-self:flex-end; background:var(--primary); color:#fff; border-bottom-right-radius:4px; white-space:pre-wrap; }
@@ -12747,8 +12728,8 @@ function switchSpTab(id,btn){
     }
     return out;
   }
-  function addMsg(cls, html){
-    var log = el('chat-log');
+  function addMsg(logId, cls, html){
+    var log = el(logId);
     var d = document.createElement('div');
     d.className = 'chat-msg ' + cls;
     d.innerHTML = html;
@@ -12757,25 +12738,28 @@ function switchSpTab(id,btn){
     return d;
   }
 
-  window.chatSend = function(){
-    var inp = el('chat-input');
+  // 데이터셋별 단일 AI 챗봇 (법령·지침 / 국가교육과정)
+  var CHATS = {
+    law:  { keys:['law'],  input:'law-ai-input',  log:'law-ai-log',  send:'law-ai-send' },
+    curr: { keys:['curr'], input:'curr-ai-input', log:'curr-ai-log', send:'curr-ai-send' }
+  };
+
+  window.chatAsk = function(which){
+    var cfg = CHATS[which]; if(!cfg) return;
+    var inp = el(cfg.input);
     var q = (inp.value || '').trim();
     if(!q) return;
-    var dsEl = document.querySelector('input[name="chat-ds"]:checked');
-    var ds = dsEl ? dsEl.value : 'all';
-    var keys = ds === 'all' ? ['law','curr'] : [ds];
-
-    addMsg('user', escapeHtml(q));
+    addMsg(cfg.log, 'user', escapeHtml(q));
     inp.value = ''; inp.style.height = 'auto';
-    var loading = addMsg('bot loading', '🔎 자료를 찾아 답변을 준비 중입니다…');
-    var btn = el('chat-send'); btn.disabled = true;
+    var loading = addMsg(cfg.log, 'bot loading', '🔎 자료를 찾아 답변을 준비 중입니다…');
+    var btn = el(cfg.send); btn.disabled = true;
 
-    Promise.all(keys.map(function(k){ return window.ensureSearchData(k); })).then(function(){
+    Promise.all(cfg.keys.map(function(k){ return window.ensureSearchData(k); })).then(function(){
       // 의미검색(임베딩) 우선 → 없으면 키워드 폴백
-      return window.semanticRetrieve ? window.semanticRetrieve(keys, q, 6) : null;
+      return window.semanticRetrieve ? window.semanticRetrieve(cfg.keys, q, 6) : null;
     }).then(function(sctx){
       var ctx = (sctx && sctx.length) ? sctx
-                : (window.retrieveChunks ? window.retrieveChunks(keys, q, 6) : []);
+                : (window.retrieveChunks ? window.retrieveChunks(cfg.keys, q, 6) : []);
       return fetch('/.netlify/functions/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -12809,26 +12793,26 @@ function switchSpTab(id,btn){
     });
   };
 
-  function init(){
-    var inp = el('chat-input');
+  function bindChat(which){
+    var cfg = CHATS[which]; var inp = el(cfg.input);
     if(!inp) return;
-    // 자동 높이 조절
     inp.addEventListener('input', function(){
       inp.style.height = 'auto';
       inp.style.height = Math.min(inp.scrollHeight, 160) + 'px';
     });
-    // Enter 전송, Shift+Enter 줄바꿈
     inp.addEventListener('keydown', function(e){
-      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); window.chatSend(); }
+      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); window.chatAsk(which); }
     });
   }
+  function init(){ bindChat('law'); bindChat('curr'); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 
 <!-- ===== 업무 튜터 (플로팅 RAG 챗봇) ===== -->
 <div id="tutor-fab" onclick="toggleTutor()" title="업무 튜터에게 질문하기" aria-label="업무 튜터 열기">
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+  <span class="tutor-fab-label">업무 튜터</span>
 </div>
 <div id="tutor-panel" role="dialog" aria-label="업무 튜터">
   <div class="tutor-head">
@@ -12846,8 +12830,9 @@ function switchSpTab(id,btn){
 </div>
 
 <style>
-  #tutor-fab { position:fixed; right:22px; bottom:22px; width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,#1e3a6b,#2a5298); color:#fff; display:none; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 20px rgba(42,82,152,.42); z-index:3000; transition:transform .15s, box-shadow .15s; }
-  #tutor-fab:hover { transform:scale(1.07); box-shadow:0 8px 26px rgba(42,82,152,.5); }
+  #tutor-fab { position:fixed; right:22px; bottom:22px; height:52px; padding:0 20px 0 17px; border-radius:999px; background:linear-gradient(135deg,#1e3a6b,#2a5298); color:#fff; display:none; align-items:center; gap:9px; cursor:pointer; box-shadow:0 6px 20px rgba(42,82,152,.42); z-index:3000; transition:transform .15s, box-shadow .15s; font-weight:700; font-size:.92rem; }
+  #tutor-fab:hover { transform:translateY(-2px); box-shadow:0 9px 28px rgba(42,82,152,.52); }
+  #tutor-fab .tutor-fab-label { white-space:nowrap; letter-spacing:-0.01em; }
   #tutor-panel { position:fixed; right:22px; bottom:90px; width:384px; max-width:calc(100vw - 32px); height:540px; max-height:calc(100vh - 130px); background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:0 14px 44px rgba(15,23,42,.24); z-index:3000; display:none; flex-direction:column; overflow:hidden; }
   #tutor-panel.open { display:flex; }
   .tutor-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(135deg,#1e3a6b,#2a5298); color:#fff; flex-shrink:0; }
@@ -12893,7 +12878,7 @@ function switchSpTab(id,btn){
     var root = el('teacher-content');
     var out = [];
     if(root){
-      var skip = { 'sub-ai-chat':1, 'sub-law-search':1, 'sub-curr-search':1 };
+      var skip = { 'sub-law-ai':1, 'sub-curr-ai':1 };
       root.querySelectorAll('.sub-panel').forEach(function(p){
         if(skip[p.id]) return;
         var t = p.querySelector('.section-title, h2, h3');
