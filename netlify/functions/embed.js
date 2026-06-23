@@ -12,7 +12,8 @@ exports.handler = async (event) => {
   }
 
   const API_KEY = process.env.GEMINI_API_KEY;
-  const MODEL = process.env.EMBED_MODEL || 'text-embedding-004';
+  const MODEL = process.env.EMBED_MODEL || 'gemini-embedding-001';
+  const DIM = parseInt(process.env.EMBED_DIM || '768', 10);
   if (!API_KEY) {
     return { statusCode: 500, body: JSON.stringify({ error: 'API 키가 설정되지 않았습니다(GEMINI_API_KEY).' }) };
   }
@@ -35,7 +36,12 @@ exports.handler = async (event) => {
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: `models/${MODEL}`, content: { parts: [{ text: text.slice(0, 2000) }] } })
+      body: JSON.stringify({
+        model: `models/${MODEL}`,
+        content: { parts: [{ text: text.slice(0, 2000) }] },
+        taskType: 'RETRIEVAL_QUERY',
+        outputDimensionality: DIM
+      })
     });
     const data = await resp.json();
     if (!resp.ok) {

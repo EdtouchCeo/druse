@@ -54,8 +54,10 @@ python scripts/build_embeddings.py "output/web/data/law_search.json"  "output/we
 python scripts/build_embeddings.py "output/web/data/curr_search.json" "output/web/data/curr_emb.bin"
 ```
 - 생성된 `output/web/data/law_emb.bin`, `curr_emb.bin`을 **커밋·푸시**하면 자동으로 의미검색 전환.
-- 모델: 기본 `text-embedding-004`(768차원). 바꾸려면 `EMBED_MODEL`·`EMBED_DIM` 환경변수와
-  Netlify의 `EMBED_MODEL`을 **동일하게** 맞추고, 프론트(`output/web/index.html`)의 `EMB_DIM`도 일치시킬 것.
+- 모델: 기본 `gemini-embedding-001`, 출력 **768차원**(outputDimensionality). 바꾸려면
+  `EMBED_MODEL`·`EMBED_DIM` 환경변수, Netlify의 `EMBED_MODEL`, 프론트의 `EMB_DIM`을 **모두 동일하게** 맞출 것.
+- 이 모델은 동기 batch를 지원하지 않아 단건 호출을 스레드로 병렬화한다. 무료 한도(분당/일일 요청 수)에
+  걸리면 자동 재시도하며, 끊겨도 같은 명령을 다시 실행하면 `.bin` 크기를 보고 **남은 청크만 이어서** 처리한다.
 - 질문 임베딩은 `netlify/functions/embed.js`가 같은 `GEMINI_API_KEY`로 처리(서버에 키 보관).
 - 청크 순서 = `_search.json`의 chunks 순서 = `.bin`의 벡터 순서(일대일). 한쪽만 바꾸면 안 됨.
 
