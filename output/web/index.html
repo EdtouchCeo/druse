@@ -1001,6 +1001,7 @@
 <!-- 통합검색 -->
 <div class="sub-nav-group" id="cat-search">
   <div class="sub-nav">
+    <button class="sub-nav-btn" onclick="switchSub('sub-ai-chat', this)">🤖 AI 질문</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-law-search', this); ensureSearchData('law')">📜 법령·지침 검색</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-curr-search', this); ensureSearchData('curr')">📖 교육과정 검색</button>
   </div>
@@ -3329,6 +3330,25 @@
   </div>
   <div id="curr-status" class="srch-status">검색어를 입력하세요.</div>
   <div id="curr-results" class="srch-results"></div>
+</div>
+
+<!-- ===== AI 질문 (RAG 챗봇) ===== -->
+<div class="sub-panel" id="sub-ai-chat">
+  <h2 class="section-title">🤖 AI 업무도우미 <span style="font-size:0.7rem;font-weight:600;color:#fff;background:var(--accent);padding:2px 8px;border-radius:999px;vertical-align:middle;">BETA</span></h2>
+  <p style="color:var(--text-secondary);margin-bottom:4px;">법령·지침·교육과정 <strong>원문에 근거</strong>해 답변합니다. 근거가 없으면 모른다고 답하며, 답변 끝에 출처를 표시합니다.</p>
+  <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:12px;">예: <code>경조사 휴가는 며칠인가요?</code> · <code>학교폭력 가해학생 조치 종류는?</code> · <code>미적분Ⅰ 성취기준 알려줘</code></p>
+  <div class="chat-ds">
+    <span style="font-weight:600;">참고 자료:</span>
+    <label><input type="radio" name="chat-ds" value="all" checked> 전체</label>
+    <label><input type="radio" name="chat-ds" value="law"> 법령·지침</label>
+    <label><input type="radio" name="chat-ds" value="curr"> 교육과정</label>
+  </div>
+  <div id="chat-log" class="chat-log"></div>
+  <div class="chat-input-bar">
+    <textarea id="chat-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
+    <button id="chat-send" class="srch-btn" onclick="chatSend()">전송</button>
+  </div>
+  <p class="chat-disclaimer">⚠️ AI 답변은 참고용입니다. 법적·행정적 효력은 원문 기준이며, 중요한 사안은 반드시 원문·담당부서를 확인하세요.</p>
 </div>
 </div><!-- /teacher-content -->
     <!-- TAB:teacher:END -->
@@ -12508,6 +12528,23 @@ function switchSpTab(id,btn){
   .srch-ref { font-size:0.74rem; color:var(--text-secondary); }
   .srch-snip { font-size:0.88rem; color:var(--text); line-height:1.7; white-space:pre-wrap; word-break:break-word; }
   .srch-snip mark { background:#fde68a; color:#7c2d12; padding:0 1px; border-radius:2px; }
+
+  /* RAG 챗봇 */
+  .chat-ds { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:10px 0 14px; font-size:0.86rem; color:var(--text-secondary); }
+  .chat-ds label { display:inline-flex; align-items:center; gap:5px; cursor:pointer; }
+  .chat-log { display:flex; flex-direction:column; gap:12px; min-height:90px; max-height:58vh; overflow-y:auto; padding:8px 2px; }
+  .chat-msg { max-width:88%; padding:11px 15px; border-radius:14px; font-size:0.9rem; line-height:1.7; word-break:break-word; }
+  .chat-msg.user { align-self:flex-end; background:var(--primary); color:#fff; border-bottom-right-radius:4px; white-space:pre-wrap; }
+  .chat-msg.bot { align-self:flex-start; background:var(--surface); border:1px solid var(--border); color:var(--text); border-bottom-left-radius:4px; box-shadow:var(--shadow-sm); }
+  .chat-msg.bot.loading { color:var(--text-secondary); }
+  .chat-src { margin-top:9px; border-top:1px dashed var(--border); padding-top:8px; font-size:0.78rem; }
+  .chat-src summary { cursor:pointer; color:var(--primary); font-weight:600; }
+  .chat-src-item { margin-top:7px; color:var(--text-secondary); line-height:1.6; }
+  .chat-src-item b { color:var(--primary); }
+  .chat-input-bar { display:flex; gap:8px; align-items:flex-end; }
+  .chat-input { flex:1; resize:none; min-height:42px; max-height:160px; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius); font-family:inherit; font-size:0.92rem; outline:none; line-height:1.5; background:var(--surface); color:var(--text); }
+  .chat-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(42,82,152,0.12); }
+  .chat-disclaimer { font-size:0.76rem; color:var(--text-secondary); margin-top:10px; }
 </style>
 
 <!-- ===== 통합검색 엔진 JS ===== -->
@@ -12598,6 +12635,32 @@ function switchSpTab(id,btn){
     });
   };
 
+  // RAG 챗봇용: 선택한 데이터셋에서 질의와 관련된 청크 top-N 추출
+  window.retrieveChunks = function(keys, query, topN){
+    topN = topN || 6;
+    var terms = (query||'').toLowerCase().split(/\s+/).filter(function(t){ return t.length>=2; });
+    if(!terms.length) terms = (query||'').toLowerCase().split(/\s+/).filter(Boolean);
+    if(!terms.length) return [];
+    var scored = [];
+    keys.forEach(function(k){
+      var s = SRCH[k]; if(!s || !s.data) return;
+      var docs = s.data.docs, chunks = s.data.chunks;
+      for(var i=0;i<chunks.length;i++){
+        var c = chunks[i], lt = c[2].toLowerCase(), score = 0, distinct = 0;
+        for(var t=0;t<terms.length;t++){
+          var cnt = lt.split(terms[t]).length - 1;
+          if(cnt>0){ distinct++; score += cnt; }
+        }
+        if(distinct>0){
+          score += distinct*5;                 // 서로 다른 검색어를 많이 포함할수록 가중
+          scored.push([score, { label: docs[c[0]], ref: c[1], text: c[2] }]);
+        }
+      }
+    });
+    scored.sort(function(a,b){ return b[0]-a[0]; });
+    return scored.slice(0, topN).map(function(x){ return x[1]; });
+  };
+
   // 입력 바인딩: Enter 즉시 / 입력 중 디바운스
   function bind(k){
     var inp = el(SRCH[k].q), sel = el(SRCH[k].src);
@@ -12608,6 +12671,86 @@ function switchSpTab(id,btn){
     if(sel) sel.addEventListener('change', function(){ window.runSearch(k); });
   }
   function init(){ bind('law'); bind('curr'); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- ===== AI 질문(RAG 챗봇) JS ===== -->
+<script>
+(function(){
+  function el(id){ return document.getElementById(id); }
+  function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  function addMsg(cls, html){
+    var log = el('chat-log');
+    var d = document.createElement('div');
+    d.className = 'chat-msg ' + cls;
+    d.innerHTML = html;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    return d;
+  }
+
+  window.chatSend = function(){
+    var inp = el('chat-input');
+    var q = (inp.value || '').trim();
+    if(!q) return;
+    var dsEl = document.querySelector('input[name="chat-ds"]:checked');
+    var ds = dsEl ? dsEl.value : 'all';
+    var keys = ds === 'all' ? ['law','curr'] : [ds];
+
+    addMsg('user', escapeHtml(q));
+    inp.value = ''; inp.style.height = 'auto';
+    var loading = addMsg('bot loading', '🔎 자료를 찾아 답변을 준비 중입니다…');
+    var btn = el('chat-send'); btn.disabled = true;
+
+    Promise.all(keys.map(function(k){ return window.ensureSearchData(k); })).then(function(){
+      var ctx = window.retrieveChunks ? window.retrieveChunks(keys, q, 6) : [];
+      return fetch('/.netlify/functions/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q, contexts: ctx })
+      }).then(function(r){
+        return r.json().then(function(j){ return { ok: r.ok, j: j }; });
+      }).then(function(res){
+        loading.classList.remove('loading');
+        if(!res.ok){
+          loading.innerHTML = '⚠️ ' + escapeHtml((res.j && res.j.error) || '오류가 발생했습니다.');
+          return;
+        }
+        var ans = (res.j && res.j.answer) || '(빈 응답)';
+        var src = '';
+        if(ctx.length){
+          src = '<details class="chat-src"><summary>참고한 자료 ' + ctx.length + '건</summary>'
+              + ctx.map(function(c){
+                  return '<div class="chat-src-item"><b>' + escapeHtml(c.label) + '</b>'
+                       + (c.ref ? ' (' + escapeHtml(c.ref) + ')' : '') + '<br>'
+                       + escapeHtml(c.text.slice(0,140)) + '…</div>';
+                }).join('')
+              + '</details>';
+        }
+        loading.innerHTML = escapeHtml(ans).replace(/\n/g, '<br>') + src;
+      });
+    }).catch(function(){
+      loading.classList.remove('loading');
+      loading.innerHTML = '⚠️ 요청 실패 — 네트워크 또는 서버 오류입니다. (로컬 file://에서는 동작하지 않습니다. daeryun.life에서 이용하세요.)';
+    }).finally(function(){
+      btn.disabled = false;
+    });
+  };
+
+  function init(){
+    var inp = el('chat-input');
+    if(!inp) return;
+    // 자동 높이 조절
+    inp.addEventListener('input', function(){
+      inp.style.height = 'auto';
+      inp.style.height = Math.min(inp.scrollHeight, 160) + 'px';
+    });
+    // Enter 전송, Shift+Enter 줄바꿈
+    inp.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); window.chatSend(); }
+    });
+  }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
