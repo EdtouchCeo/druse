@@ -12545,6 +12545,7 @@ function switchSpTab(id,btn){
   .chat-input { flex:1; resize:none; min-height:42px; max-height:160px; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius); font-family:inherit; font-size:0.92rem; outline:none; line-height:1.5; background:var(--surface); color:var(--text); }
   .chat-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(42,82,152,0.12); }
   .chat-disclaimer { font-size:0.76rem; color:var(--text-secondary); margin-top:10px; }
+  .chat-warn { background:#fff7ed; border:1px solid #fdba74; color:#9a3412; border-radius:8px; padding:8px 11px; margin:2px 0 9px; font-size:0.83rem; line-height:1.55; font-weight:500; }
 </style>
 
 <!-- ===== 통합검색 엔진 JS ===== -->
@@ -12680,6 +12681,18 @@ function switchSpTab(id,btn){
 (function(){
   function el(id){ return document.getElementById(id); }
   function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  // ⚠️ 로 시작하는 줄은 주의 박스로 강조(LLM 일반지식 기반 답변 표시)
+  function formatAnswer(ans){
+    var lines = (ans||'').split('\n'), out = '';
+    for(var i=0;i<lines.length;i++){
+      if(lines[i].trim().indexOf('⚠️') === 0){
+        out += '<div class="chat-warn">' + escapeHtml(lines[i].trim()) + '</div>';
+      } else {
+        out += escapeHtml(lines[i]) + (i < lines.length-1 ? '<br>' : '');
+      }
+    }
+    return out;
+  }
   function addMsg(cls, html){
     var log = el('chat-log');
     var d = document.createElement('div');
@@ -12728,7 +12741,7 @@ function switchSpTab(id,btn){
                 }).join('')
               + '</details>';
         }
-        loading.innerHTML = escapeHtml(ans).replace(/\n/g, '<br>') + src;
+        loading.innerHTML = formatAnswer(ans) + src;
       });
     }).catch(function(){
       loading.classList.remove('loading');
