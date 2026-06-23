@@ -12552,11 +12552,12 @@ function switchSpTab(id,btn){
 <script>
 (function(){
   var SRCH = {
-    law:  { url:'data/law_search.json',  data:null, loading:false,
+    law:  { url:'data/law_search.json',  embUrl:'data/law_emb.bin',  data:null, loading:false, emb:null, embLoading:false, embFailed:false,
             q:'law-q',  src:'law-src',  status:'law-status',  results:'law-results' },
-    curr: { url:'data/curr_search.json', data:null, loading:false,
+    curr: { url:'data/curr_search.json', embUrl:'data/curr_emb.bin', data:null, loading:false, emb:null, embLoading:false, embFailed:false,
             q:'curr-q', src:'curr-src', status:'curr-status', results:'curr-results' }
   };
+  var EMB_DIM = 768;  // build_embeddings.py(text-embedding-004)와 동일
   var MAX_SHOW = 80;
 
   function el(id){ return document.getElementById(id); }
@@ -12636,7 +12637,58 @@ function switchSpTab(id,btn){
     });
   };
 
-  // RAG 챗봇용: 선택한 데이터셋에서 질의와 관련된 청크 top-N 추출
+  // 청크 임베딩(.bin) 지연 로드 — 파일이 없으면 embFailed로 표시(→ 키워드 폴백)
+  function ensureEmb(k){
+    var s = SRCH[k];
+    if(s.emb || s.embFailed) return Promise.resolve();
+    if(s.embLoading) return s.embLoading;
+    s.embLoading = fetch(s.embUrl)
+      .then(function(r){ if(!r.ok) throw new Error('no-emb'); return r.arrayBuffer(); })
+      .then(function(buf){ s.emb = new Int8Array(buf); s.embLoading = false; })
+      .catch(function(){ s.embFailed = true; s.embLoading = false; });
+    return s.embLoading;
+  }
+
+  // RAG 챗봇용(의미검색): 질문을 임베딩해 청크 임베딩과 코사인 유사도 top-N.
+  // 임베딩 파일/엔드포인트가 없으면 null 반환(→ 호출측에서 키워드 폴백).
+  window.semanticRetrieve = function(keys, query, topN){
+    topN = topN || 6;
+    return Promise.all(keys.map(ensureEmb)).then(function(){
+      var usable = keys.filter(function(k){ return SRCH[k] && SRCH[k].data && SRCH[k].emb; });
+      if(!usable.length) return null;  // 임베딩 없음 → 키워드 폴백
+      return fetch('/.netlify/functions/embed', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: query })
+      }).then(function(r){ if(!r.ok) throw new Error('embed'); return r.json(); }).then(function(j){
+        var qv = j.embedding;
+        if(!qv || qv.length !== EMB_DIM) return null;
+        // 질문 벡터 정규화 + int8 양자화(청크와 동일 방식)
+        var dim = EMB_DIM, norm = 0, i;
+        for(i=0;i<dim;i++) norm += qv[i]*qv[i];
+        norm = Math.sqrt(norm) || 1;
+        var q = new Int8Array(dim);
+        for(i=0;i<dim;i++){ var v = Math.round(qv[i]/norm*127); q[i] = v>127?127:(v<-127?-127:v); }
+        var scored = [];
+        usable.forEach(function(k){
+          var s = SRCH[k], emb = s.emb, chunks = s.data.chunks, n = chunks.length;
+          if(emb.length !== n*dim) return;  // 차원/개수 불일치 → 건너뜀
+          for(var c=0;c<n;c++){
+            var off = c*dim, dot = 0;
+            for(var d=0;d<dim;d++) dot += q[d]*emb[off+d];
+            scored.push([dot, k, c]);
+          }
+        });
+        if(!scored.length) return null;
+        scored.sort(function(a,b){ return b[0]-a[0]; });
+        return scored.slice(0, topN).map(function(x){
+          var s = SRCH[x[1]], c = s.data.chunks[x[2]];
+          return { label: s.data.docs[c[0]], ref: c[1], text: c[2] };
+        });
+      }).catch(function(){ return null; });
+    });
+  };
+
+  // RAG 챗봇용(키워드 폴백): 선택한 데이터셋에서 질의와 관련된 청크 top-N 추출
   window.retrieveChunks = function(keys, query, topN){
     topN = topN || 6;
     var terms = (query||'').toLowerCase().split(/\s+/).filter(function(t){ return t.length>=2; });
@@ -12717,7 +12769,11 @@ function switchSpTab(id,btn){
     var btn = el('chat-send'); btn.disabled = true;
 
     Promise.all(keys.map(function(k){ return window.ensureSearchData(k); })).then(function(){
-      var ctx = window.retrieveChunks ? window.retrieveChunks(keys, q, 6) : [];
+      // 의미검색(임베딩) 우선 → 없으면 키워드 폴백
+      return window.semanticRetrieve ? window.semanticRetrieve(keys, q, 6) : null;
+    }).then(function(sctx){
+      var ctx = (sctx && sctx.length) ? sctx
+                : (window.retrieveChunks ? window.retrieveChunks(keys, q, 6) : []);
       return fetch('/.netlify/functions/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

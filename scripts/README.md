@@ -42,6 +42,22 @@ python scripts/build_index.py "data/교육과정_raw.md" "output/web/data/curr_s
 1. `input/teacher/법령지침/` 또는 `input/teacher/교육과정/`에 파일 추가·교체
 2. 위 (1) → (2) 순서로 재실행
 3. `output/web/data/*_search.json` 커밋·푸시
+4. (의미검색을 쓰는 경우) 아래 (3) 임베딩도 재생성·커밋
+
+## (3) 임베딩 생성 → 의미검색 RAG (선택, 1회/데이터 갱신 시)
+챗봇은 임베딩 `.bin`이 있으면 **의미검색**으로, 없으면 **키워드 검색**으로 자동 동작합니다.
+의미검색을 켜려면 청크 임베딩을 만들어 커밋하세요. (Google API 키 필요)
+
+```bash
+# Windows CMD:  set GEMINI_API_KEY=...      bash:  export GEMINI_API_KEY=...
+python scripts/build_embeddings.py "output/web/data/law_search.json"  "output/web/data/law_emb.bin"
+python scripts/build_embeddings.py "output/web/data/curr_search.json" "output/web/data/curr_emb.bin"
+```
+- 생성된 `output/web/data/law_emb.bin`, `curr_emb.bin`을 **커밋·푸시**하면 자동으로 의미검색 전환.
+- 모델: 기본 `text-embedding-004`(768차원). 바꾸려면 `EMBED_MODEL`·`EMBED_DIM` 환경변수와
+  Netlify의 `EMBED_MODEL`을 **동일하게** 맞추고, 프론트(`output/web/index.html`)의 `EMB_DIM`도 일치시킬 것.
+- 질문 임베딩은 `netlify/functions/embed.js`가 같은 `GEMINI_API_KEY`로 처리(서버에 키 보관).
+- 청크 순서 = `_search.json`의 chunks 순서 = `.bin`의 벡터 순서(일대일). 한쪽만 바꾸면 안 됨.
 
 ## 필요 패키지
 ```
