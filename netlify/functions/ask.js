@@ -59,13 +59,20 @@ exports.handler = async (event) => {
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent?key=${API_KEY}`;
 
+  // 출력 토큰을 넉넉히. Gemini 2.5 계열은 'thinking'이 출력 토큰을 잠식하므로
+  // RAG 단순 응답에서는 thinking을 끈다(Gemma 등에는 해당 옵션을 보내지 않음).
+  const generationConfig = { temperature: 0.2, maxOutputTokens: 2048 };
+  if (/gemini-2\.5/.test(MODEL)) {
+    generationConfig.thinkingConfig = { thinkingBudget: 0 };
+  }
+
   try {
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 1024 }
+        generationConfig: generationConfig
       })
     });
 
