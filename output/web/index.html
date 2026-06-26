@@ -9820,10 +9820,11 @@ function switchSpTab(id,btn){
       <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
         <button id="ai-sub-btn-0" onclick="switchAiSub(0); window.ensureSearchData && window.ensureSearchData('law')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid var(--primary);background:var(--primary);color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">📜 법령·지침 AI</button>
         <button id="ai-sub-btn-1" onclick="switchAiSub(1); window.ensureSearchData && window.ensureSearchData('curr')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📖 국가교육과정 AI</button>
-        <button id="ai-sub-btn-2" onclick="switchAiSub(2)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
-        <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 기반 세특</button>
-        <button id="ai-sub-btn-4" onclick="switchAiSub(4)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
-        <button id="ai-sub-btn-5" onclick="switchAiSub(5)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
+        <button id="ai-sub-btn-2" onclick="switchAiSub(2); window.ensureSearchData && window.ensureSearchData('neis')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🖥️ 나이스 AI</button>
+        <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
+        <button id="ai-sub-btn-4" onclick="switchAiSub(4)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 기반 세특</button>
+        <button id="ai-sub-btn-5" onclick="switchAiSub(5)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
+        <button id="ai-sub-btn-6" onclick="switchAiSub(6)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
       </div>
 
       <!-- 0: 법령·지침 AI (RAG 챗봇) -->
@@ -9862,20 +9863,38 @@ function switchSpTab(id,btn){
         </div>
       </div>
 
-      <!-- 2: 교육일정 작성 AI -->
-      <div id="ai-sub-2" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+      <!-- 2: 나이스 AI (RAG 챗봇) -->
+      <div id="ai-sub-2" style="display:none;">
+        <div style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;background:#fff;display:flex;flex-direction:column;height:640px;max-height:calc(100vh - 220px);">
+          <div style="background:linear-gradient(135deg,#1e3a6b,#2a5298);color:#fff;padding:15px 22px;flex-shrink:0;">
+            <div style="font-weight:700;font-size:1rem;">🖥️ 나이스 AI</div>
+            <div style="font-size:0.82rem;opacity:0.92;line-height:1.6;margin-top:3px;">나이스(NEIS) 교무업무 사용자 설명서를 바탕으로 <strong>학적·성적·학교생활기록부·교육과정 처리 방법</strong>을 답해 드립니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.</div>
+          </div>
+          <div id="neis-ai-log" class="chat-log" style="flex:1;min-height:0;max-height:none;margin:0;padding:16px;background:var(--bg);">
+            <div class="chat-msg bot">안녕하세요! 나이스 교무업무 사용법을 바탕으로 답해 드립니다. 무엇이든 물어보세요.<br><span style="color:var(--text-secondary);font-size:0.84rem;">예) <code>학적 전출 처리 방법</code> · <code>성적 마감 절차</code> · <code>학교생활기록부 정정 방법</code></span></div>
+          </div>
+          <div class="chat-input-bar" style="margin:0;padding:12px 14px;border-top:1px solid var(--border);background:#fff;flex-shrink:0;">
+            <textarea id="neis-ai-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
+            <button id="neis-ai-send" class="srch-btn" onclick="chatAsk('neis')">전송</button>
+          </div>
+          <p style="font-size:0.74rem;color:var(--text-secondary);margin:0;padding:8px 16px 10px;border-top:1px solid var(--border);background:#fff;flex-shrink:0;">⚠️ AI 답변은 참고용입니다. 실제 처리 전 나이스 화면과 공식 지침·담당부서를 확인하세요.</p>
+        </div>
+      </div>
+
+      <!-- 3: 교육일정 작성 AI -->
+      <div id="ai-sub-3" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
         <iframe src="https://ai-63986215827.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="교육일정 작성 AI"></iframe>
       </div>
-      <!-- 3: 수행평가 AI -->
-      <div id="ai-sub-3" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+      <!-- 4: 수행평가 기반 세특 -->
+      <div id="ai-sub-4" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
         <iframe src="https://ai-995563764874.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="수행평가 기반 세특"></iframe>
       </div>
-      <!-- 4: 학생 개별 점수 조회 -->
-      <div id="ai-sub-4" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
+      <!-- 5: 학생 개별 점수 조회 -->
+      <div id="ai-sub-5" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
         <iframe src="score.html" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="학생 개별 점수 조회"></iframe>
       </div>
-      <!-- 5: 나이스 브라우저 -->
-      <div id="ai-sub-5" style="display:none;">
+      <!-- 6: 나이스 브라우저 -->
+      <div id="ai-sub-6" style="display:none;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
           <p style="font-size:0.85rem;color:#6b7280;margin:0;">나이스(NEIS) 빠른 접속 · 자료 조회용 브라우저</p>
           <a href="https://neisbrowser.hwaryong.com/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#1a3a6b;color:#fff;border-radius:18px;font-size:0.82rem;font-weight:600;text-decoration:none;">🔗 새 창으로 열기</a>
@@ -11138,7 +11157,7 @@ function switchSpTab(id,btn){
   };
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < 7; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;
@@ -12543,7 +12562,9 @@ function switchSpTab(id,btn){
     law:  { url:'data/law_search.json',  embUrl:'data/law_emb.bin',  data:null, loading:false, emb:null, embLoading:false, embFailed:false,
             q:'law-q',  src:'law-src',  status:'law-status',  results:'law-results' },
     curr: { url:'data/curr_search.json', embUrl:'data/curr_emb.bin', data:null, loading:false, emb:null, embLoading:false, embFailed:false,
-            q:'curr-q', src:'curr-src', status:'curr-status', results:'curr-results' }
+            q:'curr-q', src:'curr-src', status:'curr-status', results:'curr-results' },
+    neis: { url:'data/neis_search.json', embUrl:'data/neis_emb.bin', data:null, loading:false, emb:null, embLoading:false, embFailed:false,
+            q:'neis-q', src:'neis-src', status:'neis-status', results:'neis-results' }
   };
   var EMB_DIM = 768;  // build_embeddings.py(text-embedding-004)와 동일
   var MAX_SHOW = 80;
@@ -12748,7 +12769,8 @@ function switchSpTab(id,btn){
   // 데이터셋별 단일 AI 챗봇 (법령·지침 / 국가교육과정)
   var CHATS = {
     law:  { keys:['law'],  input:'law-ai-input',  log:'law-ai-log',  send:'law-ai-send' },
-    curr: { keys:['curr'], input:'curr-ai-input', log:'curr-ai-log', send:'curr-ai-send' }
+    curr: { keys:['curr'], input:'curr-ai-input', log:'curr-ai-log', send:'curr-ai-send' },
+    neis: { keys:['neis'], input:'neis-ai-input', log:'neis-ai-log', send:'neis-ai-send' }
   };
 
   window.chatAsk = function(which){
@@ -12783,8 +12805,8 @@ function switchSpTab(id,btn){
         var src = '';
         if(ctx.length){
           src = '<details class="chat-src"><summary>참고한 자료 ' + ctx.length + '건</summary>'
-              + ctx.map(function(c){
-                  return '<div class="chat-src-item"><b>' + escapeHtml(c.label) + '</b>'
+              + ctx.map(function(c, i){
+                  return '<div class="chat-src-item"><b>[' + (i + 1) + '] ' + escapeHtml(c.label) + '</b>'
                        + (c.ref ? ' (' + escapeHtml(c.ref) + ')' : '') + '<br>'
                        + escapeHtml(c.text.slice(0,140)) + '…</div>';
                 }).join('')
@@ -12811,7 +12833,7 @@ function switchSpTab(id,btn){
       if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); window.chatAsk(which); }
     });
   }
-  function init(){ bindChat('law'); bindChat('curr'); }
+  function init(){ bindChat('law'); bindChat('curr'); bindChat('neis'); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
@@ -12961,7 +12983,7 @@ function switchSpTab(id,btn){
         var src = '';
         if(ctx.length){
           src = '<details class="chat-src"><summary>참고한 매뉴얼 ' + ctx.length + '곳</summary>'
-              + ctx.map(function(c){ return '<div class="chat-src-item"><b>' + escapeHtml(c.label) + '</b><br>' + escapeHtml(c.text.slice(0,120)) + '…</div>'; }).join('')
+              + ctx.map(function(c, i){ return '<div class="chat-src-item"><b>[' + (i + 1) + '] ' + escapeHtml(c.label) + '</b><br>' + escapeHtml(c.text.slice(0,120)) + '…</div>'; }).join('')
               + '</details>';
         }
         loading.innerHTML = formatAnswer(ans) + src;
