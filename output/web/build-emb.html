@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>임베딩 생성기 (관리자)</title>
+<style>
+  body { font-family:-apple-system,'Malgun Gothic',sans-serif; max-width:720px; margin:40px auto; padding:0 18px; color:#0f172a; line-height:1.6; }
+  h1 { font-size:1.3rem; color:#2a5298; }
+  .note { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; font-size:0.9rem; color:#475569; }
+  .ds { display:flex; gap:10px; flex-wrap:wrap; margin:20px 0; }
+  .ds button { padding:12px 18px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; cursor:pointer; font-size:0.95rem; font-weight:600; font-family:inherit; }
+  .ds button:hover:not(:disabled) { background:#eff6ff; border-color:#2a5298; }
+  .ds button:disabled { opacity:0.5; cursor:default; }
+  #bar-wrap { display:none; height:14px; background:#e2e8f0; border-radius:99px; overflow:hidden; margin:16px 0 8px; }
+  #bar { height:100%; width:0; background:linear-gradient(90deg,#2a5298,#4a7bc4); transition:width 0.2s; }
+  #status { font-size:0.9rem; color:#334155; white-space:pre-line; }
+  code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-size:0.85em; }
+</style>
+</head>
+<body>
+<h1>🔧 임베딩 생성기 <span style="font-size:0.7rem;color:#fff;background:#e8a020;padding:2px 8px;border-radius:99px;vertical-align:middle;">관리자</span></h1>
+<p class="note">
+  Netlify에 연결된 키(<code>embed</code> 함수)를 이용해 검색 인덱스의 청크 임베딩 <code>.bin</code> 을 브라우저에서 생성합니다.
+  <b>로컬 API 키 불필요.</b> 생성된 파일을 다운로드해서 <code>output/web/data/</code> 에 넣고 커밋하면 의미검색이 켜집니다.<br>
+  ⚠️ <b>배포된 daeryun.life/build-emb.html 에서</b> 실행하세요(함수 호출 필요). 완료까지 탭을 닫지 마세요(교육과정은 10여 분 소요).
+</p>
+
+<div class="ds">
+  <button onclick="run('curr')">📖 교육과정 (curr)</button>
+  <button onclick="run('neis')">🖥️ 나이스 (neis)</button>
+  <button onclick="run('law')">📜 법령·지침 (law)</button>
+</div>
+
+<div id="bar-wrap"><div id="bar"></div></div>
+<div id="status">데이터셋을 선택하면 생성을 시작합니다.</div>
+
+<script>
+const DIM = 768;       // build_embeddings.py / 프론트 EMB_DIM 과 동일
+const BATCH = 8;       // 함수 한 번에 보낼 청크 수(embed.js 상한과 일치)
+const CONC = 4;        // 동시 호출 수
+const t0ref = {};
+
+function setStatus(msg){ document.getElementById('status').textContent = msg; }
+function setBar(pct){ document.getElementById('bar-wrap').style.display='block'; document.getElementById('bar').style.width = pct+'%'; }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+function quantInto(int8, off, vec){
+  if(vec.length !== DIM) throw new Error('차원 불일치: '+vec.length);
+  let norm=0; for(let i=0;i<DIM;i++) norm += vec[i]*vec[i];
+  norm = Math.sqrt(norm) || 1;
+  for(let i=0;i<DIM;i++){ let q = Math.round(vec[i]/norm*127); int8[off+i] = q>127?127:(q<-127?-127:q); }
+}
+
+async function fetchBatch(texts, attempt){
+  attempt = attempt || 0;
+  try{
+    const r = await fetch('/.netlify/functions/embed', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ texts: texts, doc: true })
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    if(!j.embeddings || j.embeddings.length !== texts.length) throw new Error('응답 개수 불일치');
+    return j.embeddings;
+  }catch(e){
+    if(attempt < 7){ await sleep(Math.min(1500*Math.pow(2,attempt), 30000)); return fetchBatch(texts, attempt+1); }
+    throw e;
+  }
+}
+
+async function run(key){
+  document.querySelectorAll('.ds button').forEach(b=>b.disabled=true);
+  try{
+    setStatus('① '+key+'_search.json 불러오는 중…');
+    const j = await fetch('data/'+key+'_search.json').then(r=>{ if(!r.ok) throw new Error('search.json 없음'); return r.json(); });
+    const chunks = j.chunks, N = chunks.length;
+    const out = new Int8Array(N*DIM);
+    const jobs = [];
+    for(let i=0;i<N;i+=BATCH) jobs.push({ start:i, texts: chunks.slice(i, i+BATCH).map(c=>c[2]) });
+
+    let done = 0, ji = 0;
+    const start = performance.now();
+    setStatus('② 임베딩 생성 중… (0/'+N+')');
+
+    async function worker(){
+      while(ji < jobs.length){
+        const job = jobs[ji++];
+        const embs = await fetchBatch(job.texts);
+        for(let k=0;k<embs.length;k++) quantInto(out, (job.start+k)*DIM, embs[k]);
+        done += job.texts.length;
+        const pct = Math.round(done/N*100);
+        const el = (performance.now()-start)/1000;
+        const eta = done? Math.round(el/done*(N-done)) : 0;
+        setBar(pct);
+        setStatus('② 임베딩 생성 중… ('+done+'/'+N+', '+pct+'%) · 남은 시간 약 '+eta+'초');
+      }
+    }
+    await Promise.all(Array.from({length:CONC}, worker));
+
+    // 다운로드
+    const blob = new Blob([out], { type:'application/octet-stream' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = key+'_emb.bin';
+    document.body.appendChild(a); a.click(); a.remove();
+    setBar(100);
+    setStatus('✅ 완료! '+key+'_emb.bin ('+out.length.toLocaleString()+' bytes = '+N+'×'+DIM+' int8) 다운로드됨.\n→ output/web/data/'+key+'_emb.bin 으로 넣고 git commit·push 하면 '+key+' 의미검색이 켜집니다.');
+  }catch(e){
+    setStatus('⚠️ 오류: '+(e.message||e)+'\n(네트워크/함수 키 확인 후 다시 시도하세요. 처음부터 다시 생성됩니다.)');
+  }finally{
+    document.querySelectorAll('.ds button').forEach(b=>b.disabled=false);
+  }
+}
+</script>
+</body>
+</html>

@@ -1,10 +1,10 @@
-// 질문 임베딩 프록시 — 브라우저가 보낸 질문 텍스트를 임베딩 벡터로 변환해 반환.
-// 클라이언트는 이 벡터로 사전 생성된 청크 임베딩(.bin)과 코사인 유사도를 계산해 RAG 근거를 고른다.
+// 임베딩 프록시 — 키는 서버(환경변수)에만 보관.
+//  · 질문(단건):  { text }                 → RETRIEVAL_QUERY    → { embedding:[...] }
+//  · 문서(배치):  { texts:[...], doc:true } → RETRIEVAL_DOCUMENT → { embeddings:[[...],...] }
+// 배치 모드는 build-emb.html(브라우저 임베딩 생성기)이 .bin 만들 때 사용.
 //
-// 환경변수:
-//   GEMINI_API_KEY : Google AI Studio API 키 (ask.js와 공용)
-//   EMBED_MODEL    : 임베딩 모델 (선택, 기본 text-embedding-004 / 768차원)
-//                    ※ build_embeddings.py와 반드시 동일한 모델을 사용해야 함
+// 환경변수: GEMINI_API_KEY(ask.js 공용), EMBED_MODEL(기본 gemini-embedding-001), EMBED_DIM(기본 768)
+// ※ build_embeddings.py / 프론트 EMB_DIM 과 모델·차원이 동일해야 함.
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -25,39 +25,50 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  const text = (body.text || '').toString().trim();
-  if (!text) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'text가 비어 있습니다.' }) };
-  }
-
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:embedContent?key=${API_KEY}`;
 
-  try {
+  async function embedOne(text, taskType) {
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: `models/${MODEL}`,
-        content: { parts: [{ text: text.slice(0, 2000) }] },
-        taskType: 'RETRIEVAL_QUERY',
+        content: { parts: [{ text: (text || ' ').toString().slice(0, 2000) }] },
+        taskType: taskType,
         outputDimensionality: DIM
       })
     });
     const data = await resp.json();
     if (!resp.ok) {
-      const msg = (data && data.error && data.error.message) || ('임베딩 오류 (HTTP ' + resp.status + ')');
-      return { statusCode: 502, body: JSON.stringify({ error: msg }) };
+      const err = new Error((data && data.error && data.error.message) || ('HTTP ' + resp.status));
+      err.status = resp.status;
+      throw err;
     }
     const values = data.embedding && data.embedding.values;
-    if (!values || !values.length) {
-      return { statusCode: 502, body: JSON.stringify({ error: '임베딩 응답 형식 오류' }) };
+    if (!values || !values.length) throw new Error('임베딩 응답 형식 오류');
+    return values;
+  }
+
+  try {
+    // ── 배치(문서 청크) 모드 ──
+    if (Array.isArray(body.texts)) {
+      const texts = body.texts.slice(0, 8); // 함수 타임아웃 보호(한 번에 최대 8개)
+      const taskType = body.doc ? 'RETRIEVAL_DOCUMENT' : 'RETRIEVAL_QUERY';
+      const embeddings = [];
+      for (let i = 0; i < texts.length; i++) embeddings.push(await embedOne(texts[i], taskType));
+      return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embeddings: embeddings }) };
     }
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ embedding: values })
-    };
+
+    // ── 단건(질문) 모드 ──
+    const text = (body.text || '').toString().trim();
+    if (!text) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'text가 비어 있습니다.' }) };
+    }
+    const values = await embedOne(text, 'RETRIEVAL_QUERY');
+    return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embedding: values }) };
+
   } catch (e) {
-    return { statusCode: 502, body: JSON.stringify({ error: '임베딩 호출 실패: ' + (e && e.message ? e.message : 'unknown') }) };
+    const status = (e && e.status === 429) ? 429 : 502;
+    return { statusCode: status, body: JSON.stringify({ error: '임베딩 호출 실패: ' + (e && e.message ? e.message : 'unknown') }) };
   }
 };
