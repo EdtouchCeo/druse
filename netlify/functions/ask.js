@@ -59,7 +59,9 @@ exports.handler = async (event) => {
     '   "⚠️ 아래는 학교 제공 자료(원문)에 없어 AI의 일반 지식으로 답한 참고용 정보입니다. 공식 효력이 없으니 원문·담당부서에서 반드시 확인하세요."\n' +
     '   그리고 가능하면 [근거]의 관련 내용(인접 조항·유사 규정·관련 개념)과 연결지어 설명합니다.\n' +
     '3) 근거 기반 내용과 일반 지식이 섞이면, 어디까지가 자료 기반인지 구분해 표시합니다.\n' +
-    '4) 핵심을 먼저 제시하고, 필요하면 항목으로 정리합니다. 확실하지 않은 부분은 단정하지 않습니다.\n\n' +
+    '4) 핵심을 먼저 제시하고, 필요하면 항목으로 정리합니다. 확실하지 않은 부분은 단정하지 않습니다.\n' +
+    '5) 장황하게 늘어놓지 말고 핵심부터 간결히 쓰되, 답변은 반드시 문장을 완결해 마무리합니다. ' +
+    '절대 문장 중간에서 끊지 마세요. 분량이 많아질 것 같으면 덜 중요한 내용을 줄여서라도 끝맺음을 완성합니다.\n\n' +
     '다시 강조: 주의 문구만 출력하고 끝내면 안 됩니다. 주의 문구 다음에 반드시 질문에 대한 실제 답변 문장이 이어져야 합니다.\n\n' +
     '[근거]\n' + evidence + '\n\n[질문]\n' + question;
 
@@ -67,7 +69,7 @@ exports.handler = async (event) => {
 
   // 출력 토큰을 넉넉히. Gemini 2.5 계열은 'thinking'이 출력 토큰을 잠식하므로
   // RAG 단순 응답에서는 thinking을 끈다(Gemma 등에는 해당 옵션을 보내지 않음).
-  const generationConfig = { temperature: 0.2, maxOutputTokens: 2048 };
+  const generationConfig = { temperature: 0.2, maxOutputTokens: 8192 };
   if (/gemini-2\.5/.test(MODEL)) {
     generationConfig.thinkingConfig = { thinkingBudget: 0 };
   }
