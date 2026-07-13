@@ -995,6 +995,7 @@
 <div class="sub-nav-group" id="cat-etc">
   <div class="sub-nav">
     <button class="sub-nav-btn" onclick="switchSub('sub-required', this)">📚 필수 교육(연수)</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-leave', this)">✈️ 방학 중 복무·국외여행</button>
   </div>
 </div>
 
@@ -1817,11 +1818,12 @@
 
   <div class="card">
     <strong>🔍 업무 목적</strong>
-    <p>학교생활기록부 항목별 기재 내용에 대해 교원이 상호 교차 점검하여 부당 입력·허위사실 기재·기재 금지 내용 입력을 사전에 예방하고 공정성과 신뢰도를 높입니다.</p>
+    <p>고교학점제 시행에 따라 학교생활기록부 항목별 기재 내용을 교원이 상호 교차 점검하여, 부당 입력·허위사실 기재·기재 금지 내용 입력과 필수 기재 사항 누락을 사전에 예방하고 기재 격차 해소와 공정성·신뢰도를 높입니다.</p>
     <ul style="margin-top:10px; padding-left:20px; line-height:2;">
-      <li><strong>담당:</strong> 전체 교직원 (담임·비담임·교과), 교무부·창의인성부·연구부·지원부</li>
-      <li><strong>수행 주기:</strong> 연 1회 — 매 학년도 종료 전 1월 초 (구체적 일시는 학사일정에 따라 결정)</li>
-      <li><strong>준비물:</strong> 당해 연도 학생부 기재요령 책자, 연필, 청색·적색 볼펜, 지우개</li>
+      <li><strong>담당:</strong> 전체 교원 (담임·비담임·교과), 교무부·창의인성부·연구부·지원부</li>
+      <li><strong>수행 주기:</strong> 학기당 1회 — 학기말(1학기: 여름방학 직전 / 2학기: 학년말) 반일 일정으로 운영. 구체적 일시·장소는 학년도별 학사일정에 따라 결정</li>
+      <li><strong>준비물:</strong> <strong>당해 연도 학생부 기재요령 책자</strong>(전년도 책자 사용 금지), 연필, 청색·적색 볼펜, 지우개</li>
+      <li><strong>운영 형태:</strong> 오후 반일 — 직원회의(10분) → 창의적 체험활동 점검(약 80분) → 교과별 분임 세특 점검(약 120분) → 협의회·점검표 제출(30분)</li>
     </ul>
   </div>
 
@@ -1857,14 +1859,15 @@
     <div class="flow-step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <strong>오전 교차 점검 — 학년 담임</strong>
-        <p>점검 항목: <strong>행동특성 및 종합의견, 자율활동</strong></p>
+        <strong>창의적 체험활동 교차 점검 (A·B·C 분임)</strong>
+        <p>점검 항목: <strong>자율활동 · 진로활동 · 동아리활동</strong> (학년말 점검 시 <strong>행동특성 및 종합의견</strong> 포함)</p>
         <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
-          <li>담임교사를 학년별 지정 교실에 배치</li>
-          <li>1·2학년 담임: 학년을 교차하여 점검 (예: 1-1반 담임 ↔ 2-1반 담임)</li>
-          <li>3학년 담임: 학반을 순환 교차 (3-1→3-2, 3-2→3-3, …, 마지막→3-1)</li>
-          <li>점검 완료 후 학년 총무가 점검표 수합 → 교무부장에게 제출</li>
-          <li><strong>주의:</strong> 본인이 작성한 학반은 반드시 다른 담임이 점검</li>
+          <li>영역별로 A(자율)·B(진로)·C(동아리) 분임을 편성하고 교실을 지정 — 동아리는 대상 수가 많아 C-1·C-2·C-3 등으로 분할 운영</li>
+          <li><strong>점검자 배정 원칙:</strong> 작성 주체가 아닌 교사가 점검한다. 담임 기재 영역(자율·진로)은 <strong>다른 학반·다른 학년 담임</strong>에게, 동아리는 <strong>해당 동아리 담당이 아닌 교사</strong>(1학년 담임·비담임 포함)에게 배정</li>
+          <li>배정 예시: 자율활동 = 해당 학년 담임이 학반을 순환 교차(3-1→3-2 … 마지막→3-1) / 진로활동 = 인접 학년 담임이 반별 대응 점검 / 동아리활동 = 비담임·타 학년 담임 배정</li>
+          <li>수합: 영역별 총무가 점검표 수합 → 자율·진로는 교무부장, 동아리는 창의인성부장에게 제출</li>
+          <li>퇴실: 분임별 지정 교사가 소등·문단속</li>
+          <li><strong>주의:</strong> 본인이 작성한 학반·동아리를 본인이 점검하지 않도록 배정표 단계에서 반드시 확인</li>
         </ul>
       </div>
     </div>
@@ -1872,13 +1875,14 @@
     <div class="flow-step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <strong>오전 교차 점검 — 비담임</strong>
-        <p>점검 항목: <strong>동아리활동, 진로활동</strong></p>
+        <strong>교과별 분임 점검</strong>
+        <p>점검 항목: <strong>과목별 세부능력 및 특기사항</strong></p>
         <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
-          <li>전체 비담임교사를 A·B·C조 3개 조로 편성 (인원에 따라 조 수 조정)</li>
-          <li>점검 항목을 각 조에 배분, 1인당 3개 항목 점검</li>
-          <li>각 조 최하 번호 교사가 점검표 수합 → 창의인성부장에게 제출</li>
-          <li>각 조 최상 번호 교사가 퇴실 시 소등 및 문단속</li>
+          <li>교과별(국어·수학·외국어·사회·과학·예체능/정보 등) 분임 교실 지정, 담당 과목 사전 배분</li>
+          <li><strong>1인 1개 과목 점검 — 자신이 직접 지도한 과목 외 과목을 검토</strong></li>
+          <li>점검표에 교과·과목명·점검 교사·점검 대상(학급 범위)·서명·점검 특이사항을 기재</li>
+          <li>교과 총무가 점검표 수합 → 연구부장에게 제출 / 교과 부장이 퇴실 시 소등·문단속</li>
+          <li><strong>주의:</strong> 본인이 기재한 과목을 본인이 점검하지 않도록 과목 배분 단계에서 확인</li>
         </ul>
       </div>
     </div>
@@ -1886,56 +1890,84 @@
     <div class="flow-step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <strong>오후 교과별 분임 점검</strong>
-        <p>점검 항목: <strong>과목별 세부능력 및 특기사항</strong></p>
-        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
-          <li>교과별 분임 교실 지정, 담당 과목 사전 배분</li>
-          <li>1인 1개 과목 점검 — 자신이 직접 지도한 과목 외 과목 검토</li>
-          <li>교과 총무가 점검표 수합 → 연구부장에게 제출</li>
-          <li>교과 부장이 퇴실 시 소등 및 문단속</li>
-          <li><strong>주의:</strong> 본인이 기재한 과목을 본인이 점검하지 않도록 과목 배분 단계에서 확인</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="flow-step">
-      <div class="step-num">6</div>
-      <div class="step-body">
         <strong>마무리 — 분임 협의회 및 점검표 제출</strong>
         <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
-          <li>전체 교직원 분임 협의회 → 점검 결과 공유</li>
+          <li>분임 협의회 → 점검 결과 공유 및 반복 지적 사항 정리</li>
           <li>각 분임별 점검표 최종 취합 → 담당 부장에게 제출</li>
           <li>담당자 소등·문단속 확인 후 행사 마무리</li>
-          <li>지원부: 행사 전 과정 운영본부 대기, 수정 필요 사항 즉시 해당 교사에게 통보</li>
+          <li>지원부: 행사 전 과정 운영본부 대기, 수정 필요 사항은 담당 부장을 통해 해당 교사에게 즉시 통보</li>
+          <li>학교 특색 사업(예: AI 디지털 활용 성과 나눔)이 연계될 경우 협의회 시간에 함께 운영</li>
         </ul>
       </div>
     </div>
 
   </div>
 
-  <h2 class="section-title" style="margin-top:40px;">🚫 기재 금지 항목</h2>
+  <h2 class="section-title" style="margin-top:40px;">🚫 기재 금지 항목 (모든 항목 공통)</h2>
+
+  <p style="margin-bottom:14px; color:#475569;">아래는 <strong>사교육 유발 요인이 큰 사항</strong>으로, <strong>행동특성 및 종합의견을 포함한 학생부 어떠한 항목에도 기재할 수 없습니다.</strong></p>
 
   <div class="install-grid">
-    <div class="install-item"><strong>공인어학시험</strong><p>참여 사실 및 성적·수상 실적</p></div>
-    <div class="install-item"><strong>교외대회</strong><p>참여 사실 및 성적·수상 실적</p></div>
-    <div class="install-item"><strong>모의고사·학력평가</strong><p>성적 관련 내용 일체</p></div>
-    <div class="install-item"><strong>도서출간·논문·지식재산권</strong><p>투고·등재·발표·출원·등록 사실</p></div>
-    <div class="install-item"><strong>부모·친인척 지위 암시</strong><p>사회경제적 지위 내용</p></div>
+    <div class="install-item"><strong>공인어학시험</strong><p>참여 사실 및 성적·수상 실적<br><small>TOEIC·TOEFL·TEPS·HSK·JPT·JLPT·DELF·DELE·한자능력검정 등</small></p></div>
+    <div class="install-item"><strong>교외대회·교외상</strong><p>참여 사실·성적·수상 실적. <strong>학교장 참가 허락을 받았어도 기재 불가</strong><br><small>교내대회는 '수상경력' 항목에만 입력 가능</small></p></div>
+    <div class="install-item"><strong>교내·외 인증시험</strong><p>참여 사실이나 성적</p></div>
+    <div class="install-item"><strong>모의고사·전국연합학력평가</strong><p>원점수·석차·등급·백분위 등 성적 관련 내용 일체 및 관련 교내 수상실적</p></div>
+    <div class="install-item"><strong>논문·도서출간·지식재산권</strong><p>학회지 투고·등재·발표, 도서출간, 특허·실용신안·상표·디자인 출원·등록 사실</p></div>
+    <div class="install-item"><strong>해외 활동실적</strong><p>어학연수·봉사활동 등 해외 활동 및 관련 내용</p></div>
+    <div class="install-item"><strong>부모·친인척 지위 암시</strong><p>직종명·직업명·직장명·직위명 등 사회경제적 지위 암시 내용</p></div>
     <div class="install-item"><strong>장학생·장학금</strong><p>관련 내용 일체</p></div>
-    <div class="install-item"><strong>특정 대학명·기관명·강사명</strong><p>구체적인 명칭 일체</p></div>
-    <div class="install-item"><strong>허위 사실</strong><p>학생성적 관련 비위로 간주 → 징계 대상 (감경 제외)</p></div>
+    <div class="install-item"><strong>특정 대학명·기관명·상호명·강사명</strong><p>교육관련기관(교육부·교육청·교육지원청 및 직속기관)은 예외적으로 기관명 입력 가능<br><small>학교 밖 교육기관은 '학교 밖 교육기관(기관유형)'으로 통칭</small></p></div>
+    <div class="install-item"><strong>자격증 명칭·취득 사실</strong><p>'자격증 취득 및 국가직무능력표준 이수상황' 이외 항목에 입력 불가</p></div>
+    <div class="install-item"><strong>고교를 알 수 있는 내용</strong><p>학교명·재단명·학교 축제명·별칭 등<br><small>예외: 인적·학적사항, 수상경력의 '수여기관', 봉사활동 실적의 '장소 또는 주관기관명'</small></p></div>
+    <div class="install-item"><strong>허위·과장 기재</strong><p>단순 사실 부풀리기, 사실과 다른 기재 → <strong>'학생성적 관련 비위'로 간주, 징계양정 적용 및 감경 제외</strong></p></div>
   </div>
 
-  <h2 class="section-title" style="margin-top:40px;">📋 역할별 점검 항목 및 양식</h2>
+  <div class="card" style="margin-top:20px; border-left:4px solid #f43f5e;">
+    <strong>🤖 작성 방식에 관한 금지 사항 (신뢰도 저하 사례)</strong>
+    <ul style="margin-top:8px; padding-left:20px; line-height:1.9;">
+      <li>학생부 서술형 항목에 기재할 내용을 <strong>학생에게 작성해 제출하도록 하는 행위</strong> — 금지</li>
+      <li><strong>AI로 생성한 자료를 서술형 항목에 그대로 입력하는 행위</strong> — 금지</li>
+      <li style="color:#334155;">윤문 등 <strong>보조 수단</strong>으로 생성형 AI의 도움을 받은 경우, 최종 입력 전에 ① 학생의 실제 수행과 무관한 허위·과장 기재 여부 ② 기재요령 유의사항 준수 여부를 <strong>반드시 직접 확인</strong>해야 합니다.</li>
+      <li>학생부 기재는 <strong>교사의 고유 권한</strong>이며, 서술형 항목은 교사가 평소 학생을 직접 관찰·평가한 내용을 바탕으로 작성하는 것이 원칙입니다.</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📝 세부능력 및 특기사항 점검 기준</h2>
+
+  <div class="card">
+    <strong>✅ 이렇게 기재되어야 합니다</strong>
+    <ul style="margin-top:8px; padding-left:20px; line-height:1.9;">
+      <li>학생참여형 수업 및 수업과 연계된 수행평가에서 <strong>관찰한 내용</strong>을 바탕으로, 과목별 성취기준에 따른 <strong>성취수준의 특성·학습활동 참여도·자기주도적 학습에 의한 변화와 성장</strong> 중심으로 기재</li>
+      <li><strong>모든 교과(군)의 모든 학생</strong>에 대해 입력하는 것이 원칙 — 누락 여부를 최우선으로 점검</li>
+      <li>수업에 참여하지 못한 학생: <strong>그 사유를 세특에 입력</strong></li>
+      <li>대부분 미참여로 관찰 내용이 없는 부득이한 경우: <strong>학업성적관리위원회 심의</strong>를 거쳐 '특이사항 없음'으로 입력 가능</li>
+      <li>학생건강체력평가(PAPS) <strong>1등급</strong>은 체육 관련 교과 세특에 입력 가능</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top:16px; border-left:4px solid #f43f5e;">
+    <strong>🚫 세특에 입력할 수 없는 것</strong>
+    <ul style="margin-top:8px; padding-left:20px; line-height:1.9;">
+      <li>위 <strong>공통 기재 금지 항목</strong> 전체</li>
+      <li><strong>교내·외 대회</strong> 참여 사실·성적·수상실적 — <strong>대회명을 '단순 행사'로 바꿔 입력하는 것도 불가</strong> ('수상경력' 이외 어떠한 항목에도 변경 입력 불가)</li>
+      <li><strong>K-MOOC, MOOC, KOCW</strong></li>
+      <li><strong>방과후학교 활동</strong></li>
+      <li><strong>연구보고서(소논문) 관련 사항</strong> — 실적(제목·연구 주제·참여인원·소요시간) 기재 불가<br>
+        <small>단, 정규 교육과정상 수업 중 연구보고서 작성이 가능한 과목(수학과제 탐구, 사회문제 탐구, 융합과학 탐구, 과학과제 연구, 사회과제 연구, 윤리문제 탐구 등)은 <strong>실적을 제외하고</strong> 세특 기재 가능</small></li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📋 역할별 점검 항목 및 제출처</h2>
 
   <table class="data-table">
     <thead>
-      <tr><th>구분</th><th>점검 항목</th><th>수합 책임자</th><th>제출처</th></tr>
+      <tr><th>분임</th><th>점검 항목</th><th>점검 담당</th><th>수합</th><th>제출처</th></tr>
     </thead>
     <tbody>
-      <tr><td>학년 담임 (오전)</td><td>행동특성 및 종합의견, 자율활동</td><td>학년 총무</td><td>교무부장, 창의인성부장</td></tr>
-      <tr><td>비담임 A·B·C조 (오전)</td><td>동아리활동, 진로활동</td><td>각 조 최하 번호 교사</td><td>창의인성부장, 진로상담부장</td></tr>
-      <tr><td>교과별 분임 (오후)</td><td>과목별 세부능력 및 특기사항</td><td>교과 총무</td><td>연구부장</td></tr>
+      <tr><td>A — 자율활동</td><td>자율활동 (학년말: 행동특성 및 종합의견 포함)</td><td>해당 학년 담임 (학반 순환 교차)</td><td>학년 총무</td><td>교무부장</td></tr>
+      <tr><td>B — 진로활동</td><td>진로활동</td><td>인접 학년 담임 (반별 대응)</td><td>학년 총무</td><td>교무부장 / 진로상담부장</td></tr>
+      <tr><td>C — 동아리활동</td><td>전 학년 동아리활동</td><td>비담임 및 타 학년 담임 (해당 동아리 담당 교사 제외)</td><td>조별 지정 교사</td><td>창의인성부장</td></tr>
+      <tr><td>교과별 분임</td><td>과목별 세부능력 및 특기사항</td><td>교과 교사 (1인 1과목, 지도 과목 외)</td><td>교과 총무</td><td>연구부장</td></tr>
     </tbody>
   </table>
 
@@ -1950,6 +1982,8 @@
       <tr><td>전년도 기재요령 책자 사용</td><td>담당자가 구판 배포</td><td>즉시 당해 연도 최신판으로 교체, 점검 재진행</td></tr>
       <tr><td>본인 학반·과목 자가 점검</td><td>교차 배정 오류</td><td>배정표 재확인 후 담당자를 교체하여 재점검</td></tr>
       <tr><td>점검표 미제출</td><td>수합 담당자 누락</td><td>담당 부장이 개별 독려, 행사 당일 종료 전 취합 완료</td></tr>
+      <tr><td>AI 생성 문장 그대로 입력 의심</td><td>관찰 기록 없이 생성형 AI 결과를 그대로 입력</td><td>해당 교사가 학생의 실제 수행 근거(수업·수행평가 관찰 기록)와 대조하여 전면 재작성</td></tr>
+      <tr><td>세특 누락 학생 발견</td><td>모든 학생 입력 원칙 미준수</td><td>즉시 보완 입력. 미참여로 관찰 내용이 없으면 학업성적관리위원회 심의 후 '특이사항 없음' 처리</td></tr>
       <tr><td>허위 기재 적발</td><td>사실과 다른 내용 기재</td><td>학업성적관리위원회 보고, 교육공무원 징계양정 절차 진행</td></tr>
     </tbody>
   </table>
@@ -3454,6 +3488,184 @@
       <li>운영 결과는 <strong>나이스(NEIS) 등 관련 시스템에 기록</strong>하고 증빙자료를 보관해야 합니다.</li>
       <li>세부 운영 방법·자료는 <strong>대구광역시교육청 누리집·소관 부서</strong>에서 확인하세요.</li>
     </ul>
+  </div>
+
+</div>
+
+<!-- ===== 9. 방학 중 복무 · 공무 외 국외여행 ===== -->
+<div class="sub-panel" id="sub-leave">
+
+  <h2 class="section-title">✈️ 방학 중 복무 · 공무 외 국외여행</h2>
+
+  <div class="card">
+    <strong>📌 업무 개요</strong>
+    <p>방학(휴업일) 중 국외여행을 계획하는 교원의 복무 신청 절차입니다. 여행 목적과 연가 잔여일수에 따라 <strong>①연가 범위 내 공무 외 국외여행</strong> 또는 <strong>②교육공무원법 제41조에 따른 국외자율연수</strong> 중 하나로 신청합니다.</p>
+    <ul style="margin-top:10px; padding-left:20px; line-height:2;">
+      <li><strong>근거:</strong> 공무 외 국외여행 관련 복무 지침 안내(중등교육과-15262, 2019. 7. 18.)</li>
+      <li><strong>기본 방침 ①:</strong> 교원의 연가는 특별한 사유가 없는 한 <strong>수업일을 제외</strong>하고 실시합니다.</li>
+      <li><strong>기본 방침 ②:</strong> 교육공무원법 제41조에 따른 국외자율연수는 <strong>수업일에 실시할 수 없습니다</strong>(휴업일에만 가능).</li>
+      <li><strong>연가일수 산정 기간:</strong> 매년 1월 1일 ~ 12월 31일 (부족 시 차년도 연가 당겨 사용 가능)</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">🔀 어느 쪽으로 신청할까 — 두 갈래 비교</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>구분</th><th>① 휴가일수 범위 내 공무 외 국외여행 (연가)</th><th>② 국외자율연수를 위한 공무 외 국외여행 (제41조)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>대상</strong></td><td>친지방문·견문·취미·가족 기념일 등 <strong>단순 해외여행</strong>이며 <strong>연가 잔여일수가 충분</strong>한 경우</td><td><strong>퇴직 예정자</strong> 또는 <strong>연가일수가 부족한 경우</strong>, 교직단체 주관 연수·해외 교육기관 초청·교수학습자료 수집·현지 어학연수 등</td></tr>
+      <tr><td><strong>신청 방법</strong></td><td>NEIS 개인근무상황신청 (연가)</td><td>NEIS 개인근무상황신청 (교육공무원법 제41조 연수)</td></tr>
+      <tr><td><strong>승인 신청 서류</strong></td><td>없음</td><td><strong>국외자율연수계획서</strong> (NEIS 상신 시 첨부)</td></tr>
+      <tr><td><strong>실시 후 제출 서류</strong></td><td>없음</td><td>없음</td></tr>
+      <tr><td><strong>결재 경로</strong></td><td>기안자 → 교무 → 교감 → <strong>교장</strong></td><td>기안자 → 연구부장 → 교감 → <strong>교장</strong></td></tr>
+      <tr><td><strong>연가 차감</strong></td><td>차감됨</td><td><strong>법정 연가일수와 별도 처리</strong> (차감 없음)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:16px; border-left:4px solid #f43f5e;">
+    <strong>★ 연가일수가 부족하거나 퇴직 예정이라면</strong>
+    <p style="margin-top:6px;">단순 여행이라도 연가로 처리할 수 없으므로 <strong>"국외자율연수를 위한 공무 외 국외여행"</strong>으로 신청합니다(계획서 첨부 필수). 또는 <strong>차년도 연가를 당겨 사용</strong>할 수 있으니, 필요 시 신청 후 교감 선생님께 직접 보고하세요.</p>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📋 ① 연가로 신청하는 방법</h2>
+
+  <div class="flow-steps">
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>교감 선생님께 사전 보고</strong>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>국외여행 계획을 <strong>먼저 교감 선생님께 보고</strong>한 후 복무를 신청합니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>나이스 복무 상신</strong>
+        <p>경로: <strong>나이스 &gt; 복무 &gt; 개인근무상황관리 &gt; 신청</strong></p>
+        <table class="data-table" style="margin-top:10px;">
+          <thead><tr><th>항목</th><th>입력 방법</th></tr></thead>
+          <tbody>
+            <tr><td>근무 상황</td><td>연가 / 연가</td></tr>
+            <tr><td><strong>기간</strong></td><td><strong>평일 일과시간에 해당하는 기간만 입력</strong> (★일과시간 이후는 제외)<br>· 출국 시간이 <strong>일과시간 이후</strong>면 그날은 빼고 <strong>다음 날부터</strong> 신청<br>· 귀국 시간이 <strong>일과시간 이전</strong>이면 그날은 빼고 <strong>전날까지</strong> 신청</td></tr>
+            <tr><td>일수</td><td>연가 일수 자동 부여(연가 일괄 신청). 기간 중 <strong>토·일요일은 자동 제외</strong>됨<br><small>예) 목요일~다음 주 화요일 국외여행 → 자동으로 4일 차감</small></td></tr>
+            <tr><td>연락처</td><td><strong>국외에서 연락 가능한</strong> 개인 전화번호</td></tr>
+            <tr><td>사유</td><td>선택에서 <strong>"휴업일"</strong> 선택 후, 사유에 <strong>"공무 외 국외여행(국가명 도시명)"</strong> 입력<br><small>예) 공무 외 국외여행(미국 뉴욕) · "관련법령" 선택은 수업일에 해당할 경우에만</small></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>결재 및 보고</strong>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>결재 경로: <strong>기안자 → 교무 → 교감 → 교장</strong></li>
+          <li>연가 상신 후 <strong>교감·교장 선생님께 상신 내용을 직접 보고</strong>합니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>여행 일정 제출 (교무부)</strong>
+        <p>복무 상신 후, <strong>메신저로 교무부장에게 실제 여행 일정</strong>을 전송합니다. (나이스 복무 기간과 달리 <strong>실제 출·귀국 시각</strong>을 기재)</p>
+        <div class="card" style="margin-top:8px; background:#f8fafc;">
+          <p style="line-height:1.9;">
+            <strong>이름:</strong> 홍길동<br>
+            <strong>기간:</strong> 2000. 07. 23.(목) 18:30 ~ 07. 28.(화) 06:30 <small>(메신저는 실제 기간)</small><br>
+            <strong>장소:</strong> 국가명(도시명) — 예: 베트남(다낭) <small>*대표 도시로 기재</small>
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">📋 ② 국외자율연수(제41조)로 신청하는 방법</h2>
+
+  <div class="flow-steps">
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>국외자율연수계획서 작성</strong>
+        <p>포함 항목: 제출자, 연수 희망국, 연수 기간, 연수 목적, 활동 계획, 기대되는 성과, 연수 중 연락처(연락 방법)</p>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>연수 구분 예시: 교직단체 주관 연수 / 해외 교육기관 초청 / 개인의 교수학습자료 수집 / 현지 어학연수 과정 등록·수강 / 기타(내용 기재)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>나이스 복무 및 계획서 상신</strong>
+        <table class="data-table" style="margin-top:10px;">
+          <thead><tr><th>항목</th><th>입력 방법</th></tr></thead>
+          <tbody>
+            <tr><td>근무 상황</td><td>교육공무원법 제41조 연수</td></tr>
+            <tr><td>사유 또는 용무</td><td>국외자율연수</td></tr>
+            <tr><td>목적지</td><td>공무 외 국외여행(국가명, 도시명)</td></tr>
+            <tr><td>첨부</td><td>국외자율연수 계획서를 <strong>나이스 상신 시 첨부파일로 탑재</strong></td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:8px;"><strong>주의:</strong> '자택 등'에서 실시하는 일반 제41조 연수와 <strong>일자를 구별하여</strong> 상신합니다.</p>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>학교장 승인</strong>
+        <ul style="margin-top:6px; padding-left:18px; line-height:1.8;">
+          <li>학교장(교육장)이 연수계획서를 확인하고 승인합니다.</li>
+          <li>결재 경로: <strong>기안자 → 연구부장 → 교감 → 교장</strong></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:20px; border-left:4px solid #f59e0b;">
+    <strong>⚠️ 국외자율연수 유의사항</strong>
+    <ul style="margin-top:8px; padding-left:20px; line-height:1.9;">
+      <li>국외자율연수 관련 <strong>경비 지원은 없습니다.</strong></li>
+      <li>교원연수·연구실적 <strong>학점화 시행 대상이 아닙니다.</strong></li>
+      <li>연수 기간은 법정 연가일수와 <strong>별도 처리</strong>되며, 학교 교육에 지장이 없는 <strong>휴업일에 실시</strong>해야 합니다.</li>
+      <li>현지의 규범·관습을 지켜 <strong>교원으로서 품위를 유지</strong>하고 건전한 여행문화 조성에 솔선수범합니다.</li>
+      <li>국외여행과 관련한 <strong>민폐·관폐 등 금지</strong></li>
+      <li><strong>친지방문·견문 목적 등 단순 해외여행은 연가 범위 내</strong>에서, 수업일을 제외하고 학교장의 허가를 받아 실시합니다.</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title" style="margin-top:40px;">⚠️ 자주 하는 실수 — 상황별 조치</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>상황</th><th>원인</th><th>조치 방법</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>연가일수를 손해 봄</td><td>출국·귀국 당일을 일과시간과 무관하게 통째로 신청</td><td>출국이 일과시간 이후면 <strong>다음 날부터</strong>, 귀국이 일과시간 이전이면 <strong>전날까지</strong>로 기간을 수정</td></tr>
+      <tr><td>"연가가 부족하여 내년 연가를 미리 사용합니다" 경고창</td><td>차년도 연가가 아직 생성되지 않아 발생하는 <strong>정상 경고</strong></td><td>경고창을 닫고 계속 상신 진행. 차년도 연가가 생성되면 정상 차감됨. 필요 시 교감 선생님께 보고</td></tr>
+      <tr><td>연가 잔여일수 부족</td><td>연가 소진 또는 퇴직 예정</td><td>차년도 연가 당겨 사용 신청, 또는 <strong>국외자율연수(제41조)</strong>로 전환하여 계획서 첨부 상신</td></tr>
+      <tr><td>교무부에 일정 미제출</td><td>복무만 상신하고 메신저 전송 누락</td><td>상신 직후 <strong>이름·실제 기간·장소(국가·대표 도시)</strong>를 교무부장에게 메신저로 전송</td></tr>
+      <tr><td>수업일에 국외자율연수 신청</td><td>제41조 연수는 수업일 실시 불가</td><td>휴업일(방학) 기간으로 일정 조정. 수업일이 불가피하면 연가로 신청하고 학교장 허가</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section-title" style="margin-top:40px;">📄 관련 서식</h2>
+
+  <div class="install-grid">
+    <div class="install-item"><strong>국외 자율연수 계획서</strong><p>소속·직급·성명·과목, 연수 희망국, 기간, 연수 구분, 세부 일정(월일·출발지·도착지·연수기관·내용), 기대되는 연수 효과, 연수 중 연락처<br><small>제41조 연수 신청 시 나이스 첨부</small></p></div>
+    <div class="install-item"><strong>서약서</strong><p>여행 기간 중 공무원 품위 유지, 여행 목적 외 행동·국익 위배 언동 금지, 보안 규정 준수, 과다 휴대품 반입 금지 서약<br><small>학교 요청 시 제출</small></p></div>
   </div>
 
 </div>
@@ -10067,14 +10279,21 @@ function switchSpTab(id,btn){
           <iframe src="https://neisbrowser.hwaryong.com/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="나이스 브라우저"></iframe>
         </div>
       </div>
-      <!-- 7: 백워드 수업 설계 -->
+      <!-- 7: 백워드 수업 설계 (대륜고 자체 페이지, 별도 창) -->
       <div id="ai-sub-7" style="display:none;">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          <p style="font-size:0.85rem;color:#6b7280;margin:0;">도달점에서 거꾸로 — 개념기반탐구학습의 단원(5단계)·차시(6단계)를 AI와 함께 설계하고 PDF로 저장</p>
-          <a href="https://service-63986215827.us-west1.run.app/?dest=backward#/backward" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#1a3a6b;color:#fff;border-radius:18px;font-size:0.82rem;font-weight:600;text-decoration:none;">🔗 새 창으로 열기</a>
-        </div>
-        <div style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
-          <iframe src="https://service-63986215827.us-west1.run.app/?dest=backward#/backward" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="백워드 수업 설계"></iframe>
+        <div style="max-width:760px;margin:0 auto;border-radius:16px;border:1px solid #e5e7eb;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);box-shadow:0 2px 16px rgba(0,0,0,0.06);padding:28px 26px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:1.6rem;">🎯</span>
+            <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:#1e3a6b;">백워드 수업 설계</h3>
+          </div>
+          <p style="margin:0 0 4px;font-size:0.92rem;color:#334155;line-height:1.6;">도달점 → 평가 증거 → 수업 순서로 '거꾸로' 설계하는 개념기반탐구학습 도구입니다. 단계마다 AI가 3안을 제안하고, 확정은 늘 선생님이 합니다.</p>
+          <p style="margin:0 0 16px;font-size:0.82rem;color:#64748b;">개념기반 <strong>단원 설계(5단계)</strong> · <strong>차시 설계(6단계)</strong> — 활동지·수업 시나리오까지 생성하고 PDF로 저장할 수 있습니다.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <a href="/backward/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#2a5298;color:#fff;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(42,82,152,0.28);">🎯 백워드 설계 시작하기 →</a>
+            <a href="/backward/#/backward/unit" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;background:#fff;color:#2a5298;border:1px solid #cbd5e1;border-radius:10px;font-size:0.88rem;font-weight:600;text-decoration:none;">단원 설계 바로가기</a>
+            <a href="/backward/#/backward/lesson" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;background:#fff;color:#2a5298;border:1px solid #cbd5e1;border-radius:10px;font-size:0.88rem;font-weight:600;text-decoration:none;">차시 설계 바로가기</a>
+          </div>
+          <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 전체 화면으로 열립니다. 작성 중인 설계는 브라우저에 자동 저장되어 이어서 작업할 수 있습니다.</p>
         </div>
       </div>
     </div>
@@ -11797,7 +12016,7 @@ function switchSpTab(id,btn){
       records:'sub-records', club:'sub-club', check:'sub-check',
       transfer:'sub-transfer', culture:'sub-culture', leesh:'sub-leesh',
       grade:'sub-grade', exam:'sub-exam',
-      grading:'sub-grading', required:'sub-required'
+      grading:'sub-grading', required:'sub-required', leave:'sub-leave'
     },
     student: {
       rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',

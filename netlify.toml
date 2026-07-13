@@ -4,6 +4,14 @@
 [functions]
   directory = "netlify/functions"
 
+# 백워드 수업 설계(/backward/) API 프록시 — Cloud Run 백워드 엔드포인트로 리라이트.
+# 브라우저는 동일 오리진(daeryun.life/bw-api/*)으로 호출 → CORS 불필요, 원본 서버 무수정.
+[[redirects]]
+  from = "/bw-api/*"
+  to = "https://service-63986215827.us-west1.run.app/api/backward/:splat"
+  status = 200
+  force = true
+
 # HTML 문서를 항상 브라우저에 표시 (다운로드 방지)
 [[headers]]
   for = "/"
