@@ -1,8 +1,11 @@
 // 교육활동 사진 — 목록/사진 업로드/등록/삭제 (교사 전용)
-// 저장: Supabase activities 테이블 + Storage 비공개 버킷(activity-photos, 서명 URL 조회)
+// 저장: Supabase Storage 비공개 버킷(activity-photos) 단독 —
+//   사진: photos/... , 게시물 메타: meta/{event_date}_{ts}_{rand}.json (게시물당 1파일 → 동시 등록 경합 없음)
+//   DB 테이블 불필요 — 버킷은 최초 요청 시 자동 생성되어 수동 설정이 없다.
 const ADMIN_EMAIL = 'drhong81@gmail.com';
 const BUCKET = 'activity-photos';
 const SIGN_EXPIRES = 60 * 60 * 24 * 7; // 서명 URL 7일
+let _bucketReady = false; // 웜 인스턴스 캐시
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -50,20 +53,32 @@ exports.handler = async (event) => {
   const userName = profile ? profile.name : (isAdmin ? '관리자' : '교사');
 
   try {
+    await ensureBucket(SUPABASE_URL, svcHeaders);
+
     // ===== 목록 =====
     if (action === 'list') {
-      const r = await fetch(
-        `${SUPABASE_URL}/rest/v1/activities?select=*&order=event_date.desc,created_at.desc&limit=200`,
-        { headers: svcHeaders }
-      );
-      if (!r.ok) {
-        const t = await r.text();
-        if (r.status === 404 || /relation .* does not exist|PGRST/.test(t)) {
-          return json(500, { error: 'activities 테이블이 아직 생성되지 않았습니다. 관리자에게 문의하세요.' });
-        }
-        return json(500, { error: '목록 조회에 실패했습니다.' });
+      // 메타 파일명이 {event_date}_{ts}_... 형식 → 이름 내림차순 = 일자 최신순
+      const lRes = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+        method: 'POST',
+        headers: { ...svcHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefix: 'meta/', limit: 200, sortBy: { column: 'name', order: 'desc' } })
+      });
+      const names = lRes.ok
+        ? (await lRes.json()).filter(o => o && o.name && o.name.endsWith('.json')).map(o => o.name)
+        : [];
+
+      // 메타 JSON 병렬 다운로드 (10개씩)
+      const rows = [];
+      for (let i = 0; i < names.length; i += 10) {
+        const chunk = names.slice(i, i + 10);
+        const got = await Promise.all(chunk.map(async (name) => {
+          try {
+            const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/meta/${name}`, { headers: svcHeaders });
+            return r.ok ? await r.json() : null;
+          } catch { return null; }
+        }));
+        got.forEach(g => { if (g && g.id) rows.push(g); });
       }
-      const rows = await r.json();
 
       // 사진 경로 → 서명 URL 일괄 발급
       const allPaths = [];
@@ -109,10 +124,8 @@ exports.handler = async (event) => {
       try { buf = Buffer.from(data, 'base64'); }
       catch { return json(400, { error: '이미지 데이터 형식 오류' }); }
 
-      await ensureBucket(SUPABASE_URL, svcHeaders);
-
       const ext = type === 'image/png' ? 'png' : 'jpg';
-      const path = `${new Date().toISOString().slice(0, 10)}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const path = `photos/${new Date().toISOString().slice(0, 10)}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const upRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
         method: 'POST',
         headers: { ...svcHeaders, 'Content-Type': type },
@@ -130,56 +143,46 @@ exports.handler = async (event) => {
       const title = (body.title || '').trim();
       const eventDate = (body.event_date || '').trim();
       const description = (body.description || '').trim();
-      const photos = Array.isArray(body.photos) ? body.photos.filter(p => typeof p === 'string').slice(0, 30) : [];
+      const photos = Array.isArray(body.photos)
+        ? body.photos.filter(p => typeof p === 'string' && /^photos\//.test(p)).slice(0, 30)
+        : [];
       if (!title) return json(400, { error: '행사명을 입력해 주세요.' });
       if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) return json(400, { error: '일자를 선택해 주세요.' });
       if (photos.length === 0) return json(400, { error: '사진을 1장 이상 첨부해 주세요.' });
 
-      const ins = await fetch(`${SUPABASE_URL}/rest/v1/activities`, {
+      const id = `${eventDate}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const meta = {
+        id, title: title.slice(0, 200), event_date: eventDate, description: description.slice(0, 4000),
+        photos, created_by: userId, created_by_name: userName,
+        created_at: new Date().toISOString()
+      };
+      const mRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/meta/${id}.json`, {
         method: 'POST',
-        headers: { ...svcHeaders, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify({
-          title, event_date: eventDate, description,
-          photos, created_by: userId, created_by_name: userName
-        })
+        headers: { ...svcHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(meta)
       });
-      const insData = await ins.json().catch(() => null);
-      if (!ins.ok) {
-        const msg = insData && insData.message ? insData.message : '';
-        if (/relation .* does not exist/.test(msg)) {
-          return json(500, { error: 'activities 테이블이 아직 생성되지 않았습니다. 관리자에게 문의하세요.' });
-        }
-        return json(500, { error: '등록 실패: ' + msg.slice(0, 200) });
+      if (!mRes.ok) {
+        const t = await mRes.text();
+        return json(500, { error: '등록 실패: ' + t.slice(0, 200) });
       }
-      return json(200, { item: Array.isArray(insData) ? insData[0] : insData });
+      return json(200, { item: meta });
     }
 
     // ===== 삭제 (작성자 본인 또는 관리자) =====
     if (action === 'delete') {
-      const id = body.id;
-      if (!id) return json(400, { error: 'id가 없습니다.' });
-      const gRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/activities?id=eq.${encodeURIComponent(id)}&select=id,created_by,photos`,
-        { headers: svcHeaders }
-      );
-      const rows = gRes.ok ? await gRes.json() : [];
-      const row = rows[0];
-      if (!row) return json(404, { error: '이미 삭제된 게시물입니다.' });
+      const id = String(body.id || '');
+      if (!/^\d{4}-\d{2}-\d{2}_\d+_[a-z0-9]+$/.test(id)) return json(400, { error: '잘못된 id입니다.' });
+      const gRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/meta/${id}.json`, { headers: svcHeaders });
+      if (!gRes.ok) return json(404, { error: '이미 삭제된 게시물입니다.' });
+      const row = await gRes.json();
       if (!isAdmin && String(row.created_by) !== String(userId)) {
         return json(403, { error: '본인이 등록한 게시물만 삭제할 수 있습니다.' });
       }
-      // 스토리지 사진 삭제 (실패해도 게시물 삭제는 진행)
-      const paths = row.photos || [];
-      if (paths.length > 0) {
-        await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
-          method: 'DELETE',
-          headers: { ...svcHeaders, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prefixes: paths })
-        }).catch(() => {});
-      }
-      const dRes = await fetch(`${SUPABASE_URL}/rest/v1/activities?id=eq.${encodeURIComponent(id)}`, {
+      const targets = (row.photos || []).filter(p => typeof p === 'string').concat([`meta/${id}.json`]);
+      const dRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
         method: 'DELETE',
-        headers: svcHeaders
+        headers: { ...svcHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefixes: targets })
       });
       if (!dRes.ok) return json(500, { error: '삭제에 실패했습니다.' });
       return json(200, { ok: true });
@@ -191,17 +194,20 @@ exports.handler = async (event) => {
   }
 };
 
-// 비공개 버킷 없으면 생성 (이미 있으면 무시)
+// 비공개 버킷 없으면 생성 (이미 있으면 무시, 웜 인스턴스에선 캐시)
 async function ensureBucket(SUPABASE_URL, svcHeaders) {
+  if (_bucketReady) return;
   try {
     const r = await fetch(`${SUPABASE_URL}/storage/v1/bucket/${BUCKET}`, { headers: svcHeaders });
-    if (r.ok) return;
-    await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
-      method: 'POST',
-      headers: { ...svcHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: BUCKET, name: BUCKET, public: false })
-    });
-  } catch (e) { /* 업로드 단계에서 실패로 드러남 */ }
+    if (!r.ok) {
+      await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
+        method: 'POST',
+        headers: { ...svcHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: BUCKET, name: BUCKET, public: false })
+      });
+    }
+    _bucketReady = true;
+  } catch (e) { /* 이후 단계에서 실패로 드러남 */ }
 }
 
 function json(statusCode, obj) {
