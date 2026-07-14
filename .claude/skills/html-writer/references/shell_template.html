@@ -1903,7 +1903,7 @@
         <input id="tt-ai-oll-url" class="ai-inp" placeholder="http://localhost:11434">
         <label class="ai-lbl">모델명</label>
         <input id="tt-ai-oll-model" class="ai-inp" placeholder="예: qwen3, gemma3">
-        <p style="margin:6px 0 0;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:7px 10px;font-size:.72rem;line-height:1.6;">이 사이트에서 로컬 Ollama를 쓰려면 환경변수 <code>OLLAMA_ORIGINS=https://daeryun.life</code> 설정 후 Ollama를 재시작하세요.</p>
+        <p style="margin:6px 0 0;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:7px 10px;font-size:.72rem;line-height:1.6;">웹사이트에서 로컬 Ollama를 쓰려면 CORS 허용이 필요합니다. Windows에서 <code>setx OLLAMA_ORIGINS "*"</code> 실행 후 Ollama를 완전히 종료했다가 다시 시작하세요. (edtouch.ai 안내와 동일한 설정 — 이미 했다면 추가 설정이 필요 없습니다.)<br>특정 사이트만 허용하려면 <code>*</code> 대신 <code>https://daeryun.life</code>처럼 주소를 넣으세요. 여러 사이트는 쉼표로 나열합니다.</p>
       </div>
       <div id="tt-ai-test-msg" style="min-height:18px;font-size:.75rem;margin-top:8px;"></div>
       <div style="display:flex;gap:6px;margin-top:10px;">
