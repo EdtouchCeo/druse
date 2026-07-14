@@ -1830,6 +1830,7 @@
       <div style="display:flex;gap:5px;flex-wrap:wrap;">
         <button id="tt-view-today" onclick="ttShowView('today')" class="tt-hdr-btn tt-hdr-active">📅 오늘</button>
         <button id="tt-view-week"  onclick="ttShowView('week')"  class="tt-hdr-btn">📋 전체 주간</button>
+        <button id="tt-view-abs"   onclick="ttShowView('abs')"   class="tt-hdr-btn" style="display:none;">🧳 부재 가이드</button>
         <button id="tt-move-btn"   onclick="ttToggleMove()"      class="tt-hdr-btn" style="display:none;">🔄 이동 시뮬레이션</button>
         <button onclick="ttClose()" class="tt-hdr-btn tt-close-btn">✕ 닫기</button>
       </div>
@@ -1839,6 +1840,17 @@
     </div>
     <div id="tt-today-view"><div id="tt-today-day-label" style="font-size:.8rem;font-weight:700;color:#2563eb;margin-bottom:7px;"></div><div id="tt-today-content"></div></div>
     <div id="tt-week-view" style="display:none;"><div id="tt-week-content"></div></div>
+    <div id="tt-abs-view" style="display:none;">
+      <div style="background:#f8faff;border:1px solid #e0e7ff;border-radius:10px;padding:12px 14px;">
+        <div style="font-size:.78rem;font-weight:700;color:#1a3a6b;margin-bottom:6px;">🧳 부재 일정 입력 (출장·병가·외출·연수 등)</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <input id="tt-abs-input" style="flex:1;min-width:220px;height:34px;padding:0 10px;border:1px solid #d1d5db;border-radius:7px;font-size:.8rem;font-family:inherit;" placeholder="예: 수요일 3교시 출장, 수~목 병가, 금 4교시 외출" onkeydown="if(event.key==='Enter')ttAbsRun()">
+          <button class="dm-btn p" style="height:34px;" onclick="ttAbsRun()">분석</button>
+        </div>
+        <p style="margin:6px 0 0;font-size:.7rem;color:#9ca3af;">쉼표로 여러 건 입력 · 교시를 생략하면 종일 · 오전(1~4교시)/오후(5~7교시) 표현 가능</p>
+      </div>
+      <div id="tt-abs-result" style="margin-top:12px;"></div>
+    </div>
   </div>
 </div>
 <div id="tt-backdrop" onclick="ttClose()" style="display:none;position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,0.16);"></div>
@@ -3159,6 +3171,9 @@
       if(!name){alert('학반을 선택하세요.');return;}
     }
     _name=name;_type=type;_moveMode=false;
+    document.getElementById('tt-view-abs').style.display=type==='teacher'?'':'none';
+    document.getElementById('tt-abs-result').innerHTML='';
+    _absData=null;
     document.getElementById('tt-move-btn').style.display=type==='teacher'?'':'none';
     document.getElementById('tt-move-btn').textContent='🔄 이동 시뮬레이션';
     document.getElementById('tt-move-btn').classList.remove('tt-hdr-active');
@@ -3177,10 +3192,13 @@
 
   /* ── 뷰 전환 ───────────────────────────── */
   window.ttShowView=function(v){
-    const tv=document.getElementById('tt-today-view'),wv=document.getElementById('tt-week-view');
-    const bt=document.getElementById('tt-view-today'),bw=document.getElementById('tt-view-week');
-    if(v==='today'){tv.style.display='';wv.style.display='none';bt.classList.add('tt-hdr-active');bw.classList.remove('tt-hdr-active');_renderToday();}
-    else{tv.style.display='none';wv.style.display='';bw.classList.add('tt-hdr-active');bt.classList.remove('tt-hdr-active');_renderWeek();}
+    const views={today:'tt-today-view',week:'tt-week-view',abs:'tt-abs-view'};
+    const btns={today:'tt-view-today',week:'tt-view-week',abs:'tt-view-abs'};
+    Object.keys(views).forEach(function(k){
+      const el=document.getElementById(views[k]);if(el)el.style.display=k===v?'':'none';
+      const b=document.getElementById(btns[k]);if(b)b.classList.toggle('tt-hdr-active',k===v);
+    });
+    if(v==='today')_renderToday();else if(v==='week')_renderWeek();
   };
 
   function _slots(day){
@@ -3843,6 +3861,7 @@
       .sort(function(a,b){return names[b].length-names[a].length;})
       .forEach(function(real){out=out.split(names[real]).join(real);});
     out=out.split('요청교사').join(_name);
+    out=out.split('부재교사').join(_name);
     return out;
   }
   function _aiRender(res,names){
@@ -3875,8 +3894,8 @@
     html+='<p style="margin:8px 0 0;font-size:.68rem;color:#9ca3af;">AI가 생성한 참고자료입니다. 실제 조정 전 상대 교사·교무부와 확인하세요.</p></div>';
     box.innerHTML=html;
   }
-  window.ttAiCopy=function(){
-    const el=document.getElementById('tt-ai-draft');
+  window.ttAiCopy=function(id){
+    const el=document.getElementById(typeof id==='string'&&id?id:'tt-ai-draft');
     if(!el)return;
     const t=el.textContent;
     if(navigator.clipboard&&navigator.clipboard.writeText){
@@ -3909,6 +3928,203 @@
       box.innerHTML='<div class="ai-card" style="border-color:#fca5a5;background:#fff1f2;">'
         +'<span style="font-size:.78rem;color:#b91c1c;">'+_esc(e&&e.message?e.message:'AI 분석에 실패했습니다.')+'</span> '
         +'<button class="dm-btn s" style="margin-left:6px;" onclick="ttAiRun()">다시 시도</button></div>';
+    }finally{_aiBusy=false;if(btn)btn.disabled=false;}
+  };
+
+  /* ══════════════════════════════════════════
+     부재(출장·병가·외출) 가이드
+     — 학급별 시간표 × 교사별 시간표 교차 분석으로
+       "맞물려 돌아가는" 교환 후보와 보강 가능 교사를 산출
+     — 파서(_absParse)·슬롯 전개(_absSlotSet)·분석 엔진(_absAnalyze)은
+       순수 함수로 분리 — 시간표 작성·이동 플랫폼 확장 시 분석 코어로 재사용
+  ══════════════════════════════════════════ */
+  let _absData=null;
+
+  // "수요일 3교시 출장" / "수~목 병가" / "금 4교시 외출" / "화 오전 연수" 파서
+  function _absParse(text){
+    const items=[],errs=[];
+    text.split(/[,;\n·]+/).forEach(function(part){
+      const t=part.trim();if(!t)return;
+      const dayRe=/([월화수목금])(?:요일)?(?:\s*[~\-]\s*([월화수목금])(?:요일)?)?/;
+      const dm=t.match(dayRe);
+      if(!dm){errs.push(t);return;}
+      const d1=DAYS.indexOf(dm[1]),d2=dm[2]?DAYS.indexOf(dm[2]):d1;
+      const pRe=/([1-7])\s*(?:[~\-]\s*([1-7]))?\s*교시/;
+      let p1=0,p2=P-1,whole=true;
+      const pm=t.match(pRe);
+      if(pm){p1=+pm[1]-1;p2=pm[2]?+pm[2]-1:p1;whole=false;}
+      else if(/오전/.test(t)){p1=0;p2=3;whole=false;}
+      else if(/오후/.test(t)){p1=4;p2=6;whole=false;}
+      const reason=t.replace(dayRe,'').replace(pRe,'').replace(/오전|오후/g,'')
+        .replace(/^[\s,~\-]+|[\s,~\-]+$/g,'').trim()||'부재';
+      items.push({d1:Math.min(d1,d2),d2:Math.max(d1,d2),p1:Math.min(p1,p2),p2:Math.max(p1,p2),whole:whole,reason:reason});
+    });
+    return{items:items,errs:errs};
+  }
+  function _absSlotSet(items){
+    const set={};
+    items.forEach(function(it){
+      for(let d=it.d1;d<=it.d2;d++)for(let p=it.p1;p<=it.p2;p++)
+        if(validSlot(d,p))set[d+','+p]=it.reason;
+    });
+    return set;
+  }
+  // 부재 시간대의 영향 수업마다: ① 같은 반을 가르치는 다른 교사 중
+  // 부재 시간에 비어 있는 교사(=수업 교환 후보, 그 교사의 해당 반 수업시간과 맞물림)
+  // ② 부재 교사가 복귀 후 되갚을 수 있으면 상호교환 표시 ③ 그 시간 빈 교사 수(보강 후보)
+  function _absAnalyze(set){
+    const lessons=[];
+    for(let d=0;d<5;d++)for(let p=0;p<P;p++){
+      const key=d+','+p;
+      if(!(key in set))continue;
+      if(!validSlot(d,p))continue;
+      const raw=_resolveRaw(TT.t[_name][DAYS[d]]||[],p);
+      if(!_hasSub(raw))continue;
+      const ps=_parseSub(raw),subj=ps.s,cls=ps.m;
+      const swaps=[];
+      if(cls&&TT.c[cls]){
+        for(let d2=0;d2<5;d2++)for(let p2=0;p2<P;p2++){
+          if(!validSlot(d2,p2))continue;
+          if((d2+','+p2)in set)continue;
+          if(d2===d&&p2===p)continue;
+          const raw2=(TT.c[cls].s[DAYS[d2]]||[])[p2]||'';
+          if(_isBlock(raw2)||!_hasSub(raw2))continue;
+          const pt=raw2.split('|');
+          const B=R(pt[1]||''),subj2=pt[0]||'';
+          if(!B||B===_name)continue;
+          if(!_teacherFreeAt(B,DAYS[d],p))continue;
+          const aFree=_teacherFreeAt(_name,DAYS[d2],p2);
+          swaps.push({시간:DAYS[d2]+' '+(p2+1)+'교시',교사:B,과목:subj2,상호교환:aFree});
+        }
+        swaps.sort(function(a,b){return(b.상호교환?1:0)-(a.상호교환?1:0);});
+      }
+      let freeCount=0;
+      for(const tn in TT.t){if(tn!==_name&&_teacherFreeAt(tn,DAYS[d],p))freeCount++;}
+      lessons.push({d:d,p:p,label:DAYS[d]+' '+(p+1)+'교시',subj:subj,cls:cls,reason:set[key],swaps:swaps,freeCount:freeCount});
+    }
+    return lessons;
+  }
+  function _absRender(items,lessons,errs){
+    const box=document.getElementById('tt-abs-result');
+    let html='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">'+items.map(function(it){
+      const dl=it.d1===it.d2?DAYS[it.d1]:DAYS[it.d1]+'~'+DAYS[it.d2];
+      const pl=it.whole?'종일':(it.p1===it.p2?(it.p1+1)+'교시':(it.p1+1)+'~'+(it.p2+1)+'교시');
+      return'<span class="dm-chip">'+_esc(dl+' '+pl+' · '+it.reason)+'</span>';
+    }).join('')+'</div>';
+    if(errs.length)html+='<p style="font-size:.72rem;color:#b45309;margin:0 0 8px;">해석하지 못한 입력: '+errs.map(_esc).join(' / ')+'</p>';
+    if(!lessons.length){
+      html+='<div class="ai-card">부재 시간대에 잡힌 수업이 없습니다. 별도의 결보강 조치가 필요 없습니다.</div>';
+      box.innerHTML=html;return;
+    }
+    html+='<p style="font-size:.75rem;color:#374151;margin:0 0 6px;">영향 수업 <b>'+lessons.length+'건</b> — 칩은 <b>같은 반을 가르치는 교사</b>의 해당 반 수업시간입니다. <span style="color:#166534;">⇄ 상호 맞교환 가능</span> / → 단방향(추후 조정 필요)</p>';
+    lessons.forEach(function(L){
+      html+='<div class="sg-detail-card" style="margin-bottom:8px;">'
+        +'<div style="font-weight:700;font-size:.82rem;">'+_esc(L.label)+' '+_esc(L.subj)+(L.cls?' ('+_esc(L.cls)+'반)':'')
+        +' <span style="font-weight:400;color:#b45309;">· '+_esc(L.reason)+'</span></div>';
+      if(L.swaps.length){
+        html+='<div style="margin-top:6px;">'+L.swaps.slice(0,6).map(function(sw){
+          return'<span class="dm-chip'+(sw.상호교환?' g':'')+'" title="'+(sw.상호교환?'상호 맞교환 가능':'단방향 — 추후 조정 필요')+'">'
+            +_esc(sw.교사+' · '+sw.시간+' '+sw.과목)+(sw.상호교환?' ⇄':' →')+'</span>';
+        }).join('')+'</div>';
+      }else{
+        html+='<div style="font-size:.75rem;color:#6b7280;margin-top:5px;">같은 반을 가르치는 교사 중 이 시간에 비어 있는 교사가 없습니다.</div>';
+      }
+      html+='<div style="font-size:.72rem;color:#6b7280;margin-top:5px;">이 시간에 비어 있는 교사 '+L.freeCount+'명'+(L.freeCount?' — 보강 지정 가능':'')+'</div></div>';
+    });
+    html+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;">'
+      +'<button class="dm-btn p" id="tt-absai-btn" onclick="ttAbsAi()">🤖 AI 종합 가이드</button>'
+      +'<button class="dm-btn s" onclick="ttAiOpen()">⚙ AI 설정</button>'
+      +'<span style="font-size:.7rem;color:#9ca3af;">교사 이름은 익명화되어 전송됩니다</span></div>'
+      +'<div id="tt-absai-result"></div>';
+    box.innerHTML=html;
+  }
+  window.ttAbsRun=function(){
+    const txt=document.getElementById('tt-abs-input').value;
+    if(!txt.trim()){alert('부재 일정을 입력하세요. 예: 수요일 3교시 출장, 수~목 병가');return;}
+    const r=_absParse(txt);
+    if(!r.items.length){alert('일정을 해석하지 못했습니다.\n예: 수요일 3교시 출장, 수~목 병가, 금 4교시 외출');return;}
+    const lessons=_absAnalyze(_absSlotSet(r.items));
+    _absData={items:r.items,lessons:lessons};
+    _absRender(r.items,lessons,r.errs);
+  };
+
+  /* ── 부재 AI 종합 가이드 ── */
+  const ABS_SCHEMA={type:'object',properties:{
+    plan:{type:'array',description:'영향 수업마다 1건의 조치 제안',items:{type:'object',properties:{
+      수업:{type:'string',description:'예: 수 3교시 국어1 (1-4반)'},
+      조치:{type:'string',enum:['수업 교환','보강 지정','자습/과제 대체 검토']},
+      상대_교사:{type:'string'},
+      상대_시간:{type:'string'},
+      이유:{type:'string'}
+    },required:['수업','조치','이유']}},
+    cautions:{type:'array',items:{type:'string'}},
+    message_draft:{type:'string',description:'교환/보강을 부탁할 교사들에게 보낼 정중한 요청 메시지 초안. 필요 없으면 빈 문자열'}
+  },required:['plan','cautions']};
+  function _absAiRender(res,names){
+    const box=document.getElementById('tt-absai-result');
+    if(!box)return;
+    const plan=Array.isArray(res.plan)?res.plan:[];
+    let html='<div class="ai-card"><div style="font-weight:700;font-size:.8rem;color:#1a3a6b;margin-bottom:4px;">🤖 AI 결보강 가이드</div>';
+    if(plan.length){
+      plan.forEach(function(pl,i){
+        html+='<div class="ai-rec"><span class="ai-rank">'+(i+1)+'</span><div><b>'+_esc(_aiUnmask(pl.수업,names))+'</b> → '+_esc(pl.조치||'')
+          +(pl.상대_교사?' · '+_esc(_aiUnmask(pl.상대_교사,names))+(pl.상대_시간?' ('+_esc(_aiUnmask(pl.상대_시간,names))+')':''):'')
+          +'<br><span style="color:#4b5563;">'+_esc(_aiUnmask(pl.이유,names))+'</span></div></div>';
+      });
+    }else{
+      html+='<p style="font-size:.78rem;color:#6b7280;">제안할 조치를 찾지 못했습니다.</p>';
+    }
+    const cauts=Array.isArray(res.cautions)?res.cautions:[];
+    if(cauts.length){
+      html+='<div style="margin-top:8px;font-size:.75rem;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:7px 10px;line-height:1.6;">⚠️ '
+        +cauts.map(function(c){return _esc(_aiUnmask(c,names));}).join('<br>⚠️ ')+'</div>';
+    }
+    const draft=_aiUnmask(res.message_draft||'',names).trim();
+    if(draft){
+      html+='<div style="margin-top:10px;"><div style="font-size:.74rem;font-weight:700;color:#1a3a6b;">💬 협조 요청 메시지 초안</div>'
+        +'<div class="ai-msgbox" id="tt-absai-draft">'+_esc(draft)+'</div>'
+        +'<button class="dm-btn s" style="margin-top:6px;" onclick="ttAiCopy(\'tt-absai-draft\')">📋 복사</button></div>';
+    }
+    html+='<p style="margin:8px 0 0;font-size:.68rem;color:#9ca3af;">AI가 생성한 참고자료입니다. 실제 조정 전 상대 교사·교무부와 확인하세요.</p></div>';
+    box.innerHTML=html;
+  }
+  window.ttAbsAi=async function(){
+    if(_aiBusy||!_absData)return;
+    if(!aiHas()){ttAiOpen();return;}
+    const box=document.getElementById('tt-absai-result');
+    const btn=document.getElementById('tt-absai-btn');
+    _aiBusy=true;if(btn)btn.disabled=true;
+    box.innerHTML='<div class="ai-card" style="display:flex;gap:8px;align-items:center;">'
+      +'<span style="width:14px;height:14px;border:2px solid #c7d2fe;border-top-color:#2563eb;border-radius:50%;display:inline-block;animation:aispin .8s linear infinite;flex-shrink:0;"></span>'
+      +'<span id="tt-absai-progress" style="font-size:.78rem;color:#374151;">AI가 결보강 방안을 분석 중…</span></div>';
+    try{
+      const names={},order=[];
+      const mask=function(n){n=R(n||'');if(!n)return'';if(n===_name)return'부재교사';if(!names[n]){order.push(n);names[n]='교사'+order.length;}return names[n];};
+      const data={
+        부재_일정:_absData.items.map(function(it){
+          return{기간:it.d1===it.d2?DAYS[it.d1]:DAYS[it.d1]+'~'+DAYS[it.d2],
+            교시:it.whole?'종일':(it.p1+1)+(it.p1===it.p2?'':'~'+(it.p2+1))+'교시',사유:it.reason};
+        }),
+        영향_수업:_absData.lessons.map(function(L){
+          return{시간:L.label,과목:L.subj,학반:L.cls,사유:L.reason,
+            교환_후보:L.swaps.slice(0,8).map(function(sw){
+              return{교사:mask(sw.교사),그_교사의_해당반_수업시간:sw.시간,과목:sw.과목,상호_맞교환_가능:!!sw.상호교환};
+            }),
+            이_시간_빈_교사_수:L.freeCount};
+        }),
+        비고:'상호_맞교환_가능=true는 부재 교사가 복귀 후 상대 시간에 수업을 되갚을 수 있다는 뜻. 수요일은 7교시 없음.'
+      };
+      const prompt='당신은 고등학교 교무부의 결보강(수업 교체) 담당자입니다. 한 교사의 부재 일정과 영향 수업, 학급별×교사별 시간표 교차 분석으로 산출된 교환 후보가 주어집니다.\n\n[분석 데이터]\n'
+        +JSON.stringify(data)
+        +'\n\n[지침]\n- plan: 영향 수업마다 1건씩 최적 조치를 제안하세요. 상호 맞교환 가능한 교환을 우선하고, 특정 교사 한 명에게 부담이 몰리지 않게 분산하세요. 조치가 수업 교환이면 상대_교사(익명 표기 그대로)와 상대_시간을 반드시 명시하세요. 교환 후보가 없으면 보강 지정 또는 자습/과제 대체 검토를 제안하세요.\n- cautions: 유의사항 1~3개(연속 부재로 인한 진도 영향, 특정 교사 부담 집중, 같은 반 하루 중복 등).\n- message_draft: 교환/보강을 부탁할 교사들에게 보낼 정중한 협조 요청 메시지 초안 1개(여러 교사면 한 메시지에 묶고, 호칭은 익명 표기 그대로 사용).\n- 데이터에 없는 교사나 시간을 지어내지 마세요.';
+      const res=await aiCall(prompt,ABS_SCHEMA,function(m){
+        const el=document.getElementById('tt-absai-progress');if(el)el.textContent=m;
+      });
+      _absAiRender(res,names);
+    }catch(e){
+      box.innerHTML='<div class="ai-card" style="border-color:#fca5a5;background:#fff1f2;">'
+        +'<span style="font-size:.78rem;color:#b91c1c;">'+_esc(e&&e.message?e.message:'AI 분석에 실패했습니다.')+'</span> '
+        +'<button class="dm-btn s" style="margin-left:6px;" onclick="ttAbsAi()">다시 시도</button></div>';
     }finally{_aiBusy=false;if(btn)btn.disabled=false;}
   };
 
