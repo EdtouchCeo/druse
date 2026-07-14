@@ -1866,6 +1866,51 @@
     <div style="padding:16px 20px;">
       <div id="tt-sim-grid-wrap" style="overflow-x:auto;"></div>
       <div id="tt-sim-detail" style="margin-top:14px;min-height:60px;"></div>
+      <div id="tt-ai-zone" style="margin-top:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AI 이동 추천 설정 모달 ===== -->
+<div id="tt-ai-modal" style="display:none;position:fixed;inset:0;z-index:3300;align-items:center;justify-content:center;">
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);"></div>
+  <div style="position:relative;background:#fff;border-radius:14px;max-width:430px;width:92%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+    <div style="background:linear-gradient(135deg,#1a3a6b,#2563eb);color:#fff;padding:14px 18px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:.9rem;font-weight:700;">🤖 AI 추천 설정</div>
+      <button onclick="ttAiClose()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.85rem;">✕</button>
+    </div>
+    <div style="padding:16px 18px;font-size:.82rem;">
+      <p style="margin:0 0 10px;color:#6b7280;font-size:.76rem;line-height:1.6;">API 키·설정은 <b>이 브라우저에만</b> 저장되며 서버로 전송되지 않습니다. 분석 데이터는 교사 이름을 익명화(교사1·교사2…)한 뒤 AI에 전달합니다.</p>
+      <label class="ai-lbl">AI 제공자</label>
+      <select id="tt-ai-provider" class="ai-inp" onchange="ttAiProvChange()">
+        <option value="gemini">Google Gemini (무료 키)</option>
+        <option value="ollama">Ollama (내 PC 로컬)</option>
+      </select>
+      <div id="tt-ai-gem">
+        <label class="ai-lbl">Gemini API 키 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="font-weight:400;font-size:.72rem;">(무료 발급 →)</a></label>
+        <input id="tt-ai-gem-key" type="password" class="ai-inp" placeholder="AIza..." autocomplete="off">
+        <label class="ai-lbl">모델</label>
+        <input id="tt-ai-gem-model" class="ai-inp" list="tt-ai-gem-models" placeholder="gemini-3.5-flash">
+        <datalist id="tt-ai-gem-models">
+          <option value="gemini-3.5-flash"></option>
+          <option value="gemini-2.5-flash"></option>
+          <option value="gemini-2.5-flash-lite"></option>
+          <option value="gemini-2.5-pro"></option>
+        </datalist>
+      </div>
+      <div id="tt-ai-oll" style="display:none;">
+        <label class="ai-lbl">Ollama 주소</label>
+        <input id="tt-ai-oll-url" class="ai-inp" placeholder="http://localhost:11434">
+        <label class="ai-lbl">모델명</label>
+        <input id="tt-ai-oll-model" class="ai-inp" placeholder="예: qwen3, gemma3">
+        <p style="margin:6px 0 0;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:7px 10px;font-size:.72rem;line-height:1.6;">이 사이트에서 로컬 Ollama를 쓰려면 환경변수 <code>OLLAMA_ORIGINS=https://daeryun.life</code> 설정 후 Ollama를 재시작하세요.</p>
+      </div>
+      <div id="tt-ai-test-msg" style="min-height:18px;font-size:.75rem;margin-top:8px;"></div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="dm-btn s" onclick="ttAiTest()">연결 테스트</button>
+        <button class="dm-btn p" onclick="ttAiSave()">저장</button>
+        <button class="dm-btn s" onclick="ttAiClose()">취소</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1933,6 +1978,16 @@
 .dm-btn.p{background:#1a3a6b;color:#fff;}
 .dm-btn.s{background:#f3f4f6;color:#374151;}
 @media(max-width:640px){.sg-cell{min-width:52px;height:44px;}.sg-icon{font-size:.82rem;}.sg-txt{font-size:.56rem;}.tt-table th,.tt-table td{padding:4px 5px;font-size:.7rem;}}
+/* AI 이동 추천 */
+.ai-lbl{display:block;font-size:.74rem;font-weight:700;color:#1a3a6b;margin:9px 0 3px;}
+.ai-inp{width:100%;box-sizing:border-box;height:34px;padding:0 10px;border:1px solid #d1d5db;border-radius:7px;font-size:.8rem;font-family:inherit;background:#fff;color:#111827;}
+.ai-inp:focus{outline:none;border-color:#2563eb;}
+.ai-card{background:#f8faff;border:1px solid #c7d2fe;border-radius:10px;padding:12px 14px;margin-top:8px;}
+.ai-rec{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed #e0e7ff;font-size:.8rem;line-height:1.55;}
+.ai-rec:last-child{border-bottom:none;}
+.ai-rank{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#1a3a6b;color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.ai-msgbox{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:9px 11px;font-size:.78rem;line-height:1.7;white-space:pre-wrap;margin-top:5px;}
+@keyframes aispin{to{transform:rotate(360deg);}}
 </style>
 
 <!-- ===== 탭 전환 JS (인라인) ===== -->
@@ -2176,7 +2231,7 @@
   };
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 7; i++) {
+    for (var i = 0; i < 8; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;
@@ -2571,7 +2626,7 @@
       records:'sub-records', club:'sub-club', check:'sub-check',
       transfer:'sub-transfer', culture:'sub-culture', leesh:'sub-leesh',
       grade:'sub-grade', exam:'sub-exam',
-      grading:'sub-grading', required:'sub-required'
+      grading:'sub-grading', required:'sub-required', leave:'sub-leave'
     },
     student: {
       rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',
@@ -3485,6 +3540,13 @@
       legend+`<table class="sg-wrap"><thead>${th}</thead><tbody>${rows}</tbody></table>`;
     document.getElementById('tt-sim-detail').innerHTML=
       '<p style="color:#6b7280;font-size:.8rem;text-align:center;margin:8px 0;">셀을 클릭하면 상세 분석이 표시됩니다.</p>';
+    _aiSrc={d:srcD,p:srcP};
+    document.getElementById('tt-ai-zone').innerHTML=
+      '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">'
+      +'<button class="dm-btn p" id="tt-ai-btn" onclick="ttAiRun()">🤖 AI 추천 분석</button>'
+      +'<button class="dm-btn s" onclick="ttAiOpen()">⚙ AI 설정</button>'
+      +'<span style="font-size:.7rem;color:#9ca3af;">교사 이름은 익명화되어 전송됩니다</span></div>'
+      +'<div id="tt-ai-result"></div>';
     document.getElementById('tt-sim-modal').style.display='flex';
   }
 
@@ -3529,6 +3591,326 @@
   };
 
   window.ttSimClose=function(){document.getElementById('tt-sim-modal').style.display='none';};
+
+  /* ══════════════════════════════════════════
+     AI 이동 추천 (Gemini 무료 키·Ollama 로컬 — 브라우저 직접 호출, 서버 무저장)
+     학생부 모의평가(edtouch01 useSaengbuLlm) 패턴 이식:
+     429 장기 대기(15/30/45초)·503 지수 백오프·thinking 거부 대응·flash-lite 폴백
+  ══════════════════════════════════════════ */
+  const AI_KEY='dr_tt_llm_v1';
+  const AI_GEM_DEFAULT='gemini-3.5-flash',AI_GEM_FALLBACK='gemini-2.5-flash-lite';
+  let _aiSrc=null,_aiBusy=false;
+
+  function aiLoad(){
+    try{
+      const s=JSON.parse(localStorage.getItem(AI_KEY));
+      if(s&&typeof s==='object')return{
+        provider:s.provider==='ollama'?'ollama':'gemini',
+        gemini:{apiKey:((s.gemini&&s.gemini.apiKey)||'').trim(),model:((s.gemini&&s.gemini.model)||'').trim()||AI_GEM_DEFAULT},
+        ollama:{url:((s.ollama&&s.ollama.url)||'').trim()||'http://localhost:11434',model:((s.ollama&&s.ollama.model)||'').trim()}
+      };
+    }catch(e){}
+    return{provider:'gemini',gemini:{apiKey:'',model:AI_GEM_DEFAULT},ollama:{url:'http://localhost:11434',model:''}};
+  }
+  function aiHas(s){s=s||aiLoad();return s.provider==='gemini'?!!s.gemini.apiKey:!!(s.ollama.url&&s.ollama.model);}
+  function _esc(t){return String(t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+  /* ── 설정 모달 ── */
+  window.ttAiOpen=function(){
+    const s=aiLoad();
+    document.getElementById('tt-ai-provider').value=s.provider;
+    document.getElementById('tt-ai-gem-key').value=s.gemini.apiKey;
+    document.getElementById('tt-ai-gem-model').value=s.gemini.model;
+    document.getElementById('tt-ai-oll-url').value=s.ollama.url;
+    document.getElementById('tt-ai-oll-model').value=s.ollama.model;
+    document.getElementById('tt-ai-test-msg').textContent='';
+    window.ttAiProvChange();
+    document.getElementById('tt-ai-modal').style.display='flex';
+  };
+  window.ttAiClose=function(){document.getElementById('tt-ai-modal').style.display='none';};
+  window.ttAiProvChange=function(){
+    const p=document.getElementById('tt-ai-provider').value;
+    document.getElementById('tt-ai-gem').style.display=p==='gemini'?'':'none';
+    document.getElementById('tt-ai-oll').style.display=p==='ollama'?'':'none';
+  };
+  function aiReadForm(){
+    return{
+      provider:document.getElementById('tt-ai-provider').value==='ollama'?'ollama':'gemini',
+      gemini:{apiKey:document.getElementById('tt-ai-gem-key').value.trim(),model:document.getElementById('tt-ai-gem-model').value.trim()||AI_GEM_DEFAULT},
+      ollama:{url:document.getElementById('tt-ai-oll-url').value.trim()||'http://localhost:11434',model:document.getElementById('tt-ai-oll-model').value.trim()}
+    };
+  }
+  window.ttAiSave=function(){
+    const s=aiReadForm();
+    if(!aiHas(s)){
+      document.getElementById('tt-ai-test-msg').innerHTML='<span style="color:#b91c1c;">'+(s.provider==='gemini'?'API 키를 입력해 주세요.':'Ollama 주소와 모델명을 입력해 주세요.')+'</span>';
+      return;
+    }
+    try{localStorage.setItem(AI_KEY,JSON.stringify(s));}catch(e){}
+    ttAiClose();
+  };
+  window.ttAiTest=async function(){
+    const s=aiReadForm();
+    const msg=document.getElementById('tt-ai-test-msg');
+    msg.innerHTML='<span style="color:#6b7280;">연결 확인 중…</span>';
+    try{
+      if(s.provider==='gemini'){
+        if(!s.gemini.apiKey)throw new Error('API 키를 입력해 주세요.');
+        let r;
+        try{
+          r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+s.gemini.model+':generateContent?key='+encodeURIComponent(s.gemini.apiKey),{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({contents:[{parts:[{text:'ping'}]}],generationConfig:{maxOutputTokens:8}})
+          });
+        }catch(e){throw new Error('네트워크 오류로 Gemini에 연결하지 못했습니다.');}
+        if(r.status===400||r.status===403)throw new Error('API 키가 올바르지 않거나 권한이 없습니다.');
+        if(r.status===404)throw new Error('모델 "'+s.gemini.model+'"을(를) 찾을 수 없습니다.');
+        if(!r.ok)throw new Error('Gemini 오류('+r.status+')가 발생했습니다.');
+      }else{
+        if(!s.ollama.url)throw new Error('Ollama 주소를 입력해 주세요.');
+        const base=s.ollama.url.replace(/\/$/,'');
+        let r;
+        try{r=await fetch(base+'/api/tags');}
+        catch(e){throw new Error('Ollama에 연결하지 못했습니다. 실행 여부와 OLLAMA_ORIGINS 설정을 확인해 주세요.');}
+        if(!r.ok)throw new Error('Ollama 오류('+r.status+')가 발생했습니다.');
+        if(s.ollama.model){
+          const data=await r.json();
+          const names=(data.models||[]).map(function(m){return m.name||'';});
+          if(!names.some(function(n){return n===s.ollama.model||n.indexOf(s.ollama.model+':')===0;}))
+            throw new Error('모델 "'+s.ollama.model+'"이(가) 없습니다. ollama pull로 먼저 받아주세요.');
+        }
+      }
+      msg.innerHTML='<span style="color:#166534;">✅ 연결 성공</span>';
+    }catch(e){msg.innerHTML='<span style="color:#b91c1c;">'+_esc(e.message)+'</span>';}
+  };
+
+  /* ── LLM 호출 사다리 ── */
+  function aiSleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+  function aiToGeminiSchema(sc){
+    if(Array.isArray(sc))return sc.map(aiToGeminiSchema);
+    if(sc&&typeof sc==='object'){
+      const out={};
+      for(const k in sc){
+        if(['type','properties','required','items','enum','description'].indexOf(k)<0)continue;
+        const v=sc[k];
+        if(k==='type'&&typeof v==='string')out[k]=v.toUpperCase();
+        else if(k==='properties'&&v&&typeof v==='object'){out[k]={};for(const pk in v)out[k][pk]=aiToGeminiSchema(v[pk]);}
+        else if(k==='items')out[k]=aiToGeminiSchema(v);
+        else out[k]=v;
+      }
+      return out;
+    }
+    return sc;
+  }
+  function aiParse(raw){
+    try{return JSON.parse(raw);}catch(e){}
+    const m=raw.match(/\{[\s\S]*\}/);
+    if(m){try{return JSON.parse(m[0]);}catch(e){}}
+    throw new Error('AI 응답을 해석하지 못했습니다. 다시 시도해 주세요.');
+  }
+  async function aiGeminiOnce(model,key,prompt,gSchema,thinking){
+    const cfg={maxOutputTokens:8192,responseMimeType:'application/json',responseSchema:gSchema};
+    if(thinking)cfg.thinkingConfig={thinkingBudget:0};
+    let res;
+    try{
+      res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key),{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:cfg})
+      });
+    }catch(e){const err=new Error('네트워크 오류로 Gemini에 연결하지 못했습니다.');err.status=0;throw err;}
+    if(!res.ok){
+      let bodyText='';try{bodyText=await res.text();}catch(e){}
+      const thinkRej=res.status===400&&/think/i.test(bodyText);
+      let message='Gemini 오류('+res.status+')가 발생했습니다.';
+      if(!thinkRej){
+        if(res.status===400||res.status===403)message='API 키가 올바르지 않거나 권한이 없습니다.';
+        else if(res.status===404)message='모델 "'+model+'"을(를) 찾을 수 없습니다.';
+      }
+      const err=new Error(message);err.status=res.status;err.thinkRej=thinkRej;throw err;
+    }
+    const data=await res.json();
+    const parts=(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[];
+    const text=parts.map(function(p){return p.text||'';}).join('');
+    if(!text.trim())throw new Error('Gemini가 빈 응답을 반환했습니다. 다시 시도해 주세요.');
+    return text;
+  }
+  async function aiCall(prompt,schema,onMsg){
+    const s=aiLoad();
+    if(!aiHas(s))throw new Error('먼저 AI 설정을 완료해 주세요.');
+    onMsg=onMsg||function(){};
+    if(s.provider==='ollama'){
+      onMsg('로컬 AI가 분석 중…');
+      const base=s.ollama.url.replace(/\/$/,'');
+      let res;
+      try{
+        res=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({model:s.ollama.model,stream:false,messages:[{role:'user',content:prompt}],format:schema})});
+      }catch(e){throw new Error('Ollama에 연결하지 못했습니다. 실행 여부와 OLLAMA_ORIGINS 설정을 확인해 주세요.');}
+      if(res.status===404)throw new Error('모델 "'+s.ollama.model+'"을(를) 찾을 수 없습니다. ollama pull로 먼저 받아주세요.');
+      if(!res.ok)throw new Error('Ollama 오류('+res.status+')가 발생했습니다.');
+      const data=await res.json();
+      const text=(data.message&&data.message.content)||'';
+      if(!text.trim())throw new Error('Ollama가 빈 응답을 반환했습니다. 다시 시도해 주세요.');
+      return aiParse(text);
+    }
+    const gSchema=aiToGeminiSchema(schema);
+    const primary=s.gemini.model||AI_GEM_DEFAULT;
+    const models=primary===AI_GEM_FALLBACK?[primary]:[primary,AI_GEM_FALLBACK];
+    let lastErr=null;
+    for(let m=0;m<models.length;m++){
+      if(m>0)onMsg('가벼운 모델(flash-lite)로 다시 시도 중…');
+      let thinking=true;
+      for(let attempt=0;attempt<3;attempt++){
+        try{
+          onMsg('AI가 이동 방안을 분석 중…');
+          return aiParse(await aiGeminiOnce(models[m],s.gemini.apiKey,prompt,gSchema,thinking));
+        }catch(e){
+          lastErr=e;
+          if(e.thinkRej&&thinking){thinking=false;continue;}
+          if(e.status===429){
+            const wait=[15,30,45][Math.min(attempt,2)];
+            for(let sec=wait;sec>0;sec--){onMsg('무료 한도 대기 '+sec+'초…');await aiSleep(1000);}
+            continue;
+          }
+          if(e.status===503){
+            onMsg('서버가 혼잡합니다. 잠시 후 다시 시도합니다…');
+            await aiSleep((Math.pow(2,attempt)+Math.random()*0.5)*1000);
+            continue;
+          }
+          if(e.status===404)break;
+          throw e;
+        }
+      }
+    }
+    throw lastErr||new Error('AI 분석에 실패했습니다.');
+  }
+
+  /* ── 분석 컨텍스트 (교사 이름은 익명 토큰으로 치환해 전송) ── */
+  function _aiContext(srcD,srcP){
+    const names={},order=[];
+    const mask=function(n){
+      n=R(n||'');
+      if(!n)return'';
+      if(n===_name)return'요청교사';
+      if(!names[n]){order.push(n);names[n]='교사'+order.length;}
+      return names[n];
+    };
+    const srcDay=DAYS[srcD];
+    const src=_parseSub(_resolveRaw(TT.t[_name][srcDay]||[],srcP));
+    const ok=[],swap=[],neg=[];
+    for(let d=0;d<5;d++)for(let p=0;p<P;p++){
+      if(d===srcD&&p===srcP)continue;
+      if(!validSlot(d,p))continue;
+      const ci=_cellType(srcD,srcP,d,p);
+      const label=DAYS[d]+' '+(p+1)+'교시';
+      if(ci.type==='ok')ok.push(label);
+      else if(ci.type==='swap')swap.push({시간:label,상대_수업:ci.dstS+(ci.dstC?'('+ci.dstC+'반)':''),즉시_맞교환_가능:!!ci.cyFree});
+      else if(ci.type==='neg')neg.push({
+        시간:label,해당_시간_담당:mask(ci.bName),담당_과목:ci.bSubj,
+        그_교사가_수업을_옮길_수_있는_시간:_swapSlots(ci.bName,ci.srcC,srcD,srcP,6).map(function(x){return x.label;})
+      });
+    }
+    const load={};
+    DAYS.forEach(function(day){let n=0;for(let p=0;p<P;p++)if(_hasSub(_resolveRaw(TT.t[_name][day]||[],p)))n++;load[day]=n;});
+    return{
+      data:{
+        이동할_수업:{시간:srcDay+' '+(srcP+1)+'교시',과목:src.s,학반:src.m},
+        요청교사_요일별_수업수:load,
+        즉시_이동_가능:ok,
+        맞바꾸기_후보:swap,
+        협의_필요_후보:neg,
+        비고:'수요일은 7교시가 없음. 시간 표기는 요일+교시.'
+      },
+      names:names
+    };
+  }
+  const AI_SCHEMA={type:'object',properties:{
+    recommendations:{type:'array',description:'추천 이동안 최대 3개, rank 1이 최선',items:{type:'object',properties:{
+      rank:{type:'integer'},
+      slot:{type:'string',description:'예: 화 3교시'},
+      method:{type:'string',enum:['즉시 이동','맞바꾸기','협의 필요']},
+      reason:{type:'string'}
+    },required:['rank','slot','method','reason']}},
+    cautions:{type:'array',items:{type:'string'}},
+    message_draft:{type:'string',description:'협의가 필요할 때 상대 교사에게 보낼 정중한 요청 메시지 초안. 필요 없으면 빈 문자열'}
+  },required:['recommendations','cautions']};
+
+  function _aiUnmask(text,names){
+    if(!text)return'';
+    let out=String(text);
+    // 익명 토큰(교사N)을 실명으로 복원 — 긴 토큰부터 치환(교사10 vs 교사1 오치환 방지)
+    Object.keys(names)
+      .sort(function(a,b){return names[b].length-names[a].length;})
+      .forEach(function(real){out=out.split(names[real]).join(real);});
+    out=out.split('요청교사').join(_name);
+    return out;
+  }
+  function _aiRender(res,names){
+    const box=document.getElementById('tt-ai-result');
+    if(!box)return;
+    const recs=(Array.isArray(res.recommendations)?res.recommendations:[]).slice(0,3)
+      .sort(function(a,b){return(a.rank||9)-(b.rank||9);});
+    let html='<div class="ai-card">';
+    html+='<div style="font-weight:700;font-size:.8rem;color:#1a3a6b;margin-bottom:4px;">🤖 AI 추천 이동안</div>';
+    if(recs.length){
+      recs.forEach(function(r,i){
+        html+='<div class="ai-rec"><span class="ai-rank">'+(parseInt(r.rank,10)||i+1)+'</span><div><b>'
+          +_esc(_aiUnmask(r.slot,names))+'</b> · '+_esc(r.method||'')
+          +'<br><span style="color:#4b5563;">'+_esc(_aiUnmask(r.reason,names))+'</span></div></div>';
+      });
+    }else{
+      html+='<p style="font-size:.78rem;color:#6b7280;">추천할 이동안을 찾지 못했습니다.</p>';
+    }
+    const cauts=Array.isArray(res.cautions)?res.cautions:[];
+    if(cauts.length){
+      html+='<div style="margin-top:8px;font-size:.75rem;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:7px 10px;line-height:1.6;">⚠️ '
+        +cauts.map(function(c){return _esc(_aiUnmask(c,names));}).join('<br>⚠️ ')+'</div>';
+    }
+    const draft=_aiUnmask(res.message_draft||'',names).trim();
+    if(draft){
+      html+='<div style="margin-top:10px;"><div style="font-size:.74rem;font-weight:700;color:#1a3a6b;">💬 협의 요청 메시지 초안</div>'
+        +'<div class="ai-msgbox" id="tt-ai-draft">'+_esc(draft)+'</div>'
+        +'<button class="dm-btn s" style="margin-top:6px;" onclick="ttAiCopy()">📋 복사</button></div>';
+    }
+    html+='<p style="margin:8px 0 0;font-size:.68rem;color:#9ca3af;">AI가 생성한 참고자료입니다. 실제 조정 전 상대 교사·교무부와 확인하세요.</p></div>';
+    box.innerHTML=html;
+  }
+  window.ttAiCopy=function(){
+    const el=document.getElementById('tt-ai-draft');
+    if(!el)return;
+    const t=el.textContent;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(function(){alert('복사되었습니다.');},function(){alert('복사에 실패했습니다.');});
+    }else{
+      const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');alert('복사되었습니다.');}catch(e){alert('복사에 실패했습니다.');}
+      ta.remove();
+    }
+  };
+  window.ttAiRun=async function(){
+    if(_aiBusy||!_aiSrc)return;
+    if(!aiHas()){ttAiOpen();return;}
+    const box=document.getElementById('tt-ai-result');
+    const btn=document.getElementById('tt-ai-btn');
+    _aiBusy=true;if(btn)btn.disabled=true;
+    box.innerHTML='<div class="ai-card" style="display:flex;gap:8px;align-items:center;">'
+      +'<span style="width:14px;height:14px;border:2px solid #c7d2fe;border-top-color:#2563eb;border-radius:50%;display:inline-block;animation:aispin .8s linear infinite;flex-shrink:0;"></span>'
+      +'<span id="tt-ai-progress" style="font-size:.78rem;color:#374151;">AI가 이동 방안을 분석 중…</span></div>';
+    try{
+      const ctx=_aiContext(_aiSrc.d,_aiSrc.p);
+      const prompt='당신은 고등학교 교무부의 시간표 조정 컨설턴트입니다. 한 교사가 자신의 수업 1개를 다른 시간으로 옮기려 합니다. 아래 분석 데이터를 바탕으로 답하세요.\n\n[분석 데이터]\n'
+        +JSON.stringify(ctx.data)
+        +'\n\n[지침]\n- recommendations: 가장 좋은 이동안을 최대 3개(rank 1이 최선). 실행 난이도(즉시 이동 > 즉시 맞교환 가능한 맞바꾸기 > 협의 필요)를 우선하되, 요청교사의 요일별 수업 부담 균형(수업이 몰린 요일 피하기), 1교시·7교시 부담 등도 함께 고려해 reason에 한두 문장으로 설명하세요.\n- slot은 데이터에 있는 시간 표기를 그대로 사용하고, 데이터에 없는 시간을 지어내지 마세요.\n- cautions: 이번 이동에서 주의할 점 1~3개.\n- message_draft: 1순위 추천이 협의 필요형이면 해당 교사에게 보낼 정중한 협의 요청 메시지 초안을 작성하세요(호칭은 데이터의 익명 표기 그대로, 예: "교사1 선생님께"). 협의가 필요 없으면 빈 문자열로 두세요.';
+      const res=await aiCall(prompt,AI_SCHEMA,function(m){
+        const el=document.getElementById('tt-ai-progress');if(el)el.textContent=m;
+      });
+      _aiRender(res,ctx.names);
+    }catch(e){
+      box.innerHTML='<div class="ai-card" style="border-color:#fca5a5;background:#fff1f2;">'
+        +'<span style="font-size:.78rem;color:#b91c1c;">'+_esc(e&&e.message?e.message:'AI 분석에 실패했습니다.')+'</span> '
+        +'<button class="dm-btn s" style="margin-left:6px;" onclick="ttAiRun()">다시 시도</button></div>';
+    }finally{_aiBusy=false;if(btn)btn.disabled=false;}
+  };
 
   /* ── 외부 클릭 자동완성 닫기 ────────────── */
   document.addEventListener('click',function(e){
