@@ -26,6 +26,7 @@ exports.handler = async (event) => {
   }
 
   const question = (body.question || '').toString().trim();
+  const dataset = (body.dataset || '').toString();
   let contexts = Array.isArray(body.contexts) ? body.contexts : [];
   if (!question) {
     return { statusCode: 400, body: JSON.stringify({ error: '질문이 비어 있습니다.' }) };
@@ -41,6 +42,19 @@ exports.handler = async (event) => {
   const evidence = contexts.length
     ? contexts.map((c, i) => `[${i + 1}] (${c.label}${c.ref ? ' ' + c.ref : ''})\n${c.text}`).join('\n\n')
     : '(관련 근거를 찾지 못했습니다.)';
+
+  // 데이터셋별 특화 규칙 — 클라이언트가 body.dataset으로 전달 (현재 curr=교육과정만)
+  const DATASET_RULES = {
+    curr:
+      '【교육과정 답변 특별 규칙 — 수업·평가 설계 지원】\n' +
+      '이 챗봇의 사용자는 교수학습 및 평가 운영 계획을 수립하는 교사입니다. 교육과정 원문 정보를 설계에 바로 쓸 수 있게 명확히 제시하세요.\n' +
+      'a) 성취기준을 인용·제시할 때는 반드시 성취기준 번호를 원문 그대로 붙입니다. 예: "[12문학01-02] 문학의 여러 갈래…". 번호 없이 성취기준 문장만 쓰는 것은 금지입니다.\n' +
+      'b) 성취기준 번호는 [근거] 원문에 있는 것만 사용합니다. 근거에서 번호가 확인되지 않으면 절대 번호를 지어내지 말고 "(성취기준 번호는 원문 확인 필요)"라고 표기합니다.\n' +
+      'c) 영역별 핵심 아이디어를 물으면 「영역명 → 핵심 아이디어」 구조로 구분해 명확히 제시합니다.\n' +
+      'd) 내용 체계를 제시할 때는 지식·이해 / 과정·기능 / 가치·태도 구분을 유지합니다.\n' +
+      'e) 수업·평가 설계 관련 질문이면 관련 성취기준(번호 포함)과 해당 영역의 핵심 아이디어를 연결해 제시하고, 성취기준 해설·적용 시 고려사항이 근거에 있으면 구분해 덧붙입니다.\n\n',
+  };
+  const datasetRules = DATASET_RULES[dataset] || '';
 
   const prompt =
     '당신은 대륜고등학교 교사의 업무를 돕는 RAG 챗봇입니다. 아래 [근거]는 학교 업무 참고자료' +
@@ -63,6 +77,7 @@ exports.handler = async (event) => {
     '5) 장황하게 늘어놓지 말고 핵심부터 간결히 쓰되, 답변은 반드시 문장을 완결해 마무리합니다. ' +
     '절대 문장 중간에서 끊지 마세요. 분량이 많아질 것 같으면 덜 중요한 내용을 줄여서라도 끝맺음을 완성합니다.\n\n' +
     '다시 강조: 주의 문구만 출력하고 끝내면 안 됩니다. 주의 문구 다음에 반드시 질문에 대한 실제 답변 문장이 이어져야 합니다.\n\n' +
+    datasetRules +
     '[근거]\n' + evidence + '\n\n[질문]\n' + question;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent?key=${API_KEY}`;

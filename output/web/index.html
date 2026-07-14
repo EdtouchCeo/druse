@@ -13726,10 +13726,19 @@ function switchSpTab(id,btn){
     }).then(function(sctx){
       var ctx = (sctx && sctx.length) ? sctx
                 : (window.retrieveChunks ? window.retrieveChunks(cfg.keys, q, 6) : []);
+      // 성취기준 번호(예: 12문학01-02)가 질문에 있으면 키워드 일치 청크를 앞에 병합 —
+      // 코드 문자열은 의미 검색이 놓치기 쉬워 원문 번호가 근거에 반드시 들어가게 한다
+      if (/\d{1,2}[가-힣]{1,4}\d{2}-\d{2}/.test(q) && window.retrieveChunks) {
+        var kw = window.retrieveChunks(cfg.keys, q, 4) || [];
+        var seen = {};
+        (ctx || []).forEach(function(c){ seen[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)] = 1; });
+        var fresh = kw.filter(function(c){ return !seen[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)]; });
+        ctx = fresh.concat(ctx || []).slice(0, 8);
+      }
       return fetch('/.netlify/functions/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, contexts: ctx })
+        body: JSON.stringify({ question: q, contexts: ctx, dataset: (cfg.keys && cfg.keys[0]) || '' })
       }).then(function(r){
         return r.json().then(function(j){ return { ok: r.ok, j: j }; });
       }).then(function(res){
