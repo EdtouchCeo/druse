@@ -11377,7 +11377,6 @@ function switchSpTab(id,btn){
         <datalist id="tt-ai-gem-models">
           <option value="gemini-3.5-flash"></option>
           <option value="gemini-2.5-flash"></option>
-          <option value="gemini-2.5-flash-lite"></option>
           <option value="gemini-2.5-pro"></option>
         </datalist>
       </div>
@@ -13013,7 +13012,8 @@ function switchSpTab(id,btn){
      429 장기 대기(15/30/45초)·503 지수 백오프·thinking 거부 대응·flash-lite 폴백
   ══════════════════════════════════════════ */
   const AI_KEY='dr_tt_llm_v1';
-  const AI_GEM_DEFAULT='gemini-3.5-flash',AI_GEM_FALLBACK='gemini-2.5-flash-lite';
+  // 폴백은 반드시 실재하는 모델이어야 한다 — flash-lite는 일부 키에서 404가 나 원래 오류를 뒤덮는 실사고(특기사항 AI, 2026-07)
+  const AI_GEM_DEFAULT='gemini-3.5-flash',AI_GEM_FALLBACK='gemini-2.5-flash';
   let _aiSrc=null,_aiBusy=false;
 
   function aiLoad(){
@@ -13140,6 +13140,7 @@ function switchSpTab(id,btn){
       if(!thinkRej){
         if(res.status===400||res.status===403)message='API 키가 올바르지 않거나 권한이 없습니다.';
         else if(res.status===404)message='모델 "'+model+'"을(를) 찾을 수 없습니다.';
+        else if(res.status===429)message='무료 사용량 한도에 도달했습니다. 잠시 후(1분 이상) 다시 시도해 주세요.';
       }
       const err=new Error(message);err.status=res.status;err.thinkRej=thinkRej;throw err;
     }
@@ -13171,9 +13172,10 @@ function switchSpTab(id,btn){
     const gSchema=aiToGeminiSchema(schema);
     const primary=s.gemini.model||AI_GEM_DEFAULT;
     const models=primary===AI_GEM_FALLBACK?[primary]:[primary,AI_GEM_FALLBACK];
-    let lastErr=null;
+    // 두 모델 모두 실패 시 사용자가 고른 1순위 모델의 오류를 우선 표시(폴백 실패가 원인을 가리지 않게)
+    let primaryErr=null,lastErr=null;
     for(let m=0;m<models.length;m++){
-      if(m>0)onMsg('가벼운 모델(flash-lite)로 다시 시도 중…');
+      if(m>0){primaryErr=lastErr;onMsg('예비 모델('+models[m]+')로 다시 시도 중…');}
       let thinking=true;
       for(let attempt=0;attempt<3;attempt++){
         try{
@@ -13197,7 +13199,7 @@ function switchSpTab(id,btn){
         }
       }
     }
-    throw lastErr||new Error('AI 분석에 실패했습니다.');
+    throw primaryErr||lastErr||new Error('AI 분석에 실패했습니다.');
   }
 
   /* ── 분석 컨텍스트 (교사 이름은 익명 토큰으로 치환해 전송) ── */
