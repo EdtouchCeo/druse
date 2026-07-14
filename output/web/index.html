@@ -11275,39 +11275,25 @@ function switchSpTab(id,btn){
       <div style="display:flex;gap:5px;flex-wrap:wrap;">
         <button id="tt-view-today" onclick="ttShowView('today')" class="tt-hdr-btn tt-hdr-active">📅 오늘</button>
         <button id="tt-view-week"  onclick="ttShowView('week')"  class="tt-hdr-btn">📋 전체 주간</button>
-        <button id="tt-view-abs"   onclick="ttShowView('abs')"   class="tt-hdr-btn" style="display:none;">🧳 부재 가이드</button>
-        <button id="tt-move-btn"   onclick="ttToggleMove()"      class="tt-hdr-btn" style="display:none;">🔄 이동 시뮬레이션</button>
+        <button id="tt-sim-btn"    onclick="ttToggleSim()"       class="tt-hdr-btn" style="display:none;">🧭 시뮬레이션</button>
         <button onclick="ttClose()" class="tt-hdr-btn tt-close-btn">✕ 닫기</button>
       </div>
     </div>
-    <div id="tt-move-hint" style="display:none;background:#eff6ff;border:1px solid #93c5fd;border-radius:7px;padding:7px 13px;margin-bottom:10px;font-size:.76rem;color:#1e40af;">
-      🖱 수업 셀을 <strong>클릭</strong>하면 모든 이동 가능 시간을 시각적으로 확인합니다. 원하는 목적지로 <strong>드래그</strong>하면 해당 시간 상세 분석을 보여줍니다.
+    <div id="tt-sim-hint" style="display:none;background:#eff6ff;border:1px solid #93c5fd;border-radius:7px;padding:7px 13px;margin-bottom:8px;font-size:.76rem;color:#1e40af;">
+      🖱 부재하거나 비우고 싶은 <strong>교시 칸을 클릭</strong>해 선택하세요 (여러 개 가능). <strong>요일 제목</strong>을 클릭하면 종일 선택됩니다.
+    </div>
+    <div id="tt-sim-bar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;background:#f8faff;border:1px solid #e0e7ff;border-radius:8px;padding:8px 12px;">
+      <span style="font-size:.75rem;font-weight:700;color:#1a3a6b;">사유</span>
+      <div id="tt-sim-reasons" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+      <span id="tt-sim-count" style="font-size:.75rem;color:#6b7280;margin-left:auto;">선택 0교시</span>
+      <button class="dm-btn p" style="height:30px;" onclick="ttSelAnalyze()">📊 분석</button>
+      <button class="dm-btn s" style="height:30px;" onclick="ttSelClear()">해제</button>
     </div>
     <div id="tt-today-view"><div id="tt-today-day-label" style="font-size:.8rem;font-weight:700;color:#2563eb;margin-bottom:7px;"></div><div id="tt-today-content"></div></div>
-    <div id="tt-week-view" style="display:none;"><div id="tt-week-content"></div></div>
-    <div id="tt-abs-view" style="display:none;">
-      <div style="background:#f8faff;border:1px solid #e0e7ff;border-radius:10px;padding:12px 14px;">
-        <div style="font-size:.78rem;font-weight:700;color:#1a3a6b;margin-bottom:6px;">🧳 부재 일정 입력 (출장·병가·외출·연수 등)</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <input id="tt-abs-input" style="flex:1;min-width:220px;height:34px;padding:0 10px;border:1px solid #d1d5db;border-radius:7px;font-size:.8rem;font-family:inherit;" placeholder="예: 수요일 3교시 출장, 수~목 병가, 금 4교시 외출" onkeydown="if(event.key==='Enter')ttAbsRun()">
-          <button class="dm-btn p" style="height:34px;" onclick="ttAbsRun()">분석</button>
-        </div>
-        <p style="margin:6px 0 0;font-size:.7rem;color:#9ca3af;">쉼표로 여러 건 입력 · 교시를 생략하면 종일 · 오전(1~4교시)/오후(5~7교시) 표현 가능</p>
-      </div>
-      <div id="tt-abs-result" style="margin-top:12px;"></div>
-    </div>
+    <div id="tt-week-view" style="display:none;"><div id="tt-week-content"></div><div id="tt-sim-result" style="margin-top:12px;"></div></div>
   </div>
 </div>
 <div id="tt-backdrop" onclick="ttClose()" style="display:none;position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,0.16);"></div>
-
-<!-- ===== 드래그앤드롭 분석 모달 ===== -->
-<div id="tt-drop-modal" style="display:none;position:fixed;inset:0;z-index:3000;align-items:center;justify-content:center;">
-  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.4);" onclick="ttDropClose()"></div>
-  <div style="position:relative;background:#fff;border-radius:14px;padding:0;max-width:420px;width:92%;box-shadow:0 20px 50px rgba(0,0,0,0.28);">
-    <div id="tt-drop-header" style="padding:16px 20px 12px;border-radius:14px 14px 0 0;"></div>
-    <div id="tt-drop-body" style="padding:0 20px 16px;font-size:.83rem;"></div>
-  </div>
-</div>
 
 <!-- ===== 시뮬레이션 그리드 모달 ===== -->
 <div id="tt-sim-modal" style="display:none;position:fixed;inset:0;z-index:3000;align-items:flex-start;justify-content:center;padding-top:52px;overflow-y:auto;">
@@ -11391,13 +11377,14 @@ function switchSpTab(id,btn){
 #tt-suggest div{padding:6px 12px;font-size:.79rem;cursor:pointer;color:#374151;border-bottom:1px solid #f3f4f6;}
 #tt-suggest div:last-child{border-bottom:none;}
 #tt-suggest div:hover,.tt-ac-act{background:#eff6ff;color:#1a3a6b;font-weight:600;}
-/* 이동 모드 드래그 */
-.tt-drag{cursor:pointer!important;}
-.tt-drag:hover{background:#dbeafe!important;outline:2px solid #3b82f6;}
-.tt-dragging{opacity:.3;}
-.tt-dst-empty{background:#f0fdf4!important;outline:2px dashed #22c55e;}
-.tt-dst-filled{background:#fef9c3!important;outline:2px dashed #eab308;}
-.tt-drop-over{background:#bfdbfe!important;}
+/* 시뮬레이션 선택 모드 */
+.tt-selable{cursor:pointer;}
+.tt-selable:hover{outline:2px dashed #3b82f6;outline-offset:-2px;}
+.tt-selected{background:#dbeafe!important;outline:2px solid #2563eb;outline-offset:-2px;}
+.tt-day-selable{cursor:pointer;text-decoration:underline dotted;}
+.tt-day-selable:hover{background:#2f5fae!important;}
+.sim-r{height:26px;padding:0 11px;font-size:.72rem;font-weight:600;font-family:inherit;border-radius:20px;border:1px solid #93c5fd;background:#fff;color:#1e40af;cursor:pointer;}
+.sim-r.on{background:#1a3a6b;color:#fff;border-color:#1a3a6b;}
 /* 시뮬레이션 그리드 */
 .sg-wrap{border-collapse:collapse;font-size:.75rem;width:100%;}
 .sg-wrap th{background:#1a3a6b;color:#fff;padding:6px 8px;text-align:center;font-weight:600;font-size:.72rem;}
@@ -12615,14 +12602,14 @@ function switchSpTab(id,btn){
       name=document.getElementById('tt-class-select').value;
       if(!name){alert('학반을 선택하세요.');return;}
     }
-    _name=name;_type=type;_moveMode=false;
-    document.getElementById('tt-view-abs').style.display=type==='teacher'?'':'none';
-    document.getElementById('tt-abs-result').innerHTML='';
-    _absData=null;
-    document.getElementById('tt-move-btn').style.display=type==='teacher'?'':'none';
-    document.getElementById('tt-move-btn').textContent='🔄 이동 시뮬레이션';
-    document.getElementById('tt-move-btn').classList.remove('tt-hdr-active');
-    document.getElementById('tt-move-hint').style.display='none';
+    _name=name;_type=type;
+    _selMode=false;_selSet={};_absData=null;
+    document.getElementById('tt-sim-btn').style.display=type==='teacher'?'':'none';
+    document.getElementById('tt-sim-btn').textContent='🧭 시뮬레이션';
+    document.getElementById('tt-sim-btn').classList.remove('tt-hdr-active');
+    document.getElementById('tt-sim-hint').style.display='none';
+    document.getElementById('tt-sim-bar').style.display='none';
+    document.getElementById('tt-sim-result').innerHTML='';
     document.getElementById('tt-panel-title').textContent=type==='teacher'?'🧑‍🏫 '+name+' 선생님 시간표':'🏫 '+name+' 시간표';
     document.getElementById('tt-panel-sub').textContent='';
     document.getElementById('tt-panel').style.display='block';
@@ -12632,13 +12619,13 @@ function switchSpTab(id,btn){
   window.ttClose=function(){
     document.getElementById('tt-panel').style.display='none';
     document.getElementById('tt-backdrop').style.display='none';
-    _moveMode=false;
+    _selMode=false;
   };
 
   /* ── 뷰 전환 ───────────────────────────── */
   window.ttShowView=function(v){
-    const views={today:'tt-today-view',week:'tt-week-view',abs:'tt-abs-view'};
-    const btns={today:'tt-view-today',week:'tt-view-week',abs:'tt-view-abs'};
+    const views={today:'tt-today-view',week:'tt-week-view'};
+    const btns={today:'tt-view-today',week:'tt-view-week'};
     Object.keys(views).forEach(function(k){
       const el=document.getElementById(views[k]);if(el)el.style.display=k===v?'':'none';
       const b=document.getElementById(btns[k]);if(b)b.classList.toggle('tt-hdr-active',k===v);
@@ -12684,7 +12671,7 @@ function switchSpTab(id,btn){
     const di=todayIdx();
     const cnt=document.getElementById('tt-week-content');
     const col=_type==='teacher'?'학반':'교사';
-    let th='<tr><th style="width:38px;">교시</th>'+DAYS.map((d,i)=>`<th${i===di?' style="background:#2563eb;"':''}>${d}</th>`).join('')+'</tr>';
+    let th='<tr><th style="width:38px;">교시</th>'+DAYS.map((d,i)=>`<th${i===di?' style="background:#2563eb;"':''}${_selMode?` class="tt-day-selable" data-day="${i}" title="클릭하면 ${d}요일 종일 선택"`:''}>${d}</th>`).join('')+'</tr>';
     let rows='';
     for(let p=0;p<P;p++){
       const isNoSlot=NO7.every(wd=>p===6&&wd===wd); // 7교시 행에 수요일만 제외
@@ -12695,11 +12682,9 @@ function switchSpTab(id,btn){
         const{s,m}=_parseSub(_resolveRaw(sl,p));
         const isT=d===di;
         const inv=!validSlot(d,p);
-        const hasCnt=!inv&&!!(s&&s.trim());
         const id=`tt-cell-${d}-${p}`;
-        const moveCls=_moveMode&&hasCnt?' tt-drag':'';
-        const dropCls=_moveMode&&!hasCnt&&!inv?' tt-dst-empty':(_moveMode&&hasCnt?' tt-dst-filled':'');
-        row+=`<td id="${id}" data-day="${d}" data-period="${p}" class="${isT?'tt-today-col':''}${inv?' tt-empty':''}${moveCls}${dropCls}"${_moveMode&&hasCnt?' draggable="true"':''}>`;
+        const selCls=_selMode&&!inv?(' tt-selable'+(_selSet[d+','+p]?' tt-selected':'')):'';
+        row+=`<td id="${id}" data-day="${d}" data-period="${p}" class="${isT?'tt-today-col':''}${inv?' tt-empty':''}${selCls}">`;
         if(inv)row+='<span class="tt-empty" style="font-size:.68rem;">—</span>';
         else if(s)row+=`<div class="tt-subj">${s}</div><div class="tt-meta">${m}</div>`;
         else row+='<span class="tt-empty">—</span>';
@@ -12708,63 +12693,86 @@ function switchSpTab(id,btn){
       rows+=`<tr>${row}</tr>`;
     }
     cnt.innerHTML=`<div style="overflow-x:auto;"><table class="tt-table" id="tt-week-tbl"><thead>${th}</thead><tbody>${rows}</tbody></table></div>`;
-    if(_moveMode)_bindDrag();
+    if(_selMode)_bindSel();
   }
 
   /* ══════════════════════════════════════════
-     이동 시뮬레이션 모드
+     통합 시뮬레이션 모드 — 주간표에서 부재/이동 교시를 직접 클릭 선택
   ══════════════════════════════════════════ */
-  let _moveMode=false,_dragSrc=null;
+  let _selMode=false,_selSet={},_selReason='출장';
+  const SIM_REASONS=['출장','병가','외출','연수','기타'];
 
-  window.ttToggleMove=function(){
-    _moveMode=!_moveMode;
-    const btn=document.getElementById('tt-move-btn');
-    btn.classList.toggle('tt-hdr-active',_moveMode);
-    btn.textContent=_moveMode?'✕ 시뮬레이션 종료':'🔄 이동 시뮬레이션';
-    document.getElementById('tt-move-hint').style.display=_moveMode?'':'none';
+  window.ttToggleSim=function(){
+    _selMode=!_selMode;
+    const btn=document.getElementById('tt-sim-btn');
+    btn.classList.toggle('tt-hdr-active',_selMode);
+    btn.textContent=_selMode?'✕ 시뮬레이션 종료':'🧭 시뮬레이션';
+    document.getElementById('tt-sim-hint').style.display=_selMode?'':'none';
+    document.getElementById('tt-sim-bar').style.display=_selMode?'flex':'none';
+    if(!_selMode){_selSet={};document.getElementById('tt-sim-result').innerHTML='';_absData=null;}
+    else{_renderReasons();_updSelCount();}
     ttShowView('week');
   };
-
-  function _bindDrag(){
+  function _renderReasons(){
+    document.getElementById('tt-sim-reasons').innerHTML=SIM_REASONS.map(function(r){
+      return'<button class="sim-r'+(r===_selReason?' on':'')+'" onclick="ttSelReason(\''+r+'\')">'+r+'</button>';
+    }).join('');
+  }
+  window.ttSelReason=function(r){_selReason=r;_renderReasons();};
+  function _updSelCount(){
+    const n=Object.keys(_selSet).length;
+    document.getElementById('tt-sim-count').textContent='선택 '+n+'교시';
+  }
+  function _bindSel(){
     const tbl=document.getElementById('tt-week-tbl');
     if(!tbl)return;
     tbl.addEventListener('click',function(e){
-      if(_dragSrc!==null)return;
-      const td=e.target.closest('td.tt-drag');
+      const th=e.target.closest('th.tt-day-selable');
+      if(th){
+        const d=+th.dataset.day;
+        // 그 요일 유효 교시가 모두 선택돼 있으면 해제, 아니면 전체 선택
+        let all=true;
+        for(let p=0;p<P;p++)if(validSlot(d,p)&&!_selSet[d+','+p]){all=false;break;}
+        for(let p=0;p<P;p++){
+          if(!validSlot(d,p))continue;
+          if(all)delete _selSet[d+','+p];else _selSet[d+','+p]=1;
+        }
+        _renderWeek();_updSelCount();return;
+      }
+      const td=e.target.closest('td.tt-selable');
       if(!td)return;
-      _showSimGrid(+td.dataset.day,+td.dataset.period);
-    });
-    tbl.addEventListener('dragstart',function(e){
-      const td=e.target.closest('td.tt-drag');
-      if(!td){e.preventDefault();return;}
-      _dragSrc={d:+td.dataset.day,p:+td.dataset.period};
-      td.classList.add('tt-dragging');
-      e.dataTransfer.effectAllowed='move';
-    });
-    tbl.addEventListener('dragend',function(){
-      document.querySelectorAll('.tt-dragging,.tt-drop-over').forEach(el=>el.classList.remove('tt-dragging','tt-drop-over'));
-      setTimeout(()=>{_dragSrc=null;},60);
-    });
-    tbl.addEventListener('dragover',function(e){
-      const td=e.target.closest('td[data-day]');
-      if(!td||!_dragSrc)return;
-      e.preventDefault();e.dataTransfer.dropEffect='move';
-      document.querySelectorAll('.tt-drop-over').forEach(el=>el.classList.remove('tt-drop-over'));
-      if(+td.dataset.day!==_dragSrc.d||+td.dataset.period!==_dragSrc.p)td.classList.add('tt-drop-over');
-    });
-    tbl.addEventListener('dragleave',function(e){
-      const td=e.target.closest('td[data-day]');
-      if(td)td.classList.remove('tt-drop-over');
-    });
-    tbl.addEventListener('drop',function(e){
-      e.preventDefault();
-      const td=e.target.closest('td[data-day]');
-      if(!td||!_dragSrc)return;
-      const dD=+td.dataset.day,dP=+td.dataset.period;
-      if(dD===_dragSrc.d&&dP===_dragSrc.p)return;
-      _showDropModal(_dragSrc.d,_dragSrc.p,dD,dP);
+      const key=td.dataset.day+','+td.dataset.period;
+      if(_selSet[key]){delete _selSet[key];td.classList.remove('tt-selected');}
+      else{_selSet[key]=1;td.classList.add('tt-selected');}
+      _updSelCount();
     });
   }
+  window.ttSelClear=function(){
+    _selSet={};_absData=null;
+    document.getElementById('tt-sim-result').innerHTML='';
+    _renderWeek();_updSelCount();
+  };
+  window.ttSelAnalyze=function(){
+    const keys=Object.keys(_selSet);
+    if(!keys.length){alert('먼저 주간표에서 부재할 교시 칸을 클릭해 선택하세요.');return;}
+    const set={};
+    keys.forEach(function(k){set[k]=_selReason;});
+    // 요일별 선택 요약 (종일 여부 포함)
+    const items=[];
+    for(let d=0;d<5;d++){
+      const ps=[];
+      for(let p=0;p<P;p++)if(set[d+','+p])ps.push(p);
+      if(!ps.length)continue;
+      let whole=true;
+      for(let p=0;p<P;p++)if(validSlot(d,p)&&!set[d+','+p]){whole=false;break;}
+      items.push({day:d,periods:ps,whole:whole,reason:_selReason});
+    }
+    const lessons=_absAnalyze(set);
+    _absData={items:items,lessons:lessons};
+    _absRender(items,lessons);
+    const rs=document.getElementById('tt-sim-result');
+    if(rs&&rs.scrollIntoView)rs.scrollIntoView({behavior:'smooth',block:'nearest'});
+  };
 
   /* ── 데이터 헬퍼 ────────────────────────── */
   function _teacherFreeAt(tName,day,p){
@@ -12803,119 +12811,23 @@ function switchSpTab(id,btn){
     return res;
   }
 
-  /* ══════════════════════════════════════════
-     드래그앤드롭 분석 모달
-  ══════════════════════════════════════════ */
-  function _showDropModal(srcD,srcP,dstD,dstP){
-    if(!validSlot(dstD,dstP)){alert('수요일 7교시는 수업이 없습니다.');return;}
-    const teacher=_name;
-    const srcDay=DAYS[srcD],dstDay=DAYS[dstD];
-    const srcRaw=(TT.t[teacher][srcDay]||[])[srcP]||'';
-    const dstRaw=(TT.t[teacher][dstDay]||[])[dstP]||'';
-    const{s:srcS,m:srcC}=_parseSub(_resolveRaw(TT.t[teacher][srcDay]||[],srcP));
-    const{s:dstS,m:dstC}=_parseSub(_resolveRaw(TT.t[teacher][dstDay]||[],dstP));
-    const tFree=!_hasSub(dstRaw);      // 교사 자신이 목적지에 비어있는지
-    const cxFree=_classFreeAt(srcC,dstDay,dstP); // 담당 학반이 목적지에 비어있는지
 
-    // 헤더 색상 및 상태 결정
-    let status,clsName,hdrCls;
-    if(tFree&&cxFree){status='✅ 즉시 이동 가능';clsName='ok';hdrCls='dm-ok';}
-    else if(!tFree&&cxFree){status='🔄 맞바꾸기 가능';clsName='swap';hdrCls='dm-swap';}
-    else if(tFree&&!cxFree){status='💬 학반 협의 필요';clsName='neg';hdrCls='dm-neg';}
-    else{status='⚠️ 이동 어려움';clsName='blk';hdrCls='dm-blk';}
-
-    // 헤더
-    const hdr=document.getElementById('tt-drop-header');
-    hdr.className=hdrCls;hdr.style.borderRadius='14px 14px 0 0';hdr.style.padding='14px 18px';
-    hdr.innerHTML=`<p class="dm-title">${status}</p>
-      <p class="dm-sub">${srcDay} ${srcP+1}교시 ${srcS}${srcC?' ('+srcC+'반)':''} → ${dstDay} ${dstP+1}교시</p>`;
-
-    let body='';
-
-    /* Case 1: 즉시 이동 */
-    if(tFree&&cxFree){
-      body+=`<div class="dm-row"><span class="dm-label">이동할 수업</span><strong>${srcS}</strong>&nbsp;${srcC?'('+srcC+'반)':''}</div>
-      <div class="dm-row"><span class="dm-label">목적지</span>${dstDay} ${dstP+1}교시 — 비어있음</div>
-      <div style="margin-top:12px;">
-        <button class="dm-btn p" onclick="ttApplyMove('${srcDay}',${srcP},'${dstDay}',${dstP})">✅ 이동 확정</button>
-        <button class="dm-btn s" onclick="ttDropClose()">취소</button>
-      </div>`;
-    }
-    /* Case 2: 교사 자신의 다른 수업과 맞바꾸기 */
-    else if(!tFree&&cxFree){
-      const cyFree=_classFreeAt(dstC,srcDay,srcP);
-      if(cyFree){
-        body+=`<div class="dm-row"><span class="dm-label">이동할 수업</span><strong>${srcS}</strong> (${srcC||'—'}반)</div>
-        <div class="dm-row"><span class="dm-label">현재 수업</span><strong>${dstS}</strong> (${dstC||'—'}반)</div>
-        <div style="background:#eff6ff;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:.79rem;">
-          두 수업을 서로 맞바꿉니다.<br>
-          <b>${srcC}반</b> ${dstDay} ${dstP+1}교시 ← ${srcS}<br>
-          <b>${dstC}반</b> ${srcDay} ${srcP+1}교시 ← ${dstS}
-        </div>
-        <div><button class="dm-btn p" onclick="ttApplySwap('${srcDay}',${srcP},'${dstDay}',${dstP})">🔄 맞바꾸기 확정</button>
-        <button class="dm-btn s" onclick="ttDropClose()">취소</button></div>`;
-      }else{
-        // 맞바꾸기 불가 - 대안 시간 제시
-        const alts=[];
-        for(let d=0;d<5&&alts.length<5;d++)for(let p=0;p<P&&alts.length<5;p++){
-          if(!validSlot(d,p))continue;
-          if(_teacherFreeAt(teacher,DAYS[d],p)&&_classFreeAt(srcC,DAYS[d],p))
-            alts.push({d,p,label:DAYS[d]+' '+(p+1)+'교시'});
-        }
-        body+=`<div class="dm-row"><span class="dm-label">현재 수업</span><strong>${dstS}</strong> (${dstC||'—'}반) — 맞바꾸기 시 ${dstC}반 충돌</div>
-        ${alts.length?'<div style="font-size:.77rem;color:#374151;margin-bottom:5px;">대신 이동 가능한 시간:</div><div>'
-          +alts.map(a=>`<span class="dm-chip g" onclick="ttDropClose();_quickMove('${srcDay}',${srcP},'${DAYS[a.d]}',${a.p})">${a.label}</span>`).join('')+'</div>':
-          '<p style="color:#6b7280;font-size:.79rem;">대안 시간이 없습니다.</p>'}
-        <div style="margin-top:10px;"><button class="dm-btn s" onclick="ttDropClose()">닫기</button></div>`;
-      }
-    }
-    /* Case 3: 교사 O, 학반 X — 맞교대 협의 */
-    else if(tFree&&!cxFree){
-      const bName=_classTeacherAt(srcC,dstDay,dstP);
-      const bSubj=_classSubjAt(srcC,dstDay,dstP);
-      // Teacher B가 Class X 수업을 옮길 수 있는 시간
-      // (Teacher B 비어있음 + Class X 비어있음 or 이동 후 빌 자리)
-      const swapSlots=_swapSlots(bName,srcC,srcD,srcP,7);
-      body+=`<div class="dm-row"><span class="dm-label">이동할 수업</span><strong>${srcS}</strong> (${srcC}반)</div>
-      <div style="background:#fef9c3;border-radius:8px;padding:9px 12px;margin:8px 0;font-size:.79rem;">
-        ⚠️ <b>${srcC}반</b> ${dstDay} ${dstP+1}교시: <b>${bName||'—'}</b> 선생님의 <b>${bSubj}</b> 수업이 있습니다.
-      </div>`;
-      if(bName){
-        body+=`<div style="font-size:.77rem;color:#374151;margin-bottom:5px;"><b>${bName}</b> 선생님이 해당 수업을 옮길 수 있는 시간:</div>`;
-        if(swapSlots.length){
-          body+=`<div>${swapSlots.map(s=>`<span class="dm-chip">${s.label}</span>`).join('')}</div>`;
-        }else{
-          body+='<p style="color:#6b7280;font-size:.78rem;">공통 빈 시간이 없습니다.</p>';
-        }
-      }
-      body+=`<div style="margin-top:10px;"><button class="dm-btn s" onclick="ttDropClose()">닫기</button></div>`;
-    }
-    /* Case 4: 양측 충돌 */
-    else{
-      body+=`<p style="font-size:.8rem;color:#374151;">교사 스케줄과 학반 스케줄 모두 충돌합니다.</p>
-      <div style="margin-top:10px;"><button class="dm-btn s" onclick="ttDropClose()">닫기</button></div>`;
-    }
-
-    document.getElementById('tt-drop-body').innerHTML=body;
-    document.getElementById('tt-drop-modal').style.display='flex';
+  // 이동/맞바꾸기 확정: 화면상 시간표에 반영(시뮬레이션 — 새로고침 시 원복).
+  // 분석 결과가 떠 있으면 바뀐 시간표 기준으로 자동 재분석한다.
+  function _afterApply(){
+    _renderWeek();
+    if(_selMode&&Object.keys(_selSet).length&&_absData)ttSelAnalyze();
   }
-  window.ttDropClose=function(){document.getElementById('tt-drop-modal').style.display='none';};
-
-  window.ttApplyMove=function(srcDay,srcP,dstDay,dstP){
-    TT.t[_name][dstDay][dstP]=TT.t[_name][srcDay][srcP];
-    TT.t[_name][srcDay][srcP]='|';
-    ttDropClose();_renderWeek();_bindDrag();
-  };
   window.ttApplySwap=function(srcDay,srcP,dstDay,dstP){
     const tmp=TT.t[_name][srcDay][srcP];
     TT.t[_name][srcDay][srcP]=TT.t[_name][dstDay][dstP];
     TT.t[_name][dstDay][dstP]=tmp;
-    ttDropClose();_renderWeek();_bindDrag();
+    ttSimClose();_afterApply();
   };
   window._quickMove=function(srcDay,srcP,dstDay,dstP){
     TT.t[_name][dstDay][dstP]=TT.t[_name][srcDay][srcP];
     TT.t[_name][srcDay][srcP]='|';
-    ttSimClose();ttDropClose();_renderWeek();_bindDrag();
+    ttSimClose();_afterApply();
   };
 
   /* ══════════════════════════════════════════
@@ -13377,43 +13289,13 @@ function switchSpTab(id,btn){
   };
 
   /* ══════════════════════════════════════════
-     부재(출장·병가·외출) 가이드
+     부재/이동 분석 코어
      — 학급별 시간표 × 교사별 시간표 교차 분석으로
        "맞물려 돌아가는" 교환 후보와 보강 가능 교사를 산출
-     — 파서(_absParse)·슬롯 전개(_absSlotSet)·분석 엔진(_absAnalyze)은
-       순수 함수로 분리 — 시간표 작성·이동 플랫폼 확장 시 분석 코어로 재사용
+     — _absAnalyze는 순수 함수 — 시간표 작성·이동 플랫폼 확장 시 재사용
   ══════════════════════════════════════════ */
   let _absData=null;
-
-  // "수요일 3교시 출장" / "수~목 병가" / "금 4교시 외출" / "화 오전 연수" 파서
-  function _absParse(text){
-    const items=[],errs=[];
-    text.split(/[,;\n·]+/).forEach(function(part){
-      const t=part.trim();if(!t)return;
-      const dayRe=/([월화수목금])(?:요일)?(?:\s*[~\-]\s*([월화수목금])(?:요일)?)?/;
-      const dm=t.match(dayRe);
-      if(!dm){errs.push(t);return;}
-      const d1=DAYS.indexOf(dm[1]),d2=dm[2]?DAYS.indexOf(dm[2]):d1;
-      const pRe=/([1-7])\s*(?:[~\-]\s*([1-7]))?\s*교시/;
-      let p1=0,p2=P-1,whole=true;
-      const pm=t.match(pRe);
-      if(pm){p1=+pm[1]-1;p2=pm[2]?+pm[2]-1:p1;whole=false;}
-      else if(/오전/.test(t)){p1=0;p2=3;whole=false;}
-      else if(/오후/.test(t)){p1=4;p2=6;whole=false;}
-      const reason=t.replace(dayRe,'').replace(pRe,'').replace(/오전|오후/g,'')
-        .replace(/^[\s,~\-]+|[\s,~\-]+$/g,'').trim()||'부재';
-      items.push({d1:Math.min(d1,d2),d2:Math.max(d1,d2),p1:Math.min(p1,p2),p2:Math.max(p1,p2),whole:whole,reason:reason});
-    });
-    return{items:items,errs:errs};
-  }
-  function _absSlotSet(items){
-    const set={};
-    items.forEach(function(it){
-      for(let d=it.d1;d<=it.d2;d++)for(let p=it.p1;p<=it.p2;p++)
-        if(validSlot(d,p))set[d+','+p]=it.reason;
-    });
-    return set;
-  }
+  window.ttOpenMoveSim=function(d,p){_showSimGrid(d,p);};
   // 부재 시간대의 영향 수업마다: ① 같은 반을 가르치는 다른 교사 중
   // 부재 시간에 비어 있는 교사(=수업 교환 후보, 그 교사의 해당 반 수업시간과 맞물림)
   // ② 부재 교사가 복귀 후 되갚을 수 있으면 상호교환 표시 ③ 그 시간 빈 교사 수(보강 후보)
@@ -13449,23 +13331,26 @@ function switchSpTab(id,btn){
     }
     return lessons;
   }
-  function _absRender(items,lessons,errs){
-    const box=document.getElementById('tt-abs-result');
-    let html='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">'+items.map(function(it){
-      const dl=it.d1===it.d2?DAYS[it.d1]:DAYS[it.d1]+'~'+DAYS[it.d2];
-      const pl=it.whole?'종일':(it.p1===it.p2?(it.p1+1)+'교시':(it.p1+1)+'~'+(it.p2+1)+'교시');
-      return'<span class="dm-chip">'+_esc(dl+' '+pl+' · '+it.reason)+'</span>';
-    }).join('')+'</div>';
-    if(errs.length)html+='<p style="font-size:.72rem;color:#b45309;margin:0 0 8px;">해석하지 못한 입력: '+errs.map(_esc).join(' / ')+'</p>';
+  function _absRender(items,lessons){
+    const box=document.getElementById('tt-sim-result');
+    let html='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">'
+      +'<span style="font-size:.75rem;font-weight:700;color:#1a3a6b;">📋 분석 결과</span>'
+      +items.map(function(it){
+        const pl=it.whole?'종일':it.periods.map(function(p){return p+1;}).join('·')+'교시';
+        return'<span class="dm-chip">'+_esc(DAYS[it.day]+' '+pl+' · '+it.reason)+'</span>';
+      }).join('')+'</div>';
     if(!lessons.length){
-      html+='<div class="ai-card">부재 시간대에 잡힌 수업이 없습니다. 별도의 결보강 조치가 필요 없습니다.</div>';
+      html+='<div class="ai-card">선택한 시간대에 잡힌 수업이 없습니다. 별도의 결보강 조치가 필요 없습니다.</div>';
       box.innerHTML=html;return;
     }
     html+='<p style="font-size:.75rem;color:#374151;margin:0 0 6px;">영향 수업 <b>'+lessons.length+'건</b> — 칩은 <b>같은 반을 가르치는 교사</b>의 해당 반 수업시간입니다. <span style="color:#166534;">⇄ 상호 맞교환 가능</span> / → 단방향(추후 조정 필요)</p>';
     lessons.forEach(function(L){
       html+='<div class="sg-detail-card" style="margin-bottom:8px;">'
-        +'<div style="font-weight:700;font-size:.82rem;">'+_esc(L.label)+' '+_esc(L.subj)+(L.cls?' ('+_esc(L.cls)+'반)':'')
-        +' <span style="font-weight:400;color:#b45309;">· '+_esc(L.reason)+'</span></div>';
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+        +'<span style="font-weight:700;font-size:.82rem;">'+_esc(L.label)+' '+_esc(L.subj)+(L.cls?' ('+_esc(L.cls)+'반)':'')+'</span>'
+        +'<span style="font-size:.72rem;color:#b45309;">'+_esc(L.reason)+'</span>'
+        +'<button class="dm-btn s" style="height:24px;padding:0 10px;font-size:.7rem;margin-left:auto;" onclick="ttOpenMoveSim('+L.d+','+L.p+')">🔍 이동 후보 전체 보기</button>'
+        +'</div>';
       if(L.swaps.length){
         html+='<div style="margin-top:6px;">'+L.swaps.slice(0,6).map(function(sw){
           return'<span class="dm-chip'+(sw.상호교환?' g':'')+'" title="'+(sw.상호교환?'상호 맞교환 가능':'단방향 — 추후 조정 필요')+'">'
@@ -13483,15 +13368,6 @@ function switchSpTab(id,btn){
       +'<div id="tt-absai-result"></div>';
     box.innerHTML=html;
   }
-  window.ttAbsRun=function(){
-    const txt=document.getElementById('tt-abs-input').value;
-    if(!txt.trim()){alert('부재 일정을 입력하세요. 예: 수요일 3교시 출장, 수~목 병가');return;}
-    const r=_absParse(txt);
-    if(!r.items.length){alert('일정을 해석하지 못했습니다.\n예: 수요일 3교시 출장, 수~목 병가, 금 4교시 외출');return;}
-    const lessons=_absAnalyze(_absSlotSet(r.items));
-    _absData={items:r.items,lessons:lessons};
-    _absRender(r.items,lessons,r.errs);
-  };
 
   /* ── 부재 AI 종합 가이드 ── */
   const ABS_SCHEMA={type:'object',properties:{
@@ -13547,8 +13423,7 @@ function switchSpTab(id,btn){
       const mask=function(n){n=R(n||'');if(!n)return'';if(n===_name)return'부재교사';if(!names[n]){order.push(n);names[n]='교사'+order.length;}return names[n];};
       const data={
         부재_일정:_absData.items.map(function(it){
-          return{기간:it.d1===it.d2?DAYS[it.d1]:DAYS[it.d1]+'~'+DAYS[it.d2],
-            교시:it.whole?'종일':(it.p1+1)+(it.p1===it.p2?'':'~'+(it.p2+1))+'교시',사유:it.reason};
+          return{요일:DAYS[it.day],교시:it.whole?'종일':it.periods.map(function(p){return p+1;}).join(',')+'교시',사유:it.reason};
         }),
         영향_수업:_absData.lessons.map(function(L){
           return{시간:L.label,과목:L.subj,학반:L.cls,사유:L.reason,
