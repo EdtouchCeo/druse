@@ -10197,6 +10197,7 @@ function switchSpTab(id,btn){
         <button id="ai-sub-btn-1" onclick="switchAiSub(1); window.ensureSearchData && window.ensureSearchData('curr')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📖 국가교육과정 AI</button>
         <button id="ai-sub-btn-2" onclick="switchAiSub(2); window.ensureSearchData && window.ensureSearchData('neis')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🖥️ 나이스 AI</button>
         <button id="ai-sub-btn-7" onclick="switchAiSub(7)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🎯 백워드 수업 설계</button>
+        <button id="ai-sub-btn-8" onclick="switchAiSub(8)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 학생부 특기사항 AI</button>
         <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
         <button id="ai-sub-btn-4" onclick="switchAiSub(4)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 기반 세특</button>
         <button id="ai-sub-btn-5" onclick="switchAiSub(5)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
@@ -10294,6 +10295,45 @@ function switchSpTab(id,btn){
             <a href="/backward/#/backward/lesson" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;background:#fff;color:#2a5298;border:1px solid #cbd5e1;border-radius:10px;font-size:0.88rem;font-weight:600;text-decoration:none;">차시 설계 바로가기</a>
           </div>
           <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 전체 화면으로 열립니다. 작성 중인 설계는 브라우저에 자동 저장되어 이어서 작업할 수 있습니다.</p>
+        </div>
+      </div>
+      <!-- 8: 학생부 특기사항 AI (대륜고 자체 페이지, 별도 창) -->
+      <div id="ai-sub-8" style="display:none;">
+        <div style="max-width:900px;margin:0 auto;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:1.5rem;">📝</span>
+            <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:#1e3a6b;">학생부 특기사항 AI</h3>
+          </div>
+          <p style="margin:0 0 4px;font-size:0.92rem;color:#334155;line-height:1.6;">관찰 기록과 학생 결과물(보고서·발표·수행 산출물)로 나이스 학생부 특기사항 초안을 작성합니다. 생성 결과는 직접 수정하고 엑셀로 누적 관리할 수 있습니다.</p>
+          <p style="margin:0 0 16px;font-size:0.82rem;color:#64748b;">학생 자료는 이 브라우저에서만 처리되며 서버에 저장되지 않습니다. 학생 이름은 AI 전송 전 자동 마스킹됩니다. 생성 결과는 <strong>AI 초안</strong>이며, NEIS 반영 전 반드시 교사가 검토·수정하세요.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;">
+            <a href="/record/#/sebak" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:6px;padding:16px 16px 15px;border:1px solid #e5e7eb;border-radius:14px;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);text-decoration:none;box-shadow:0 1px 6px rgba(0,0,0,0.05);">
+              <span style="font-size:0.98rem;font-weight:800;color:#1e3a6b;">📗 과세특 AI</span>
+              <span style="font-size:0.8rem;color:#475569;line-height:1.55;">수업 관찰과 학생 결과물로 과목별 세부능력·특기사항 초안 — 1,500바이트 이내, 결과 수정 요청·엑셀 누적 다운로드</span>
+              <span style="margin-top:auto;font-size:0.82rem;font-weight:700;color:#2a5298;">바로가기 →</span>
+            </a>
+            <a href="/record/#/club" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:6px;padding:16px 16px 15px;border:1px solid #e5e7eb;border-radius:14px;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);text-decoration:none;box-shadow:0 1px 6px rgba(0,0,0,0.05);">
+              <span style="font-size:0.98rem;font-weight:800;color:#1e3a6b;">🎨 동아리 특기사항 AI</span>
+              <span style="font-size:0.8rem;color:#475569;line-height:1.55;">동아리 활동 관찰 기록으로 특기사항 초안 — 분량 상한 선택, 결과 수정·엑셀 누적 관리</span>
+              <span style="margin-top:auto;font-size:0.82rem;font-weight:700;color:#2a5298;">바로가기 →</span>
+            </a>
+            <a href="/record/#/jayul" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:6px;padding:16px 16px 15px;border:1px solid #e5e7eb;border-radius:14px;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);text-decoration:none;box-shadow:0 1px 6px rgba(0,0,0,0.05);">
+              <span style="font-size:0.98rem;font-weight:800;color:#1e3a6b;">🏛️ 자율·자치활동 AI</span>
+              <span style="font-size:0.8rem;color:#475569;line-height:1.55;">학급·학생회 등 자율·자치활동 기록으로 특기사항 초안 — 나이스 분량 기준 준수, 엑셀 누적</span>
+              <span style="margin-top:auto;font-size:0.82rem;font-weight:700;color:#2a5298;">바로가기 →</span>
+            </a>
+            <a href="/record/#/jinro" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:6px;padding:16px 16px 15px;border:1px solid #e5e7eb;border-radius:14px;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);text-decoration:none;box-shadow:0 1px 6px rgba(0,0,0,0.05);">
+              <span style="font-size:0.98rem;font-weight:800;color:#1e3a6b;">🧭 진로활동 AI</span>
+              <span style="font-size:0.8rem;color:#475569;line-height:1.55;">진로 탐색·체험 활동 기록으로 진로활동 특기사항 초안 — 진로 역량 중심 서술, 엑셀 누적</span>
+              <span style="margin-top:auto;font-size:0.82rem;font-weight:700;color:#2a5298;">바로가기 →</span>
+            </a>
+            <a href="/record/#/haengtuk" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:6px;padding:16px 16px 15px;border:1px solid #e5e7eb;border-radius:14px;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);text-decoration:none;box-shadow:0 1px 6px rgba(0,0,0,0.05);">
+              <span style="font-size:0.98rem;font-weight:800;color:#1e3a6b;">🌱 행동특성·종합의견 AI</span>
+              <span style="font-size:0.8rem;color:#475569;line-height:1.55;">일년간 관찰 누적으로 행동특성 및 종합의견 초안 — 인성·학습·성장 균형 서술</span>
+              <span style="margin-top:auto;font-size:0.82rem;font-weight:700;color:#2a5298;">바로가기 →</span>
+            </a>
+          </div>
+          <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 전체 화면으로 열립니다. 대륜고 사이트에서는 처음 한 번 화면 상단 <strong>'AI 설정'</strong>에서 Gemini 무료 키 또는 로컬 Ollama를 연결하면 됩니다(edtouch.ai 설정과 별개). 작성 내용·명단은 이 브라우저에 자동 저장됩니다.</p>
         </div>
       </div>
     </div>
@@ -11675,7 +11715,7 @@ function switchSpTab(id,btn){
   };
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < 9; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;

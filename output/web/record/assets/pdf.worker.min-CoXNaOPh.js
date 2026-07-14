@@ -1,0 +1,1 @@
+var e=`/record/assets/pdf.worker.min-DEtVeC4l.mjs`;export{e as default};
