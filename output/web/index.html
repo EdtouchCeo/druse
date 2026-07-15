@@ -759,7 +759,7 @@
     <button class="tab-btn" onclick="switchTab('teacher', this)">📋 업무 매뉴얼</button>
     <button class="tab-btn" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
     <button class="tab-btn" onclick="switchTab('calendar', this)">📅 학사일정</button>
-    <button class="tab-btn" id="tab-btn-photos" onclick="switchTab('photos', this); if (window.drPhotosInit) drPhotosInit();" style="display:none;">📸 교육활동 사진</button>
+    <button class="tab-btn" id="tab-btn-photos" onclick="switchTab('photos', this); if (window.drPhotosInit) drPhotosInit();">📸 교육활동 사진</button>
     <button class="tab-btn" id="tab-btn-ai" onclick="switchTab('ai', this)">⭐ 샛별AI</button>
     <button class="tab-btn" onclick="switchTab('lounge', this)">🛋️ 교육 라운지</button>
     <button class="tab-btn" id="tab-btn-admin" onclick="switchTab('admin', this)" style="display:none;">🛠 관리자</button>
@@ -12071,12 +12071,10 @@ function switchSpTab(id,btn){
     if (typeof updateTutorVisibility === 'function') updateTutorVisibility();
   }
 
-  // 관리자 탭 버튼 노출 제어 (+ 교사 전용 교육활동 사진 탭)
+  // 관리자 탭 버튼 노출 제어
   function refreshAdminTabVisibility() {
     var btn = document.getElementById('tab-btn-admin');
     if (btn) btn.style.display = isAdminUser() ? '' : 'none';
-    var pbtn = document.getElementById('tab-btn-photos');
-    if (pbtn) pbtn.style.display = isTeacherLoggedIn() ? '' : 'none';
   }
 
   // 로그인/로그아웃 후 현재 탭 게이트 재평가
