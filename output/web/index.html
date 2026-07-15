@@ -757,6 +757,7 @@
   <div class="tab-nav-inner">
     <button class="tab-btn active" onclick="switchTab('school', this)">🏫 학교 소개</button>
     <button class="tab-btn" onclick="switchTab('teacher', this)">📋 업무 매뉴얼</button>
+    <button class="tab-btn" onclick="switchTab('photos', this); if (window.drPhotosInit) drPhotosInit();">📸 교육활동 사진</button>
     <button class="tab-btn" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
     <button class="tab-btn" onclick="switchTab('calendar', this)">📅 학사일정</button>
     <button class="tab-btn" id="tab-btn-ai" onclick="switchTab('ai', this)">⭐ 샛별AI</button>
@@ -988,7 +989,6 @@
     <button class="sub-nav-btn" onclick="switchSub('sub-club', this)">🎯 동아리 개설</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-culture', this)">🎭 문화예술공연관람</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-leesh', this)">🌸 이상화 추모·백일장</button>
-    <button class="sub-nav-btn" onclick="switchSub('sub-photos', this); if (window.drPhotosInit) drPhotosInit();">📸 교육활동 사진</button>
   </div>
 </div>
 
@@ -3671,8 +3671,23 @@
 
 </div>
 
+</div><!-- /teacher-content -->
+    <!-- TAB:teacher:END -->
+  </div>
+
+  <!-- 교육활동 사진 탭 패널 -->
+  <div class="tab-panel" id="tab-photos">
+<!-- 교사 로그인 필요 안내 (비교사·미로그인 시 표시) -->
+<div id="photos-login-required" style="display:none;text-align:center;padding:60px 24px;background:#f8faff;border-radius:16px;border:1px solid #e5e7eb;">
+  <div style="font-size:3rem;margin-bottom:16px;">&#128274;</div>
+  <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 10px;">교사 전용 메뉴입니다</h3>
+  <p style="font-size:0.88rem;color:#6b7280;margin:0 0 28px;line-height:1.7;">교육활동 사진은 <strong>교사 계정으로 로그인</strong> 후 이용할 수 있습니다.</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button onclick="startLogin()" style="display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 20px;background:#4285f4;color:#fff;border:none;border-radius:20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;">로그인</button>
+  </div>
+</div>
 <!-- ===== 교육활동 사진 ===== -->
-<div class="sub-panel" id="sub-photos">
+<div id="photos-content">
   <style>
     .drp-form-grid { display:grid; grid-template-columns: 1fr 180px; gap:12px; }
     @media (max-width: 640px) { .drp-form-grid { grid-template-columns: 1fr; } }
@@ -4022,8 +4037,6 @@
 })();
 </script>
 
-</div><!-- /teacher-content -->
-    <!-- TAB:teacher:END -->
   </div>
 
   <!-- 학생·학부모 탭 패널 -->
@@ -11888,6 +11901,12 @@ function switchSpTab(id,btn){
       if (aGate) aGate.style.display = teacher ? 'none' : '';
       if (aBody) aBody.style.display = teacher ? '' : 'none';
     }
+    if (tabId === 'photos') {
+      var pGate = document.getElementById('photos-login-required');
+      var pBody = document.getElementById('photos-content');
+      if (pGate) pGate.style.display = teacher ? 'none' : '';
+      if (pBody) pBody.style.display = teacher ? '' : 'none';
+    }
     if (tabId === 'admin') {
       var admin   = isAdminUser();
       var dDenied = document.getElementById('admin-denied');
@@ -12453,7 +12472,7 @@ function switchSpTab(id,btn){
 (function() {
   'use strict';
 
-  var TOP_TABS = ['school','teacher','student','calendar','ai','lounge','register','admin'];
+  var TOP_TABS = ['school','teacher','photos','student','calendar','ai','lounge','register','admin'];
 
   // 탭별 sub URL slug ↔ sub-panel id 매핑
   var SUB_MAP = {
@@ -12461,8 +12480,7 @@ function switchSpTab(id,btn){
       records:'sub-records', club:'sub-club', check:'sub-check',
       transfer:'sub-transfer', culture:'sub-culture', leesh:'sub-leesh',
       grade:'sub-grade', exam:'sub-exam',
-      grading:'sub-grading', required:'sub-required', leave:'sub-leave',
-      photos:'sub-photos'
+      grading:'sub-grading', required:'sub-required', leave:'sub-leave'
     },
     student: {
       rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',

@@ -757,6 +757,7 @@
   <div class="tab-nav-inner">
     <button class="tab-btn active" onclick="switchTab('school', this)">🏫 학교 소개</button>
     <button class="tab-btn" onclick="switchTab('teacher', this)">📋 업무 매뉴얼</button>
+    <button class="tab-btn" onclick="switchTab('photos', this); if (window.drPhotosInit) drPhotosInit();">📸 교육활동 사진</button>
     <button class="tab-btn" onclick="switchTab('student', this)">🎒 학생·학부모 안내</button>
     <button class="tab-btn" onclick="switchTab('calendar', this)">📅 학사일정</button>
     <button class="tab-btn" id="tab-btn-ai" onclick="switchTab('ai', this)">⭐ 샛별AI</button>
@@ -780,6 +781,370 @@
     <!-- TAB:teacher:START -->
 <!-- TEACHER_CONTENT_PLACEHOLDER -->
 <!-- TAB:teacher:END -->
+  </div>
+
+  <!-- 교육활동 사진 탭 패널 -->
+  <div class="tab-panel" id="tab-photos">
+<!-- 교사 로그인 필요 안내 (비교사·미로그인 시 표시) -->
+<div id="photos-login-required" style="display:none;text-align:center;padding:60px 24px;background:#f8faff;border-radius:16px;border:1px solid #e5e7eb;">
+  <div style="font-size:3rem;margin-bottom:16px;">&#128274;</div>
+  <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 10px;">교사 전용 메뉴입니다</h3>
+  <p style="font-size:0.88rem;color:#6b7280;margin:0 0 28px;line-height:1.7;">교육활동 사진은 <strong>교사 계정으로 로그인</strong> 후 이용할 수 있습니다.</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button onclick="startLogin()" style="display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 20px;background:#4285f4;color:#fff;border:none;border-radius:20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;">로그인</button>
+  </div>
+</div>
+<!-- ===== 교육활동 사진 ===== -->
+<div id="photos-content">
+  <style>
+    .drp-form-grid { display:grid; grid-template-columns: 1fr 180px; gap:12px; }
+    @media (max-width: 640px) { .drp-form-grid { grid-template-columns: 1fr; } }
+    .drp-input, .drp-textarea {
+      width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px;
+      font-size:0.9rem; font-family:inherit; background:#fff; color:#111827;
+    }
+    .drp-input:focus, .drp-textarea:focus { outline:2px solid #93c5fd; border-color:#60a5fa; }
+    .drp-textarea { min-height:88px; resize:vertical; line-height:1.6; }
+    .drp-label { display:block; font-size:0.82rem; font-weight:700; color:#374151; margin:0 0 6px; }
+    .drp-thumbs { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .drp-thumb { position:relative; width:86px; height:86px; border-radius:10px; overflow:hidden; border:1px solid #e5e7eb; background:#f3f4f6; }
+    .drp-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .drp-thumb button {
+      position:absolute; top:3px; right:3px; width:20px; height:20px; border:none; border-radius:50%;
+      background:rgba(17,24,39,0.65); color:#fff; font-size:12px; line-height:20px; cursor:pointer; padding:0;
+    }
+    .drp-btn {
+      display:inline-flex; align-items:center; gap:6px; height:38px; padding:0 18px; border:none; border-radius:10px;
+      background:var(--primary, #1d4ed8); color:#fff; font-size:0.88rem; font-weight:700; cursor:pointer; font-family:inherit;
+    }
+    .drp-btn:disabled { opacity:0.55; cursor:default; }
+    .drp-btn-ghost { background:#fff; color:#374151; border:1px solid #d1d5db; }
+    .drp-msg { font-size:0.84rem; margin-top:10px; }
+    .drp-msg.err { color:#dc2626; } .drp-msg.ok { color:#16a34a; }
+    .drp-entry { margin-top:16px; }
+    .drp-entry-head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+    .drp-entry-title { font-size:1.02rem; font-weight:800; color:#111827; }
+    .drp-entry-date { font-size:0.8rem; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 10px; border-radius:999px; }
+    .drp-entry-meta { font-size:0.78rem; color:#9ca3af; margin-left:auto; display:flex; align-items:center; gap:8px; }
+    .drp-del { border:none; background:none; color:#dc2626; font-size:0.78rem; cursor:pointer; padding:2px 4px; font-family:inherit; }
+    .drp-desc { font-size:0.88rem; color:#4b5563; line-height:1.7; margin:8px 0 0; white-space:pre-wrap; }
+    .drp-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:8px; margin-top:12px; }
+    .drp-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:10px; border:1px solid #e5e7eb; cursor:zoom-in; display:block; background:#f3f4f6; }
+    .drp-empty { text-align:center; color:#9ca3af; padding:36px 0; font-size:0.9rem; }
+    #drp-lightbox {
+      display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.92);
+      align-items:center; justify-content:center; flex-direction:column; gap:12px; padding:20px; box-sizing:border-box;
+    }
+    #drp-lightbox img { max-width:94vw; max-height:82vh; border-radius:8px; }
+    #drp-lightbox .drp-lb-bar { color:#e5e7eb; font-size:0.88rem; display:flex; align-items:center; gap:16px; }
+    #drp-lightbox .drp-lb-bar button { background:rgba(255,255,255,0.12); border:none; color:#fff; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:0.9rem; font-family:inherit; }
+  </style>
+
+  <h2 class="section-title">📸 교육활동 사진</h2>
+
+  <div class="card">
+    <strong>📷 활동 사진 등록</strong>
+    <p style="margin:6px 0 14px; color:#6b7280; font-size:0.85rem;">행사명·일자·주요 내용을 입력하고 사진을 여러 장 첨부할 수 있습니다. 사진은 자동으로 용량이 압축되어 저장됩니다.</p>
+    <div class="drp-form-grid">
+      <div>
+        <label class="drp-label" for="drp-title">행사명 <span style="color:#dc2626;">*</span></label>
+        <input class="drp-input" id="drp-title" type="text" maxlength="120" placeholder="예: 2026 이상화 시인 추모 백일장">
+      </div>
+      <div>
+        <label class="drp-label" for="drp-date">일자 <span style="color:#dc2626;">*</span></label>
+        <input class="drp-input" id="drp-date" type="date">
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label class="drp-label" for="drp-desc">주요 내용</label>
+      <textarea class="drp-textarea" id="drp-desc" maxlength="2000" placeholder="행사 개요, 참여 대상, 주요 활동 내용 등을 적어 주세요."></textarea>
+    </div>
+    <div style="margin-top:12px;">
+      <label class="drp-label">사진 <span style="color:#dc2626;">*</span> <span style="font-weight:400; color:#9ca3af;">(여러 장 선택 가능, 최대 30장)</span></label>
+      <input type="file" id="drp-files" accept="image/*" multiple style="display:none;">
+      <button type="button" class="drp-btn drp-btn-ghost" onclick="document.getElementById('drp-files').click();">🖼️ 사진 선택</button>
+      <div class="drp-thumbs" id="drp-thumbs"></div>
+    </div>
+    <div style="margin-top:16px; display:flex; align-items:center; gap:12px;">
+      <button type="button" class="drp-btn" id="drp-submit">✅ 등록하기</button>
+      <span class="drp-msg" id="drp-form-msg"></span>
+    </div>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:10px; margin-top:32px;">
+    <h2 class="section-title" style="margin:0;">🗂️ 등록된 활동</h2>
+    <button type="button" class="drp-btn drp-btn-ghost" style="height:30px; padding:0 12px; font-size:0.8rem;" onclick="if (window.drPhotosReload) drPhotosReload();">🔄 새로고침</button>
+  </div>
+  <div id="drp-list"><div class="drp-empty">불러오는 중…</div></div>
+
+  <div id="drp-lightbox" onclick="if (event.target === this) this.style.display='none';">
+    <img id="drp-lb-img" alt="활동 사진">
+    <div class="drp-lb-bar">
+      <button type="button" onclick="drpLbMove(-1); event.stopPropagation();">◀ 이전</button>
+      <span id="drp-lb-count"></span>
+      <button type="button" onclick="drpLbMove(1); event.stopPropagation();">다음 ▶</button>
+      <button type="button" onclick="document.getElementById('drp-lightbox').style.display='none';">✕ 닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var API = '/.netlify/functions/activity';
+  var MAX_PHOTOS = 30;
+  var _pending = [];      // { blob, url(objectURL) }
+  var _loaded = false;
+  var _busy = false;
+  var _lbUrls = [], _lbIdx = 0;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function getToken() {
+    if (window.ensureToken) return window.ensureToken();
+    try {
+      var s = JSON.parse(localStorage.getItem('dr_sess_v1'));
+      return Promise.resolve(s && s.token ? s.token : null);
+    } catch (e) { return Promise.resolve(null); }
+  }
+  function api(payload) {
+    return getToken().then(function (token) {
+      if (!token) throw new Error('로그인이 필요합니다.');
+      payload.token = token;
+      return fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) throw new Error(d && d.error ? d.error : '요청에 실패했습니다. (' + r.status + ')');
+        return d;
+      });
+    });
+  }
+  function setMsg(text, kind) {
+    var el = document.getElementById('drp-form-msg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = 'drp-msg' + (kind ? ' ' + kind : '');
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var p = iso.split('-');
+    if (p.length !== 3) return iso;
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    var w = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
+    return p[0] + '.' + p[1] + '.' + p[2] + ' (' + w + ')';
+  }
+
+  // ----- 이미지 압축 (긴 변 1600px, JPEG) -----
+  function compressImage(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var MAX = 1600;
+          var w = img.naturalWidth, h = img.naturalHeight;
+          if (!w || !h) throw new Error('이미지 크기를 읽을 수 없습니다.');
+          var scale = Math.min(1, MAX / Math.max(w, h));
+          var cw = Math.round(w * scale), ch = Math.round(h * scale);
+          var cv = document.createElement('canvas');
+          cv.width = cw; cv.height = ch;
+          cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
+          cv.toBlob(function (blob) {
+            URL.revokeObjectURL(url);
+            if (blob) resolve(blob);
+            else reject(new Error('이미지 변환에 실패했습니다.'));
+          }, 'image/jpeg', 0.82);
+        } catch (e) { URL.revokeObjectURL(url); reject(e); }
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('이미지를 열 수 없습니다: ' + file.name)); };
+      img.src = url;
+    });
+  }
+  function blobToBase64(blob) {
+    return new Promise(function (resolve, reject) {
+      var fr = new FileReader();
+      fr.onload = function () { resolve(String(fr.result).split(',')[1] || ''); };
+      fr.onerror = function () { reject(new Error('파일을 읽을 수 없습니다.')); };
+      fr.readAsDataURL(blob);
+    });
+  }
+
+  // ----- 첨부 미리보기 -----
+  function renderThumbs() {
+    var box = document.getElementById('drp-thumbs');
+    if (!box) return;
+    box.innerHTML = '';
+    _pending.forEach(function (p, i) {
+      var d = document.createElement('div');
+      d.className = 'drp-thumb';
+      var im = document.createElement('img');
+      im.src = p.url;
+      var rm = document.createElement('button');
+      rm.type = 'button'; rm.textContent = '✕'; rm.title = '제거';
+      rm.onclick = function () {
+        URL.revokeObjectURL(p.url);
+        _pending.splice(i, 1);
+        renderThumbs();
+      };
+      d.appendChild(im); d.appendChild(rm); box.appendChild(d);
+    });
+  }
+  function onFilesPicked(files) {
+    var list = Array.prototype.slice.call(files || []);
+    if (!list.length) return;
+    if (_pending.length + list.length > MAX_PHOTOS) {
+      setMsg('사진은 최대 ' + MAX_PHOTOS + '장까지 첨부할 수 있습니다.', 'err');
+      list = list.slice(0, MAX_PHOTOS - _pending.length);
+    } else setMsg('사진 준비 중…');
+    var chain = Promise.resolve();
+    list.forEach(function (f) {
+      chain = chain.then(function () {
+        return compressImage(f).then(function (blob) {
+          _pending.push({ blob: blob, url: URL.createObjectURL(blob) });
+          renderThumbs();
+        }).catch(function (e) {
+          setMsg(String(e.message || e), 'err');
+        });
+      });
+    });
+    chain.then(function () {
+      if (_pending.length) setMsg(_pending.length + '장 준비 완료', 'ok');
+    });
+  }
+
+  // ----- 등록 -----
+  function submit() {
+    if (_busy) return;
+    var title = (document.getElementById('drp-title').value || '').trim();
+    var date = document.getElementById('drp-date').value || '';
+    var desc = (document.getElementById('drp-desc').value || '').trim();
+    if (!title) { setMsg('행사명을 입력해 주세요.', 'err'); return; }
+    if (!date) { setMsg('일자를 선택해 주세요.', 'err'); return; }
+    if (!_pending.length) { setMsg('사진을 1장 이상 첨부해 주세요.', 'err'); return; }
+
+    _busy = true;
+    var btn = document.getElementById('drp-submit');
+    btn.disabled = true;
+    var paths = [];
+    var chain = Promise.resolve();
+    _pending.forEach(function (p, i) {
+      chain = chain.then(function () {
+        setMsg('사진 업로드 중… (' + (i + 1) + '/' + _pending.length + ')');
+        return blobToBase64(p.blob).then(function (b64) {
+          return api({ action: 'upload', data: b64, type: 'image/jpeg' });
+        }).then(function (d) { paths.push(d.path); });
+      });
+    });
+    chain.then(function () {
+      setMsg('게시물 등록 중…');
+      return api({ action: 'create', title: title, event_date: date, description: desc, photos: paths });
+    }).then(function () {
+      setMsg('등록되었습니다. ✅', 'ok');
+      document.getElementById('drp-title').value = '';
+      document.getElementById('drp-date').value = '';
+      document.getElementById('drp-desc').value = '';
+      _pending.forEach(function (p) { URL.revokeObjectURL(p.url); });
+      _pending = [];
+      renderThumbs();
+      load();
+    }).catch(function (e) {
+      setMsg(String(e.message || e), 'err');
+    }).then(function () {
+      _busy = false; btn.disabled = false;
+    });
+  }
+
+  // ----- 목록 -----
+  function load() {
+    var box = document.getElementById('drp-list');
+    if (!box) return;
+    box.innerHTML = '<div class="drp-empty">불러오는 중…</div>';
+    api({ action: 'list' }).then(function (d) {
+      var items = d.items || [];
+      if (!items.length) {
+        box.innerHTML = '<div class="drp-empty">아직 등록된 활동 사진이 없습니다.<br>첫 번째 활동을 등록해 보세요! 📷</div>';
+        return;
+      }
+      box.innerHTML = '';
+      items.forEach(function (it) {
+        var card = document.createElement('div');
+        card.className = 'card drp-entry';
+        var head = '<div class="drp-entry-head">'
+          + '<span class="drp-entry-title">' + esc(it.title) + '</span>'
+          + '<span class="drp-entry-date">📅 ' + esc(fmtDate(it.event_date)) + '</span>'
+          + '<span class="drp-entry-meta">' + esc(it.created_by_name || '')
+          + (it.mine ? ' <button type="button" class="drp-del" data-id="' + esc(it.id) + '">🗑 삭제</button>' : '')
+          + '</span></div>';
+        var descHtml = it.description ? '<p class="drp-desc">' + esc(it.description) + '</p>' : '';
+        card.innerHTML = head + descHtml + '<div class="drp-grid"></div>';
+        var grid = card.querySelector('.drp-grid');
+        var urls = [];
+        (it.photos || []).forEach(function (ph) {
+          if (!ph.url) return;
+          urls.push(ph.url);
+          var idx = urls.length - 1;
+          var im = document.createElement('img');
+          im.loading = 'lazy';
+          im.src = ph.url;
+          im.alt = it.title;
+          im.onclick = function () { openLb(urls, idx); };
+          grid.appendChild(im);
+        });
+        var del = card.querySelector('.drp-del');
+        if (del) del.onclick = function () {
+          if (!confirm('이 게시물과 사진을 삭제할까요?')) return;
+          del.disabled = true;
+          api({ action: 'delete', id: it.id }).then(function () { load(); })
+            .catch(function (e) { alert(String(e.message || e)); del.disabled = false; });
+        };
+        box.appendChild(card);
+      });
+    }).catch(function (e) {
+      box.innerHTML = '<div class="drp-empty">⚠️ ' + esc(String(e.message || e)) + '</div>';
+    });
+  }
+
+  // ----- 라이트박스 -----
+  function openLb(urls, idx) {
+    _lbUrls = urls; _lbIdx = idx;
+    var lb = document.getElementById('drp-lightbox');
+    lb.style.display = 'flex';
+    updateLb();
+  }
+  function updateLb() {
+    document.getElementById('drp-lb-img').src = _lbUrls[_lbIdx];
+    document.getElementById('drp-lb-count').textContent = (_lbIdx + 1) + ' / ' + _lbUrls.length;
+  }
+  window.drpLbMove = function (d) {
+    if (!_lbUrls.length) return;
+    _lbIdx = (_lbIdx + d + _lbUrls.length) % _lbUrls.length;
+    updateLb();
+  };
+  document.addEventListener('keydown', function (e) {
+    var lb = document.getElementById('drp-lightbox');
+    if (!lb || lb.style.display !== 'flex') return;
+    if (e.key === 'Escape') lb.style.display = 'none';
+    if (e.key === 'ArrowLeft') window.drpLbMove(-1);
+    if (e.key === 'ArrowRight') window.drpLbMove(1);
+  });
+
+  // ----- 초기화 -----
+  window.drPhotosReload = load;
+  window.drPhotosInit = function () {
+    if (_loaded) return;
+    _loaded = true;
+    var fi = document.getElementById('drp-files');
+    if (fi) fi.addEventListener('change', function () { onFilesPicked(this.files); this.value = ''; });
+    var sb = document.getElementById('drp-submit');
+    if (sb) sb.addEventListener('click', submit);
+    load();
+  };
+})();
+</script>
+
   </div>
 
   <!-- 학생·학부모 탭 패널 -->
@@ -2109,6 +2474,12 @@
       if (aGate) aGate.style.display = teacher ? 'none' : '';
       if (aBody) aBody.style.display = teacher ? '' : 'none';
     }
+    if (tabId === 'photos') {
+      var pGate = document.getElementById('photos-login-required');
+      var pBody = document.getElementById('photos-content');
+      if (pGate) pGate.style.display = teacher ? 'none' : '';
+      if (pBody) pBody.style.display = teacher ? '' : 'none';
+    }
     if (tabId === 'admin') {
       var admin   = isAdminUser();
       var dDenied = document.getElementById('admin-denied');
@@ -2674,7 +3045,7 @@
 (function() {
   'use strict';
 
-  var TOP_TABS = ['school','teacher','student','calendar','ai','lounge','register','admin'];
+  var TOP_TABS = ['school','teacher','photos','student','calendar','ai','lounge','register','admin'];
 
   // 탭별 sub URL slug ↔ sub-panel id 매핑
   var SUB_MAP = {
@@ -2682,8 +3053,7 @@
       records:'sub-records', club:'sub-club', check:'sub-check',
       transfer:'sub-transfer', culture:'sub-culture', leesh:'sub-leesh',
       grade:'sub-grade', exam:'sub-exam',
-      grading:'sub-grading', required:'sub-required', leave:'sub-leave',
-      photos:'sub-photos'
+      grading:'sub-grading', required:'sub-required', leave:'sub-leave'
     },
     student: {
       rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',
