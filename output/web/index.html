@@ -4164,6 +4164,11 @@
     box.innerHTML = '<div class="drp-empty">불러오는 중…</div>';
     api({ action: 'list' }).then(function (d) {
       var items = d.items || [];
+      // 행사 일자 최신순 (같은 날짜면 등록 최신순)
+      items.sort(function (a, b) {
+        var dd = String(b.event_date || '').localeCompare(String(a.event_date || ''));
+        return dd !== 0 ? dd : String(b.created_at || '').localeCompare(String(a.created_at || ''));
+      });
       if (!items.length) {
         box.innerHTML = '<div class="drp-empty">아직 등록된 활동 사진이 없습니다.<br>첫 번째 활동을 등록해 보세요! 📷</div>';
         return;
