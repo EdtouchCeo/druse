@@ -3871,16 +3871,18 @@
     .drp-entry { display:flex; flex-direction:column; margin:0; }
     .drp-entry-title {
       font-size:1rem; font-weight:800; color:#111827;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
     }
+    .drp-entry-title:hover { color:var(--primary, #1d4ed8); text-decoration:underline; }
     .drp-entry-sub { display:flex; align-items:center; gap:8px; margin-top:5px; min-height:22px; }
     .drp-entry-date { font-size:0.76rem; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 9px; border-radius:999px; white-space:nowrap; }
     .drp-entry-meta { font-size:0.76rem; color:#9ca3af; margin-left:auto; display:flex; align-items:center; gap:6px; white-space:nowrap; }
     .drp-del { border:none; background:none; color:#dc2626; font-size:0.76rem; cursor:pointer; padding:2px 4px; font-family:inherit; }
+    .drp-edit { border:none; background:none; color:#2563eb; font-size:0.76rem; cursor:pointer; padding:2px 4px; font-family:inherit; }
     .drp-desc {
       font-size:0.85rem; color:#4b5563; line-height:1.65; margin:8px 0 0;
       display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-      height:calc(2 * 1.65em);
+      height:calc(2 * 1.65em); cursor:pointer;
     }
     .drp-hero { position:relative; margin-top:12px; border-radius:12px; overflow:hidden; background:#f3f4f6; }
     .drp-hero-img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; cursor:zoom-in; }
@@ -3895,7 +3897,7 @@
     .drp-hero-dl { position:absolute; right:10px; bottom:8px; width:34px; height:34px; border:none; border-radius:50%; background:rgba(17,24,39,0.45); color:#fff; font-size:15px; cursor:pointer; }
     .drp-hero-dl:hover { background:rgba(17,24,39,0.72); }
     .drp-empty { text-align:center; color:#9ca3af; padding:36px 0; font-size:0.9rem; }
-    #drp-form-modal {
+    #drp-form-modal, #drp-detail-modal {
       display:none; position:fixed; inset:0; z-index:9998; background:rgba(15,23,42,0.55);
       align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 16px; box-sizing:border-box;
     }
@@ -3924,7 +3926,7 @@
   <div id="drp-form-modal" onclick="if (event.target === this) this.style.display='none';">
     <div class="card" style="max-width:660px; width:100%; margin:0; max-height:calc(100vh - 80px); overflow-y:auto;">
       <div style="display:flex; align-items:center;">
-        <strong style="font-size:1.02rem;">📷 활동 사진 등록</strong>
+        <strong id="drp-form-heading" style="font-size:1.02rem;">📷 활동 사진 등록</strong>
         <button type="button" onclick="document.getElementById('drp-form-modal').style.display='none';" style="margin-left:auto; border:none; background:none; font-size:1.05rem; cursor:pointer; color:#6b7280; padding:4px 6px;" title="닫기">✕</button>
       </div>
       <p style="margin:6px 0 14px; color:#6b7280; font-size:0.85rem;">행사명·일자·주요 내용을 입력하고 사진을 여러 장 첨부할 수 있습니다. 사진은 자동으로 용량이 압축되어 저장됩니다.</p>
@@ -3946,7 +3948,7 @@
         <label class="drp-label" for="drp-desc">주요 내용</label>
         <textarea class="drp-textarea" id="drp-desc" maxlength="2000" placeholder="행사 개요, 참여 대상, 주요 활동 내용 등을 적어 주세요."></textarea>
       </div>
-      <div style="margin-top:12px;">
+      <div style="margin-top:12px;" id="drp-photos-block">
         <label class="drp-label">사진 <span style="color:#dc2626;">*</span> <span style="font-weight:400; color:#9ca3af;">(여러 장 선택 가능, 최대 30장)</span></label>
         <input type="file" id="drp-files" accept="image/*" multiple style="display:none;">
         <button type="button" class="drp-btn drp-btn-ghost" onclick="document.getElementById('drp-files').click();">🖼️ 사진 선택</button>
@@ -3956,6 +3958,18 @@
         <button type="button" class="drp-btn" id="drp-submit">✅ 등록하기</button>
         <span class="drp-msg" id="drp-form-msg"></span>
       </div>
+    </div>
+  </div>
+
+  <!-- 상세 보기 창 -->
+  <div id="drp-detail-modal" onclick="if (event.target === this) this.style.display='none';">
+    <div class="card" style="max-width:640px; width:100%; margin:0; max-height:calc(100vh - 80px); overflow-y:auto;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <strong id="drp-dt-title" style="font-size:1.08rem; line-height:1.5;"></strong>
+        <button type="button" onclick="document.getElementById('drp-detail-modal').style.display='none';" style="margin-left:auto; border:none; background:none; font-size:1.05rem; cursor:pointer; color:#6b7280; padding:4px 6px; flex-shrink:0;" title="닫기">✕</button>
+      </div>
+      <div id="drp-dt-date" style="margin-top:8px; font-size:0.82rem; font-weight:700; color:#2563eb;"></div>
+      <p id="drp-dt-desc" style="margin:14px 0 0; font-size:0.9rem; color:#374151; line-height:1.8; white-space:pre-wrap;"></p>
     </div>
   </div>
 
@@ -3980,6 +3994,7 @@
   var _loaded = false;
   var _busy = false;
   var _lbUrls = [], _lbIdx = 0, _lbTitle = '';
+  var _editId = null;    // null=신규 등록, 값 있으면 해당 게시물 수정 모드
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -4134,11 +4149,28 @@
     if (!title) { setMsg('행사명을 입력해 주세요.', 'err'); return; }
     if (!date) { setMsg('시작 일자를 선택해 주세요.', 'err'); return; }
     if (dateEnd && dateEnd < date) { setMsg('종료 일자가 시작 일자보다 빠릅니다.', 'err'); return; }
-    if (!_pending.length) { setMsg('사진을 1장 이상 첨부해 주세요.', 'err'); return; }
+    if (!_editId && !_pending.length) { setMsg('사진을 1장 이상 첨부해 주세요.', 'err'); return; }
 
     _busy = true;
     var btn = document.getElementById('drp-submit');
     btn.disabled = true;
+
+    // ----- 수정 모드: 텍스트·일자만 저장 -----
+    if (_editId) {
+      setMsg('수정 저장 중…');
+      api({ action: 'update', id: _editId, title: title, event_date: date, event_end: dateEnd, description: desc })
+        .then(function () {
+          setMsg('수정되었습니다. ✅', 'ok');
+          load();
+          var modal = document.getElementById('drp-form-modal');
+          if (modal) setTimeout(function () { modal.style.display = 'none'; setMsg(''); }, 900);
+        }).catch(function (e) {
+          if (!(e && e.handled)) setMsg(String(e.message || e), 'err');
+        }).then(function () {
+          _busy = false; btn.disabled = false;
+        });
+      return;
+    }
     var paths = [];
     var chain = Promise.resolve();
     _pending.forEach(function (p, i) {
@@ -4195,10 +4227,14 @@
           + '<div class="drp-entry-sub">'
           + '<span class="drp-entry-date">📅 ' + esc(fmtRange(it.event_date, it.event_end)) + '</span>'
           + '<span class="drp-entry-meta">' + esc(it.created_by_name || '')
-          + (it.mine ? ' <button type="button" class="drp-del" data-id="' + esc(it.id) + '">🗑 삭제</button>' : '')
+          + (it.mine ? ' <button type="button" class="drp-edit">✏️ 수정</button><button type="button" class="drp-del" data-id="' + esc(it.id) + '">🗑 삭제</button>' : '')
           + '</span></div>';
-        var descHtml = '<p class="drp-desc"' + (it.description ? ' title="' + esc(it.description) + '"' : '') + '>' + esc(it.description || '') + '</p>';
+        var descHtml = '<p class="drp-desc" title="클릭하면 전체 내용을 볼 수 있습니다">' + esc(it.description || '') + '</p>';
         card.innerHTML = head + descHtml;
+        card.querySelector('.drp-entry-title').onclick = function () { openDetail(it); };
+        card.querySelector('.drp-desc').onclick = function () { openDetail(it); };
+        var ed = card.querySelector('.drp-edit');
+        if (ed) ed.onclick = function () { openEdit(it); };
         var urls = (it.photos || []).filter(function (p) { return p.url; }).map(function (p) { return p.url; });
         if (urls.length) {
           var hero = document.createElement('div');
@@ -4280,6 +4316,8 @@
   };
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
+      var dm = document.getElementById('drp-detail-modal');
+      if (dm && dm.style.display === 'flex') { dm.style.display = 'none'; return; }
       var m = document.getElementById('drp-form-modal');
       if (m && m.style.display === 'flex') { m.style.display = 'none'; return; }
     }
@@ -4290,10 +4328,42 @@
     if (e.key === 'ArrowRight') window.drpLbMove(1);
   });
 
+  // ----- 상세 보기 -----
+  function openDetail(it) {
+    document.getElementById('drp-dt-title').textContent = it.title || '';
+    document.getElementById('drp-dt-date').textContent = '📅 ' + fmtRange(it.event_date, it.event_end) + (it.created_by_name ? '  ·  ' + it.created_by_name : '');
+    document.getElementById('drp-dt-desc').textContent = it.description || '(작성된 내용이 없습니다)';
+    document.getElementById('drp-detail-modal').style.display = 'flex';
+  }
+
+  // ----- 수정 창 열기 (사진 제외 텍스트·일자만) -----
+  function openEdit(it) {
+    _editId = it.id;
+    document.getElementById('drp-title').value = it.title || '';
+    document.getElementById('drp-date').value = it.event_date || '';
+    document.getElementById('drp-date-end').value = it.event_end || '';
+    document.getElementById('drp-desc').value = it.description || '';
+    document.getElementById('drp-photos-block').style.display = 'none';
+    document.getElementById('drp-form-heading').textContent = '✏️ 게시물 수정';
+    document.getElementById('drp-submit').textContent = '💾 수정 저장';
+    document.getElementById('drp-form-modal').style.display = 'flex';
+    setMsg('사진은 여기서 바꿀 수 없습니다. 사진 변경이 필요하면 삭제 후 다시 등록해 주세요.');
+  }
+
   // ----- 등록 창 열기 -----
   window.drpOpenForm = function () {
     var m = document.getElementById('drp-form-modal');
     if (!m) return;
+    if (_editId !== null) {  // 직전이 수정 모드였으면 입력값 초기화
+      document.getElementById('drp-title').value = '';
+      document.getElementById('drp-date').value = '';
+      document.getElementById('drp-date-end').value = '';
+      document.getElementById('drp-desc').value = '';
+    }
+    _editId = null;
+    document.getElementById('drp-photos-block').style.display = '';
+    document.getElementById('drp-form-heading').textContent = '📷 활동 사진 등록';
+    document.getElementById('drp-submit').textContent = '✅ 등록하기';
     m.style.display = 'flex';
     setMsg('');
     var t = document.getElementById('drp-title');

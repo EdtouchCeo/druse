@@ -174,6 +174,43 @@ exports.handler = async (event) => {
       return json(200, { item: meta });
     }
 
+    // ===== 수정 (작성자 본인 또는 관리자) — 행사명·일자·내용만, 사진 유지 =====
+    if (action === 'update') {
+      const id = String(body.id || '');
+      if (!/^\d{4}-\d{2}-\d{2}_\d+_[a-z0-9]+$/.test(id)) return json(400, { error: '잘못된 id입니다.' });
+      const gRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/meta/${id}.json`, { headers: svcHeaders });
+      if (!gRes.ok) return json(404, { error: '게시물을 찾을 수 없습니다.' });
+      const row = await gRes.json();
+      if (!isAdmin && String(row.created_by) !== String(userId)) {
+        return json(403, { error: '본인이 등록한 게시물만 수정할 수 있습니다.' });
+      }
+      const title = (body.title || '').trim();
+      const eventDate = (body.event_date || '').trim();
+      const eventEnd = (body.event_end || '').trim();
+      const description = (body.description || '').trim();
+      if (!title) return json(400, { error: '행사명을 입력해 주세요.' });
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) return json(400, { error: '시작 일자를 선택해 주세요.' });
+      if (eventEnd && (!/^\d{4}-\d{2}-\d{2}$/.test(eventEnd) || eventEnd < eventDate)) {
+        return json(400, { error: '종료 일자가 올바르지 않습니다.' });
+      }
+      const meta = {
+        ...row,
+        title: title.slice(0, 200), event_date: eventDate, event_end: eventEnd || null,
+        description: description.slice(0, 4000),
+        updated_at: new Date().toISOString()
+      };
+      const pRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/meta/${id}.json`, {
+        method: 'PUT',
+        headers: { ...svcHeaders, 'Content-Type': 'application/json', 'x-upsert': 'true' },
+        body: JSON.stringify(meta)
+      });
+      if (!pRes.ok) {
+        const t = await pRes.text();
+        return json(500, { error: '수정 실패: ' + t.slice(0, 200) });
+      }
+      return json(200, { item: meta });
+    }
+
     // ===== 삭제 (작성자 본인 또는 관리자) =====
     if (action === 'delete') {
       const id = String(body.id || '');
