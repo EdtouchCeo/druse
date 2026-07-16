@@ -3954,9 +3954,21 @@
       return Promise.resolve(s && s.token ? s.token : null);
     } catch (e) { return Promise.resolve(null); }
   }
+  // 세션 복구 불가 — 저장된 세션 정리 후 재로그인 링크 안내
+  function sessionDead() {
+    if (typeof window.clearSession === 'function') window.clearSession();
+    var el = document.getElementById('drp-form-msg');
+    if (el) {
+      el.className = 'drp-msg err';
+      el.innerHTML = '로그인 유효기간이 지났습니다. <a href="#" onclick="startLogin();return false;" style="color:#2563eb;font-weight:700;text-decoration:underline;">여기를 눌러 다시 로그인</a>한 뒤 등록해 주세요.';
+    }
+    var e = new Error('로그인 유효기간이 지났습니다. 다시 로그인해 주세요.');
+    e.handled = true;
+    return e;
+  }
   function api(payload, _retried) {
     return getToken().then(function (token) {
-      if (!token) throw new Error('로그인이 필요합니다.');
+      if (!token) throw sessionDead();
       payload.token = token;
       return fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }).then(function (r) {
@@ -3965,8 +3977,7 @@
         if (r.status === 401 && !_retried && typeof window.refreshSession === 'function') {
           return window.refreshSession().then(function (ns) {
             if (ns && ns.token) return api(payload, true);
-            if (typeof window.clearSession === 'function') window.clearSession();
-            throw new Error('세션이 만료되었습니다. 페이지를 새로고침한 뒤 다시 로그인해 주세요.');
+            throw sessionDead();
           });
         }
         if (!r.ok) throw new Error(d && d.error ? d.error : '요청에 실패했습니다. (' + r.status + ')');
@@ -4103,7 +4114,7 @@
       renderThumbs();
       load();
     }).catch(function (e) {
-      setMsg(String(e.message || e), 'err');
+      if (!(e && e.handled)) setMsg(String(e.message || e), 'err');
     }).then(function () {
       _busy = false; btn.disabled = false;
     });
@@ -11021,39 +11032,50 @@ function switchSpTab(id,btn){
       <p style="font-size:0.85rem;color:#6b7280;margin:0;">진로·미래 사회 변화·교육정책에 대해 함께 생각하고 질문을 나누는 공간입니다.</p>
     </div>
 
-    <style>
-    .lounge-sub-nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
-    .lounge-sub-btn{padding:9px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:8px;font-size:0.88rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-    .lounge-sub-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;}
-    .lounge-sub-panel{display:none;}
-    .lounge-sub-panel.active{display:block;}
-    </style>
-    <script>
-    function switchLoungeSub(id,btn){
-      document.querySelectorAll('.lounge-sub-panel').forEach(p=>p.classList.remove('active'));
-      document.querySelectorAll('.lounge-sub-btn').forEach(b=>b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      btn.classList.add('active');
-    }
-    </script>
+    <div class="cat-nav">
+      <button class="cat-nav-btn active" onclick="switchCat('lounge-cat-insung', this)">💗 인성역량</button>
+      <button class="cat-nav-btn" onclick="switchCat('lounge-cat-jobs', this)">💼 우리 시대 직업</button>
+      <button class="cat-nav-btn" onclick="switchCat('lounge-cat-skills', this)">🌱 미래 역량</button>
+      <button class="cat-nav-btn" onclick="switchCat('lounge-cat-ax', this)">🔄 AX 대전환</button>
+      <button class="cat-nav-btn" onclick="switchCat('lounge-cat-jinro', this)">🎯 이슈 리포트</button>
+    </div>
 
-    <div class="lounge-sub-nav">
-      <button class="lounge-sub-btn active" onclick="switchLoungeSub('lounge-insung',this)">💗 인성역량</button>
-      <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-jobs',this)">💼 우리 시대 직업</button>
-      <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-skills',this)">🌱 미래 역량</button>
-      <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-ax',this)">🔄 AX 대전환</button>
-      <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-jinro',this)">🎯 이슈 리포트</button>
+    <div class="sub-nav-group active" id="lounge-cat-insung">
+      <div class="sub-nav">
+        <button class="sub-nav-btn active" onclick="switchSub('insung-spec', this)">🎓 인성이 스펙이 되는 이유</button>
+        <button class="sub-nav-btn" onclick="switchSub('insung-cases', this)">🎭 사례극장</button>
+        <button class="sub-nav-btn" onclick="switchSub('insung-real', this)">📰 진짜 이야기</button>
+        <button class="sub-nav-btn" onclick="switchSub('insung-check', this)">✅ 나의 인성 체크</button>
+      </div>
+    </div>
+    <div class="sub-nav-group" id="lounge-cat-jobs">
+      <div class="sub-nav">
+        <button class="sub-nav-btn" onclick="switchSub('jobs-major', this)">🎓 의대보다 더 뜨는 학과</button>
+        <button class="sub-nav-btn" onclick="switchSub('jobs-doctor', this)">🩺 연봉 3억 의사 불가능?</button>
+        <button class="sub-nav-btn" onclick="switchSub('jobs-economy', this)">🚀 AI 시대 1인 창업</button>
+      </div>
+    </div>
+    <div class="sub-nav-group" id="lounge-cat-skills">
+      <div class="sub-nav">
+        <button class="sub-nav-btn" onclick="switchSub('skills-core', this)">🎯 AI 시대 역량</button>
+        <button class="sub-nav-btn" onclick="switchSub('skills-smart', this)">🤖 AI로 똑똑해지는 사람</button>
+      </div>
+    </div>
+    <div class="sub-nav-group" id="lounge-cat-ax">
+      <div class="sub-nav">
+        <button class="sub-nav-btn" onclick="switchSub('ax-edu', this)">🎓 교육 분야</button>
+      </div>
+    </div>
+    <div class="sub-nav-group" id="lounge-cat-jinro">
+      <div class="sub-nav">
+        <button class="sub-nav-btn" onclick="switchSub('lounge-jinro', this)">🗺️ 3대 메가프로젝트</button>
+      </div>
     </div>
 
     <!-- 인성역량 -->
-    <div class="lounge-sub-panel active" id="lounge-insung">
+    <div id="lounge-insung">
 
       <style>
-      .insung-tab-nav{display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;}
-      .insung-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-      .insung-tab-btn.active{background:#db2777;border-color:#db2777;color:#fff;}
-      .insung-tab-panel{display:none;}
-      .insung-tab-panel.active{display:block;}
       .insung-dlm{border:1px solid #fbcfe8;border-radius:14px;padding:20px;margin-bottom:18px;background:#fff;}
       .insung-dlm-tag{display:inline-block;font-size:0.72rem;font-weight:700;color:#be185d;background:#fdf2f8;border-radius:20px;padding:3px 10px;margin-bottom:10px;margin-right:6px;}
       .insung-dlm-choices{display:flex;flex-direction:column;gap:8px;margin:12px 0 0;}
@@ -11068,12 +11090,6 @@ function switchSpTab(id,btn){
       .insung-check-item input{margin-top:3px;accent-color:#db2777;flex-shrink:0;}
       </style>
       <script>
-      function switchInsungTab(id,btn){
-        document.querySelectorAll('.insung-tab-panel').forEach(p=>p.classList.remove('active'));
-        document.querySelectorAll('.insung-tab-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-      }
       function insungChoice(btn,cardId,idx){
         var card=document.getElementById(cardId);
         card.querySelectorAll('.insung-choice-btn').forEach(b=>b.classList.remove('selected'));
@@ -11117,15 +11133,8 @@ function switchSpTab(id,btn){
       }
       </script>
 
-      <div class="insung-tab-nav">
-        <button class="insung-tab-btn active" onclick="switchInsungTab('insung-cases',this)">🎭 사례극장</button>
-        <button class="insung-tab-btn" onclick="switchInsungTab('insung-real',this)">📰 진짜 이야기</button>
-        <button class="insung-tab-btn" onclick="switchInsungTab('insung-spec',this)">🎓 인성이 스펙이 되는 이유</button>
-        <button class="insung-tab-btn" onclick="switchInsungTab('insung-check',this)">✅ 나의 인성 체크</button>
-      </div>
-
       <!-- 사례극장 -->
-      <div class="insung-tab-panel active" id="insung-cases">
+      <div class="sub-panel" id="insung-cases">
 
         <h2 class="section-title" style="margin-top:0;">🎭 사례극장 — 나라면 어떻게 할까?</h2>
 
@@ -11255,7 +11264,7 @@ function switchSpTab(id,btn){
       <!-- /insung-cases -->
 
       <!-- 진짜 이야기 -->
-      <div class="insung-tab-panel" id="insung-real">
+      <div class="sub-panel" id="insung-real">
 
         <h2 class="section-title" style="margin-top:0;">📰 진짜 이야기 — 인성이 인생을 바꾼 실제 장면들</h2>
 
@@ -11307,7 +11316,7 @@ function switchSpTab(id,btn){
       <!-- /insung-real -->
 
       <!-- 인성이 스펙이 되는 이유 -->
-      <div class="insung-tab-panel" id="insung-spec">
+      <div class="sub-panel active" id="insung-spec">
 
         <h2 class="section-title" style="margin-top:0;">🎓 인성이 스펙이 되는 이유 — 평가는 이미 시작됐다</h2>
 
@@ -11387,7 +11396,7 @@ function switchSpTab(id,btn){
       <!-- /insung-spec -->
 
       <!-- 나의 인성 체크 -->
-      <div class="insung-tab-panel" id="insung-check">
+      <div class="sub-panel" id="insung-check">
 
         <h2 class="section-title" style="margin-top:0;">✅ 나의 인성 체크 — 지난 한 달의 나</h2>
 
@@ -11432,7 +11441,7 @@ function switchSpTab(id,btn){
     <!-- /lounge-insung -->
 
     <!-- 진로진학 -->
-    <div class="lounge-sub-panel" id="lounge-jinro">
+    <div class="sub-panel" id="lounge-jinro">
 
       <h2 class="section-title" style="margin-top:0;">🗺️ 3대 메가프로젝트 — 지방에서 열리는 첨단산업 진로 지도</h2>
 
@@ -11502,39 +11511,10 @@ function switchSpTab(id,btn){
     </div>
 
     <!-- 우리 시대 직업 -->
-    <div class="lounge-sub-panel" id="lounge-jobs">
-
-      <h2 class="section-title" style="margin-top:0;">💼 우리 시대 직업 — 흔들리는 안정, 떠오르는 기회</h2>
-
-      <div class="card" style="border-left-color:#7c3aed;">
-        <strong>📌 이 코너에 대하여</strong>
-        <p style="margin-top:8px;line-height:1.8;">의사·변호사·회계사 같은 '안정적' 직업이 흔들리고, 새 기회가 떠오르는 중입니다. 고등학생인 여러분이 진로를 그릴 때 꼭 알아야 할 큰 흐름을 <strong>3가지 주제</strong>로 정리했습니다. 부모님 세대의 경험은 더 이상 정답이 아닐 수 있습니다.</p>
-      </div>
-
-      <style>
-      .jobs-tab-nav{display:flex;gap:8px;margin:24px 0;flex-wrap:wrap;}
-      .jobs-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-      .jobs-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
-      .jobs-tab-panel{display:none;}
-      .jobs-tab-panel.active{display:block;}
-      </style>
-      <script>
-      function switchJobsTab(id,btn){
-        document.querySelectorAll('.jobs-tab-panel').forEach(p=>p.classList.remove('active'));
-        document.querySelectorAll('.jobs-tab-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-      }
-      </script>
-
-      <div class="jobs-tab-nav">
-        <button class="jobs-tab-btn active" onclick="switchJobsTab('jobs-major',this)">🎓 의대보다 더 뜨는 학과</button>
-        <button class="jobs-tab-btn" onclick="switchJobsTab('jobs-doctor',this)">🩺 연봉 3억 의사 불가능?</button>
-        <button class="jobs-tab-btn" onclick="switchJobsTab('jobs-economy',this)">🚀 AI 시대 1인 창업</button>
-      </div>
+    <div id="lounge-jobs">
 
       <!-- 의사 -->
-      <div class="jobs-tab-panel" id="jobs-doctor">
+      <div class="sub-panel" id="jobs-doctor">
 
         <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🩺 AI 시대, 연봉 3억 의사 불가능 — 임상 의사의 몰락과 의과학자의 부상</h3>
 
@@ -11623,7 +11603,14 @@ function switchSpTab(id,btn){
       <!-- /jobs-doctor -->
 
       <!-- 학과 (기본 활성) -->
-      <div class="jobs-tab-panel active" id="jobs-major">
+      <div class="sub-panel" id="jobs-major">
+
+        <h2 class="section-title" style="margin-top:0;">💼 우리 시대 직업 — 흔들리는 안정, 떠오르는 기회</h2>
+
+        <div class="card" style="border-left-color:#7c3aed;margin-bottom:24px;">
+          <strong>📌 이 코너에 대하여</strong>
+          <p style="margin-top:8px;line-height:1.8;">의사·변호사·회계사 같은 '안정적' 직업이 흔들리고, 새 기회가 떠오르는 중입니다. 고등학생인 여러분이 진로를 그릴 때 꼭 알아야 할 큰 흐름을 <strong>3가지 주제</strong>로 정리했습니다. 부모님 세대의 경험은 더 이상 정답이 아닐 수 있습니다.</p>
+        </div>
 
         <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🎓 AI 시대, 의대보다 더 뜨는 학과 — 핵심 역량과 미래 유망 산업</h3>
 
@@ -11707,7 +11694,7 @@ function switchSpTab(id,btn){
       <!-- /jobs-major -->
 
       <!-- ③ 경제 -->
-      <div class="jobs-tab-panel" id="jobs-economy">
+      <div class="sub-panel" id="jobs-economy">
 
         <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🚀 AI 시대 1인 창업 — 무자본·무경험으로 시작하는 비즈니스</h3>
 
@@ -11824,31 +11811,10 @@ function switchSpTab(id,btn){
     </div>
 
     <!-- 미래 역량 -->
-    <div class="lounge-sub-panel" id="lounge-skills">
+    <div id="lounge-skills">
 
-      <style>
-      .skills-tab-nav{display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;}
-      .skills-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-      .skills-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
-      .skills-tab-panel{display:none;}
-      .skills-tab-panel.active{display:block;}
-      </style>
-      <script>
-      function switchSkillsTab(id,btn){
-        document.querySelectorAll('.skills-tab-panel').forEach(p=>p.classList.remove('active'));
-        document.querySelectorAll('.skills-tab-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-      }
-      </script>
-
-      <div class="skills-tab-nav">
-        <button class="skills-tab-btn active" onclick="switchSkillsTab('skills-core',this)">🎯 AI 시대 역량</button>
-        <button class="skills-tab-btn" onclick="switchSkillsTab('skills-smart',this)">🤖 AI로 똑똑해지는 사람</button>
-      </div>
-
-      <!-- AI 시대 역량 (기본 활성) -->
-      <div class="skills-tab-panel active" id="skills-core">
+      <!-- AI 시대 역량 -->
+      <div class="sub-panel" id="skills-core">
 
         <h2 class="section-title" style="margin-top:0;">🎯 AI 대전환 시대, 고등학생 핵심 역량과 실천 방안</h2>
 
@@ -11941,7 +11907,7 @@ function switchSpTab(id,btn){
       <!-- /skills-core -->
 
       <!-- AI로 똑똑해지는 사람 -->
-      <div class="skills-tab-panel" id="skills-smart">
+      <div class="sub-panel" id="skills-smart">
 
       <h2 class="section-title" style="margin-top:0;">🤖 AI를 쓸수록 똑똑해지는 사람, 멍청해지는 사람</h2>
 
@@ -12087,37 +12053,17 @@ function switchSpTab(id,btn){
     </div>
 
     <!-- AX 대전환 -->
-    <div class="lounge-sub-panel" id="lounge-ax">
-
-      <h2 class="section-title" style="margin-top:0;">🔄 AX 대전환 — AI Transformation</h2>
-
-      <div class="card" style="border-left-color:#7c3aed;">
-        <strong>📌 AX(AI Transformation)란?</strong>
-        <p style="margin-top:8px;line-height:1.8;">DX(디지털 전환)를 넘어, AI가 산업·사회·교육의 작동 방식 자체를 근본적으로 바꾸는 흐름을 <strong>AX(AI 대전환)</strong>라고 합니다. 이 코너는 분야별로 그 변화를 데이터와 함께 정리합니다.</p>
-      </div>
-
-      <style>
-      .ax-tab-nav{display:flex;gap:8px;margin:24px 0;flex-wrap:wrap;}
-      .ax-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-      .ax-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
-      .ax-tab-panel{display:none;}
-      .ax-tab-panel.active{display:block;}
-      </style>
-      <script>
-      function switchAxTab(id,btn){
-        document.querySelectorAll('.ax-tab-panel').forEach(p=>p.classList.remove('active'));
-        document.querySelectorAll('.ax-tab-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-      }
-      </script>
-
-      <div class="ax-tab-nav">
-        <button class="ax-tab-btn active" onclick="switchAxTab('ax-edu',this)">🎓 교육 분야</button>
-      </div>
+    <div id="lounge-ax">
 
       <!-- 교육 분야 -->
-      <div class="ax-tab-panel active" id="ax-edu">
+      <div class="sub-panel" id="ax-edu">
+
+        <h2 class="section-title" style="margin-top:0;">🔄 AX 대전환 — AI Transformation</h2>
+
+        <div class="card" style="border-left-color:#7c3aed;margin-bottom:24px;">
+          <strong>📌 AX(AI Transformation)란?</strong>
+          <p style="margin-top:8px;line-height:1.8;">DX(디지털 전환)를 넘어, AI가 산업·사회·교육의 작동 방식 자체를 근본적으로 바꾸는 흐름을 <strong>AX(AI 대전환)</strong>라고 합니다. 이 코너는 분야별로 그 변화를 데이터와 함께 정리합니다.</p>
+        </div>
 
         <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🎓 교육 분야의 AI 대전환 — 현황과 미래 전망</h3>
 
