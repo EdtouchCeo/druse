@@ -5032,6 +5032,7 @@ function switchLifeTab(id,btn){
   <button class="life-tab-btn active" onclick="switchLifeTab('life-merit',this)">🎁 상벌점제도</button>
   <button class="life-tab-btn" onclick="switchLifeTab('life-club',this)">🎯 학생 주도 동아리</button>
   <button class="life-tab-btn" onclick="switchLifeTab('life-exam',this)">📝 정기시험 응시요령</button>
+  <button class="life-tab-btn" onclick="switchLifeTab('life-record',this)">🌱 학생부와 나의 성장</button>
 </div>
 
 <!-- 상벌점제도 -->
@@ -5409,6 +5410,155 @@ function switchLifeTab(id,btn){
   </div>
 
 </div><!-- /life-exam -->
+
+<!-- 학생부와 나의 성장 -->
+<div class="life-tab-panel" id="life-record">
+
+  <h2 class="section-title">학생부와 나의 성장 — 무엇을 하고, 무엇을 남길까</h2>
+
+  <div style="background:#eff6ff; border-left:4px solid #1d4ed8; border-radius:8px; padding:14px 18px; margin-bottom:20px;">
+    <p style="margin:0; font-size:0.95rem; color:#1e3a8a; line-height:1.8;">🌱 <strong>학교생활기록부는 선생님이 쓰지만, 그 근거는 '내가 한 행동'입니다.</strong><br>
+    그래서 기록을 잘 남기는 방법은 <strong>글솜씨가 아니라 행동을 남기는 것</strong>입니다. 자기소개서가 사라진 지금, 대학이 여러분을 알 수 있는 자료는 학생부 하나뿐입니다.</p>
+  </div>
+
+  <div style="background:#fef2f2; border-left:4px solid #dc2626; border-radius:8px; padding:12px 16px; margin-bottom:24px;">
+    <p style="margin:0; font-size:0.9rem; color:#991b1b;">평가자에게 <strong>"성실하고 노력하는 학생임" 같은 칭찬 한 줄은 아무 정보가 아닙니다.</strong> 평가받는 것은 형용사가 아니라 <strong>무엇을, 어떻게, 어디까지 했는가</strong>입니다.</p>
+  </div>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:24px 0 10px; font-weight:700;">1. 대학은 무엇을 보나 — 세 가지 눈</h3>
+  <div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+    <div class="grid-card" style="border-top:3px solid #2a5298;">
+      <div class="value" style="font-size:1.5rem;">📖</div>
+      <div class="label" style="font-weight:700; color:#1a3a6b; text-align:center; padding-bottom:8px; border-bottom:1px solid #e5e7eb;">학업역량 — 스스로 공부하는가</div>
+      <p style="font-size:0.85rem; color:#475569; margin-top:10px; line-height:1.7;">성적 자체보다 <strong>추이</strong>(오르는 중인가)와, 수업을 넘어 <strong>스스로 파고든 흔적</strong>을 봅니다.<br><br><span style="color:#92400e;">💡 유난히 소홀한 과목이 있는지도 봅니다.</span></p>
+    </div>
+    <div class="grid-card" style="border-top:3px solid #2a5298;">
+      <div class="value" style="font-size:1.5rem;">🧭</div>
+      <div class="label" style="font-weight:700; color:#1a3a6b; text-align:center; padding-bottom:8px; border-bottom:1px solid #e5e7eb;">진로역량 — 관심이 진짜인가</div>
+      <p style="font-size:0.85rem; color:#475569; margin-top:10px; line-height:1.7;">관련 과목을 <strong>순서대로(위계) 선택</strong>했는가, 관심이 <strong>학년마다 깊어진 궤적</strong>이 있는가를 봅니다.</p>
+    </div>
+    <div class="grid-card" style="border-top:3px solid #2a5298;">
+      <div class="value" style="font-size:1.5rem;">🤝</div>
+      <div class="label" style="font-weight:700; color:#1a3a6b; text-align:center; padding-bottom:8px; border-bottom:1px solid #e5e7eb;">공동체역량 — 함께 지낼 사람인가</div>
+      <p style="font-size:0.85rem; color:#475569; margin-top:10px; line-height:1.7;">"배려심 있음"이 아니라 <strong>구체적 장면 하나</strong>가 남아야 합니다.</p>
+    </div>
+  </div>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:28px 0 10px; font-weight:700;">2. 활동이 끝난 뒤, 스스로 답해볼 5가지 질문</h3>
+  <div style="background:#f8fafc; border-radius:8px; padding:14px 18px; margin-bottom:10px;">
+    <ol style="margin:0; padding-left:20px; font-size:0.9rem; color:#475569; line-height:1.9;">
+      <li><strong>왜</strong> 이걸 시작했나? (계기)</li>
+      <li><strong>어떻게</strong> 알아봤나? (책·기사·논문·영상·실험·설문)</li>
+      <li><strong>결론</strong>은 무엇인가? (내 생각은?)</li>
+      <li>어떤 <strong>피드백</strong>을 받았나? (선생님·친구의 반응)</li>
+      <li>그 피드백에 따라 <strong>무엇을 더</strong> 해봤나?</li>
+    </ol>
+  </div>
+  <div style="background:#f0fdf4; border-left:4px solid #16a34a; border-radius:8px; padding:12px 16px; margin-bottom:24px;">
+    <p style="margin:0; font-size:0.9rem; color:#166534;">⭐ <strong>대부분의 학생은 ④·⑤가 없습니다.</strong> 활동을 '하고 끝'내기 때문입니다. <strong>성장은 바로 여기서 갈립니다.</strong> 피드백을 받고 한 걸음 더 간 사람이 드뭅니다.</p>
+  </div>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:24px 0 10px; font-weight:700;">3. 나에게 던지는 성찰 질문 4단계</h3>
+  <p style="margin-bottom:10px; color:#475569; font-size:0.9rem;">활동 직후에 이 4가지를 메모해 두면, 선생님이 기록할 때 쓸 수 있는 <strong>사실</strong>이 됩니다. (기억은 사라지지만 메모는 남습니다.)</p>
+  <table style="width:100%; border-collapse:collapse; font-size:0.88rem; margin-bottom:24px;">
+    <thead><tr style="background:#f1f5f9;"><th style="border:1px solid #e5e7eb; padding:8px 10px; text-align:left; color:#1a3a6b; width:28%;">단계</th><th style="border:1px solid #e5e7eb; padding:8px 10px; text-align:left; color:#1a3a6b;">질문</th></tr></thead>
+    <tbody>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px;"><strong>① 맥락 성찰</strong></td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;">이 주제에 관심 갖게 된 <strong>구체적인 수업 내용이나 책의 문구</strong>는?</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px;"><strong>② 의문 구체화</strong></td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;">단순 조사를 넘어, <strong>내가 해결하고 싶은 질문</strong>은?</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px;"><strong>③ 과정 기록</strong></td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;">답을 찾으려고 <strong>남과 다르게 투입한 시간·방법</strong>(실험·설문 등)은?</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px;"><strong>④ 발전적 성찰</strong></td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;">새롭게 알게 된 점은? <strong>다음 활동으로 어떻게 이어졌나?</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:24px 0 10px; font-weight:700;">4. 활동의 '수준'을 올리는 법</h3>
+  <p style="margin-bottom:10px; color:#475569; font-size:0.9rem;">같은 주제라도 <strong>어떤 행동을 했느냐</strong>에 따라 수준이 달라집니다.</p>
+  <table style="width:100%; border-collapse:collapse; font-size:0.88rem; margin-bottom:10px;">
+    <thead><tr style="background:#f1f5f9;"><th style="border:1px solid #e5e7eb; padding:8px 10px; text-align:left; color:#1a3a6b; width:22%;">수준</th><th style="border:1px solid #e5e7eb; padding:8px 10px; text-align:left; color:#1a3a6b;">하는 일</th></tr></thead>
+    <tbody>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#9ca3af;">1 기억 · 2 이해</td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#9ca3af;">외우기 · 설명하기</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px;"><strong>3 적용</strong></td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;"><strong>써먹기</strong> — 배운 개념으로 실제 문제 계산·조사</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px;"><strong>4 분석</strong></td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;"><strong>따져보기</strong> — 차이·원인·관계 분석</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px;"><strong>5 평가</strong></td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;"><strong>판단하기</strong> — 근거를 들어 찬반 판단</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px;"><strong>6 창조</strong></td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;"><strong>만들기</strong> — 주제 선정 → 가설 → 조사 → 보고서, 해결책 제작·발표</td></tr>
+    </tbody>
+  </table>
+  <div style="background:#f0fdf4; border-left:4px solid #16a34a; border-radius:8px; padding:12px 16px; margin-bottom:24px;">
+    <p style="margin:0; font-size:0.9rem; color:#166534;">⭐ <strong>3단계(적용)부터 변별력이 생깁니다.</strong> "찾아서 정리했다"에서 멈추지 말고 <strong>적용하고, 따져보고, 판단하고, 만들어</strong> 보세요.</p>
+  </div>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:24px 0 10px; font-weight:700;">5. 탐구 주제, 어디서 찾나 · 활동을 이어가는 법</h3>
+  <div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+    <div class="grid-card" style="border-top:3px solid #2a5298;">
+      <div class="label" style="font-weight:700; color:#1a3a6b; text-align:center; padding-bottom:8px; border-bottom:1px solid #e5e7eb;">🔎 주제 찾기 5가지 원천</div>
+      <ul style="font-size:0.85rem; color:#475569; margin-top:10px; line-height:1.7; text-align:left; padding-left:18px;">
+        <li>이론의 규칙에 <strong>어긋나는 사례·예외</strong></li>
+        <li>주변의 자연·사회 <strong>현상과 이슈</strong></li>
+        <li><strong>독서·신문·뉴스</strong>에서 호기심을 자극한 내용</li>
+        <li>논문 검색 사이트·칼럼에서 본 내용</li>
+        <li><strong>교과서 성취기준의 &lt;탐구활동&gt; 예시</strong> ← 가장 쉬운 출발점</li>
+      </ul>
+    </div>
+    <div class="grid-card" style="border-top:3px solid #16a34a;">
+      <div class="label" style="font-weight:700; color:#166534; text-align:center; padding-bottom:8px; border-bottom:1px solid #e5e7eb;">🔁 후속활동 4가지</div>
+      <ul style="font-size:0.85rem; color:#475569; margin-top:10px; line-height:1.7; text-align:left; padding-left:18px;">
+        <li><strong>심화</strong> — 같은 주제를 한 단계 어려운 개념으로</li>
+        <li><strong>확대</strong> — 다른 영역으로 주제를 넓혀</li>
+        <li><strong>융복합</strong> — 서로 다른 두 분야를 결합</li>
+        <li><strong>실생활 적용</strong> — 실험·프로그래밍·캠페인·설문조사로</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:28px 0 10px; font-weight:700;">6. 학년이 쌓이는 모양</h3>
+  <div style="background:#f8fafc; border-radius:8px; padding:14px 18px; margin-bottom:10px;">
+    <p style="margin:0 0 10px; font-size:0.92rem; color:#1a3a6b; font-weight:700;">1학년 폭넓은 탐색 → 2학년 주제 심화 → 3학년 독자적 분석·연구</p>
+    <p style="margin:0; font-size:0.88rem; color:#475569; line-height:1.8;"><strong>좋은 예(생명과학 지망)</strong>: 1학년 서식지 탐구 → 2학년 독서·발표 + 동아리 표본 제작 → 3학년 직접 고안한 실험으로 곤충 행동 패턴 규명<br>→ <strong>관심 → 지식화 → 나만의 연구</strong></p>
+  </div>
+  <div style="background:#fffbeb; border-left:4px solid #f59e0b; border-radius:8px; padding:12px 16px; margin-bottom:24px;">
+    <p style="margin:0; font-size:0.9rem; color:#92400e;">⚠️ 1·2학년에 아무 맥락이 없다가 <strong>3학년에 갑자기 등장하는 고급 보고서</strong>는 오히려 의심을 받습니다. 전문용어만 많고 과정이 없는 기록도 마찬가지입니다. <strong>꾸준함이 진짜를 만듭니다.</strong></p>
+  </div>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:24px 0 10px; font-weight:700;">7. 실패해도 괜찮습니다</h3>
+  <div style="background:#f0fdf4; border-left:4px solid #16a34a; border-radius:8px; padding:14px 18px; margin-bottom:24px;">
+    <p style="margin:0; font-size:0.92rem; color:#166534; line-height:1.8;">높은 수준의 개념을 다뤘다는 사실 <strong>자체보다</strong>, <strong>막혔던 지점과 그것을 넘은 과정</strong>이 더 좋게 평가됩니다.<br>매끈한 성공담보다 <strong>"이래서 막혔고, 이렇게 해결했다"</strong>가 강합니다. 실패와 시행착오는 숨길 것이 아니라 <strong>성장의 증거</strong>입니다.</p>
+  </div>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:24px 0 10px; font-weight:700;">8. 학부모님께</h3>
+  <ul style="font-size:0.9rem; color:#475569; line-height:1.9; padding-left:20px; margin-bottom:24px;">
+    <li><strong>대신 해주면 기록이 죽습니다.</strong> 평가자는 '학생이 직접 설계·수행했는가'를 봅니다. 도움받은 완성품보다 <strong>스스로 한 미완성</strong>이 더 가치 있게 기록됩니다.</li>
+    <li><strong>외부 스펙은 학생부에 쓸 수 없습니다.</strong> 대회·교외상·공인어학(토익 등)·인증시험·논문·출간·특허·해외활동·장학금·자격증 등 <strong>11개 항목은 기재 금지</strong>입니다. 답은 <strong>학교 안 활동</strong>에 있습니다.</li>
+    <li><strong>특정 대학·학과명은 기재할 수 없습니다.</strong> 계열·분야까지만 씁니다.</li>
+    <li><strong>성적과 동떨어진 극찬은 오히려 마이너스</strong>입니다. 기록 전체의 신뢰가 떨어집니다.</li>
+    <li><strong>진로가 바뀌어도 불리하지 않습니다.</strong> 탐색 과정에서의 변화는 사실대로 기록되며, 그 자체가 사고의 성장입니다.</li>
+  </ul>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:24px 0 10px; font-weight:700;">9. 자주 하는 오해</h3>
+  <table style="width:100%; border-collapse:collapse; font-size:0.88rem; margin-bottom:24px;">
+    <thead><tr style="background:#f1f5f9;"><th style="border:1px solid #e5e7eb; padding:8px 10px; text-align:left; color:#1a3a6b; width:34%;">오해</th><th style="border:1px solid #e5e7eb; padding:8px 10px; text-align:left; color:#1a3a6b;">사실</th></tr></thead>
+    <tbody>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#dc2626;">"책을 많이 읽으면 되나요?"</td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;">권수가 아니라 <strong>읽고 무엇을 했는지</strong>가 기록됩니다. 질문 → 탐구 → 결론 → 확장으로 이어져야 합니다.</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#dc2626;">"임원을 해야 리더십인가요?"</td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;"><strong>직책만으로는 평가하지 않습니다.</strong> 참여를 이끌어내고 조율한 <strong>행동</strong>이 근거입니다. 임원이 아니어도 됩니다.</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#dc2626;">"동아리는 그냥 참여하면 되나요?"</td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;">"참여함" 나열은 변별력이 없습니다. <strong>직접 설계·수행한 장면</strong>과 <strong>꾸준함</strong>을 봅니다.</td></tr>
+      <tr><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#dc2626;">"진로활동은 왜 중요한가요?"</td><td style="border:1px solid #e5e7eb; padding:8px 10px; color:#475569;">자소서가 없어진 지금 <strong>진로활동이 '지원 동기'의 자리</strong>입니다. 관심이 왜, 어디까지 갔는지 보여주는 곳입니다.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size:1.05rem; color:#1a3a6b; margin:24px 0 10px; font-weight:700;">10. 오늘부터 할 수 있는 것</h3>
+  <div style="background:#eff6ff; border-radius:8px; padding:14px 18px; margin-bottom:16px;">
+    <ul style="margin:0; font-size:0.9rem; color:#1e3a8a; line-height:2; padding-left:20px;">
+      <li>수업에서 <strong>궁금했던 것 하나</strong>를 메모해 둔다 (그게 탐구의 시작점)</li>
+      <li>활동이 끝나면 <strong>5가지 질문</strong>에 스스로 답해 메모한다</li>
+      <li>받은 <strong>피드백</strong>과, 그래서 <strong>뭘 더 했는지</strong>를 꼭 남긴다</li>
+      <li>한 학기에 <strong>하나는 3단계(적용) 이상</strong>으로 밀어붙인다</li>
+      <li>관심 주제를 <strong>학년이 올라가며 이어간다</strong></li>
+    </ul>
+  </div>
+
+  <div style="background:#1e3a8a; border-radius:8px; padding:16px 20px; text-align:center;">
+    <p style="margin:0; font-size:0.95rem; color:#fff; line-height:1.8;">결국 기록에 남는 건 이 한 문장입니다.<br><strong>"나는 무엇에 호기심을 가졌고, 그것을 어떻게 밀고 나갔으며, 그 과정에서 무엇이 자랐는가."</strong></p>
+  </div>
+
+</div><!-- /life-record -->
 
 </div><!-- /sub-life -->
 
