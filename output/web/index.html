@@ -3969,6 +3969,7 @@
         <button type="button" onclick="document.getElementById('drp-detail-modal').style.display='none';" style="margin-left:auto; border:none; background:none; font-size:1.05rem; cursor:pointer; color:#6b7280; padding:4px 6px; flex-shrink:0;" title="닫기">✕</button>
       </div>
       <div id="drp-dt-date" style="margin-top:8px; font-size:0.82rem; font-weight:700; color:#2563eb;"></div>
+      <div id="drp-dt-photos"></div>
       <p id="drp-dt-desc" style="margin:14px 0 0; font-size:0.9rem; color:#374151; line-height:1.8; white-space:pre-wrap;"></p>
     </div>
   </div>
@@ -4236,32 +4237,7 @@
         var ed = card.querySelector('.drp-edit');
         if (ed) ed.onclick = function () { openEdit(it); };
         var urls = (it.photos || []).filter(function (p) { return p.url; }).map(function (p) { return p.url; });
-        if (urls.length) {
-          var hero = document.createElement('div');
-          hero.className = 'drp-hero';
-          hero.innerHTML = '<img class="drp-hero-img" loading="lazy" alt="' + esc(it.title) + '">'
-            + (urls.length > 1
-              ? '<button type="button" class="drp-hero-nav drp-hero-prev" title="이전 사진">‹</button>'
-                + '<button type="button" class="drp-hero-nav drp-hero-next" title="다음 사진">›</button>'
-              : '')
-            + '<span class="drp-hero-count"></span>'
-            + '<button type="button" class="drp-hero-dl" title="이 사진 다운로드">⬇</button>';
-          card.appendChild(hero);
-          var cur = 0;
-          var img = hero.querySelector('.drp-hero-img');
-          var cnt = hero.querySelector('.drp-hero-count');
-          var show = function (i) {
-            cur = (i + urls.length) % urls.length;
-            img.src = urls[cur];
-            cnt.textContent = (cur + 1) + ' / ' + urls.length;
-          };
-          show(0);
-          img.onclick = function () { openLb(urls, cur, it.title); };
-          var pv = hero.querySelector('.drp-hero-prev'), nx = hero.querySelector('.drp-hero-next');
-          if (pv) pv.onclick = function () { show(cur - 1); };
-          if (nx) nx.onclick = function () { show(cur + 1); };
-          hero.querySelector('.drp-hero-dl').onclick = function () { drpDownload(urls[cur], photoName(it.title, cur)); };
-        }
+        if (urls.length) card.appendChild(makeHero(urls, it.title));
         var del = card.querySelector('.drp-del');
         if (del) del.onclick = function () {
           if (!confirm('이 게시물과 사진을 삭제할까요?')) return;
@@ -4328,10 +4304,42 @@
     if (e.key === 'ArrowRight') window.drpLbMove(1);
   });
 
+  // ----- 사진 캐러셀 생성 (카드·상세 창 공용: 좌우 이동 + 번호 + 다운로드 + 클릭 확대) -----
+  function makeHero(urls, title) {
+    var hero = document.createElement('div');
+    hero.className = 'drp-hero';
+    hero.innerHTML = '<img class="drp-hero-img" loading="lazy" alt="' + esc(title) + '">'
+      + (urls.length > 1
+        ? '<button type="button" class="drp-hero-nav drp-hero-prev" title="이전 사진">‹</button>'
+          + '<button type="button" class="drp-hero-nav drp-hero-next" title="다음 사진">›</button>'
+        : '')
+      + '<span class="drp-hero-count"></span>'
+      + '<button type="button" class="drp-hero-dl" title="이 사진 다운로드">⬇</button>';
+    var cur = 0;
+    var img = hero.querySelector('.drp-hero-img');
+    var cnt = hero.querySelector('.drp-hero-count');
+    var show = function (i) {
+      cur = (i + urls.length) % urls.length;
+      img.src = urls[cur];
+      cnt.textContent = (cur + 1) + ' / ' + urls.length;
+    };
+    show(0);
+    img.onclick = function () { openLb(urls, cur, title); };
+    var pv = hero.querySelector('.drp-hero-prev'), nx = hero.querySelector('.drp-hero-next');
+    if (pv) pv.onclick = function () { show(cur - 1); };
+    if (nx) nx.onclick = function () { show(cur + 1); };
+    hero.querySelector('.drp-hero-dl').onclick = function () { drpDownload(urls[cur], photoName(title, cur)); };
+    return hero;
+  }
+
   // ----- 상세 보기 -----
   function openDetail(it) {
     document.getElementById('drp-dt-title').textContent = it.title || '';
     document.getElementById('drp-dt-date').textContent = '📅 ' + fmtRange(it.event_date, it.event_end) + (it.created_by_name ? '  ·  ' + it.created_by_name : '');
+    var ph = document.getElementById('drp-dt-photos');
+    ph.innerHTML = '';
+    var urls = (it.photos || []).filter(function (p) { return p.url; }).map(function (p) { return p.url; });
+    if (urls.length) ph.appendChild(makeHero(urls, it.title));
     document.getElementById('drp-dt-desc').textContent = it.description || '(작성된 내용이 없습니다)';
     document.getElementById('drp-detail-modal').style.display = 'flex';
   }
