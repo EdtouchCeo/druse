@@ -3841,7 +3841,7 @@
 <!-- ===== 교육활동 사진 ===== -->
 <div id="photos-content">
   <style>
-    .drp-form-grid { display:grid; grid-template-columns: 1fr 180px; gap:12px; }
+    .drp-form-grid { display:grid; grid-template-columns: 1fr 150px 150px; gap:12px; }
     @media (max-width: 640px) { .drp-form-grid { grid-template-columns: 1fr; } }
     .drp-input, .drp-textarea {
       width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px;
@@ -3934,8 +3934,12 @@
           <input class="drp-input" id="drp-title" type="text" maxlength="120" placeholder="예: 2026 이상화 시인 추모 백일장">
         </div>
         <div>
-          <label class="drp-label" for="drp-date">일자 <span style="color:#dc2626;">*</span></label>
+          <label class="drp-label" for="drp-date">시작 일자 <span style="color:#dc2626;">*</span></label>
           <input class="drp-input" id="drp-date" type="date">
+        </div>
+        <div>
+          <label class="drp-label" for="drp-date-end">종료 일자 <span style="font-weight:400; color:#9ca3af;">(선택)</span></label>
+          <input class="drp-input" id="drp-date-end" type="date">
         </div>
       </div>
       <div style="margin-top:12px;">
@@ -4034,6 +4038,13 @@
     var w = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
     return p[0] + '.' + p[1] + '.' + p[2] + ' (' + w + ')';
   }
+  // 시작~종료 병기 (같은 해면 종료일의 연도 생략)
+  function fmtRange(s, e) {
+    if (!e || e === s) return fmtDate(s);
+    var fe = fmtDate(e);
+    if (String(s).slice(0, 4) === String(e).slice(0, 4)) fe = fe.slice(5);
+    return fmtDate(s) + ' ~ ' + fe;
+  }
 
   // ----- 이미지 압축 (긴 변 1600px, JPEG) -----
   function compressImage(file) {
@@ -4118,9 +4129,11 @@
     if (_busy) return;
     var title = (document.getElementById('drp-title').value || '').trim();
     var date = document.getElementById('drp-date').value || '';
+    var dateEnd = document.getElementById('drp-date-end').value || '';
     var desc = (document.getElementById('drp-desc').value || '').trim();
     if (!title) { setMsg('행사명을 입력해 주세요.', 'err'); return; }
-    if (!date) { setMsg('일자를 선택해 주세요.', 'err'); return; }
+    if (!date) { setMsg('시작 일자를 선택해 주세요.', 'err'); return; }
+    if (dateEnd && dateEnd < date) { setMsg('종료 일자가 시작 일자보다 빠릅니다.', 'err'); return; }
     if (!_pending.length) { setMsg('사진을 1장 이상 첨부해 주세요.', 'err'); return; }
 
     _busy = true;
@@ -4138,11 +4151,12 @@
     });
     chain.then(function () {
       setMsg('게시물 등록 중…');
-      return api({ action: 'create', title: title, event_date: date, description: desc, photos: paths });
+      return api({ action: 'create', title: title, event_date: date, event_end: dateEnd, description: desc, photos: paths });
     }).then(function () {
       setMsg('등록되었습니다. ✅', 'ok');
       document.getElementById('drp-title').value = '';
       document.getElementById('drp-date').value = '';
+      document.getElementById('drp-date-end').value = '';
       document.getElementById('drp-desc').value = '';
       _pending.forEach(function (p) { URL.revokeObjectURL(p.url); });
       _pending = [];
@@ -4179,7 +4193,7 @@
         card.className = 'card drp-entry';
         var head = '<div class="drp-entry-title" title="' + esc(it.title) + '">' + esc(it.title) + '</div>'
           + '<div class="drp-entry-sub">'
-          + '<span class="drp-entry-date">📅 ' + esc(fmtDate(it.event_date)) + '</span>'
+          + '<span class="drp-entry-date">📅 ' + esc(fmtRange(it.event_date, it.event_end)) + '</span>'
           + '<span class="drp-entry-meta">' + esc(it.created_by_name || '')
           + (it.mine ? ' <button type="button" class="drp-del" data-id="' + esc(it.id) + '">🗑 삭제</button>' : '')
           + '</span></div>';

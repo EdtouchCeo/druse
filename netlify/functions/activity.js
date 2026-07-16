@@ -103,6 +103,7 @@ exports.handler = async (event) => {
         id: row.id,
         title: row.title,
         event_date: row.event_date,
+        event_end: row.event_end || null,
         description: row.description || '',
         created_by: row.created_by,
         created_by_name: row.created_by_name || '',
@@ -142,17 +143,22 @@ exports.handler = async (event) => {
     if (action === 'create') {
       const title = (body.title || '').trim();
       const eventDate = (body.event_date || '').trim();
+      const eventEnd = (body.event_end || '').trim();
       const description = (body.description || '').trim();
       const photos = Array.isArray(body.photos)
         ? body.photos.filter(p => typeof p === 'string' && /^photos\//.test(p)).slice(0, 30)
         : [];
       if (!title) return json(400, { error: '행사명을 입력해 주세요.' });
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) return json(400, { error: '일자를 선택해 주세요.' });
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) return json(400, { error: '시작 일자를 선택해 주세요.' });
+      if (eventEnd && (!/^\d{4}-\d{2}-\d{2}$/.test(eventEnd) || eventEnd < eventDate)) {
+        return json(400, { error: '종료 일자가 올바르지 않습니다.' });
+      }
       if (photos.length === 0) return json(400, { error: '사진을 1장 이상 첨부해 주세요.' });
 
       const id = `${eventDate}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const meta = {
-        id, title: title.slice(0, 200), event_date: eventDate, description: description.slice(0, 4000),
+        id, title: title.slice(0, 200), event_date: eventDate, event_end: eventEnd || null,
+        description: description.slice(0, 4000),
         photos, created_by: userId, created_by_name: userName,
         created_at: new Date().toISOString()
       };
