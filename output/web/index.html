@@ -14955,6 +14955,98 @@ function switchSpTab(id,btn){
     neis: { keys:['neis'], input:'neis-ai-input', log:'neis-ai-log', send:'neis-ai-send' }
   };
 
+  // ── 교육과정(curr) 내용 체계 구조화 사전 직조회 (edtouch RagChat 대응 이식) ──────────
+  // 질문이 핵심 아이디어/내용 요소/성취기준/내용 체계 + 과목명을 담으면 data/curr_struct.json에서
+  // 해당 과목 블록을 원문 그대로 근거 최상단에 주입한다(의미 검색이 과목을 구분 못 해 다른 과목
+  // 표를 올리던 문제 차단). 파일 부재·비정상 스키마·파싱 실패 시 조용히 기존 흐름 유지(회귀 0).
+  var currStructCache = null, currStructPromise = null, currStructFailed = false;
+  function loadCurrStruct(){
+    if (currStructCache) return Promise.resolve(currStructCache);
+    if (currStructFailed) return Promise.resolve(null);
+    if (currStructPromise) return currStructPromise;
+    currStructPromise = fetch('data/curr_struct.json')
+      .then(function(r){ if(!r.ok) throw new Error('no-struct'); return r.json(); })
+      .then(function(j){
+        currStructCache = (j && Array.isArray(j.subjects)) ? j : null;
+        if(!currStructCache) currStructFailed = true;
+        return currStructCache;
+      })
+      .catch(function(){ currStructFailed = true; currStructPromise = null; return null; });
+    return currStructPromise;
+  }
+  function csNoSpace(s){ return (s||'').replace(/\s+/g, ''); }
+  // 질문의 학교급 단서 (없으면 null → 매칭 과목 전부, 최대 2개)
+  function csDetectSchoolCue(q){
+    if (/초등|초등학교|초\s*\d/.test(q)) return '초등학교';
+    if (/중학|중학교|중\s*\d(?!\d)/.test(q)) return '중학교';
+    if (/고등|고등학교|고교|고\s*\d(?!\d)/.test(q)) return '고등학교';
+    return null;
+  }
+  // 질문 초점: 핵심 아이디어 / 내용 요소 / 성취기준. '내용 체계'는 셋 모두. 아무것도 못 잡으면 핵심+성취기준.
+  function csDetectFocus(q){
+    var all = /내용\s*체계/.test(q);
+    var core = all || /핵심\s*아이디어/.test(q);
+    var elements = all || /내용\s*요소/.test(q);
+    var standards = all || /성취\s*기준/.test(q);
+    if (!core && !elements && !standards) return { core:true, elements:false, standards:true };
+    return { core:core, elements:elements, standards:standards };
+  }
+  // 영역 1개 → 주입 텍스트 1블록. 초점에 맞는 절만 원문 그대로.
+  function csBuildAreaText(subj, area, idx, f){
+    var parts = ['『' + subj.school + ' ' + subj.subject + '』 내용 체계 — (' + idx + ') ' + area.name];
+    if (f.core && Array.isArray(area.coreIdeas) && area.coreIdeas.length){
+      parts.push('[핵심 아이디어]');
+      for (var i=0;i<area.coreIdeas.length;i++){ if(area.coreIdeas[i]) parts.push('- ' + area.coreIdeas[i]); }
+    }
+    if (f.elements && area.elements){
+      var cats = ['지식·이해', '과정·기능', '가치·태도'];
+      for (var ci=0;ci<cats.length;ci++){
+        var arr = area.elements[cats[ci]];
+        if (Array.isArray(arr) && arr.length) parts.push('[내용 요소/' + cats[ci] + '] ' + arr.join(', '));
+      }
+    }
+    if (f.standards && Array.isArray(area.standards) && area.standards.length){
+      parts.push('[성취기준]');
+      for (var si=0;si<area.standards.length;si++){ var st=area.standards[si]; if(st && st.text) parts.push('[' + st.code + '] ' + st.text); }
+    }
+    if (parts.length <= 1) return '';
+    return parts.join('\n');
+  }
+  // 순수 조립 함수 — struct + 질문 → 근거 배열. 과목 최장 일치 → 학교급 필터 → 최대 2개 → 초점별 원문 → ~9,000자 예산.
+  function buildStructContexts(struct, question, docs, budgetChars){
+    if (typeof budgetChars !== 'number') budgetChars = 9000;
+    if (!struct || !Array.isArray(struct.subjects) || !struct.subjects.length) return [];
+    var q = question || '';
+    var qn = csNoSpace(q);
+    var cands = struct.subjects.filter(function(s){ var sn = csNoSpace(s.subject); return sn.length>0 && qn.indexOf(sn)>=0; });
+    if (!cands.length) return [];
+    var maxLen = Math.max.apply(null, cands.map(function(s){ return csNoSpace(s.subject).length; }));
+    cands = cands.filter(function(s){ return csNoSpace(s.subject).length === maxLen; });
+    var cue = csDetectSchoolCue(q);
+    if (cue){
+      var filtered = cands.filter(function(s){ return s.school === cue; });
+      if (filtered.length) cands = filtered;
+    }
+    cands = cands.slice(0, 2);
+    var f = csDetectFocus(q);
+    var out = [];
+    var budget = budgetChars;
+    for (var k=0; k<cands.length; k++){
+      var subj = cands[k];
+      var label = (docs && typeof subj.doc === 'number' && docs[subj.doc]) ? docs[subj.doc] : (subj.school + ' ' + subj.subject + ' 교육과정');
+      var areas = Array.isArray(subj.areas) ? subj.areas : [];
+      for (var ai=0; ai<areas.length; ai++){
+        if (budget <= 0) break;
+        var text = csBuildAreaText(subj, areas[ai], ai + 1, f);
+        if (!text) continue;
+        out.push({ label: label, ref: subj.ref || '', text: text });
+        budget -= text.length;
+      }
+      if (budget <= 0) break;
+    }
+    return out;
+  }
+
   window.chatAsk = function(which){
     var cfg = CHATS[which]; if(!cfg) return;
     var inp = el(cfg.input);
@@ -14980,6 +15072,7 @@ function switchSpTab(id,btn){
         var fresh = kw.filter(function(c){ return !seen[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)]; });
         ctx = fresh.concat(ctx || []).slice(0, 8);
       }
+      function doAsk(){
       return fetch('/.netlify/functions/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -15005,6 +15098,25 @@ function switchSpTab(id,btn){
         }
         loading.innerHTML = formatAnswer(ans) + src;
       });
+      }
+      // 내용 체계 의도 감지 직조회 — curr + (핵심 아이디어|내용 체계|내용 요소|성취 기준) 질문이면
+      // 구조화 사전에서 질문 과목 블록을 원문 그대로 근거 최상단에 주입(의미 검색 결과는 뒤). 회귀 0.
+      var dsKey = (cfg.keys && cfg.keys[0]) || '';
+      if (dsKey === 'curr' && /(핵심\s*아이디어|내용\s*체계|내용\s*요소|성취\s*기준)/.test(q)) {
+        return loadCurrStruct().then(function(struct){
+          try {
+            var injected = buildStructContexts(struct, q);
+            if (injected.length) {
+              var seenS = {};
+              (ctx || []).forEach(function(c){ seenS[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)] = 1; });
+              var freshS = injected.filter(function(c){ return !seenS[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)]; });
+              ctx = freshS.concat(ctx || []).slice(0, 10);
+            }
+          } catch (e) { /* struct 부재·파싱 실패 → 조용히 기존 흐름 유지 */ }
+          return doAsk();
+        });
+      }
+      return doAsk();
     }).catch(function(){
       loading.classList.remove('loading');
       loading.innerHTML = '⚠️ 요청 실패 — 네트워크 또는 서버 오류입니다. (로컬 file://에서는 동작하지 않습니다. daeryun.life에서 이용하세요.)';
