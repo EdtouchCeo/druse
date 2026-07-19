@@ -15047,6 +15047,58 @@ function switchSpTab(id,btn){
     return out;
   }
 
+  // ── 법령(law) 조문 구조화 사전 직조회 — 「법령명 + 제N조」 감지 시 조문 원문 결정 주입 ──
+  var lawStructCache = null, lawStructPromise = null, lawStructFailed = false;
+  function loadLawStruct(){
+    if (lawStructCache) return Promise.resolve(lawStructCache);
+    if (lawStructFailed) return Promise.resolve(null);
+    if (lawStructPromise) return lawStructPromise;
+    lawStructPromise = fetch('data/law_struct.json')
+      .then(function(r){ if(!r.ok) throw new Error('no-struct'); return r.json(); })
+      .then(function(j){
+        lawStructCache = (j && Array.isArray(j.laws)) ? j : null;
+        if(!lawStructCache) lawStructFailed = true;
+        return lawStructCache;
+      })
+      .catch(function(){ lawStructFailed = true; lawStructPromise = null; return null; });
+    return lawStructPromise;
+  }
+  function lawNorm(s){ return (s||'').replace(/[\s·ㆍ「」『』]/g, ''); }
+  // 순수 조립 — 법령명(별칭 최장 일치)+조문 번호(제N조·제N조의M, 최대 4개) → 조문 전문 주입. 미매칭 [] (무영향).
+  function buildLawContexts(struct, question, budgetChars){
+    if (typeof budgetChars !== 'number') budgetChars = 6000;
+    if (!struct || !Array.isArray(struct.laws) || !struct.laws.length) return [];
+    var qn = lawNorm(question || '');
+    var best = null, bestLen = 0;
+    for (var i=0;i<struct.laws.length;i++){
+      var law = struct.laws[i];
+      var names = [law.name].concat(Array.isArray(law.aliases) ? law.aliases : []);
+      for (var j2=0;j2<names.length;j2++){
+        var aln = lawNorm(names[j2]);
+        if (aln.length > bestLen && qn.indexOf(aln) >= 0){ best = law; bestLen = aln.length; }
+      }
+    }
+    if (!best) return [];
+    var nos = [], re = /제\s*(\d+)\s*조(?:\s*의\s*(\d+))?/g, m;
+    while ((m = re.exec(question)) && nos.length < 4){
+      var no = m[1] + (m[2] ? '의' + m[2] : '');
+      if (nos.indexOf(no) < 0) nos.push(no);
+    }
+    if (!nos.length) return [];
+    var out = [], budget = budgetChars;
+    for (var k=0;k<nos.length;k++){
+      if (budget <= 0) break;
+      var art = null;
+      for (var a=0;a<best.articles.length;a++){ if (best.articles[a].no === nos[k]) { art = best.articles[a]; break; } }
+      if (!art) continue;
+      var noParts = nos[k].split('의');
+      var refNo = '제' + noParts[0] + '조' + (noParts[1] ? '의' + noParts[1] : '');
+      out.push({ label: best.name, ref: refNo + (art.title ? '(' + art.title + ')' : ''), text: art.text });
+      budget -= art.text.length;
+    }
+    return out;
+  }
+
   window.chatAsk = function(which){
     var cfg = CHATS[which]; if(!cfg) return;
     var inp = el(cfg.input);
@@ -15065,7 +15117,7 @@ function switchSpTab(id,btn){
                 : (window.retrieveChunks ? window.retrieveChunks(cfg.keys, q, 6) : []);
       // 성취기준 번호(예: 12문학01-02)가 질문에 있으면 키워드 일치 청크를 앞에 병합 —
       // 코드 문자열은 의미 검색이 놓치기 쉬워 원문 번호가 근거에 반드시 들어가게 한다
-      if (/\d{1,2}[가-힣]{1,4}\d{2}-\d{2}/.test(q) && window.retrieveChunks) {
+      if ((/\d{1,2}[가-힣]{1,4}\d{2}-\d{2}/.test(q) || (((cfg.keys||[])[0]==='law') && /제\s*\d+\s*조/.test(q))) && window.retrieveChunks) {
         var kw = window.retrieveChunks(cfg.keys, q, 4) || [];
         var seen = {};
         (ctx || []).forEach(function(c){ seen[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)] = 1; });
@@ -15111,6 +15163,21 @@ function switchSpTab(id,btn){
               (ctx || []).forEach(function(c){ seenS[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)] = 1; });
               var freshS = injected.filter(function(c){ return !seenS[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)]; });
               ctx = freshS.concat(ctx || []).slice(0, 10);
+            }
+          } catch (e) { /* struct 부재·파싱 실패 → 조용히 기존 흐름 유지 */ }
+          return doAsk();
+        });
+      }
+      // 법령·조문 직조회 — law + 「법령명 + 제N조」 감지 시 해당 조문 전문을 근거 최상단에 주입. 회귀 0.
+      if (dsKey === 'law' && /제\s*\d+\s*조/.test(q)) {
+        return loadLawStruct().then(function(struct){
+          try {
+            var injectedL = buildLawContexts(struct, q);
+            if (injectedL.length) {
+              var seenL = {};
+              (ctx || []).forEach(function(c){ seenL[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)] = 1; });
+              var freshL = injectedL.filter(function(c){ return !seenL[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)]; });
+              ctx = freshL.concat(ctx || []).slice(0, 10);
             }
           } catch (e) { /* struct 부재·파싱 실패 → 조용히 기존 흐름 유지 */ }
           return doAsk();
