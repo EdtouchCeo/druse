@@ -15064,9 +15064,9 @@ function switchSpTab(id,btn){
     return lawStructPromise;
   }
   function lawNorm(s){ return (s||'').replace(/[\s·ㆍ「」『』]/g, ''); }
-  // 순수 조립 — 법령명(별칭 최장 일치)+조문 번호(제N조·제N조의M, 최대 4개) → 조문 전문 주입. 미매칭 [] (무영향).
+  // 순수 조립 — ① 「법령명(별칭 최장 일치)+제N조(의M)」 ② 없으면 실무 주제 매핑(특별휴가·겸직 등)으로 조문 전문 주입. 미매칭 [] (무영향).
   function buildLawContexts(struct, question, budgetChars){
-    if (typeof budgetChars !== 'number') budgetChars = 6000;
+    if (typeof budgetChars !== 'number') budgetChars = 7000;
     if (!struct || !Array.isArray(struct.laws) || !struct.laws.length) return [];
     var qn = lawNorm(question || '');
     var best = null, bestLen = 0;
@@ -15078,22 +15078,44 @@ function switchSpTab(id,btn){
         if (aln.length > bestLen && qn.indexOf(aln) >= 0){ best = law; bestLen = aln.length; }
       }
     }
-    if (!best) return [];
-    var nos = [], re = /제\s*(\d+)\s*조(?:\s*의\s*(\d+))?/g, m;
-    while ((m = re.exec(question)) && nos.length < 4){
-      var no = m[1] + (m[2] ? '의' + m[2] : '');
-      if (nos.indexOf(no) < 0) nos.push(no);
+    var picks = [];
+    if (best){
+      var re = /제\s*(\d+)\s*조(?:\s*의\s*(\d+))?/g, m;
+      while ((m = re.exec(question)) && picks.length < 4){
+        var no = m[1] + (m[2] ? '의' + m[2] : '');
+        var dup = false;
+        for (var d=0;d<picks.length;d++){ if (picks[d].no === no) { dup = true; break; } }
+        if (!dup) picks.push({ law: best, no: no });
+      }
     }
-    if (!nos.length) return [];
+    // 명시 조문이 없으면 주제 매핑 — 자연어 실무 질문("특별 휴가 중 겸직 되나요?") 대응
+    if (!picks.length && Array.isArray(struct.topics)){
+      var seenRef = {}, matched = 0;
+      for (var t=0;t<struct.topics.length;t++){
+        var tp = struct.topics[t];
+        var hit = false;
+        for (var kw=0;kw<(tp.keywords||[]).length;kw++){ if (qn.indexOf(lawNorm(tp.keywords[kw])) >= 0){ hit = true; break; } }
+        if (!hit) continue;
+        if (++matched > 3) break;
+        for (var r=0;r<(tp.refs||[]).length;r++){
+          var rf = tp.refs[r], key = rf.law + '|' + rf.no;
+          if (seenRef[key]) continue;
+          seenRef[key] = 1;
+          for (var l2=0;l2<struct.laws.length;l2++){ if (struct.laws[l2].name === rf.law){ picks.push({ law: struct.laws[l2], no: rf.no }); break; } }
+        }
+      }
+    }
+    if (!picks.length) return [];
     var out = [], budget = budgetChars;
-    for (var k=0;k<nos.length;k++){
+    picks = picks.slice(0, 6);
+    for (var k=0;k<picks.length;k++){
       if (budget <= 0) break;
-      var art = null;
-      for (var a=0;a<best.articles.length;a++){ if (best.articles[a].no === nos[k]) { art = best.articles[a]; break; } }
+      var art = null, arts = picks[k].law.articles;
+      for (var a=0;a<arts.length;a++){ if (arts[a].no === picks[k].no) { art = arts[a]; break; } }
       if (!art) continue;
-      var noParts = nos[k].split('의');
+      var noParts = picks[k].no.split('의');
       var refNo = '제' + noParts[0] + '조' + (noParts[1] ? '의' + noParts[1] : '');
-      out.push({ label: best.name, ref: refNo + (art.title ? '(' + art.title + ')' : ''), text: art.text });
+      out.push({ label: picks[k].law.name, ref: refNo + (art.title ? '(' + art.title + ')' : ''), text: art.text });
       budget -= art.text.length;
     }
     return out;
@@ -15117,7 +15139,7 @@ function switchSpTab(id,btn){
                 : (window.retrieveChunks ? window.retrieveChunks(cfg.keys, q, 6) : []);
       // 성취기준 번호(예: 12문학01-02)가 질문에 있으면 키워드 일치 청크를 앞에 병합 —
       // 코드 문자열은 의미 검색이 놓치기 쉬워 원문 번호가 근거에 반드시 들어가게 한다
-      if ((/\d{1,2}[가-힣]{1,4}\d{2}-\d{2}/.test(q) || (((cfg.keys||[])[0]==='law') && /제\s*\d+\s*조/.test(q))) && window.retrieveChunks) {
+      if ((/\d{1,2}[가-힣]{1,4}\d{2}-\d{2}/.test(q) || (((cfg.keys||[])[0]==='law') && /제\s*\d+\s*조|겸직|외부\s*강의|영리|휴가|연가|병가|공가|근무\s*시간|초과\s*근무|출장|학교\s*폭력|학폭|수업\s*일수/.test(q))) && window.retrieveChunks) {
         var kw = window.retrieveChunks(cfg.keys, q, 4) || [];
         var seen = {};
         (ctx || []).forEach(function(c){ seen[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)] = 1; });
@@ -15169,7 +15191,7 @@ function switchSpTab(id,btn){
         });
       }
       // 법령·조문 직조회 — law + 「법령명 + 제N조」 감지 시 해당 조문 전문을 근거 최상단에 주입. 회귀 0.
-      if (dsKey === 'law' && /제\s*\d+\s*조/.test(q)) {
+      if (dsKey === 'law') {
         return loadLawStruct().then(function(struct){
           try {
             var injectedL = buildLawContexts(struct, q);
