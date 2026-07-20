@@ -996,6 +996,7 @@
 <!-- 기타 -->
 <div class="sub-nav-group" id="cat-etc">
   <div class="sub-nav">
+    <button class="sub-nav-btn" onclick="switchSub('sub-weekly', this); if (window.drWeeklyInit) drWeeklyInit();">🗓️ 주간 교육활동 안내</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-required', this)">📚 필수 교육(연수)</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-vac41', this)">🏠 방학 중 41조 연수 신청</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-leave', this)">✈️ 방학 중 복무·국외여행</button>
@@ -3949,6 +3950,332 @@
   </div>
 
 </div>
+
+<!-- ===== 주간 교육활동 안내 (부서별 게시판) ===== -->
+<div class="sub-panel" id="sub-weekly">
+  <style>
+    .drw-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; margin-top:6px; }
+    .drw-fld { display:flex; flex-direction:column; gap:4px; }
+    .drw-fld > span { font-size:0.78rem; font-weight:700; color:#374151; }
+    .drw-select {
+      height:38px; padding:0 12px; border:1px solid #d1d5db; border-radius:10px;
+      font-size:0.9rem; font-family:inherit; background:#fff; color:#111827; min-width:88px;
+    }
+    .drw-select:focus { outline:2px solid #93c5fd; border-color:#60a5fa; }
+    .drw-input, .drw-textarea {
+      width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px;
+      font-size:0.9rem; font-family:inherit; background:#fff; color:#111827;
+    }
+    .drw-input:focus, .drw-textarea:focus { outline:2px solid #93c5fd; border-color:#60a5fa; }
+    .drw-textarea { min-height:120px; resize:vertical; line-height:1.7; }
+    .drw-label { display:block; font-size:0.82rem; font-weight:700; color:#374151; margin:0 0 6px; }
+    .drw-btn {
+      display:inline-flex; align-items:center; gap:6px; height:38px; padding:0 18px; border:none; border-radius:10px;
+      background:var(--primary, #1d4ed8); color:#fff; font-size:0.88rem; font-weight:700; cursor:pointer; font-family:inherit;
+    }
+    .drw-btn:disabled { opacity:0.55; cursor:default; }
+    .drw-btn-ghost { background:#fff; color:#374151; border:1px solid #d1d5db; }
+    .drw-msg { font-size:0.84rem; margin-top:10px; }
+    .drw-msg.err { color:#dc2626; } .drw-msg.ok { color:#16a34a; }
+    #drw-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px; margin-top:18px; }
+    #drw-list .drw-empty { grid-column:1 / -1; }
+    .drw-entry { display:flex; flex-direction:column; margin:0; }
+    .drw-entry-head { display:flex; align-items:flex-start; gap:8px; }
+    .drw-entry-title { font-size:1.02rem; font-weight:800; color:#111827; line-height:1.45; word-break:keep-all; }
+    .drw-entry-tools { margin-left:auto; display:flex; align-items:center; gap:2px; flex-shrink:0; }
+    .drw-edit { border:none; background:none; color:#2563eb; font-size:0.9rem; cursor:pointer; padding:2px 4px; font-family:inherit; line-height:1; }
+    .drw-del { border:none; background:none; color:#dc2626; font-size:0.9rem; cursor:pointer; padding:2px 4px; font-family:inherit; line-height:1; }
+    .drw-content { font-size:0.9rem; color:#374151; line-height:1.75; margin:10px 0 0; white-space:pre-wrap; word-break:break-word; }
+    .drw-meta { margin-top:12px; padding-top:10px; border-top:1px solid #eef2f7; font-size:0.76rem; color:#9ca3af; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .drw-empty { text-align:center; color:#9ca3af; padding:40px 0; font-size:0.9rem; }
+    #drw-form-modal {
+      display:none; position:fixed; inset:0; z-index:9998; background:rgba(15,23,42,0.55);
+      align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 16px; box-sizing:border-box;
+    }
+  </style>
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <h2 class="section-title" style="margin:0;">🗓️ 주간 교육활동 안내</h2>
+    <button type="button" class="drw-btn drw-btn-ghost" style="height:30px; padding:0 12px; font-size:0.8rem; margin-left:auto;" onclick="if (window.drWeeklyReload) drWeeklyReload();">🔄 새로고침</button>
+  </div>
+  <p style="margin:6px 0 0; color:#6b7280; font-size:0.85rem;">부서별 주간 교육활동 안내를 학년도·월·주차별로 공유하는 공간입니다. 아래에서 조회할 주차를 선택하세요.</p>
+
+  <!-- 조회 필터 -->
+  <div class="drw-filter">
+    <label class="drw-fld"><span>학년도</span><select class="drw-select" id="drw-f-year"></select></label>
+    <label class="drw-fld"><span>월</span><select class="drw-select" id="drw-f-month"></select></label>
+    <label class="drw-fld"><span>주차</span><select class="drw-select" id="drw-f-week"></select></label>
+    <button type="button" class="drw-btn" onclick="drwOpenForm();">➕ 안내 등록</button>
+  </div>
+
+  <div id="drw-list"><div class="drw-empty">불러오는 중…</div></div>
+
+  <!-- 등록/수정 창 (모달) -->
+  <div id="drw-form-modal" onclick="if (event.target === this) this.style.display='none';">
+    <div class="card" style="max-width:620px; width:100%; margin:0; max-height:calc(100vh - 80px); overflow-y:auto;">
+      <div style="display:flex; align-items:center;">
+        <strong id="drw-form-heading" style="font-size:1.02rem;">📝 주간 교육활동 안내 등록</strong>
+        <button type="button" onclick="document.getElementById('drw-form-modal').style.display='none';" style="margin-left:auto; border:none; background:none; font-size:1.05rem; cursor:pointer; color:#6b7280; padding:4px 6px;" title="닫기">✕</button>
+      </div>
+      <p style="margin:6px 0 14px; color:#6b7280; font-size:0.85rem;">학년도·월·주차를 확인하고 부서명과 안내 내용을 입력하세요.</p>
+      <div class="drw-filter" style="margin-top:0;">
+        <label class="drw-fld"><span>학년도</span><select class="drw-select" id="drw-w-year"></select></label>
+        <label class="drw-fld"><span>월</span><select class="drw-select" id="drw-w-month"></select></label>
+        <label class="drw-fld"><span>주차</span><select class="drw-select" id="drw-w-week"></select></label>
+      </div>
+      <div style="margin-top:14px;">
+        <label class="drw-label" for="drw-w-title">제목(부서명) <span style="color:#dc2626;">*</span></label>
+        <input class="drw-input" id="drw-w-title" type="text" maxlength="100" placeholder="예: 교무기획부">
+      </div>
+      <div style="margin-top:12px;">
+        <label class="drw-label" for="drw-w-content">안내 내용 <span style="color:#dc2626;">*</span></label>
+        <textarea class="drw-textarea" id="drw-w-content" maxlength="4000" placeholder="이번 주 부서 교육활동 안내 사항을 입력하세요. 줄바꿈은 그대로 표시됩니다."></textarea>
+      </div>
+      <div style="margin-top:16px; display:flex; align-items:center; gap:12px;">
+        <button type="button" class="drw-btn" id="drw-submit">✅ 등록하기</button>
+        <span class="drw-msg" id="drw-form-msg"></span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var API = '/.netlify/functions/weekly';
+  var _loaded = false;
+  var _busy = false;
+  var _editId = null;   // null=신규 등록, 값 있으면 해당 게시물 수정 모드
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function getToken() {
+    if (window.ensureToken) return window.ensureToken();
+    try {
+      var s = JSON.parse(localStorage.getItem('dr_sess_v1'));
+      return Promise.resolve(s && s.token ? s.token : null);
+    } catch (e) { return Promise.resolve(null); }
+  }
+  function sessionDead() {
+    if (typeof window.clearSession === 'function') window.clearSession();
+    var el = document.getElementById('drw-form-msg');
+    if (el) {
+      el.className = 'drw-msg err';
+      el.innerHTML = '로그인 유효기간이 지났습니다. <a href="#" onclick="startLogin();return false;" style="color:#2563eb;font-weight:700;text-decoration:underline;">여기를 눌러 다시 로그인</a>한 뒤 이용해 주세요.';
+    }
+    var e = new Error('로그인 유효기간이 지났습니다. 다시 로그인해 주세요.');
+    e.handled = true;
+    return e;
+  }
+  function api(payload, _retried) {
+    return getToken().then(function (token) {
+      if (!token) throw sessionDead();
+      payload.token = token;
+      return fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (r.status === 401 && !_retried && typeof window.refreshSession === 'function') {
+          return window.refreshSession().then(function (ns) {
+            if (ns && ns.token) return api(payload, true);
+            throw sessionDead();
+          });
+        }
+        if (!r.ok) throw new Error(d && d.error ? d.error : '요청에 실패했습니다. (' + r.status + ')');
+        return d;
+      });
+    });
+  }
+  function setMsg(text, kind) {
+    var el = document.getElementById('drw-form-msg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = 'drw-msg' + (kind ? ' ' + kind : '');
+  }
+  function el(id) { return document.getElementById(id); }
+
+  // 오늘이 속한 월 내 주차 (1~5, 단순 7일 단위)
+  function weekOfMonth(d) { return Math.min(5, Math.ceil(d.getDate() / 7)); }
+
+  // 셀렉트 옵션 채우기
+  function fillSelect(sel, from, to, sel1, suffix) {
+    if (!sel) return;
+    var html = '';
+    for (var v = from; v <= to; v++) {
+      html += '<option value="' + v + '"' + (v === sel1 ? ' selected' : '') + '>' + v + (suffix || '') + '</option>';
+    }
+    sel.innerHTML = html;
+  }
+  function initSelectors() {
+    var now = new Date();
+    var y = now.getFullYear(), mo = now.getMonth() + 1, wk = weekOfMonth(now);
+    // 조회 필터
+    fillSelect(el('drw-f-year'), y - 2, y + 1, y, '년');
+    fillSelect(el('drw-f-month'), 1, 12, mo, '월');
+    fillSelect(el('drw-f-week'), 1, 5, wk, '주');
+    ['drw-f-year', 'drw-f-month', 'drw-f-week'].forEach(function (id) {
+      var s = el(id);
+      if (s) s.addEventListener('change', load);
+    });
+    // 작성 폼(초기값은 열 때 조회값으로 다시 시드)
+    fillSelect(el('drw-w-year'), y - 2, y + 1, y, '년');
+    fillSelect(el('drw-w-month'), 1, 12, mo, '월');
+    fillSelect(el('drw-w-week'), 1, 5, wk, '주');
+  }
+
+  function curFilter() {
+    return {
+      year: Number(el('drw-f-year').value),
+      month: Number(el('drw-f-month').value),
+      week: Number(el('drw-f-week').value)
+    };
+  }
+  function fmtDateTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    function p(n) { return n < 10 ? '0' + n : '' + n; }
+    return d.getFullYear() + '.' + p(d.getMonth() + 1) + '.' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  // ----- 목록 -----
+  function load() {
+    var box = el('drw-list');
+    if (!box) return;
+    var f = curFilter();
+    box.innerHTML = '<div class="drw-empty">불러오는 중…</div>';
+    api({ action: 'list', year: f.year, month: f.month, week: f.week }).then(function (d) {
+      var items = d.items || [];
+      if (!items.length) {
+        box.innerHTML = '<div class="drw-empty">' + f.year + '년 ' + f.month + '월 ' + f.week + '주차에 등록된 안내가 없습니다.<br>‘➕ 안내 등록’으로 첫 안내를 남겨 보세요.</div>';
+        return;
+      }
+      box.innerHTML = '';
+      items.forEach(function (it) {
+        var card = document.createElement('div');
+        card.className = 'card drw-entry';
+        var tools = it.mine
+          ? '<span class="drw-entry-tools"><button type="button" class="drw-edit" title="수정">✏️</button><button type="button" class="drw-del" title="삭제">🗑</button></span>'
+          : '';
+        var metaTime = it.updated_at ? (fmtDateTime(it.updated_at) + ' 수정') : fmtDateTime(it.created_at);
+        card.innerHTML =
+          '<div class="drw-entry-head"><div class="drw-entry-title">' + esc(it.title) + '</div>' + tools + '</div>'
+          + '<div class="drw-content">' + esc(it.content || '') + '</div>'
+          + '<div class="drw-meta">'
+          + (it.created_by_name ? '<span>✍️ ' + esc(it.created_by_name) + '</span>' : '')
+          + '<span>· ' + esc(metaTime) + '</span>'
+          + '</div>';
+        var ed = card.querySelector('.drw-edit');
+        if (ed) ed.onclick = function () { openEdit(it); };
+        var del = card.querySelector('.drw-del');
+        if (del) del.onclick = function () {
+          if (!confirm('이 안내를 삭제할까요?')) return;
+          del.disabled = true;
+          api({ action: 'delete', id: it.id }).then(function () { load(); })
+            .catch(function (e) { alert(String(e.message || e)); del.disabled = false; });
+        };
+        box.appendChild(card);
+      });
+    }).catch(function (e) {
+      box.innerHTML = '<div class="drw-empty">⚠️ ' + esc(String(e.message || e)) + '</div>';
+    });
+  }
+
+  // ----- 등록/수정 저장 -----
+  function submit() {
+    if (_busy) return;
+    var title = (el('drw-w-title').value || '').trim();
+    var content = (el('drw-w-content').value || '').trim();
+    if (!title) { setMsg('제목(부서명)을 입력해 주세요.', 'err'); return; }
+    if (!content) { setMsg('안내 내용을 입력해 주세요.', 'err'); return; }
+
+    _busy = true;
+    var btn = el('drw-submit');
+    btn.disabled = true;
+
+    var done = function (okMsg) {
+      setMsg(okMsg, 'ok');
+      load();
+      var modal = el('drw-form-modal');
+      if (modal) setTimeout(function () { modal.style.display = 'none'; setMsg(''); }, 800);
+    };
+    var fin = function () { _busy = false; btn.disabled = false; };
+    var onErr = function (e) { if (!(e && e.handled)) setMsg(String(e.message || e), 'err'); };
+
+    if (_editId) {
+      setMsg('수정 저장 중…');
+      api({ action: 'update', id: _editId, title: title, content: content })
+        .then(function () { done('수정되었습니다. ✅'); }).catch(onErr).then(fin);
+      return;
+    }
+    setMsg('등록 중…');
+    api({
+      action: 'create',
+      year: Number(el('drw-w-year').value),
+      month: Number(el('drw-w-month').value),
+      week: Number(el('drw-w-week').value),
+      title: title, content: content
+    }).then(function () {
+      el('drw-w-title').value = '';
+      el('drw-w-content').value = '';
+      done('등록되었습니다. ✅');
+    }).catch(onErr).then(fin);
+  }
+
+  // ----- 등록 창 열기 (조회 선택값 시드) -----
+  window.drwOpenForm = function () {
+    var m = el('drw-form-modal');
+    if (!m) return;
+    _editId = null;
+    var f = curFilter();
+    if (el('drw-w-year')) el('drw-w-year').value = f.year;
+    if (el('drw-w-month')) el('drw-w-month').value = f.month;
+    if (el('drw-w-week')) el('drw-w-week').value = f.week;
+    el('drw-w-title').value = '';
+    el('drw-w-content').value = '';
+    // 등록 시에는 학년도/월/주차 선택 가능
+    ['drw-w-year', 'drw-w-month', 'drw-w-week'].forEach(function (id) { if (el(id)) el(id).disabled = false; });
+    el('drw-form-heading').textContent = '📝 주간 교육활동 안내 등록';
+    el('drw-submit').textContent = '✅ 등록하기';
+    m.style.display = 'flex';
+    setMsg('');
+    setTimeout(function () { if (el('drw-w-title')) el('drw-w-title').focus(); }, 60);
+  };
+
+  // ----- 수정 창 열기 (주차 슬롯 고정) -----
+  function openEdit(it) {
+    _editId = it.id;
+    if (el('drw-w-year')) { el('drw-w-year').value = it.year; el('drw-w-year').disabled = true; }
+    if (el('drw-w-month')) { el('drw-w-month').value = it.month; el('drw-w-month').disabled = true; }
+    if (el('drw-w-week')) { el('drw-w-week').value = it.week; el('drw-w-week').disabled = true; }
+    el('drw-w-title').value = it.title || '';
+    el('drw-w-content').value = it.content || '';
+    el('drw-form-heading').textContent = '✏️ 안내 수정';
+    el('drw-submit').textContent = '💾 수정 저장';
+    el('drw-form-modal').style.display = 'flex';
+    setMsg('학년도·월·주차는 변경할 수 없습니다. 다른 주차로 옮기려면 삭제 후 다시 등록해 주세요.');
+    setTimeout(function () { if (el('drw-w-title')) el('drw-w-title').focus(); }, 60);
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var m = el('drw-form-modal');
+    if (m && m.style.display === 'flex') m.style.display = 'none';
+  });
+
+  // ----- 초기화 -----
+  window.drWeeklyReload = load;
+  window.drWeeklyInit = function () {
+    if (_loaded) return;
+    _loaded = true;
+    initSelectors();
+    var sb = el('drw-submit');
+    if (sb) sb.addEventListener('click', submit);
+    load();
+  };
+})();
+</script>
 
 </div><!-- /teacher-content -->
     <!-- TAB:teacher:END -->
@@ -13439,7 +13766,8 @@ function switchSpTab(id,btn){
       records:'sub-records', club:'sub-club', check:'sub-check',
       transfer:'sub-transfer', culture:'sub-culture', leesh:'sub-leesh',
       grade:'sub-grade', exam:'sub-exam',
-      grading:'sub-grading', required:'sub-required', vac41:'sub-vac41', leave:'sub-leave'
+      grading:'sub-grading', required:'sub-required', vac41:'sub-vac41', leave:'sub-leave',
+      weekly:'sub-weekly'
     },
     student: {
       rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',
