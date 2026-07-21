@@ -959,6 +959,7 @@
   <button class="cat-nav-btn active" onclick="switchCat('cat-records', this)">🗂️ 학생부&나이스</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-eval', this)">📊 평가</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-activity', this)">🎨 창체&특색활동</button>
+  <button class="cat-nav-btn" onclick="switchCat('cat-weekly', this)">🗓️ 주간 교육활동 안내</button>
   <button class="cat-nav-btn" onclick="switchCat('cat-etc', this)">📌 기타</button>
 </div>
 
@@ -993,10 +994,16 @@
   </div>
 </div>
 
+<!-- 주간 교육활동 안내 -->
+<div class="sub-nav-group" id="cat-weekly">
+  <div class="sub-nav">
+    <button class="sub-nav-btn" onclick="switchSub('sub-weekly', this); if (window.drWeeklyInit) drWeeklyInit();">🗓️ 주간 교육활동 안내</button>
+  </div>
+</div>
+
 <!-- 기타 -->
 <div class="sub-nav-group" id="cat-etc">
   <div class="sub-nav">
-    <button class="sub-nav-btn" onclick="switchSub('sub-weekly', this); if (window.drWeeklyInit) drWeeklyInit();">🗓️ 주간 교육활동 안내</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-required', this)">📚 필수 교육(연수)</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-vac41', this)">🏠 방학 중 41조 연수 신청</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-leave', this)">✈️ 방학 중 복무·국외여행</button>
