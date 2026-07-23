@@ -11535,7 +11535,6 @@ function switchSpTab(id,btn){
         <button id="ai-sub-btn-7" onclick="switchAiSub(7)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🎯 백워드 수업 설계</button>
         <button id="ai-sub-btn-8" onclick="switchAiSub(8)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 학생부 특기사항 AI</button>
         <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
-        <button id="ai-sub-btn-4" onclick="switchAiSub(4)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 수행평가 기반 세특</button>
         <button id="ai-sub-btn-5" onclick="switchAiSub(5)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
         <button id="ai-sub-btn-6" onclick="switchAiSub(6)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
       </div>
@@ -11594,13 +11593,20 @@ function switchSpTab(id,btn){
         </div>
       </div>
 
-      <!-- 3: 교육일정 작성 AI -->
-      <div id="ai-sub-3" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
-        <iframe src="https://ai-63986215827.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="교육일정 작성 AI"></iframe>
-      </div>
-      <!-- 4: 수행평가 기반 세특 -->
-      <div id="ai-sub-4" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
-        <iframe src="https://ai-995563764874.us-west1.run.app/" style="width:100%;height:700px;border:none;display:block;" loading="lazy" title="수행평가 기반 세특"></iframe>
+      <!-- 3: 교육일정 작성 AI (EdTouch AI 페이지, 별도 창) -->
+      <div id="ai-sub-3" style="display:none;">
+        <div style="max-width:760px;margin:0 auto;border-radius:16px;border:1px solid #e5e7eb;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);box-shadow:0 2px 16px rgba(0,0,0,0.06);padding:28px 26px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:1.6rem;">📅</span>
+            <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:#1e3a6b;">교육일정 작성 어시스턴트</h3>
+          </div>
+          <p style="margin:0 0 4px;font-size:0.92rem;color:#334155;line-height:1.6;">공문·안내문·캡처 이미지를 넣으면 AI가 일정을 추출해 구글 캘린더 등록 링크와 ICS 파일로 만들어 줍니다.</p>
+          <p style="margin:0 0 16px;font-size:0.82rem;color:#64748b;">텍스트·파일·붙여넣기·카메라 입력 지원 — 일정 내용은 브라우저에서만 처리되며 서버에 저장되지 않습니다.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <a href="https://edtouch.ai/#/schedule" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#2a5298;color:#fff;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(42,82,152,0.28);">📅 어시스턴트 열기 →</a>
+          </div>
+          <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ EdTouch AI 페이지가 새 창으로 열립니다. EdTouch 회원 로그인 후 이용할 수 있습니다.</p>
+        </div>
       </div>
       <!-- 5: 학생 개별 점수 조회 -->
       <div id="ai-sub-5" style="display:none;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;">
