@@ -6,6 +6,9 @@
 //   LLM_MODEL       : 사용할 모델 ID (선택, 기본 gemini-2.5-flash)
 //                     예) gemini-2.5-flash, gemini-2.0-flash, gemma-3-27b-it
 //   (Gemini·Gemma 모두 generativelanguage.googleapis.com generateContent로 호출 가능)
+//   VERTEX_PROJECT·VERTEX_SA_KEY : 설정 시 Vertex(체험판 크레딧) 경로 우선 (_lib/vertex.js)
+
+const { callGemini } = require('./_lib/vertex');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -95,8 +98,6 @@ exports.handler = async (event) => {
     datasetRules +
     '[근거]\n' + evidence + '\n\n[질문]\n' + question;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent?key=${API_KEY}`;
-
   // 출력 토큰을 넉넉히. Gemini 2.5 계열은 'thinking'이 출력 토큰을 잠식하므로
   // RAG 단순 응답에서는 thinking을 끈다(Gemma 등에는 해당 옵션을 보내지 않음).
   const generationConfig = { temperature: 0.2, maxOutputTokens: 8192 };
@@ -105,19 +106,19 @@ exports.handler = async (event) => {
   }
 
   try {
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    const r = await callGemini({
+      apiKey: API_KEY,
+      model: MODEL,
+      payload: {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: generationConfig
-      })
+      }
     });
 
-    const data = await resp.json();
+    const data = r.data;
 
-    if (!resp.ok) {
-      const msg = (data && data.error && data.error.message) || ('LLM 오류 (HTTP ' + resp.status + ')');
+    if (!r.ok) {
+      const msg = (data && data.error && data.error.message) || ('LLM 오류 (HTTP ' + r.status + ')');
       return { statusCode: 502, body: JSON.stringify({ error: msg }) };
     }
 
@@ -133,7 +134,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-llm-via': r.via },
       body: JSON.stringify({ answer, model: MODEL })
     };
   } catch (e) {

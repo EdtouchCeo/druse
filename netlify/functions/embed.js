@@ -4,7 +4,10 @@
 // 배치 모드는 build-emb.html(브라우저 임베딩 생성기)이 .bin 만들 때 사용.
 //
 // 환경변수: GEMINI_API_KEY(ask.js 공용), EMBED_MODEL(기본 gemini-embedding-001), EMBED_DIM(기본 768)
+//   VERTEX_PROJECT·VERTEX_SA_KEY 설정 시 Vertex(체험판 크레딧) 경로 우선, VERTEX_EMBED=0으로 제외 가능
 // ※ build_embeddings.py / 프론트 EMB_DIM 과 모델·차원이 동일해야 함.
+
+const { callEmbed } = require('./_lib/vertex');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -25,28 +28,11 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:embedContent?key=${API_KEY}`;
-
+  let lastVia = 'key';
   async function embedOne(text, taskType) {
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: `models/${MODEL}`,
-        content: { parts: [{ text: (text || ' ').toString().slice(0, 2000) }] },
-        taskType: taskType,
-        outputDimensionality: DIM
-      })
-    });
-    const data = await resp.json();
-    if (!resp.ok) {
-      const err = new Error((data && data.error && data.error.message) || ('HTTP ' + resp.status));
-      err.status = resp.status;
-      throw err;
-    }
-    const values = data.embedding && data.embedding.values;
-    if (!values || !values.length) throw new Error('임베딩 응답 형식 오류');
-    return values;
+    const r = await callEmbed({ apiKey: API_KEY, model: MODEL, text, taskType, dim: DIM });
+    lastVia = r.via;
+    return r.values;
   }
 
   try {
@@ -56,7 +42,7 @@ exports.handler = async (event) => {
       const taskType = body.doc ? 'RETRIEVAL_DOCUMENT' : 'RETRIEVAL_QUERY';
       const embeddings = [];
       for (let i = 0; i < texts.length; i++) embeddings.push(await embedOne(texts[i], taskType));
-      return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embeddings: embeddings }) };
+      return { statusCode: 200, headers: { 'Content-Type': 'application/json', 'x-llm-via': lastVia }, body: JSON.stringify({ embeddings: embeddings }) };
     }
 
     // ── 단건(질문) 모드 ──
@@ -65,7 +51,7 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: 'text가 비어 있습니다.' }) };
     }
     const values = await embedOne(text, 'RETRIEVAL_QUERY');
-    return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embedding: values }) };
+    return { statusCode: 200, headers: { 'Content-Type': 'application/json', 'x-llm-via': lastVia }, body: JSON.stringify({ embedding: values }) };
 
   } catch (e) {
     const status = (e && e.status === 429) ? 429 : 502;
