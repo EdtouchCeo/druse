@@ -33,6 +33,7 @@ edtouch.ai 「수·평·기 AI」(dataset key: wiki)용 RAG 인덱스를 만든�
   (A: bin 크기 == 청크수×768 은 build_wiki_emb.py가 검사)
 """
 import argparse
+import datetime
 import io
 import json
 import os
@@ -461,7 +462,9 @@ def build(vault, out_dir, report=False, dry_run=False, simulate=None):
 
     struct = {
         'version': 1,
-        'builtAt': '',
+        # 뷰 푸터에 '수록 카드 N장 · YYYY-MM-DD 빌드'로 표시된다 —
+        # 볼트는 계속 자라는데 재빌드는 수동이라, 배포본이 낡았는지 알 단서가 이것뿐이다.
+        'builtAt': datetime.date.today().isoformat(),
         'cardCount': len(published),
         'chunkCount': len(chunks),
         'cards': struct_cards,
