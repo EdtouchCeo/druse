@@ -22,3 +22,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 빌드 중간 산출물 — wiki 임베딩 해시 캐시(유실 시 전체 재생성으로 폴백)
+tmp/
