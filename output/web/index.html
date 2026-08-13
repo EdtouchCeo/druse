@@ -11533,6 +11533,7 @@ function switchSpTab(id,btn){
         <button id="ai-sub-btn-1" onclick="switchAiSub(1); window.ensureSearchData && window.ensureSearchData('curr')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📖 국가교육과정 AI</button>
         <button id="ai-sub-btn-2" onclick="switchAiSub(2); window.ensureSearchData && window.ensureSearchData('neis')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🖥️ 나이스 AI</button>
         <button id="ai-sub-btn-7" onclick="switchAiSub(7)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🎯 백워드 수업 설계</button>
+        <button id="ai-sub-btn-9" onclick="switchAiSub(9)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🧭 교수학습·평가 운영 계획 AI</button>
         <button id="ai-sub-btn-8" onclick="switchAiSub(8)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📝 학생부 특기사항 AI</button>
         <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
         <button id="ai-sub-btn-5" onclick="switchAiSub(5)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
@@ -11676,6 +11677,21 @@ function switchSpTab(id,btn){
             </a>
           </div>
           <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 전체 화면으로 열립니다. 대륜고 사이트에서는 처음 한 번 화면 상단 <strong>'AI 설정'</strong>에서 Gemini 무료 키 또는 로컬 Ollama를 연결하면 됩니다(edtouch.ai 설정과 별개). 작성 내용·명단은 이 브라우저에 자동 저장됩니다.</p>
+        </div>
+      </div>
+      <!-- 9: 교수학습 및 평가 운영 계획 AI (대륜고 자체 페이지, 별도 창) -->
+      <div id="ai-sub-9" style="display:none;">
+        <div style="max-width:760px;margin:0 auto;border-radius:16px;border:1px solid #e5e7eb;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);box-shadow:0 2px 16px rgba(0,0,0,0.06);padding:28px 26px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:1.6rem;">🧭</span>
+            <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:#1e3a6b;">교수학습 및 평가 운영 계획 AI</h3>
+          </div>
+          <p style="margin:0 0 4px;font-size:0.92rem;color:#334155;line-height:1.6;">교사와 AI가 함께 교수학습 및 평가 운영 계획을 설계합니다. AI가 초안을 내면 선생님이 섹션마다 검토·수정하며 완성하고, 그 과정에서 수업-평가 설계 전문성이 함께 자랍니다.</p>
+          <p style="margin:0 0 16px;font-size:0.82rem;color:#64748b;">성취기준을 넣으면 <strong>핵심 질문 · 수행 과제(AI 활용 안내 포함) · 채점 기준(A~D) · 차시별 수업-평가 계획 · 학생 예시 · 세특 · 학기 성취수준</strong>까지 한 번에 만듭니다. 섹션마다 <strong>'설계 근거'</strong> 해설이 붙고, 고친 내용이 늘 정본이 됩니다(md 저장·인쇄 PDF).</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <a href="/evalplan/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#2a5298;color:#fff;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(42,82,152,0.28);">🧭 운영 계획 만들기 →</a>
+          </div>
+          <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 전체 화면으로 열립니다. 처음 한 번 화면의 <strong>'AI 설정'</strong>에서 Gemini 무료 키(Google AI Studio 무료 발급) 또는 로컬 Ollama를 연결하면 바로 사용할 수 있습니다. 키와 작성 내용은 이 브라우저에만 저장되며 서버에 저장되지 않습니다. 생성 결과는 <strong>AI 초안</strong>이므로 학교 학업성적관리규정과 맞는지 반드시 검토하세요.</p>
         </div>
       </div>
     </div>
@@ -13384,7 +13400,7 @@ function switchSpTab(id,btn){
   };
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 9; i++) {
+    for (var i = 0; i < 10; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;
