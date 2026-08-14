@@ -4044,11 +4044,6 @@
       <button type="button" class="drw-btn drw-btn-ghost drw-btn-sm" onclick="if (window.drWeeklyReload) drWeeklyReload();">🔄 새로고침</button>
     </div>
   </div>
-  <p style="margin:6px 0 0; color:#6b7280; font-size:0.85rem;">
-    부서별 안내와 학사일정을 한 달력에서 봅니다. 부서 안내문을 붙여넣으면 AI가 날짜별로 정리해 주고(처음 한 번 ⚙ AI 설정에서 Gemini 무료 키 등록),
-    각 일정은 <strong>내 구글 캘린더</strong>에 바로 담을 수 있습니다.
-  </p>
-
   <div class="drw2-bar">
     <div class="drw2-month">
       <button type="button" class="cal-nav-btn" onclick="drw2Move(-1)">←</button>
@@ -4062,14 +4057,14 @@
     </div>
   </div>
 
-  <div id="drw2-legend"></div>
-  <div class="drw2-grid" id="drw2-cal"></div>
-  <p style="margin:8px 0 0; font-size:0.76rem; color:#9ca3af;">날짜 칸을 누르면 그날의 안내 전체와 ‘구글 캘린더에 추가’ 버튼이 열립니다.</p>
-
-  <div id="drw2-flat-wrap" style="display:none; margin-top:22px;">
-    <h3 style="font-size:1rem; color:#111827; margin:0;">📌 날짜 미지정 안내</h3>
+  <div id="drw2-flat-wrap" style="display:none; margin-top:18px;">
+    <h3 style="font-size:1rem; color:#111827; margin:0;">📌 부서별 주요 활동 안내</h3>
     <div id="drw2-flat"></div>
   </div>
+
+  <div id="drw2-legend" style="margin-top:18px;"></div>
+  <div class="drw2-grid" id="drw2-cal"></div>
+  <p style="margin:8px 0 0; font-size:0.76rem; color:#9ca3af;">날짜 칸을 누르면 그날의 안내 전체와 ‘구글 캘린더에 추가’ 버튼이 열립니다.</p>
 
   <!-- 하루 상세 모달 -->
   <div class="drw2-modal" id="drw2-day-modal" onclick="if (event.target === this) this.style.display='none';">
@@ -4214,7 +4209,34 @@
     return all[y + '-' + m + '-' + d] || [];
   }
 
-  // ── 날짜 인덱스: {"YYYY-MM-DD": [{dept,title,time,note,post,ev}]} (이번 달 범위만) ──
+  // ── 캘린더 칩 인덱스: 기간 이벤트는 매일 반복하지 않고 시작일(또는 이달 첫날)에 1회 + "8/18~21" 표기 ──
+  function fmtShortMD(ymd) { return Number(ymd.slice(5, 7)) + '/' + Number(ymd.slice(8, 10)); }
+  function deptShort(name) {
+    var b = String(name || '').replace(/부$/, '');
+    return b.length > 3 ? b.slice(0, 2) : b;
+  }
+  function buildChipMap() {
+    var map = {};
+    var mStart = _year + '-' + pad2(_month) + '-01';
+    var mEnd = _year + '-' + pad2(_month) + '-' + pad2(new Date(_year, _month, 0).getDate());
+    _posts.forEach(function (p) {
+      if (_deptOff[p.department]) return;
+      (p.events || []).forEach(function (ev) {
+        if (!ev.date) return;
+        var end = ev.end || ev.date;
+        if (end < mStart || ev.date > mEnd) return;
+        var showDay = ev.date < mStart ? mStart : ev.date;
+        var label = ev.title;
+        if (ev.end && ev.end !== ev.date) {
+          label += ' (' + fmtShortMD(ev.date) + '~' + fmtShortMD(ev.end) + ')';
+        }
+        (map[showDay] = map[showDay] || []).push({ dept: p.department, short: deptShort(p.department), label: label });
+      });
+    });
+    return map;
+  }
+
+  // ── 날짜 인덱스: {"YYYY-MM-DD": [{dept,title,time,note,post,ev}]} (하루 상세용 — 기간 중 매일 포함) ──
   function buildDayMap() {
     var map = {};
     var mStart = _year + '-' + pad2(_month) + '-01';
@@ -4269,7 +4291,7 @@
     var grid = el('drw2-cal');
     if (!grid) return;
     el('drw2-title').textContent = _year + '년 ' + _month + '월';
-    var map = buildDayMap();
+    var map = buildChipMap();
     var DOW = ['일', '월', '화', '수', '목', '금', '토'];
     var html = '';
     for (var d = 0; d < 7; d++) {
@@ -4295,7 +4317,8 @@
       for (var ii = 0; ii < items.length; ii++) {
         if (count < 4) {
           var c = palOf(items[ii].dept);
-          chips += '<div class="drw2-ev" style="background:' + c[0] + ';color:' + c[1] + ';" title="' + esc(items[ii].dept) + '">' + esc(items[ii].title) + '</div>';
+          chips += '<div class="drw2-ev" style="background:' + c[0] + ';color:' + c[1] + ';" title="' + esc(items[ii].dept) + ' · ' + esc(items[ii].label) + '">'
+            + '<b>' + esc(items[ii].short) + '</b>·' + esc(items[ii].label) + '</div>';
           count++;
         } else extra++;
       }
