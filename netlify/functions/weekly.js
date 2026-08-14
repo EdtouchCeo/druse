@@ -325,11 +325,10 @@ function isValidId(id) {
 }
 
 // ===== [월 캘린더] 초기 시드 =====
-// input/teacher/부서별 전달사항/창의인성부 주요 안내사항(8월).pdf 를 이벤트로 반영.
-// 배포 후 첫 month-list 요청 때 1회만 기록(마커 파일로 멱등) — 이후엔 일반 게시물과 동일하게 관리자가 수정·삭제 가능.
-const SEED_MARKER = 'seed/v1.json';
+// input/teacher/부서별 전달사항 폴더의 안내를 이벤트로 반영.
+// 시드마다 마커 파일로 멱등(1회 기록) — 이후엔 일반 게시물과 동일하게 관리자가 수정·삭제 가능.
+// 새 부서 안내 시드 추가 시: SEEDS 배열에 {marker: 'seed/vN.json', group(숫자_영숫자 형식), department, regSlot, events} 추가.
 let _seedReady = false;
-const SEED_GROUP = '20260814000000_seedcr'; // isValidEventId 형식 준수
 const SEED_EVENTS = [
   { date: '2026-08-14', title: '3학년 봉사활동 동기 부여 및 가치 교육', time: '6교시' },
   { date: '2026-08-18', end: '2026-08-21', title: '학생 주도 동아리 개설 신청 기간(1·2학년)', note: '교사 주도 동아리 운영 희망 교사도 함께 신청' },
@@ -360,25 +359,48 @@ const SEED_EVENTS = [
   { title: '동아리명은 특성이 드러나는 한글 명칭 사용' }
 ];
 
+// 교무부 안내 (2026-08 전달)
+const SEED_EVENTS_KM = [
+  { date: '2026-08-13', title: '2학기 3학년 순환수업 운영 시작', time: '7교시', note: '월~금 7교시에 오후 수업을 순차 배정하여 운영. 수능 이후 3학년 학사일정 운영에 따름' },
+  { date: '2026-08-14', title: '3학년 학생부 정정 협의 마감', note: '정정 필요 학생은 협의 후 학업성적관리위원회를 거쳐 학생부 정정 예정' },
+  { date: '2026-08-21', title: '교원 장기재직휴가 사용 신청서 제출 마감', note: '정규직 교원만 가능. 절차: 수요조사 → 승인 여부 심의 → 승인 결정 후 통보 → 교육청 보고' },
+  { date: '2026-08-21', title: '3학년 학교생활기록부 영역별 마감(수시 대비)' },
+  { date: '2026-08-28', title: '부서별 학교생활기록부 점검 및 확인 마감(3학년)' },
+  { date: '2026-08-31', title: '수시전형 대입자료 생성 기준일' },
+  { date: '2026-09-02', title: '금요일 수업으로 운영(요일 수업 변경)', note: '2학기 요일별 수업일수 확보' },
+  { date: '2026-10-19', title: '화요일 수업으로 운영(요일 수업 변경)', note: '2학기 요일별 수업일수 확보' },
+  { title: '교원 장기재직휴가 신설 안내(정규직 교원)', note: '10년 이상 20년 미만 5일·20년 이상 7일(공무원연금법상 재직기간 기준). 일 단위·연속 사용 원칙, 필요시 1회 분할. 10~20년 구간의 5일은 재직 20년 도달 시 미사용분 자동 소멸. 학사일정 제한·학기별 현원 10% 이내 등 첨부 파일 참조' },
+  { title: '2학기 학급 시간표 확인 및 교실 게시', note: '2·3학년 선택과목 이동수업 학생 현황을 출석부와 비교 확인' },
+  { title: '방학 중 전출·전입생 확인(담임)', note: '학적 담당 실무원 메신저 안내에 따라 담임 업무 및 부서별 협조(교과서 배부·동아리 편성·이동수업 배정 등)' },
+  { title: '1학기 출결 마감 및 나이스 1학기 전환 예정', note: '전입생 학적 자료(전입자료) 도착 후 진행' }
+];
+
+const SEEDS = [
+  { marker: 'seed/v1.json', group: '20260814000000_seedcr', department: '창의인성부', regSlot: '2026-08', events: SEED_EVENTS },
+  { marker: 'seed/v2.json', group: '20260814000001_seedkm', department: '교무부', regSlot: '2026-08', events: SEED_EVENTS_KM }
+];
+
 async function ensureSeed(SUPABASE_URL, svcHeaders) {
   if (_seedReady) return;
   try {
-    const marker = await fetchMeta(SUPABASE_URL, svcHeaders, SEED_MARKER);
-    if (marker) { _seedReady = true; return; }
-    const events = normEvents(SEED_EVENTS);
-    if (events) {
-      const base = {
-        group: SEED_GROUP, regSlot: '2026-08', department: '창의인성부',
-        created_by: 'seed', created_by_name: '창의인성부',
-        created_at: new Date().toISOString()
-      };
-      await writeFragments(SUPABASE_URL, svcHeaders, base, events, '2026-08');
+    for (const s of SEEDS) {
+      const marker = await fetchMeta(SUPABASE_URL, svcHeaders, s.marker);
+      if (marker) continue;
+      const events = normEvents(s.events);
+      if (events) {
+        const base = {
+          group: s.group, regSlot: s.regSlot, department: s.department,
+          created_by: 'seed', created_by_name: s.department,
+          created_at: new Date().toISOString()
+        };
+        await writeFragments(SUPABASE_URL, svcHeaders, base, events, s.regSlot);
+      }
+      await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${s.marker}`, {
+        method: 'POST',
+        headers: { ...svcHeaders, 'Content-Type': 'application/json', 'x-upsert': 'true' },
+        body: JSON.stringify({ done: true, at: new Date().toISOString() })
+      });
     }
-    await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${SEED_MARKER}`, {
-      method: 'POST',
-      headers: { ...svcHeaders, 'Content-Type': 'application/json', 'x-upsert': 'true' },
-      body: JSON.stringify({ done: true, at: new Date().toISOString() })
-    });
     _seedReady = true;
   } catch (e) { /* 시드 실패는 조회를 막지 않는다 — 다음 요청에서 재시도 */ }
 }
