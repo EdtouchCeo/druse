@@ -89,7 +89,9 @@ KO_SUBJ_FOOTER = {"국어", "수학", "과학", "사회", "체육", "음악", "�
                   "영어", "정보", "한문", "교양", "실과", "기술⋅가정", "기술·가정",
                   "제2외국어", "창의적 체험활동", "보건", "환경"}
 
-BULLET_CHARS = "⋅·•∙・"
+# ⦁(U+2981)는 체육 계열 선택 과목 별책(doc11)이 쓰는 불릿 — 빠져 있어 그 10과목의
+# 핵심 아이디어·내용 요소가 통째로 누락됐었다.
+BULLET_CHARS = "⋅·•∙・⦁"
 
 
 # ---- 유틸 ---------------------------------------------------------------
@@ -356,6 +358,224 @@ def caption_embedded_name(line):
     return None
 
 
+# ---- 매트릭스형 내용 체계: 열(영역)별 내용 요소 + 핵심 아이디어 귀속 ----------
+# 매트릭스형은 내용 체계가 2차원 표라 '(N) 영역명' 헤더가 없다. 대신 '지식⋅이해' 행이
+#   <영역명>  ⋅요소 ⋅요소 …   <영역명>  ⋅요소 …
+# 순으로 열을 따라 추출되므로, 이 행에서 열(영역)별 내용 요소 어휘를 복원할 수 있다.
+# 이 어휘를 근거로 핵심 아이디어의 영역 귀속을 판정한다(위치·개수 추정 금지 — 아래 참조).
+#
+# ⚠️ 왜 위치(순서)로 나누지 않는가
+#   핵심 아이디어 행은 열별로 쪼개진 표처럼 보이지만, 실제로는 그렇지 않은 과목이 있다.
+#   예: 지구시스템과학(핵심 6·영역 3)의 참값은 (3,1,2)이고 순서도 열 순서를 따르지 않는다
+#   (CI1=기후시스템→3열, CI2=암석/지구 내부→1열). 균등 분배·위치 정렬은 여기서 조용히
+#   틀린 귀속을 만든다. 그래서 '영역명 완전 일치' 또는 '그 영역에만 있는 내용 요소 어휘'라는
+#   직접 증거가 있을 때만 배정하고, 나머지는 subjectCoreIdeas(과목 레벨)로 보존한다.
+BULLET_CLASS = "[" + BULLET_CHARS + "]"
+KNOW_RE = re.compile(r'지\s*식\s*[⋅·‧・]?\s*이\s*해')     # 세로쓰기(지\n식\n⋅\n이\n해) 허용
+PROC_RE = re.compile(r'과\s*정\s*[⋅·‧・]?\s*기\s*능')
+VAL_RE = re.compile(r'가\s*치\s*[⋅·‧・]?\s*태\s*도')
+NS_RE = re.compile(r'[\s⋅·‧・,()\[\]{}‘’“”"\'\-–—/]')
+
+MIN_MATCH = 4        # 4자 미만 공통 어휘는 잡음으로 버린다('전기장'·'판구조' 등 단발 3자)
+MIN_ANCHOR = 3       # 영역명 일치는 3자 이상 이름에만 적용('세포'·'행렬' 등 제외)
+MIN_SCORE = 16       # 배정에 필요한 최소 근거 점수(4자 배타 일치 1건 수준)
+SCORE_RATIO = 2.5    # 1위가 2위보다 이만큼 앞서야 결정적으로 본다
+
+# 내용 요소 안에 섞여 있는 일반 어구 — 이것만 일치하는 것은 근거로 치지 않는다.
+# (예: '여러 가지 그래프'의 '여러가지'가 "…경우의 수를 세는 여러 가지 방법"과 맞아
+#  '경우의 수' 내용을 '그래프' 영역에 붙이던 오배정을 막는다.)
+FILLER_SUBS = {"여러가지", "다양한", "여러가", "가지방법", "의방법", "의이해", "의활용",
+               "여러", "가지", "이해와", "활용과", "의특징", "의성질", "의구조", "의변화",
+               "의관계", "의역할", "의의미", "과활용", "와활용", "및활용"}
+
+# 영역명 토큰 끝에 붙는 조사·연결어(완화 앵커 판정 시 제거)
+NAME_TAIL = re.compile(r'(와|과|의|은|는|이|가|에|을|를)$')
+
+
+def nsx(s):
+    """부분 문자열 대조용 정규화(공백·불릿·문장부호 제거)."""
+    return NS_RE.sub('', s or '')
+
+
+def parse_know_columns(cs_seg):
+    """매트릭스형 내용 체계 → [(영역명, [내용요소…]), …] (표의 열 순서)."""
+    mk = KNOW_RE.search(cs_seg)
+    if not mk:
+        return []
+    rest = cs_seg[mk.end():]
+    mp = PROC_RE.search(rest) or VAL_RE.search(rest)
+    if mp:
+        rest = rest[:mp.start()]
+    cols, cur_name, cur_items = [], [], []
+    for raw in rest.split("\n"):
+        s = raw.strip()
+        if not s or s in TABLE_HDR or re.fullmatch(r'\d{1,4}', s):
+            continue
+        if s[0] in BULLET_CHARS:
+            cur_items += [p.strip() for p in re.split(BULLET_CLASS, s) if p.strip()]
+            continue
+        # 비불릿 줄 = 새 열 이름(직전이 이름 줄이면 이어붙임 — 이름이 여러 줄로 접힘)
+        if cur_items:
+            cols.append((collapse_ws(" ".join(cur_name)), cur_items))
+            cur_name, cur_items = [], []
+        mb = re.search(BULLET_CLASS, s)
+        if mb:      # '경우의 수⋅합의 법칙과 곱의 법칙'처럼 이름+첫 요소가 한 줄에 붙은 경우
+            cur_name.append(s[:mb.start()].strip())
+            cur_items += [p.strip() for p in re.split(BULLET_CLASS, s[mb.start():]) if p.strip()]
+        else:
+            cur_name.append(s)
+    if cur_items:
+        cols.append((collapse_ws(" ".join(cur_name)), cur_items))
+    return [(n, it) for n, it in cols if n]
+
+
+def maximal_common_subs(a, b, minlen):
+    """a·b의 극대 공통 부분 문자열 중 길이 minlen 이상인 것들."""
+    out = set()
+    if not a or not b:
+        return out
+    prev = [0] * (len(b) + 1)
+    for i in range(1, len(a) + 1):
+        cur = [0] * (len(b) + 1)
+        for j in range(1, len(b) + 1):
+            if a[i - 1] == b[j - 1]:
+                cur[j] = prev[j - 1] + 1
+        for j in range(1, len(b) + 1):
+            L = cur[j]
+            # 오른쪽으로 더 확장되지 않는 극대 매치만 수집
+            if L >= minlen and (i == len(a) or j == len(b) or a[i] != b[j]):
+                out.add(a[i - L:i])
+        prev = cur
+    return out
+
+
+def element_scores(ci, cols):
+    """핵심 아이디어 1건 vs 각 열 — '그 열에만 있는' 내용 요소 어휘만 점수화."""
+    c = nsx(ci)
+    ev = ["".join(nsx(x) for x in items) for _, items in cols]
+    scores = []
+    for j, (_, items) in enumerate(cols):
+        others = "".join(ev[k] for k in range(len(cols)) if k != j)
+        tot = 0
+        for p in items:
+            for sub in maximal_common_subs(nsx(p), c, MIN_MATCH):
+                if sub in others:     # 같은 과목의 다른 영역에도 나오는 일반 어휘 → 근거 아님
+                    continue
+                if sub in FILLER_SUBS:      # 내용 없는 상투 어구 → 근거 아님
+                    continue
+                tot += len(sub) ** 2
+        scores.append(tot)
+    return scores
+
+
+def name_tokens(name):
+    """영역명을 어절 토큰으로(조사 제거, 2자 이상만). '세포호흡과 광합성' → {세포호흡, 광합성}"""
+    out = set()
+    for w in re.split(r'[\s,·⋅‧・]+', name or ''):
+        w = NAME_TAIL.sub('', nsx(w))
+        if len(w) >= 2:
+            out.add(w)
+    return out
+
+
+def name_anchors(c, cols):
+    """영역명 근거로 귀속되는 열 인덱스 집합.
+
+    ① 완전 일치: 영역명(3자 이상)이 문장에 그대로 등장.
+    ② 완화 일치: 영역명의 모든 어절이 문장에 등장('세포호흡과 광합성' ← "세포호흡을 통해…
+       광합성을 통해"). 완전 일치가 하나라도 있으면 그쪽을 쓰고, 없을 때만 완화를 본다.
+    """
+    exact = {j for j, (n, _) in enumerate(cols)
+             if len(nsx(n)) >= MIN_ANCHOR and nsx(n) in c}
+    loose = set()
+    for j, (n, _) in enumerate(cols):
+        toks = name_tokens(n)
+        if toks and len(toks) >= 2 and all(t in c for t in toks):
+            loose.add(j)
+    if exact:
+        # 완화 일치는 완전 일치를 보완만 한다(병합 셀: '지수함수, 로그함수는 …,
+        # 삼각함수는 …'처럼 한 문장이 두 영역을 나란히 서술하는 경우).
+        return exact | loose
+    # 완전 일치가 없을 때, 완화 일치가 유일하면 근거로 인정한다.
+    return loose if len(loose) == 1 else set()
+
+
+def attribute_core_ideas(cis, cols):
+    """핵심 아이디어 → 열 인덱스 귀속. 직접 증거가 있는 것만 배정.
+
+    ① 영역명 일치(앵커): 그 열에 배정. 한 문장이 두 영역명을 나란히 언급하면 양쪽에
+       배정한다(원본의 병합 셀). 단 어휘 근거가 다른 열을 결정적으로 가리키면 보류.
+    ② 앵커가 없으면 그 열에만 있는 내용 요소 어휘가 결정적일 때만 그 열에.
+    ③ '핵심 아이디어 수 == 영역 수'이면 영역마다 정확히 하나이므로, 근거가 i번째 영역과
+       어긋나면 보류하고(거부권) 곁다리 영역명은 떼어 낸다.
+    ④ 근거가 없으면 미배정(과목 레벨 subjectCoreIdeas에만 남는다).
+    반환: (배정 dict{열idx: [핵심아이디어…]}, 미배정 수)
+    """
+    out = defaultdict(list)
+    unassigned = 0
+    # 핵심 아이디어 수 == 영역 수이면 '영역마다 정확히 하나'가 성립한다(2022 개정 내용 체계
+    # 표에서 핵심 아이디어가 비어 있는 영역은 없다). 이때 표의 열 순서와 등장 순서가 일치하므로
+    # i번째 문장은 i번째 영역이어야 한다 — 이를 **거부권으로만** 쓴다(생성에는 쓰지 않는다).
+    # 개수가 다를 때는 순서가 열 순서를 따르지 않는 과목이 실재하므로(지구시스템과학) 쓰지 않는다.
+    positional = len(cis) == len(cols)
+    for i, ci in enumerate(cis):
+        c = nsx(ci)
+        anchors = name_anchors(c, cols)
+        sc = element_scores(ci, cols)
+        order = sorted(range(len(cols)), key=lambda j: (-sc[j], j))
+        top = order[0] if order else None
+        second = sc[order[1]] if len(order) > 1 else 0
+        decisive = (top if top is not None and sc[top] >= MIN_SCORE
+                    and sc[top] >= SCORE_RATIO * max(second, 0.5) else None)
+        if anchors:
+            if positional and i in anchors:
+                # 영역명과 위치('한 영역에 하나') 두 신호가 일치 → 어휘 이견보다 우선한다.
+                # (예: '세포는 세포호흡을 통해 … 광합성을 통해 …' — 다른 영역의 요소인
+                #  '생명 활동에 필요한 에너지'가 문장에 섞여 있어도 영역은 세포호흡과 광합성)
+                target = set(anchors)
+            elif decisive is not None and decisive not in anchors:
+                unassigned += 1          # 이름과 어휘가 서로 다른 영역을 가리킴 → 판단 보류
+                continue
+            else:
+                target = set(anchors)
+        elif decisive is not None:
+            target = {decisive}
+        else:
+            unassigned += 1
+            continue
+        if positional:
+            if i not in target:
+                # 근거가 가리키는 영역이 '한 영역에 하나' 구조와 어긋난다 → 판단 보류.
+                # (예: 화학 실험 1번 문장이 '물질의 성질'을 언급하지만 실제로는 '화학 실험의
+                #  기초', 법과 사회 1번 문장의 '법(률)관계'가 '사회 생활과 법' 요소에 걸리는 경우)
+                unassigned += 1
+                continue
+            # 1:1 구조에서는 한 문장이 여러 영역에 걸칠 수 없다(병합 셀은 개수가 어긋난다).
+            # 곁다리로 언급된 다른 영역명은 떼어 낸다.
+            # (예: '행렬의 대각화는 … 선형변환을 쉽게 표현하는 데' → '행렬의 대각화'에만)
+            target = {i}
+        for j in sorted(target):
+            out[j].append(ci)
+    return out, unassigned
+
+
+def split_cs_st_blocks(region):
+    """한 절을 (내용체계, 성취기준) 블록 쌍으로 분해.
+
+    통합사회1·2, 공통수학1·2처럼 한 절에 과목 두 개가 결합된 문서에서 각 과목의
+    내용 체계와 성취기준을 짝지어 준다(단일 블록 과목은 쌍 1개 = 기존과 동일)."""
+    cs_it = [(m.start(), m.end()) for m in re.finditer(r'가\.\s*내용\s*체계', region)]
+    st_it = [(m.start(), m.end()) for m in re.finditer(r'나\.\s*성취기준', region)]
+    blocks = []
+    for k, (cs_s, cs_e) in enumerate(cs_it):
+        nxt = cs_it[k + 1][0] if k + 1 < len(cs_it) else len(region)
+        st = next((x for x in st_it if x[0] > cs_s), None)
+        if st is None or st[0] > nxt:
+            continue
+        blocks.append((region[cs_e:st[0]], region[st[1]:nxt]))
+    return blocks
+
+
 def code_abbrev(codes):
     """성취기준 코드들의 과목 약칭(선두 숫자 뒤 한글)을 다수결로."""
     ab = Counter()
@@ -462,6 +682,9 @@ def main():
             EMPTY_EL = lambda: {"지식·이해": [], "과정·기능": [], "가치·태도": []}
             cs_has_headers = bool(cs) and set(cs) != {0}
             areas = []
+            # 매트릭스형에서 영역 귀속이 확실하지 않은 핵심 아이디어를 담는 과목 레벨 배열
+            # (스키마 additive — 정상형 과목에는 빈 값이라 출력에 넣지 않는다).
+            subject_core_ideas = []
             if cs_has_headers:
                 # 정상형: 내용체계 '(N) 영역명' 기준. 성취기준은 코드 영역자리로 병합
                 # (공통국어1·2처럼 여러 과목이 동일 영역을 공유하는 경우 올바르게 합쳐짐).
@@ -482,18 +705,54 @@ def main():
             elif len(groups) > 1 and all(g["name"] for g in groups):
                 # 매트릭스형(내용체계에 '(N) 영역명' 헤더 없음, 핵심 아이디어가 2차원 표).
                 # 영역명·성취기준은 코드/헤더 기반이라 정확. 내용 요소는 표가 매트릭스라
-                # 영역별 귀속 불가 → 제외.
-                # 핵심 아이디어: 내용체계 블록이 1개(단일 과목)면 전체 목록을 첫 영역에 묶어
-                # 보존(영역별 분해는 표라 불가). 블록이 2개↑(통합과학1·2처럼 과목1·2 결합)면
-                # 첫 블록만 잡혀 불완전하므로 아예 제외.
-                core_all = cs.get(0, {}).get("coreIdeas", []) if cs else []
-                keep_core = core_all if ncs == 1 else []
-                for i, g in enumerate(groups):
-                    areas.append({"name": g["name"],
-                                  "coreIdeas": keep_core if i == 0 else [],
-                                  "elements": EMPTY_EL(), "standards": g["standards"]})
+                # 영역별 귀속이 결정적이지 않아 여기서는 제외한다(귀속 근거로만 사용).
+                #
+                # 핵심 아이디어는 (내용체계, 성취기준) 블록 쌍으로 분해해 블록마다
+                # '지식⋅이해' 행의 열별 어휘를 근거로 귀속을 시도한다. 근거가 없는 것은
+                # 첫 영역에 몰아넣지 않고(=오귀속) 과목 레벨 subjectCoreIdeas로 보존한다.
+                blocks = split_cs_st_blocks(region)
+                b_areas, b_names, subj_cis, n_unassigned = [], [], [], 0
+                for cseg_raw, sseg_raw in blocks:
+                    cseg = strip_footers(cseg_raw)
+                    b_groups = parse_standards_groups(strip_footers(sseg_raw))
+                    if not b_groups:
+                        continue
+                    b_cs = parse_content_system(cseg)
+                    b_cis = b_cs.get(0, {}).get("coreIdeas", []) if b_cs else []
+                    subj_cis += b_cis
+                    cols = parse_know_columns(cseg)
+                    # 표의 열 ↔ 성취기준 영역 대응(공백 무시 이름 일치). 대응이 완전할
+                    # 때만 귀속을 시도한다 — 어긋나면 근거 자체를 신뢰할 수 없다.
+                    gnames = [nsx(g["name"]) for g in b_groups]
+                    col2grp = {}
+                    for ci_, (cn, _) in enumerate(cols):
+                        if nsx(cn) in gnames:
+                            col2grp[ci_] = gnames.index(nsx(cn))
+                    assign = {}
+                    if b_cis and cols and len(col2grp) == len(cols) == len(b_groups):
+                        got, n_un = attribute_core_ideas(b_cis, cols)
+                        n_unassigned += n_un
+                        for ci_, lst in got.items():
+                            assign.setdefault(col2grp[ci_], []).extend(lst)
+                    else:
+                        n_unassigned += len(b_cis)
+                    for gi, g in enumerate(b_groups):
+                        b_areas.append({"name": g["name"], "coreIdeas": assign.get(gi, []),
+                                        "elements": EMPTY_EL(), "standards": g["standards"]})
+                        b_names.append(g["name"])
+                # 블록 분해가 기존 영역 목록을 그대로 재현할 때만 채택(안전 장치).
+                if b_areas and b_names == [g["name"] for g in groups]:
+                    areas = b_areas
+                    subject_core_ideas = subj_cis
+                else:
+                    for g in groups:
+                        areas.append({"name": g["name"], "coreIdeas": [],
+                                      "elements": EMPTY_EL(), "standards": g["standards"]})
+                    subject_core_ideas = (cs.get(0, {}).get("coreIdeas", []) if cs else [])
+                    report.setdefault("block_split_fallback", []).append(title)
                 report.setdefault(
                     "matrix_single" if ncs == 1 else "matrix_multi", []).append(title)
+                report.setdefault("matrix_unassigned", []).append((title, n_unassigned))
             else:
                 # 단일 영역 과목(화법과 언어 등): 내용체계 전체를 한 영역으로.
                 a = cs.get(0, {"name": "", "coreIdeas": [], "elements": EMPTY_EL()})
@@ -505,13 +764,18 @@ def main():
                      if a["coreIdeas"] or a["standards"] or any(a["elements"].values())]
             if not areas:
                 continue
-            subjects.append({
+            entry = {
                 "subject": title,
                 "school": school,
                 "doc": di,
                 "ref": ref,
                 "areas": areas,
-            })
+            }
+            if subject_core_ideas:
+                # 영역 coreIdeas가 비어 있을 때 소비자가 폴백으로 쓰는 과목 전체 목록
+                # (귀속된 것도 포함 — 과목의 핵심 아이디어 원문 전량, 문서 순서 유지).
+                entry["subjectCoreIdeas"] = subject_core_ideas
+            subjects.append(entry)
             doc_subj += 1
         report["docs"].append({"doc": di, "label": docs[di], "subjects": doc_subj})
 
@@ -555,6 +819,22 @@ def main():
             a["coreIdeas"] = ci_ok
             a["standards"] = st_ok
             clean_areas.append(a)
+        # 과목 레벨 핵심 아이디어도 동일하게 원본 부분 문자열 검증(환각 0 유지)
+        if subj.get("subjectCoreIdeas"):
+            ok = []
+            for ci in subj["subjectCoreIdeas"]:
+                total_ci += 1
+                if nospace(ci) in src:
+                    ok.append(ci)
+                else:
+                    fail_ci += 1
+                    report["subst_fail"].append(
+                        {"doc": di, "subject": subj["subject"], "kind": "subjectCoreIdea",
+                         "text": ci[:60]})
+            if ok:
+                subj["subjectCoreIdeas"] = ok
+            else:
+                subj.pop("subjectCoreIdeas", None)
         subj["areas"] = [a for a in clean_areas
                          if a["coreIdeas"] or a["standards"]
                          or any(a["elements"].values())]
@@ -571,7 +851,8 @@ def main():
     for s in kept:
         k = norm_key(s)
         score = (sum(len(a["standards"]) for a in s["areas"]),
-                 sum(len(a["coreIdeas"]) for a in s["areas"]))
+                 sum(len(a["coreIdeas"]) for a in s["areas"]),
+                 len(s.get("subjectCoreIdeas", [])))
         if k not in best or score > best[k][0]:
             best[k] = (score, s)
     dedup_removed = len(kept) - len(best)
@@ -590,11 +871,18 @@ def main():
     n_area = sum(len(s["areas"]) for s in kept)
     n_std = sum(len(a["standards"]) for s in kept for a in s["areas"])
     n_ci = sum(len(a["coreIdeas"]) for s in kept for a in s["areas"])
+    n_sci = sum(len(s.get("subjectCoreIdeas", [])) for s in kept)
+    n_empty = sum(1 for s in kept for a in s["areas"] if not a["coreIdeas"])
+    n_empty_cov = sum(1 for s in kept for a in s["areas"]
+                      if not a["coreIdeas"] and s.get("subjectCoreIdeas"))
     print("=" * 70)
     print(f"OUT {out}  ({os.path.getsize(out):,} bytes)")
     print(f"과목(subject 블록): {n_subj}")
-    print(f"영역(area): {n_area}")
+    print(f"영역(area): {n_area}  / 핵심아이디어 없는 영역: {n_empty} "
+          f"(그중 subjectCoreIdeas 폴백 가능 {n_empty_cov})")
     print(f"핵심 아이디어: {n_ci} (검증실패 제외 {fail_ci}/{total_ci})")
+    print(f"과목 레벨 subjectCoreIdeas: {n_sci} "
+          f"({sum(1 for s in kept if s.get('subjectCoreIdeas'))}개 과목)")
     print(f"성취기준: {n_std} (검증실패 제외 {fail_st}/{total_st})")
     print("-" * 70)
     print("문서별 과목 수:")
