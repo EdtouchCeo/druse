@@ -4816,6 +4816,21 @@
     if (parts.length <= 1) return '';
     return parts.join('\n');
   }
+  // 과목 수준 핵심 아이디어 블록 — 매트릭스형 내용 체계(원문 표에 영역 귀속 표시가 없는 과목)에서만.
+  // 영역에 귀속된 원문이 하나라도 있으면 만들지 않는다(subjectCoreIdeas는 귀속된 문장까지 포함한
+  // 전량이라 함께 실으면 같은 문장이 두 번 간다). 영역 블록들 앞에 놓는다.
+  function csBuildSubjectCoreIdeaText(subj){
+    var ideas = (Array.isArray(subj.subjectCoreIdeas) ? subj.subjectCoreIdeas : []).filter(Boolean);
+    if (!ideas.length) return '';
+    var areas = Array.isArray(subj.areas) ? subj.areas : [];
+    for (var i=0;i<areas.length;i++){
+      if (Array.isArray(areas[i].coreIdeas) && areas[i].coreIdeas.length) return '';
+    }
+    var parts = ['『' + subj.school + ' ' + subj.subject + '』 핵심 아이디어(과목 수준)',
+      '※ 원문 내용 체계가 표 형태라 영역별 귀속이 표시되지 않는 과목입니다 — 이 과목 전체의 핵심 아이디어입니다.'];
+    for (var k=0;k<ideas.length;k++) parts.push('- ' + ideas[k]);
+    return parts.join('\n');
+  }
   // 순수 조립 함수 — struct + 질문 → 근거 배열. 과목 최장 일치 → 학교급 필터 → 최대 2개 → 초점별 원문 → ~9,000자 예산.
   function buildStructContexts(struct, question, docs, budgetChars){
     if (typeof budgetChars !== 'number') budgetChars = 9000;
@@ -4854,8 +4869,12 @@
       // 질문 초점에 해당하는 절이 이 과목 원문에 아예 수록돼 있지 않으면(예: 공통수학에는 핵심
       // 아이디어가 없다) 초점을 풀고 그 과목이 가진 내용을 준다 — 과목은 제대로 찾아 놓고 빈손으로
       // 돌아가 의미 검색이 엉뚱한 과목 표를 올리는 것이 이 기능이 막으려던 실사고다.
+      // 핵심 아이디어를 물었는데 영역 귀속 원문이 없는 과목이면 과목 수준 원문으로 폴백한다.
+      // 이 블록이 서면 초점(핵심 아이디어)은 유지한다 — 초점 해제는 줄 것이 아무것도 없을 때의 최후 수단이다.
+      var subjectIdeaText = f.core ? csBuildSubjectCoreIdeaText(subj) : '';
       var texts = areas.map(function(a, ai){ return csBuildAreaText(subj, a, ai + 1, f); }).filter(Boolean);
-      if (!texts.length) texts = areas.map(function(a, ai){ return csBuildAreaText(subj, a, ai + 1, { core:true, elements:true, standards:true }); }).filter(Boolean);
+      if (!texts.length && !subjectIdeaText) texts = areas.map(function(a, ai){ return csBuildAreaText(subj, a, ai + 1, { core:true, elements:true, standards:true }); }).filter(Boolean);
+      if (subjectIdeaText) texts = [subjectIdeaText].concat(texts);
       for (var ti=0; ti<texts.length; ti++){
         if (budget <= 0) break;
         out.push({ label: label, ref: subj.ref || '', text: texts[ti] });
