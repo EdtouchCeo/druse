@@ -69,6 +69,15 @@ def extract_hwpx(path):
                 out.append("\n".join(paras))
     return "\n\n".join(out)
 
+# 일부 PDF는 어절 사이 공백을 폭 없는 문자(ZWNJ 등)로 넣는다 — 그대로 두면
+# "심의위원회의<ZWNJ>위원은"처럼 붙어 보이고 키워드 검색도 걸리지 않는다. 공백으로 되돌린다.
+ZERO_WIDTH_RE = re.compile("[​‌‍﻿]+")
+
+
+def normalize(text):
+    return ZERO_WIDTH_RE.sub(" ", text or "")
+
+
 DISPATCH = {".pdf": extract_pdf, ".pptx": extract_pptx, ".hwpx": extract_hwpx}
 
 def main(folder, out_path, title):
@@ -86,7 +95,7 @@ def main(folder, out_path, title):
         ext = os.path.splitext(f)[1].lower()
         fp = os.path.join(folder, f)
         try:
-            text = DISPATCH[ext](fp).strip()
+            text = normalize(DISPATCH[ext](fp)).strip()
         except Exception as e:
             text = ""
             report.append((f, "ERROR: " + str(e)))
