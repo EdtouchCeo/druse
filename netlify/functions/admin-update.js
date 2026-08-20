@@ -51,6 +51,24 @@ exports.handler = async (event) => {
       body: JSON.stringify({ role: value })
     });
   } else if (action === 'delete') {
+    // 회원 삭제 — logs.user_id가 users.id를 참조(FK logs_user_id_fkey)하므로
+    // 활동 로그를 먼저 지워야 한다. 안 지우면 23503으로 삭제가 거부되던 실사고(2026-08-20).
+    const uRes = await fetch(base + '&select=id', { headers: h });
+    const rows = await uRes.json().catch(() => []);
+    if (Array.isArray(rows) && rows.length && rows[0].id) {
+      const lRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/logs?user_id=eq.${encodeURIComponent(rows[0].id)}`,
+        { method: 'DELETE', headers: h }
+      );
+      if (!lRes.ok) {
+        const lErr = await lRes.json().catch(() => ({}));
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: lErr })
+        };
+      }
+    }
     res = await fetch(base, { method: 'DELETE', headers: h });
   } else {
     return { statusCode: 400, body: JSON.stringify({ error: 'Unknown action' }) };
