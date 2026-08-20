@@ -117,10 +117,20 @@ exports.handler = async (event) => {
     });
 
     const data = r.data;
-
     if (!r.ok) {
-      const msg = (data && data.error && data.error.message) || ('LLM 오류 (HTTP ' + r.status + ')');
-      return { statusCode: 502, body: JSON.stringify({ error: msg }) };
+      // 구글 원문(영문)을 그대로 보여 주면 교사가 무엇을 해야 할지 알 수 없다.
+      // 사용자에겐 다음 행동이 담긴 한글 문구를, 진단용 원문은 detail/via로 남긴다.
+      const raw = (data && data.error && data.error.message) || ('LLM 오류 (HTTP ' + r.status + ')');
+      let msg;
+      if (r.status === 429) {
+        msg = 'AI 사용량이 잠시 한도를 넘었습니다. 30초쯤 뒤에 다시 질문해 주세요.';
+      } else if (r.status === 401 || r.status === 403) {
+        msg = 'AI 서비스 인증에 일시적인 문제가 있었습니다. 잠시 뒤 다시 질문해 주세요. (반복되면 관리자에게 알려 주세요)';
+      } else {
+        msg = 'AI 응답을 받지 못했습니다. 잠시 뒤 다시 질문해 주세요. (' + raw.slice(0, 120) + ')';
+      }
+      console.error('[ask] LLM 실패 via=' + r.via + ' status=' + r.status + ' :: ' + raw.slice(0, 300));
+      return { statusCode: 502, body: JSON.stringify({ error: msg, via: r.via, status: r.status, detail: raw.slice(0, 300) }) };
     }
 
     const cand = data.candidates && data.candidates[0];

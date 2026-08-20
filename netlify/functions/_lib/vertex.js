@@ -70,6 +70,45 @@ async function getToken() {
   return tokenCache.token;
 }
 
+/**
+ * Vertex 호출 1회 + **인증 오류 시 새 토큰으로 딱 한 번 재시도**.
+ *
+ * 캐시된 액세스 토큰이 만료·폐기되면 Vertex가 401을 준다. 예전에는 이 401 하나로
+ * Vertex가 10분 벤치되고 그 동안 모든 요청이 폴백 API 키로 몰렸는데, 폴백 키가
+ * 무료 등급이라 일일 쿼터가 마르면 **10분간 전면 오류**가 된다(실사고).
+ * 토큰 문제는 캐시를 버리고 다시 받으면 대개 즉시 해소되므로, 벤치는 재발급 후에도
+ * 실패할 때만 건다. 반환: { ok, status, data }
+ */
+async function vertexFetch(url, body) {
+  let last = { ok: false, status: 0, data: null };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const token = await getToken();
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify(body),
+      });
+      const data = await resp.json().catch(() => null);
+      if (resp.ok) return { ok: true, status: resp.status, data };
+      last = { ok: false, status: resp.status, data };
+      if (attempt === 0 && (resp.status === 401 || resp.status === 403)) {
+        tokenCache = { token: '', exp: 0 };   // 토큰 재발급 후 1회 재시도
+        continue;
+      }
+    } catch (e) {
+      last = { ok: false, status: (e && e.status) || 0, data: null };
+      if (attempt === 0) {
+        tokenCache = { token: '', exp: 0 };
+        continue;
+      }
+    }
+    break;
+  }
+  bench(last.status);
+  return last;
+}
+
 function vertexModelUrl(model, method) {
   return (
     'https://' + VERTEX_LOCATION + '-aiplatform.googleapis.com/v1/projects/' + VERTEX_PROJECT +
@@ -84,19 +123,8 @@ function vertexModelUrl(model, method) {
  */
 async function callGemini({ apiKey, model, payload }) {
   if (vertexEnabled()) {
-    try {
-      const token = await getToken();
-      const resp = await fetch(vertexModelUrl(model, 'generateContent'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify(payload),
-      });
-      const data = await resp.json().catch(() => null);
-      if (resp.ok) return { ok: true, status: resp.status, data, via: 'vertex' };
-      bench(resp.status);
-    } catch (e) {
-      bench(e && e.status);
-    }
+    const v = await vertexFetch(vertexModelUrl(model, 'generateContent'), payload);
+    if (v.ok) return { ok: true, status: v.status, data: v.data, via: 'vertex' };
     // 폴백으로 계속 — Vertex 실패가 사용자 요청을 실패시키지 않는다
   }
   const url =
@@ -120,25 +148,15 @@ async function callGemini({ apiKey, model, payload }) {
 async function callEmbed({ apiKey, model, text, taskType, dim }) {
   const content = (text || ' ').toString().slice(0, 2000);
   if (vertexEnabled() && VERTEX_EMBED_ON) {
-    try {
-      const token = await getToken();
-      const resp = await fetch(vertexModelUrl(model, 'predict'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({
-          instances: [{ task_type: taskType, content }],
-          parameters: { outputDimensionality: dim },
-        }),
-      });
-      const data = await resp.json().catch(() => null);
-      const values =
-        data && data.predictions && data.predictions[0] &&
-        data.predictions[0].embeddings && data.predictions[0].embeddings.values;
-      if (resp.ok && values && values.length) return { values, via: 'vertex' };
-      bench(resp.status);
-    } catch (e) {
-      bench(e && e.status);
-    }
+    const v = await vertexFetch(vertexModelUrl(model, 'predict'), {
+      instances: [{ task_type: taskType, content }],
+      parameters: { outputDimensionality: dim },
+    });
+    const values =
+      v.data && v.data.predictions && v.data.predictions[0] &&
+      v.data.predictions[0].embeddings && v.data.predictions[0].embeddings.values;
+    if (v.ok && values && values.length) return { values, via: 'vertex' };
+    if (v.ok) bench(0);   // 200인데 형식이 다르면 잠시 폴백으로 (60초)
   }
   const url =
     'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) +
