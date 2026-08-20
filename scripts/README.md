@@ -33,6 +33,22 @@ python scripts/build_index.py "data/법령지침_raw.md" "output/web/data/law_se
 python scripts/build_index.py "data/교육과정_raw.md" "output/web/data/curr_search.json"
 ```
 
+### 2-1) 웹에서 수집한 소스 덧붙이기 (law 전용)
+`input/` 폴더의 파일이 아니라 웹에서 수집한 자료(국가법령정보센터 조문, 교육청 Q&A 사이트)는
+`data/sources/*.json`에 원본 형태로 보관하고, 아래 스크립트가 `law_search.json` **맨 뒤에** 문서로 덧붙입니다.
+
+```bash
+python scripts/build_law_extras.py     # ← 반드시 build_index.py 다음에
+python scripts/build_law_struct.py     # 조문 결정 주입 사전 재생성
+```
+
+⚠️ `build_index.py`를 다시 돌리면 덧붙인 문서가 사라집니다. **(2) → (2-1) → (2-2) 순서를 항상 지킬 것.**
+맨 뒤에만 붙으므로 앞선 청크 순서가 보존되고, 임베딩은 새 청크만 이어서 생성됩니다.
+
+현재 수록:
+- `data/sources/hakpok_enforcement_decree.json` — 학교폭력예방 및 대책에 관한 법률 시행령(본칙 45개 조문)
+- `data/sources/ddeqna_qa.json` — 든든첵 학교폭력 사안처리 Q&A 394건(대구광역시교육청, https://ddeqna.netlify.app/)
+
 ### 3) 커밋 대상
 - **반드시 커밋**: `output/web/data/law_search.json`, `output/web/data/curr_search.json`
   (Netlify publish 디렉터리가 `output/web`이므로 이 파일이 있어야 사이트에서 검색이 동작)
