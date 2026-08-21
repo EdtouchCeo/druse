@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="AI 기반 디지털 피부 트윈 플랫폼 DERMATWIN 사업계획서">
+<title>DERMATWIN 사업계획서 | 대륜고등학교 AI 기반 생명공학 문제해결활동</title>
+<style>
+:root{--brand:#4f46e5;--brand-dark:#3730a3;--brand-soft:#eef2ff;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--surface:#fff;--bg:#f8fafc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;line-height:1.72}
+a{color:var(--brand-dark)}
+.wrap{width:min(880px,calc(100% - 32px));margin:auto}
+header{background:linear-gradient(135deg,#312e81,#4f46e5 58%,#0f766e);color:#fff;padding:18px 0 46px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.identity{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff}
+.identity img{width:64px;height:46px;object-fit:contain;filter:drop-shadow(0 5px 12px rgba(0,0,0,.22))}
+.identity-name{display:block;font-size:.98rem;font-weight:900;letter-spacing:-.02em}
+.identity-desc{display:block;margin-top:1px;font-size:.74rem;color:#c7d2fe}
+.back{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;text-decoration:none;font-size:.84rem;color:#eef2ff;background:rgba(255,255,255,.08);white-space:nowrap}
+.back:hover{background:rgba(255,255,255,.16)}
+.hero{padding-top:34px}
+.eyebrow{margin:0 0 8px;font-size:.8rem;font-weight:800;letter-spacing:.12em;color:#a7f3d0}
+h1{margin:0;font-size:clamp(1.5rem,3.6vw,2.1rem);line-height:1.25;letter-spacing:-.03em}
+.sub{margin:12px 0 0;color:#e0e7ff;font-size:1rem}
+main{padding:0 0 64px}
+.doc{margin-top:-26px;padding:38px 40px 44px;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 10px 32px rgba(15,23,42,.07)}
+.doc h2{margin:38px 0 14px;padding-left:13px;border-left:5px solid var(--brand);font-size:1.32rem;letter-spacing:-.02em}
+.doc h2:first-child{margin-top:0}
+.doc h3{margin:26px 0 10px;font-size:1.08rem;color:var(--brand-dark);letter-spacing:-.01em}
+.doc h4{margin:20px 0 8px;font-size:1rem;color:var(--brand-dark)}
+.doc p{margin:0 0 14px}
+.doc ul,.doc ol{margin:0 0 16px;padding-left:22px}
+.doc li{margin-bottom:8px}
+.doc li>strong:first-child{color:var(--brand-dark)}
+.doc table{width:100%;margin:0 0 18px;border-collapse:collapse;font-size:.93rem}
+.doc th,.doc td{padding:9px 11px;border:1px solid var(--line);text-align:left;vertical-align:top}
+.doc th{background:var(--brand-soft);font-weight:800}
+.doc pre{margin:0 0 18px;padding:16px;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#0f172a;color:#e2e8f0;font-size:.84rem;line-height:1.5}
+.doc code{padding:1px 5px;border-radius:5px;background:#f1f5f9;font-size:.92em}
+.doc pre code{padding:0;background:none;color:inherit}
+.notice{margin-top:30px;padding:16px 18px;border-left:4px solid #f59e0b;border-radius:12px;background:#fffbeb;font-size:.86rem;color:#744210}
+.notice strong{display:block;margin-bottom:3px;color:#713f12}
+.docfoot{margin-top:18px;font-size:.85rem;color:var(--muted)}
+footer{padding:24px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:.8rem}
+@media(max-width:640px){.top{flex-direction:column;align-items:flex-start}.doc{padding:26px 20px 30px}}
+@media print{header,.back,footer{display:none}.doc{margin:0;border:0;box-shadow:none;padding:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <a class="identity" href="../" aria-label="학생 결과물 전시관으로">
+        <img src="../../logo.png" alt="대륜고등학교 로고">
+        <span><span class="identity-name">대륜고 사용 설명서</span><span class="identity-desc">DAERYUN HIGH SCHOOL · 학생 결과물 전시관</span></span>
+      </a>
+      <a class="back" href="../">← 결과물 갤러리</a>
+    </div>
+    <div class="hero">
+      <p class="eyebrow">사업 계획서</p>
+      <h1>DERMATWIN 사업계획서</h1>
+      <p class="sub">AI 기반 Digital Skin Twin — 화장품 연구개발을 위한 가상 피부 모델</p>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <article class="doc">
+    <h2>1. Executive Summary</h2>
+    <h3>1.1 사업 개요</h3>
+    <p>화장품 산업은 소비자의 안전성과 제품 품질에 대한 요구가 지속적으로 높아짐에 따라 연구개발(R&amp;D)의 중요성이 더욱 커지고 있다. 그러나 현재의 제품 개발 과정은 수십에서 수백 개의 처방을 반복적으로 설계하고 안전성 및 효능을 검증해야 하며, 실제 시험 단계에서 대부분의 후보 처방이 탈락한다. 이러한 과정은 연구개발 비용 증가와 제품 출시 지연의 주요 원인으로 작용한다.</p>
+    <p>DERMATWIN은 이러한 문제를 해결하기 위해 개발된 AI 기반 Digital Skin Twin 플랫폼이다. 기업은 화장품 원료와 처방 데이터를 플랫폼에 입력하면 AI가 실제 인체 피부 데이터를 기반으로 구축한 가상 피부 모델에서 피부 자극성, 알레르기 가능성, 흡수율 및 독성을 예측한다. 이를 통해 실제 시험 이전 단계에서 성공 가능성이 높은 처방만을 선별하여 연구개발 비용을 절감하고 제품 출시 기간을 단축할 수 있다.</p>
+    <p>DERMATWIN은 실험을 완전히 대체하는 플랫폼이 아니라, 연구원이 보다 빠르고 정확한 의사결정을 내릴 수 있도록 지원하는 AI 기반 디지털 연구 파트너를 지향한다. 궁극적으로는 화장품 연구개발의 생산성을 향상시키고 동물실험 감소, ESG 경영 실천, 글로벌 규제 대응을 동시에 지원하는 차세대 연구개발 플랫폼으로 성장하는 것을 목표로 한다.</p>
+    <h3>1.2 사업 목표</h3>
+    <p>DERMATWIN은 화장품 연구개발 과정에서 반복적으로 발생하는 시행착오를 최소화하고, 데이터 기반의 효율적인 연구 환경을 구축하는 것을 목표로 한다.</p>
+    <p>이를 위해 다음과 같은 목표를 설정하였다.</p>
+    <ul>
+    <li>AI 기반 Digital Skin Twin을 활용하여 실제 시험 이전 단계에서 위험성이 높은 처방을 사전에 선별한다.</li>
+    <li>연구개발 기간을 단축하여 화장품 기업의 시장 대응 속도와 제품 경쟁력을 향상시킨다.</li>
+    <li>연구개발 비용을 절감하여 기업의 R&amp;D 효율성을 높인다.</li>
+    <li>동물실험 의존도를 줄이고 글로벌 규제와 ESG 경영 요구에 대응한다.</li>
+    <li>지속적인 데이터 축적을 통해 AI 예측 정확도를 향상시키고 기업 맞춤형 연구개발 환경을 구축한다.</li>
+    </ul>
+    <h2>2. Problem Statement</h2>
+    <h3>2.1 화장품 산업의 문제점</h3>
+    <p>화장품 기업은 신제품을 개발하기 위해 원료를 선정하고 다양한 처방을 설계한 후 반복적인 안전성 시험과 효능 평가를 수행한다. 그러나 실제 시험에 투입되는 후보 처방의 상당수는 최종 단계에서 제외되며, 실패한 후보에도 동일한 연구개발 비용과 시간이 투입된다.</p>
+    <p>특히 중소 화장품 기업은 자체 연구시설과 전문 인력이 부족하여 외부 시험기관에 의존하는 경우가 많다. 이로 인해 시험 비용이 증가하고 개발 일정이 길어지며, 빠르게 변화하는 시장에 적절히 대응하지 못하는 문제가 발생한다.</p>
+    <p>또한 글로벌 시장에서는 동물실험 규제가 강화되고 있으며, 친환경·윤리적 제품에 대한 소비자 요구도 증가하고 있다. 기존의 연구개발 방식만으로는 이러한 변화에 효과적으로 대응하기 어렵기 때문에 새로운 연구개발 패러다임이 요구되고 있다.</p>
+    <p>현재 화장품 기업은 수많은 처방을 실제 시험으로 검증하는 방식에 의존하고 있다. 그러나 연구개발 초기 단계에서 실패 가능성이 높은 처방을 선별할 수 있는 의사결정 지원 플랫폼은 아직 충분히 보급되지 않았다. DERMATWIN은 이러한 공백을 해결하기 위해 개발되었다.</p>
+    <h3>2.2 Why Now?</h3>
+    <p>최근 화장품 산업은 AI와 데이터 기반 연구개발로 빠르게 전환되고 있다. 맞춤형 화장품과 기능성 화장품 시장의 성장으로 다양한 피부 조건을 고려한 제품 개발의 중요성이 높아졌으며, 기업들은 개발 기간 단축과 연구 효율 향상을 동시에 요구받고 있다.</p>
+    <p>동시에 EU를 비롯한 주요 국가에서는 동물실험 규제를 강화하고 있으며, OECD 역시 재구성 인체표피(Reconstructed Human Epidermis)를 활용한 대체시험법을 공식 시험지침으로 채택하고 있다. 이러한 산업 환경은 AI 기반 Digital Skin Twin 기술이 차세대 연구개발 플랫폼으로 자리 잡을 수 있는 중요한 기회를 제공한다.</p>
+    <h2>3. Solution</h2>
+    <p>DERMATWIN은 AI와 Digital Skin Twin 기술을 결합하여 화장품 연구개발 과정에서 반복적으로 발생하는 시행착오를 줄이는 AI 기반 연구개발 플랫폼이다. 실제 인체 피부 데이터를 기반으로 구축한 가상 피부 모델을 활용하여 화장품 처방을 실제 시험 이전 단계에서 검증함으로써 연구원이 보다 효율적으로 의사결정을 내릴 수 있도록 지원한다.</p>
+    <p>기업은 플랫폼에 원료 정보와 처방 데이터를 입력하면 AI가 피부 자극성, 알레르기 가능성, 피부 흡수율, 독성 등을 종합적으로 분석한다. 분석 결과는 실제 시험을 대체하기 위한 것이 아니라, 성공 가능성이 높은 후보 처방을 선별하여 실제 시험의 우선순위를 결정하는 데 활용된다. 이를 통해 불필요한 실험을 줄이고 연구개발 비용과 개발 기간을 동시에 절감할 수 있다.</p>
+    <p>DERMATWIN의 가장 큰 차별점은 단순히 분석 결과를 제공하는 데 그치지 않는다는 점이다. 플랫폼은 AI Recommendation Engine(처방 최적화 기능)을 통해 축적된 연구 데이터와 처방 정보를 분석하여 피부 자극을 줄일 수 있는 대체 원료를 추천하고, 보다 적합한 배합 비율을 제안한다. 연구원은 AI가 제안한 다양한 시뮬레이션 결과를 비교·검토하며 반복적인 시행착오를 줄이고, 더 높은 성공 가능성을 가진 처방을 설계할 수 있다.</p>
+    <p>또한 플랫폼은 사용 과정에서 축적되는 데이터를 지속적으로 학습하여 예측 성능을 고도화한다. 다양한 피부 유형과 원료 조합에 대한 데이터가 누적될수록 분석 정확도는 더욱 향상되며, 기업은 연구개발을 수행할수록 더욱 정교한 의사결정 지원 서비스를 제공받을 수 있다. 이러한 데이터 기반 학습 구조는 DERMATWIN의 핵심 경쟁력이자 장기적인 진입장벽을 형성하는 요소이다.</p>
+    <p>결과적으로 DERMATWIN은 단순한 AI 분석 도구가 아니라, 연구원의 경험과 데이터를 결합하여 제품 개발의 성공 가능성을 높이는 디지털 연구 파트너를 지향한다. 이를 통해 화장품 기업은 연구개발 비용 절감, 제품 출시 기간 단축, 연구 효율 향상이라는 세 가지 핵심 가치를 동시에 확보할 수 있다.</p>
+    <h2>4. Value Proposition</h2>
+    <p>DERMATWIN이 제공하는 핵심 가치는 다음과 같다.</p>
+    <ul>
+    <li>연구개발 비용 절감</li>
+    <li>제품 출시 기간 단축</li>
+    <li>실패하는 실험 감소</li>
+    <li>데이터 기반 의사결정 지원</li>
+    <li>AI 기반 처방 최적화</li>
+    <li>동물실험 의존도 감소</li>
+    <li>ESG 및 글로벌 규제 대응</li>
+    <li>지속적인 데이터 축적을 통한 AI 성능 향상</li>
+    </ul>
+    <h2>5. Target Customer</h2>
+    <p>1차 고객</p>
+    <ul>
+    <li>국내 화장품 제조기업</li>
+    <li>국내 OEM·ODM 기업</li>
+    </ul>
+    <p>2차 고객</p>
+    <ul>
+    <li>기능성 화장품 브랜드</li>
+    <li>화장품 원료 개발기업</li>
+    <li>안전성 평가기관</li>
+    </ul>
+    <p>3차 고객</p>
+    <ul>
+    <li>글로벌 화장품 제조기업</li>
+    <li>해외 연구기관</li>
+    </ul>
+    <h2>6. Market Analysis</h2>
+    <p>국내 화장품 산업은 기능성 화장품과 맞춤형 화장품 시장의 성장으로 연구개발 투자가 지속적으로 확대되고 있다. 신제품 출시 주기가 짧아지고 소비자의 요구가 다양해지면서 연구개발의 효율성을 높일 수 있는 디지털 기반 기술의 필요성이 증가하고 있다.</p>
+    <p>DERMATWIN은 이러한 변화에 대응하여 화장품 연구개발 과정에서 발생하는 반복적인 실험을 줄이고, 데이터 기반 의사결정을 지원하는 플랫폼을 제공한다.</p>
+    <p>시장 진입은 국내 화장품 제조기업과 OEM·ODM 기업을 대상으로 시작하며, 이후 축적된 데이터를 기반으로 글로벌 화장품 기업까지 서비스를 확장하는 전략을 수립한다.</p>
+    <h2>7. Core Technology</h2>
+    <p>DERMATWIN의 핵심 경쟁력은 AI 알고리즘 자체가 아니라 실제 피부 데이터를 기반으로 구축한 Digital Skin Twin 기술에 있다.</p>
+    <p>플랫폼은 기업이 입력한 원료와 처방 데이터를 AI가 분석하여 가상 피부 모델에서 피부 자극성, 독성, 알레르기 가능성 및 피부 흡수율을 예측한다.</p>
+    <p>더불어 AI Recommendation Engine은 분석 결과를 바탕으로 대체 가능한 원료와 최적의 배합 비율을 제안하여 연구원의 의사결정을 지원한다.</p>
+    <h2>8. Data Strategy</h2>
+    <p>DERMATWIN의 핵심 경쟁력은 AI 알고리즘 자체보다 플랫폼 운영 과정에서 축적되는 데이터 자산(Data Asset)에 있다.</p>
+    <p>플랫폼을 사용하는 기업이 증가할수록 다양한 피부 유형, 원료 조합, 처방 결과에 대한 데이터가 지속적으로 축적된다. 이러한 데이터는 AI 모델의 학습 자료로 활용되어 피부 자극성, 알레르기 가능성, 흡수율 및 독성 예측의 정확도를 지속적으로 향상시키는 기반이 된다.</p>
+    <p>또한 기업별 연구개발 데이터가 누적될수록 각 기업의 연구 특성과 개발 방향을 반영한 맞춤형 분석 서비스 제공이 가능해진다. 즉, 동일한 AI를 사용하는 것이 아니라 기업별 연구 환경에 최적화된 Digital Skin Twin을 구축할 수 있다는 점이 DERMATWIN의 차별화 요소이다.</p>
+    <p>이와 같은 데이터 축적 구조는 플랫폼 이용 기업이 증가할수록 서비스의 성능과 가치가 함께 향상되는 데이터 네트워크 효과(Data Network Effect)를 형성한다. 시간이 지날수록 AI의 예측 정확도가 향상되고, 이는 더 많은 기업의 참여를 유도하는 선순환 구조를 만든다.</p>
+    <p>결과적으로 DERMATWIN의 경쟁력은 단순한 AI 모델이 아니라 지속적으로 축적되고 고도화되는 데이터 자산에 있으며, 이러한 구조는 후발 경쟁기업이 단기간에 동일한 수준의 서비스를 구축하기 어렵게 만드는 핵심 진입장벽으로 작용한다.</p>
+    <h2>9. Business Model</h2>
+    <p>DERMATWIN은 구독형 SaaS 서비스를 기반으로 안정적인 반복 매출을 확보한다.</p>
+    <ul>
+    <li>Starter: 중소 화장품 기업을 위한 기본 분석 서비스</li>
+    <li>Professional: 중견기업을 위한 대용량 분석 및 협업 기능</li>
+    <li>Enterprise: 대기업을 위한 전용 AI 모델 구축, API 연동, Private Cloud 환경 제공</li>
+    </ul>
+    <p>추가적으로 데이터 분석 컨설팅과 맞춤형 AI 구축 서비스를 제공하여 프로젝트 기반 매출을 창출한다.</p>
+    <h2>10. Competitive Advantage</h2>
+    <p>DERMATWIN은 기존 시험기관과 경쟁하는 서비스가 아니라 연구개발 초기 단계에서 활용되는 AI 기반 사전 검증 플랫폼이다.</p>
+    <table>
+    <tr><th>기존 연구개발 방식</th><th>DERMATWIN</th></tr>
+    <tr><td>실제 시험 중심</td><td>AI 기반 사전 검증</td></tr>
+    <tr><td>반복적인 실험 수행</td><td>AI 기반 반복 분석</td></tr>
+    <tr><td>높은 연구개발 비용</td><td>비용 절감</td></tr>
+    <tr><td>긴 제품 개발 기간</td><td>개발 기간 단축</td></tr>
+    <tr><td>데이터 활용 제한</td><td>데이터 기반 AI 지속 학습</td></tr>
+    <tr><td>결과 분석 중심</td><td>분석 + 처방 추천</td></tr>
+    </table>
+    <h2>11. Roadmap</h2>
+    <p>1단계</p>
+    <p>Digital Skin Twin 모델 구축 및 AI 학습</p>
+    <p>2단계</p>
+    <p>MVP 개발 및 파일럿 테스트</p>
+    <p>3단계</p>
+    <p>국내 화장품 기업 대상 PoC 수행 및 AI 고도화</p>
+    <p>4단계</p>
+    <p>SaaS 플랫폼 정식 출시 및 국내 시장 확대</p>
+    <p>5단계</p>
+    <p>글로벌 화장품 기업과 협력하여 해외 시장 진출</p>
+    <h2>12. Conclusion</h2>
+    <p>DERMATWIN은 화장품 연구개발 과정에서 반복적으로 발생하는 비효율을 데이터 기반 의사결정으로 전환하는 AI Digital Skin Twin 플랫폼이다. 단순히 실험을 대체하는 것이 아니라 연구원이 더 빠르고 정확하게 연구 방향을 설정할 수 있도록 지원하는 디지털 연구 파트너를 지향한다.</p>
+    <p>장기적으로는 다양한 기업에서 축적되는 데이터를 기반으로 AI 성능을 지속적으로 향상시키고, 화장품 산업을 넘어 의료기기, 더모코스메틱, 바이오 소재 등 피부 안전성 평가가 필요한 다양한 산업으로 서비스를 확장하는 것을 목표로 한다.</p>
+    <aside class="notice">
+      <strong>이용 안내</strong>
+      이 문서는 교육 목적의 학생 프로젝트 산출물입니다. 사업성 추정, 건강·의료 관련 서술은 학생이 학습 과정에서 조사·작성한 내용이며 전문적인 조언이나 검증된 사실을 대신하지 않습니다.
+    </aside>
+  </article>
+</main>
+<footer><div class="wrap"><strong>대륜고 사용 설명서</strong><br>대륜고등학교 · AI 기반 생명공학 문제해결활동</div></footer>
+</body>
+</html>

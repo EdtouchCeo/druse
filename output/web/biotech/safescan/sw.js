@@ -1,5 +1,5 @@
 // 세이프스캔 서비스워커 — 앱 셸 캐시(오프라인 실행) · POST(/api/analyze)는 캐시 제외
-const CACHE = 'safescan-v1';
+const CACHE = 'safescan-v2';
 const ASSETS = ['./', './index.html', './app.html', './manifest.json',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 

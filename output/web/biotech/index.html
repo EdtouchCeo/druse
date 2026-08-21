@@ -103,7 +103,8 @@
         url: './dermatwin.html',
         icon: '🧬',
         category: '디지털 헬스',
-        external: false
+        external: false,
+        links: [{ label: '사업 계획서 보기', url: './docs/dermatwin-plan.html', external: false }]
       },
       {
         title: 'GenoTrack',
@@ -111,7 +112,8 @@
         url: 'https://ai-analysis-platform-intro.netlify.app/',
         icon: '🧪',
         category: '유전체·분석',
-        external: true
+        external: true,
+        links: [{ label: '사업 계획서 보기', url: './docs/genotrack-plan.html', external: false }]
       },
       {
         title: '엑토인 생산 공장 AI 시뮬레이터',
@@ -127,12 +129,23 @@
       {
         title: 'AEROVITAL',
         description: '생체 신호를 활용해 항공 종사자의 건강과 안전을 지원하는 웨어러블 헬스케어 프로젝트입니다.',
-        url: './aerovital.html', icon: '✈️', category: '웨어러블 헬스', external: false
+        url: './aerovital.html', icon: '✈️', category: '웨어러블 헬스', external: false,
+        links: [{ label: '사업 계획서 (PDF)', url: './docs/aerovital-plan.pdf', external: true }]
       },
       {
         title: '알레르기 세이프스캔',
         description: '식품 정보를 바탕으로 알레르기 위험을 확인하고 안전한 선택을 돕는 교육용 프로젝트입니다.',
-        url: './safescan/', icon: '🛡️', category: '식품 알레르기', external: false
+        url: './safescan/', icon: '🛡️', category: '식품 알레르기', external: false,
+        links: [
+          { label: '사업 보고서 보기', url: './docs/safescan-report.html', external: false },
+          { label: '발표 자료 (PDF)', url: './docs/safescan-deck.pdf', external: true }
+        ]
+      },
+      {
+        title: '프로젝트 미러',
+        description: '고립 청년을 위한 치료 은닉형 힐링 RPG를 설계한 프로젝트입니다. 프로토타입 공개 준비 중이며, 기획·사업 계획 보고서를 먼저 공개합니다.',
+        url: './docs/mirror-plan.html', icon: '🎮', category: '디지털 치료·게임', external: false,
+        primaryLabel: '기획 보고서 보기 →'
       }
     ];
 
@@ -164,7 +177,8 @@
         description.textContent = project.description;
         const actions = document.createElement('div');
         actions.className = 'actions';
-        const linkData = [{ label: project.external ? '프로젝트 새 창에서 보기 ↗' : '프로젝트 보기 →', url: project.url, external: project.external }, ...(project.links || [])];
+        const defaultLabel = project.external ? '프로젝트 새 창에서 보기 ↗' : '프로젝트 보기 →';
+        const linkData = [{ label: project.primaryLabel || defaultLabel, url: project.url, external: project.external }, ...(project.links || [])];
         linkData.forEach((item, index) => {
           const link = document.createElement('a');
           link.className = `open${index ? ' secondary' : ''}`;

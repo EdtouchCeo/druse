@@ -142,6 +142,30 @@
   .demo-mode.off .demo-cats{display:none;}
   .dm-label{font-size:12px; color:var(--ink-soft); font-weight:600;}
   .dm-chip{font-size:13px; padding:7px 11px;}
+  /* 상단바 기록 아이콘 */
+  .histbtn{margin-left:auto; background:none; border:none; font-size:20px; cursor:pointer; padding:6px 8px; border-radius:9px; line-height:1;}
+  .histbtn:hover{background:var(--surface-2);}
+  .app.step .histbtn, .app.hasback .histbtn{display:none;}
+  .app.hasback .back{display:inline-flex;}
+  .app.hasback .brand{margin-right:auto;}
+  /* 스캔 기록 목록 */
+  .hist-list{display:flex; flex-direction:column; gap:10px;}
+  .hist-empty{text-align:center; color:var(--muted); font-size:14px; padding:36px 0; line-height:1.7;}
+  .hist-item{display:flex; align-items:center; gap:12px; text-align:left; width:100%; background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:12px; padding:13px; cursor:pointer; color:var(--ink); transition:.15s;}
+  .hist-item:hover{transform:translateY(-1px); box-shadow:var(--shadow);}
+  .hist-item.is-danger{border-left-color:var(--danger);}
+  .hist-item.is-caution{border-left-color:var(--caution);}
+  .hist-item.is-safe{border-left-color:var(--safe);}
+  .hist-badge{width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-weight:800; flex:0 0 auto; font-size:15px;}
+  .is-danger .hist-badge{background:var(--danger-tint); color:var(--danger);}
+  .is-caution .hist-badge{background:var(--caution-tint); color:var(--caution);}
+  .is-safe .hist-badge{background:var(--safe-tint); color:var(--safe);}
+  .hist-body{display:flex; flex-direction:column; min-width:0; flex:1;}
+  .hist-title{font-size:14px; font-weight:800;}
+  .is-danger .hist-title{color:var(--danger);} .is-caution .hist-title{color:var(--caution);} .is-safe .hist-title{color:var(--safe);}
+  .hist-snip{font-size:12px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .hist-meta{font-size:11.5px; color:var(--muted); margin-top:2px;}
+  .hist-arrow{margin-left:auto; color:var(--muted); font-size:18px; flex:0 0 auto;}
   .demo-badge{display:inline-block; font-size:11px; font-weight:800; color:var(--caution); background:var(--caution-tint); padding:3px 9px; border-radius:999px; margin-bottom:6px;}
 
   /* picker */
@@ -213,6 +237,7 @@
   <div class="appbar">
     <button class="back" id="back" aria-label="이전">‹</button>
     <div class="brand"><span class="mark" aria-hidden="true">✓</span> 세이프스캔</div>
+    <button class="histbtn" id="histOpen" type="button" aria-label="스캔 기록">🕘</button>
   </div>
   <div class="progress"><i id="bar"></i></div>
 
@@ -356,6 +381,17 @@
         <button class="btn btn-ghost" id="editProfile2">프로필 수정</button>
       </div>
     </section>
+
+    <section class="view" data-view="history">
+      <span class="eyebrow">스캔 기록</span>
+      <h2 class="q-title">최근 스캔 기록</h2>
+      <p class="q-sub">스캔한 제품을 다시 눌러 결과를 볼 수 있어요.</p>
+      <div class="hist-list" id="histList"></div>
+      <div class="spacer"></div>
+      <div class="cta">
+        <button class="btn btn-ghost" id="histClear">기록 전체 삭제</button>
+      </div>
+    </section>
   </main>
   <div class="foot-note">이 앱은 성분 확인을 돕는 참고 도구입니다. 심각한 알레르기는 실제 성분표와 전문의 상담으로 최종 확인하세요. · 성분 정보는 데모용이며 실제 제품과 다를 수 있습니다.</div>
 </div>
@@ -495,6 +531,7 @@
     document.querySelectorAll(".view").forEach(function(v){ v.classList.toggle("active", v.dataset.view===name); });
     var steps = ["age","job","allergy"];
     app.classList.toggle("step", steps.indexOf(name)>=0);
+    app.classList.toggle("hasback", name==="history");
     if(steps.indexOf(name)>=0) bar.style.width = ((steps.indexOf(name)+1)/3*100)+"%";
     window.scrollTo(0,0);
     curView = name;
@@ -915,6 +952,28 @@
     var b=document.getElementById("scanBadge"); if(b){ b.textContent="다시 시도"; }
     show("home");
   }
+  // 선명도 점수(라플라시안 분산): 높을수록 또렷, 낮을수록 흐림
+  function blurScore(src){
+    var w0=src.naturalWidth||src.videoWidth||src.width, h0=src.naturalHeight||src.videoHeight||src.height;
+    if(!w0||!h0) return 9999;
+    var w=240, h=Math.max(1, Math.round(h0*(w/w0)));
+    var c=document.createElement("canvas"); c.width=w; c.height=h;
+    var ctx=c.getContext("2d",{willReadFrequently:true}); ctx.drawImage(src,0,0,w,h);
+    var d; try{ d=ctx.getImageData(0,0,w,h).data; }catch(e){ return 9999; }
+    var g=new Float32Array(w*h), i, p;
+    for(i=0,p=0;i<d.length;i+=4,p++) g[p]=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+    var sum=0, sum2=0, cnt=0, x, y;
+    for(y=1;y<h-1;y++) for(x=1;x<w-1;x++){
+      var q=y*w+x;
+      var lap=g[q-w]+g[q+w]+g[q-1]+g[q+1]-4*g[q];
+      sum+=lap; sum2+=lap*lap; cnt++;
+    }
+    if(!cnt) return 9999;
+    var mean=sum/cnt;
+    return sum2/cnt - mean*mean;   // 분산
+  }
+  var BLUR_MIN = 8;   // 이 값보다 낮으면 '흐림'으로 판단(보수적으로 낮게)
+
   function sourceToBase64(source){
     if(source && source.toDataURL) return source.toDataURL("image/jpeg", 0.85);
     var c=document.createElement("canvas");
@@ -947,22 +1006,27 @@
   function finishDetected(detected){
     if(demoMode){
       var ok = detected && detected.ingredients && detected.ingredients.length>=3;
-      if(ok){ currentProduct=detected; analyze(); return; }
-      currentProduct=presentSet(guessProductId((detected&&detected.rawLabel)||"")||"choco-chip-cookie", detected); analyze(); return;
+      if(ok){ currentProduct=detected; analyzeAndRecord(); return; }
+      currentProduct=presentSet(guessProductId((detected&&detected.rawLabel)||"")||"choco-chip-cookie", detected); analyzeAndRecord(); return;
     }
     if(!detected || (detected.ingredients.length===0 && detected.allergens.length===0)){
       scanFail("사진에서 성분표 글자를 충분히 읽지 못했어요. 원재료명이 밝고 또렷하게 나오도록 다시 찍어 주세요.");
       return;
     }
-    currentProduct = detected; analyze();
+    currentProduct = detected; analyzeAndRecord();
   }
   async function scanImageSource(source){
     show("scanning"); setOcr("사진 준비 중...", 4);
     // 발표 모드 + 카테고리 지정: 즉시(≈1.3초) 그럴듯한 결과
     if(demoMode && demoCategory){
       var pct=15, iv=setInterval(function(){ pct=Math.min(96,pct+18); setOcr("성분표 글자 읽는 중...", pct); }, 260);
-      setTimeout(function(){ clearInterval(iv); setOcr("분석 완료", 100); currentProduct=presentSet(demoCategory,null); analyze(); }, 1300);
+      setTimeout(function(){ clearInterval(iv); setOcr("분석 완료", 100); currentProduct=presentSet(demoCategory,null); analyzeAndRecord(); }, 1300);
       return;
+    }
+    // 실제 모드: 너무 흐리면 분석 전에 재촬영 요청 (발표 모드는 통과)
+    if(!demoMode){
+      var bs = blurScore(source);
+      if(bs < BLUR_MIN){ scanFail("사진이 너무 흐려요. 밝은 곳에서 성분표(원재료명)에 초점을 맞춰 다시 찍어 주세요."); return; }
     }
     var detected=null;
     // 1) ChatGPT(OpenAI) 비전 우선 (서버에 키가 설정돼 있으면)
@@ -981,6 +1045,49 @@
     finishDetected(detected);
   }
   window.SafeScanOCR = scanImageSource; // 테스트/디버그용
+
+  // ===== 스캔 히스토리 =====
+  function loadHistory(){ try{ return JSON.parse(localStorage.getItem("safescan_history")||"[]"); }catch(e){ return []; } }
+  function analyzeAndRecord(){ analyze(); saveHistory(); }   // 새 스캔 → 결과 렌더 후 기록 저장
+  function saveHistory(){
+    try{
+      var p=currentProduct; if(!p) return;
+      var cls=document.getElementById("resultView").className;
+      var level = cls.indexOf("is-danger")>=0 ? "danger" : cls.indexOf("is-caution")>=0 ? "caution" : "safe";
+      var entry = {
+        ts: Date.now(), level: level,
+        title: document.getElementById("rTitle").textContent,
+        grade: document.getElementById("gLabel").textContent,
+        snippet: (p.rawLabel || (p.ingredients||[]).join(", ") || "").slice(0, 54),
+        product: p
+      };
+      var hist=loadHistory(); hist.unshift(entry); if(hist.length>30) hist=hist.slice(0,30);
+      localStorage.setItem("safescan_history", JSON.stringify(hist));
+    }catch(e){}
+  }
+  function relTime(ts){
+    var diff=Date.now()-ts, m=Math.floor(diff/60000);
+    if(m<1) return "방금"; if(m<60) return m+"분 전";
+    var h=Math.floor(m/60); if(h<24) return h+"시간 전";
+    var d=Math.floor(h/24); if(d<7) return d+"일 전";
+    var dt=new Date(ts); return (dt.getMonth()+1)+"월 "+dt.getDate()+"일";
+  }
+  function renderHistory(){
+    var box=document.getElementById("histList"); box.innerHTML="";
+    var hist=loadHistory();
+    if(!hist.length){ box.innerHTML='<div class="hist-empty">아직 스캔 기록이 없어요.<br>성분표를 스캔하면 여기에 쌓여요.</div>'; return; }
+    hist.forEach(function(h,idx){
+      var ic = h.level==="safe" ? "✓" : "!";
+      var el=document.createElement("button"); el.className="hist-item is-"+h.level; el.type="button"; el.dataset.idx=idx;
+      el.innerHTML =
+        '<span class="hist-badge" aria-hidden="true">'+ic+'</span>'+
+        '<span class="hist-body"><span class="hist-title">'+h.title+'</span>'+
+        '<span class="hist-snip">'+(h.snippet||"")+'</span>'+
+        '<span class="hist-meta">'+relTime(h.ts)+' · '+(h.grade||"")+'</span></span>'+
+        '<span class="hist-arrow" aria-hidden="true">›</span>';
+      box.appendChild(el);
+    });
+  }
 
   // ===== 카메라 =====
   var cam=document.getElementById("cam"), video=document.getElementById("cvideo"), canvas=document.getElementById("ccanvas");
@@ -1002,12 +1109,23 @@
   }
   function showErr(t){ stopStream(); msg.textContent=t; cam.classList.remove("live","shot"); cam.classList.add("err"); }
   function capture(){
-    var w=video.videoWidth||640, h=video.videoHeight||480;
-    canvas.width=w; canvas.height=h; canvas.getContext("2d").drawImage(video,0,0,w,h);
-    try{ lastShot = canvas.toDataURL("image/jpeg",0.82); }catch(e){ lastShot=null; }
-    stopStream(); cam.classList.remove("live"); cam.classList.add("shot");
-    chip.innerHTML='<span class="blink"></span> 촬영됨';
-    scanImageSource(canvas);
+    // 멀티프레임: 여러 장 잡아 가장 선명한 프레임 선택 (손떨림·초점 실패 흡수)
+    chip.innerHTML='<span class="blink"></span> 여러 장 촬영 중...';
+    var best=null, bestScore=-1, n=0, MAX=5;
+    (function grab(){
+      var w=video.videoWidth||640, h=video.videoHeight||480;
+      var c=document.createElement("canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(video,0,0,w,h);
+      var s=blurScore(c);
+      if(s>bestScore){ bestScore=s; best=c; }
+      n++;
+      if(n<MAX && stream){ setTimeout(grab, 85); return; }
+      var pick = best || c;
+      canvas.width=pick.width; canvas.height=pick.height; canvas.getContext("2d").drawImage(pick,0,0);
+      try{ lastShot = canvas.toDataURL("image/jpeg",0.85); }catch(e){ lastShot=null; }
+      stopStream(); cam.classList.remove("live"); cam.classList.add("shot");
+      chip.innerHTML='<span class="blink"></span> 촬영됨';
+      scanImageSource(pick);
+    })();
   }
   document.getElementById("camOpen").addEventListener("click", openCamera);
   document.getElementById("camShutter").addEventListener("click", capture);
@@ -1038,7 +1156,16 @@
   document.getElementById("scanAgain").addEventListener("click", function(){ resetCam(); lastShot=null; renderHome(); show("home"); });
   document.getElementById("editProfile").addEventListener("click", function(){ show("age"); });
   document.getElementById("editProfile2").addEventListener("click", function(){ show("age"); });
-  document.getElementById("back").addEventListener("click", function(){ var map={age:"welcome",job:"age",allergy:"job"}; show(map[curView]||"welcome"); });
+  document.getElementById("back").addEventListener("click", function(){ var map={age:"welcome",job:"age",allergy:"job",history:"home"}; show(map[curView]||"welcome"); });
+  document.getElementById("histOpen").addEventListener("click", function(){ renderHistory(); show("history"); });
+  document.getElementById("histClear").addEventListener("click", function(){ try{ localStorage.removeItem("safescan_history"); }catch(e){} renderHistory(); });
+  document.getElementById("histList").addEventListener("click", function(e){
+    var it = e.target.closest ? e.target.closest(".hist-item") : null;
+    if(!it) return;
+    var h = loadHistory()[+it.dataset.idx];
+    if(!h || !h.product) return;
+    currentProduct = h.product; lastShot = null; analyze();   // 기록 다시 보기 (재저장 안 함)
+  });
   document.getElementById("demoToggle").addEventListener("click", function(){ demoMode=!demoMode; try{localStorage.setItem("safescan_demo", demoMode?"1":"0");}catch(e){} paintDemo(); });
   [].forEach.call(document.querySelectorAll(".dm-chip"), function(ch){ ch.addEventListener("click", function(){ demoCategory=ch.dataset.id||""; [].forEach.call(document.querySelectorAll(".dm-chip"),function(x){x.setAttribute("aria-pressed","false");}); ch.setAttribute("aria-pressed","true"); }); });
   paintDemo();
