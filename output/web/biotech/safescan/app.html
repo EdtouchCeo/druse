@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="나이·직업·알레르기를 반영해 성분표를 맞춤 분석하고, 성분이 왜 들어갔는지·주의사항까지 알려주는 세이프스캔 앱">
+<meta name="theme-color" content="#157A5B">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="세이프스캔">
+<title>세이프스캔 — 앱</title>
+<style>
+  :root{
+    --sans: system-ui, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", Roboto, sans-serif;
+    --bg:#F4F6F1; --surface:#FFFFFF; --surface-2:#EDF1EA;
+    --ink:#12201A; --ink-soft:#45564C; --muted:#7C8C82; --line:#E1E7DD;
+    --brand:#157A5B; --brand-strong:#0E5E45; --brand-tint:rgba(21,122,91,.10);
+    --safe:#1FA265; --safe-tint:rgba(31,162,101,.12);
+    --caution:#C9860B; --caution-tint:rgba(217,147,12,.15);
+    --danger:#D8443A; --danger-tint:rgba(216,68,58,.12);
+    --shadow:0 1px 2px rgba(18,32,26,.05), 0 12px 34px rgba(18,32,26,.10);
+    --radius:16px; --on-brand:#fff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0C1310; --surface:#121C17; --surface-2:#17231C;
+      --ink:#EAF2EC; --ink-soft:#AAB9B0; --muted:#7E8E84; --line:#23332A;
+      --brand:#41D28E; --brand-strong:#74E4B0; --brand-tint:rgba(65,210,142,.12);
+      --safe:#35C97F; --safe-tint:rgba(53,201,127,.14);
+      --caution:#F0B23E; --caution-tint:rgba(240,178,62,.15);
+      --danger:#F0625A; --danger-tint:rgba(240,98,90,.14);
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5); --on-brand:#08130D;
+    }
+  }
+  :root[data-theme="light"]{ --bg:#F4F6F1; --surface:#FFFFFF; --surface-2:#EDF1EA; --ink:#12201A; --ink-soft:#45564C; --muted:#7C8C82; --line:#E1E7DD; --brand:#157A5B; --brand-strong:#0E5E45; --brand-tint:rgba(21,122,91,.10); --safe:#1FA265; --safe-tint:rgba(31,162,101,.12); --caution:#C9860B; --caution-tint:rgba(217,147,12,.15); --danger:#D8443A; --danger-tint:rgba(216,68,58,.12); --on-brand:#fff; }
+  :root[data-theme="dark"]{ --bg:#0C1310; --surface:#121C17; --surface-2:#17231C; --ink:#EAF2EC; --ink-soft:#AAB9B0; --muted:#7E8E84; --line:#23332A; --brand:#41D28E; --brand-strong:#74E4B0; --brand-tint:rgba(65,210,142,.12); --safe:#35C97F; --safe-tint:rgba(53,201,127,.14); --caution:#F0B23E; --caution-tint:rgba(240,178,62,.15); --danger:#F0625A; --danger-tint:rgba(240,98,90,.14); --on-brand:#08130D; }
+
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased;}
+  .app{max-width:460px; margin:0 auto; min-height:100vh; min-height:100dvh; background:var(--bg); display:flex; flex-direction:column; position:relative; box-shadow:0 0 60px rgba(0,0,0,.06);}
+  h1,h2,h3{margin:0; letter-spacing:-.02em; line-height:1.2; text-wrap:balance;}
+  p{margin:0; line-height:1.6;}
+  button{font:inherit;}
+
+  .appbar{display:flex; align-items:center; gap:12px; padding:14px 18px; min-height:56px;}
+  .appbar .brand{display:flex; align-items:center; gap:9px; font-weight:800; font-size:16px;}
+  .mark{width:26px;height:26px;border-radius:8px;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;flex:0 0 auto;}
+  .back{margin-right:auto; background:none; border:none; color:var(--ink-soft); font-size:20px; cursor:pointer; padding:6px; border-radius:8px; display:none;}
+  .back:hover{color:var(--brand);}
+  .app.step .back{display:inline-flex;}
+  .app.step .brand{margin-right:auto;}
+  .progress{height:4px; background:var(--surface-2); border-radius:99px; overflow:hidden; margin:0 18px; display:none;}
+  .app.step .progress{display:block;}
+  .progress > i{display:block; height:100%; width:0; background:var(--brand); border-radius:99px; transition:width .35s ease;}
+
+  main{flex:1; display:flex; flex-direction:column; padding:12px 18px 26px;}
+  .view{display:none; flex-direction:column; flex:1; animation:slide .32s ease;}
+  .view.active{display:flex;}
+  @keyframes slide{from{opacity:0; transform:translateX(14px)} to{opacity:1; transform:none}}
+
+  .eyebrow{font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--brand);}
+  .q-title{font-size:23px; font-weight:800; margin:10px 0 6px;}
+  .q-sub{color:var(--ink-soft); font-size:15px; margin-bottom:22px;}
+
+  .opts{display:flex; flex-direction:column; gap:10px;}
+  .opt{display:flex; align-items:center; gap:12px; text-align:left; width:100%; background:var(--surface); border:1.5px solid var(--line); border-radius:14px; padding:16px; cursor:pointer; color:var(--ink); font-size:16px; font-weight:600; transition:border-color .15s, background .15s, transform .1s;}
+  .opt:hover{border-color:var(--brand);}
+  .opt:active{transform:scale(.99);}
+  .opt[aria-pressed="true"]{border-color:var(--brand); background:var(--brand-tint);}
+  .opt .oemoji{font-size:22px; width:30px; text-align:center; flex:0 0 auto;}
+  .opt .odesc{display:block; font-size:12.5px; font-weight:500; color:var(--muted); margin-top:2px;}
+  .opt .otext{display:flex; flex-direction:column;}
+  .opt .tick{margin-left:auto; color:var(--brand); font-weight:800; opacity:0; transition:.15s;}
+  .opt[aria-pressed="true"] .tick{opacity:1;}
+
+  .chips{display:flex; flex-wrap:wrap; gap:9px;}
+  .chip{background:var(--surface); border:1.5px solid var(--line); border-radius:999px; padding:10px 15px; font-size:15px; font-weight:600; cursor:pointer; color:var(--ink-soft); transition:.15s;}
+  .chip[aria-pressed="true"]{border-color:var(--brand); background:var(--brand-tint); color:var(--brand);}
+  .group-label{font-size:13px; font-weight:700; color:var(--muted); margin:20px 0 10px;}
+
+  .spacer{flex:1;}
+  .cta{display:flex; flex-direction:column; gap:10px; padding-top:20px;}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:9px; font-weight:800; font-size:16px; border-radius:13px; padding:16px; border:1.5px solid transparent; cursor:pointer; text-decoration:none; transition:transform .12s, box-shadow .15s, opacity .15s;}
+  .btn-primary{background:var(--brand); color:var(--on-brand);}
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:0 8px 20px var(--brand-tint);}
+  .btn-ghost{background:transparent; color:var(--ink); border-color:var(--line);}
+  .btn-ghost:hover{border-color:var(--brand); color:var(--brand);}
+  .btn:focus-visible,.opt:focus-visible,.chip:focus-visible{outline:3px solid var(--brand); outline-offset:2px;}
+
+  .hero-mark{width:76px;height:76px;border-radius:22px;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;font-size:38px;margin:8vh auto 24px;box-shadow:var(--shadow);}
+  .welcome{text-align:center; align-items:center;}
+  .welcome h1{font-size:29px; font-weight:800;}
+  .welcome p{color:var(--ink-soft); font-size:16px; margin-top:12px; max-width:20em;}
+
+  .fb-hi{font-size:15px; color:var(--brand); font-weight:800;}
+  .fb-title{font-size:24px; font-weight:800; margin:6px 0 12px;}
+  .fb-desc{color:var(--ink-soft); font-size:15.5px;}
+  .fb-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); margin-top:18px;}
+  .fb-card h4{font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 12px;}
+  .tip{display:flex; gap:10px; align-items:flex-start; font-size:15px; color:var(--ink-soft); margin-bottom:11px;}
+  .tip:last-child{margin-bottom:0;}
+  .tip .ti{color:var(--brand); font-weight:800; flex:0 0 auto;}
+  .pills{display:flex; flex-wrap:wrap; gap:7px; margin-top:12px;}
+  .pill{font-size:13px; font-weight:700; padding:6px 11px; border-radius:999px; background:var(--brand-tint); color:var(--brand);}
+  .pill.none{background:var(--surface-2); color:var(--muted);}
+
+  .home-hi{font-size:14px; color:var(--muted); font-weight:600;}
+  .home-title{font-size:22px; font-weight:800; margin:4px 0 2px;}
+  .home-title b{color:var(--brand);}
+  .scanbox{margin-top:18px; background:var(--surface); border:1px solid var(--line); border-radius:20px; overflow:hidden; box-shadow:var(--shadow);}
+  .cam{position:relative; height:220px; background:linear-gradient(135deg,#2b2b2f,#43433f 60%,#585850); display:grid; place-items:center; overflow:hidden;}
+  .cam-guide{width:78%; height:60%; border:2px dashed rgba(255,255,255,.6); border-radius:10px; display:grid; place-items:center; color:rgba(255,255,255,.85); font-size:12px; font-weight:600; text-align:center; padding:8px; line-height:1.5;}
+  #cvideo,#ccanvas{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none;}
+  .scanline{position:absolute; left:6%; right:6%; height:2px; border-radius:2px; background:linear-gradient(90deg,transparent,var(--brand),transparent); box-shadow:0 0 14px 2px var(--brand-tint); top:10%; animation:scan 2.8s ease-in-out infinite;}
+  @keyframes scan{0%,100%{top:10%;opacity:.25}50%{top:82%;opacity:1}}
+  .scanchip{position:absolute; top:10px; right:10px; font-size:11px; font-weight:700; color:#fff; background:rgba(0,0,0,.45); padding:5px 10px; border-radius:999px; display:flex; gap:6px; align-items:center;}
+  .blink{width:6px;height:6px;border-radius:50%;background:var(--safe);animation:blink 1.2s infinite;}
+  @keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+  .cam-open{position:absolute; bottom:12px; left:50%; transform:translateX(-50%); z-index:3; font-size:13px; font-weight:700; color:#fff; background:rgba(0,0,0,.58); border:1px solid rgba(255,255,255,.25); padding:9px 15px; border-radius:999px; cursor:pointer; display:inline-flex; gap:7px; align-items:center;}
+  .cam-open:hover{background:rgba(0,0,0,.72);}
+  .cam-close{position:absolute; top:9px; left:9px; z-index:4; display:none; width:28px;height:28px; border-radius:50%; border:none; background:rgba(0,0,0,.5); color:#fff; cursor:pointer;}
+  .cam-shutter{position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:4; display:none; width:56px;height:56px; border-radius:50%; background:#fff; border:5px solid rgba(255,255,255,.5); box-shadow:0 3px 12px rgba(0,0,0,.45); cursor:pointer;}
+  .cam-shutter:active{transform:translateX(-50%) scale(.92);}
+  .cam-msg{position:absolute; left:8%; right:8%; bottom:14px; z-index:4; display:none; text-align:center; font-size:12px; font-weight:600; color:#fff; background:rgba(0,0,0,.62); padding:9px 11px; border-radius:10px; line-height:1.5;}
+  #cam.live .cam-guide,#cam.live .scanline,#cam.live .scanchip,#cam.live .cam-open{display:none;}
+  #cam.live #cvideo{display:block;} #cam.live .cam-close,#cam.live .cam-shutter{display:block;}
+  #cam.shot .cam-guide,#cam.shot .cam-open{display:none;} #cam.shot #ccanvas{display:block;} #cam.shot .cam-close{display:block;} #cam.shot .scanchip{display:flex;}
+  #cam.err .cam-msg{display:block;} #cam.err .cam-open{display:none;} #cam.err .cam-close{display:block;}
+  .scan-foot{padding:13px 14px;}
+  .scan-note{font-size:12.5px; color:var(--muted); line-height:1.55;}
+  .scan-note.warn{color:var(--danger); font-weight:600;}
+  .demo-mode{margin-top:14px; background:var(--caution-tint); border-radius:14px; padding:12px 13px;}
+  .demo-mode.off{background:var(--surface-2);}
+  .demo-toggle{width:100%; background:none; border:none; cursor:pointer; font-size:14px; font-weight:700; color:var(--caution); display:flex; justify-content:space-between; align-items:center; gap:10px; text-align:left;}
+  .demo-mode.off .demo-toggle{color:var(--muted);}
+  .demo-toggle b{font-weight:800; flex:0 0 auto;}
+  .dm-hint{font-weight:500; font-size:11.5px; opacity:.85;}
+  .demo-cats{display:flex; flex-wrap:wrap; gap:7px; margin-top:11px; align-items:center;}
+  .demo-mode.off .demo-cats{display:none;}
+  .dm-label{font-size:12px; color:var(--ink-soft); font-weight:600;}
+  .dm-chip{font-size:13px; padding:7px 11px;}
+  .demo-badge{display:inline-block; font-size:11px; font-weight:800; color:var(--caution); background:var(--caution-tint); padding:3px 9px; border-radius:999px; margin-bottom:6px;}
+
+  /* picker */
+  .picker-note{background:var(--caution-tint); color:var(--caution); border-radius:12px; padding:12px 14px; font-size:13px; font-weight:600; line-height:1.55; margin-bottom:16px;}
+  .prod-list{display:flex; flex-direction:column; gap:10px;}
+  .prod{display:flex; align-items:center; gap:13px; text-align:left; width:100%; background:var(--surface); border:1.5px solid var(--line); border-radius:14px; padding:14px; cursor:pointer; color:var(--ink); transition:.15s;}
+  .prod:hover{border-color:var(--brand); transform:translateY(-1px);}
+  .prod .pemoji{font-size:26px; width:34px; text-align:center; flex:0 0 auto;}
+  .prod .pname{font-weight:800; font-size:15.5px;}
+  .prod .pcat{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .prod .parrow{margin-left:auto; color:var(--muted); font-size:18px;}
+
+  /* result */
+  .rbadge{width:84px;height:84px;border-radius:26px;display:grid;place-items:center;font-size:44px;font-weight:800;margin:6px auto 14px;}
+  .result{align-items:stretch;}
+  .rtop{text-align:center;}
+  .r-title{font-size:26px; font-weight:800;}
+  .r-sub{color:var(--ink-soft); font-size:15px; margin-top:8px;}
+  .is-danger .rbadge{background:var(--danger-tint); color:var(--danger);} .is-danger .r-title{color:var(--danger);}
+  .is-safe .rbadge{background:var(--safe-tint); color:var(--safe);} .is-safe .r-title{color:var(--safe);}
+  .is-caution .rbadge{background:var(--caution-tint); color:var(--caution);} .is-caution .r-title{color:var(--caution);}
+  .r-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-top:18px;}
+  .r-row{display:flex; gap:10px; align-items:flex-start; font-size:14.5px; margin-bottom:10px; color:var(--ink-soft);}
+  .r-row:last-child{margin-bottom:0;}
+  .r-shot{display:flex; gap:11px; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:9px; margin-top:14px;}
+  .r-shot img{width:52px;height:52px;border-radius:9px;object-fit:cover;border:1px solid var(--line);flex:0 0 auto;}
+  .r-shot .cap b{font-size:13px;} .r-shot .cap span{display:block; font-size:11.5px; color:var(--muted);}
+
+  .ing-h{font-size:16px;font-weight:800;margin:24px 0 6px;}
+  .ing-h span{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:3px;}
+  .raw{font-size:12px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.6;margin-bottom:14px;}
+  .raw b{color:var(--ink-soft);}
+  .ing-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px;}
+  .ing-item.avoid{border-color:var(--danger);background:var(--danger-tint);}
+  .ing-item.allergen{border-color:var(--caution);}
+  .ing-name{font-weight:800;font-size:14.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .ing-tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;}
+  .ing-tag.red{background:var(--danger);color:#fff;}
+  .ing-tag.amber{background:var(--caution-tint);color:var(--caution);}
+  .ing-why{font-size:13px;color:var(--ink-soft);margin-top:7px;}
+  .ing-why b{color:var(--ink);font-weight:700;}
+  .ing-caut{font-size:12.5px;color:var(--muted);margin-top:4px;}
+  .ing-rest{font-size:12.5px;color:var(--muted);margin:4px 0 0;line-height:1.6;}
+  .ing-rest b{color:var(--ink-soft);}
+
+  .foot-note{font-size:11.5px; color:var(--muted); text-align:center; padding:14px 18px 22px; line-height:1.6;}
+  /* 별점 등급 */
+  .grade-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-top:14px;}
+  .grade-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .grade-k{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;}
+  .stars{position:relative;display:inline-block;font-size:23px;line-height:1;letter-spacing:3px;}
+  .s-base{color:var(--line);}
+  .s-fill{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;width:0;color:#F4B400;transition:width .5s ease;}
+  .grade-num{text-align:right;flex:0 0 auto;}
+  .grade-num b{display:block;font-size:18px;font-weight:800;}
+  .grade-num span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .grade-reason{font-size:12.5px;color:var(--ink-soft);margin-top:11px;}
+  /* OCR 진행 */
+  .ocr-spin{font-size:46px;display:inline-block;animation:spin 1.7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .ocr-bar{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;width:240px;max-width:70vw;margin:18px auto 0;}
+  .ocr-bar>i{display:block;height:100%;width:5%;background:var(--brand);border-radius:99px;transition:width .3s ease;}
+  @media (prefers-reduced-motion: reduce){ .scanline{animation:none;top:46%;} .blink{animation:none;} .view{animation:none;} .ocr-spin{animation:none;} .s-fill{transition:none;} }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="appbar">
+    <button class="back" id="back" aria-label="이전">‹</button>
+    <div class="brand"><span class="mark" aria-hidden="true">✓</span> 세이프스캔</div>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+
+  <main>
+    <section class="view welcome active" data-view="welcome">
+      <div class="hero-mark" aria-hidden="true">🛡️</div>
+      <h1>먹기 전에, 3초만.</h1>
+      <p>당신에게 딱 맞는 성분 확인을 위해<br>몇 가지만 여쭤볼게요. 30초면 끝나요.</p>
+      <div class="spacer"></div>
+      <div class="cta">
+        <button class="btn btn-primary" id="start">시작하기</button>
+        <button class="btn btn-ghost" id="skip">둘러보기 (건너뛰기)</button>
+      </div>
+    </section>
+
+    <section class="view" data-view="age">
+      <span class="eyebrow">1 / 3 · 연령대</span>
+      <h2 class="q-title">연령대를 알려주세요.</h2>
+      <p class="q-sub">나이에 맞게 화면과 안내 방식을 조절해요.</p>
+      <div class="opts" id="ageOpts"></div>
+    </section>
+
+    <section class="view" data-view="job">
+      <span class="eyebrow">2 / 3 · 직업·상황</span>
+      <h2 class="q-title">어떤 상황에 가까우세요?</h2>
+      <p class="q-sub">상황에 맞는 피드백과 우선순위를 드려요.</p>
+      <div class="opts" id="jobOpts"></div>
+    </section>
+
+    <section class="view" data-view="allergy">
+      <span class="eyebrow">3 / 3 · 회피 성분</span>
+      <h2 class="q-title">피해야 할 성분을 골라주세요.</h2>
+      <p class="q-sub">고른 성분을 기준으로 위험을 판정해요. (여러 개 선택 가능)</p>
+      <div class="group-label">알레르기 유발물질</div>
+      <div class="chips" id="allergyChips"></div>
+      <div class="group-label">건강 관리 (선택)</div>
+      <div class="chips" id="healthChips"></div>
+      <div class="spacer"></div>
+      <div class="cta"><button class="btn btn-primary" id="toFeedback">내 맞춤 결과 보기</button></div>
+    </section>
+
+    <section class="view" data-view="feedback">
+      <span class="fb-hi" id="fbHi">환영합니다!</span>
+      <h2 class="fb-title" id="fbTitle"></h2>
+      <p class="fb-desc" id="fbDesc"></p>
+      <div class="fb-card"><h4>당신을 위한 사용 팁</h4><div id="fbTips"></div></div>
+      <div class="fb-card"><h4>등록한 회피 성분</h4><div class="pills" id="fbPills"></div></div>
+      <div class="spacer"></div>
+      <div class="cta"><button class="btn btn-primary" id="toHome">스캔 시작하기</button></div>
+    </section>
+
+    <section class="view" data-view="home">
+      <div class="home-hi" id="homeHi">반가워요</div>
+      <div class="home-title" id="homeTitle">성분표를 <b>스캔</b>해 보세요</div>
+      <div class="scanbox">
+        <div class="cam" id="cam">
+          <div class="cam-guide">성분표(원재료명)를<br>이 안에 맞춰 촬영하세요</div>
+          <video id="cvideo" playsinline muted></video>
+          <canvas id="ccanvas" aria-hidden="true"></canvas>
+          <div class="scanline"></div>
+          <div class="scanchip" id="scanchip"><span class="blink"></span> 준비됨</div>
+          <button class="cam-open" id="camOpen" type="button">📷 카메라로 촬영</button>
+          <button class="cam-close" id="camClose" type="button" aria-label="닫기">✕</button>
+          <button class="cam-shutter" id="camShutter" type="button" aria-label="촬영"></button>
+          <div class="cam-msg" id="camMsg"></div>
+        </div>
+        <div class="scan-foot">
+          <span class="demo-badge" id="scanBadge">사진 인식</span>
+          <div class="scan-note" id="scanNote">원재료명이 밝고 또렷하게 나오도록 촬영하거나 사진 파일을 올리면, 그 사진의 성분을 실제로 읽어 분석해요.</div>
+        </div>
+      </div>
+      <div class="demo-mode" id="demoMode">
+        <button class="demo-toggle" id="demoToggle" type="button"><span>💡 발표 모드 <span class="dm-hint">— 인식이 약해도 그럴듯한 결과를 보여줘요</span></span> <b id="demoState">켜짐</b></button>
+        <div class="demo-cats" id="demoCats">
+          <span class="dm-label">이번에 스캔할 제품:</span>
+          <button class="chip dm-chip" type="button" data-id="" aria-pressed="true">자동</button>
+          <button class="chip dm-chip" type="button" data-id="cola">🥤 음료</button>
+          <button class="chip dm-chip" type="button" data-id="choco-chip-cookie">🍪 과자</button>
+          <button class="chip dm-chip" type="button" data-id="potato-chips">🥔 스낵</button>
+          <button class="chip dm-chip" type="button" data-id="ramen">🍜 라면</button>
+          <button class="chip dm-chip" type="button" data-id="soymilk">🥛 두유</button>
+        </div>
+      </div>
+      <div class="cta">
+        <button class="btn btn-primary" id="pickImage">🖼️ 내 사진으로 성분표 스캔</button>
+        <button class="btn btn-ghost" id="toPicker">🧪 예시 성분표로 체험 (카메라 없이)</button>
+        <button class="btn btn-ghost" id="editProfile">내 프로필 수정</button>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none">
+    </section>
+
+    <section class="view" data-view="scanning">
+      <div style="text-align:center; margin:auto 0; display:flex; flex-direction:column; align-items:center;">
+        <div class="ocr-spin" aria-hidden="true">🔍</div>
+        <h2 class="q-title" style="margin-top:18px;">성분표를 읽고 있어요</h2>
+        <p class="q-sub" id="ocrStatus" style="margin-bottom:0;">준비 중...</p>
+        <div class="ocr-bar"><i id="ocrBar"></i></div>
+        <p class="scan-note" id="ocrHint" style="margin-top:16px; max-width:22em;">한글 인식 데이터를 처음 한 번만 내려받아요 (수십 초 걸릴 수 있어요).</p>
+      </div>
+    </section>
+
+    <section class="view" data-view="picker">
+      <span class="eyebrow">예시 체험</span>
+      <h2 class="q-title">예시 성분표로 체험</h2>
+      <div class="picker-note" id="pickerNote">카메라가 없어도 괜찮아요. 아래 예시 성분표를 고르면 라벨을 이미지로 만들어 <b>실제 OCR로 읽어</b> 분석해요. (내 제품은 위 “내 사진으로 스캔”을 쓰세요.)</div>
+      <div class="prod-list" id="prodList"></div>
+    </section>
+
+    <section class="view result" data-view="result" id="resultView">
+      <div class="rtop">
+        <div class="rbadge" id="rBadge">!</div>
+        <h2 class="r-title" id="rTitle"></h2>
+        <p class="r-sub" id="rSub"></p>
+      </div>
+      <div class="r-card">
+        <div id="rRows"></div>
+        <div class="r-shot" id="rShot" style="display:none;">
+          <img id="rShotImg" alt="방금 촬영한 성분표">
+          <div class="cap"><b>방금 스캔한 성분표</b><span>이 사진과 함께 분석했어요</span></div>
+        </div>
+      </div>
+
+      <div class="grade-card" id="gradeCard">
+        <div class="grade-top">
+          <div>
+            <div class="grade-k">제품 건강 등급</div>
+            <span class="stars" aria-hidden="true"><span class="s-base">★★★★★</span><span class="s-fill" id="starFill">★★★★★</span></span>
+          </div>
+          <div class="grade-num"><b id="gLabel">-</b><span id="gScore">-</span></div>
+        </div>
+        <div class="grade-reason" id="gReason"></div>
+      </div>
+
+      <div class="ing-h">성분 풀이 <span>이 제품에 뭐가, 왜 들어갔는지 · 기본 주의사항</span></div>
+      <div class="raw" id="rRaw"></div>
+      <div id="ingList"></div>
+      <p class="ing-rest" id="ingRest" style="display:none;"></p>
+
+      <div class="cta">
+        <button class="btn btn-primary" id="scanAgain">다시 스캔</button>
+        <button class="btn btn-ghost" id="editProfile2">프로필 수정</button>
+      </div>
+    </section>
+  </main>
+  <div class="foot-note">이 앱은 성분 확인을 돕는 참고 도구입니다. 심각한 알레르기는 실제 성분표와 전문의 상담으로 최종 확인하세요. · 성분 정보는 데모용이며 실제 제품과 다를 수 있습니다.</div>
+</div>
+
+<script>
+(function(){
+  // ===== 검증된 성분 지식베이스 (식약처 알레르기 기준) =====
+  var INGREDIENTS = [
+    {name:"밀가루",aliases:["소맥분","밀 가루","밀"],role:"빵, 과자, 국수, 튀김옷을 만드는 가장 기본이 되는 가루예요.",caution:"글루텐이 들어 있어 밀 알레르기가 있는 사람은 피해야 해요.",allergen:"밀",healthFlag:null},
+    {name:"쌀가루",aliases:["미분"],role:"떡, 쌀과자, 튀김 등을 만들 때 쓰는 쌀을 곱게 빻은 가루예요.",caution:"밀가루 대신 쓰여도 탄수화물이라 열량은 비슷해요.",allergen:null,healthFlag:null},
+    {name:"옥수수전분",aliases:["콘스타치","옥수수 전분"],role:"국물이나 소스를 걸쭉하게 하고 튀김을 바삭하게 만들어요.",caution:"탄수화물이라 많이 먹으면 열량 섭취가 늘어나요.",allergen:null,healthFlag:null},
+    {name:"감자전분",aliases:["감자 전분","포테이토스타치"],role:"음식을 걸쭉하게 하거나 쫄깃하고 바삭한 식감을 내는 데 써요.",caution:"탄수화물 위주라 과식하면 열량이 높아질 수 있어요.",allergen:null,healthFlag:null},
+    {name:"타피오카전분",aliases:["카사바전분","타피오카 전분"],role:"떡볶이, 젤리, 버블티 알갱이처럼 쫀득한 식감을 만들어요.",caution:"열량은 있지만 다른 영양소는 거의 없어요.",allergen:null,healthFlag:null},
+    {name:"변성전분",aliases:["가공전분","산화전분","아세틸화전분","히드록시프로필전분"],role:"오래 두거나 가열해도 잘 굳지 않고 걸쭉함을 유지하게 해줘요.",caution:"안전성 평가를 거친 가공 전분으로 일반 섭취량에서는 문제되지 않아요.",allergen:null,healthFlag:null},
+    {name:"덱스트린",aliases:["말토덱스트린"],role:"가루가 잘 뭉치거나 잘 녹게 하고 식감을 조절해줘요.",caution:"전분을 잘게 쪼갠 성분이라 혈당을 빠르게 올릴 수 있어요.",allergen:null,healthFlag:null},
+    {name:"물엿",aliases:["이온물엿","전분물엿"],role:"전분으로 만든 끈적한 단맛 재료로, 단맛과 윤기, 촉촉함을 더해요.",caution:"사실상 당이라 많이 먹으면 당류 섭취가 늘어나요.",allergen:null,healthFlag:"당류"},
+    {name:"밀전분",aliases:["소맥전분"],role:"밀에서 뽑아낸 전분으로 음식을 걸쭉하게 하거나 쫄깃하게 해줘요.",caution:"밀에서 나오므로 밀 알레르기가 있으면 주의가 필요해요.",allergen:"밀",healthFlag:null},
+    {name:"식물성유지",aliases:["식물유지","식용유지","식물성 유지"],role:"식물에서 짜낸 기름으로, 음식을 고소하고 부드럽게 만들거나 튀길 때 써요.",caution:"기름이라 열량이 높고, 종류에 따라 포화지방이 많을 수 있어요.",allergen:null,healthFlag:null},
+    {name:"팜유",aliases:["팜올레인유","정제팜유"],role:"기름야자 열매에서 짜낸 기름으로, 잘 안 상해서 과자·라면 같은 튀긴 음식에 많이 넣어요.",caution:"다른 식물성 기름보다 포화지방이 많은 편이에요.",allergen:null,healthFlag:"포화지방"},
+    {name:"마가린",aliases:["마아가린"],role:"식물성 기름을 버터처럼 단단하게 만든 것으로, 빵에 바르거나 버터 대신 써요.",caution:"포화지방이 많고, 제품에 따라 트랜스지방이 조금 들어있을 수 있어요.",allergen:null,healthFlag:"트랜스지방"},
+    {name:"쇼트닝",aliases:["쇼트닝유","식물성쇼트닝"],role:"기름을 하얗게 굳힌 것으로, 과자나 튀김을 더 바삭하게 만들어 줘요.",caution:"포화지방이 많고, 제품에 따라 트랜스지방이 들어있을 수 있어요.",allergen:null,healthFlag:"트랜스지방"},
+    {name:"가공버터",aliases:["버터가공품"],role:"버터에 다른 기름을 섞어 만든 것으로, 빵·과자에 버터 같은 고소한 맛을 내요.",caution:"우유로 만들고 포화지방과 열량이 높은 편이에요.",allergen:"우유",healthFlag:"포화지방"},
+    {name:"버터",aliases:["가염버터","무염버터"],role:"우유의 지방을 모아 굳힌 것으로, 음식에 진하고 고소한 맛과 향을 더해 줘요.",caution:"포화지방과 열량이 높고, 가염 버터에는 소금이 들어있어요.",allergen:"우유",healthFlag:"포화지방"},
+    {name:"전지분유",aliases:[],role:"우유를 통째로 말려서 가루로 만든 것으로, 우유 맛과 영양을 더할 때 써요.",caution:"우유로 만들어 우유 알레르기가 있으면 주의해야 해요.",allergen:"우유",healthFlag:null},
+    {name:"탈지분유",aliases:["무지방분유","탈지유","스킴밀크"],role:"우유에서 지방을 뺀 다음 말린 가루로, 우유 맛을 내고 반죽을 부드럽게 해 줘요.",caution:"우유로 만들어 우유 알레르기가 있으면 주의해야 해요.",allergen:"우유",healthFlag:null},
+    {name:"유청분말",aliases:["유청","훼이파우더"],role:"치즈를 만들고 남은 맑은 물을 말린 가루로, 부드러운 우유 맛을 더해줘요.",caution:"우유로 만들어 우유 알레르기가 있으면 주의해야 해요.",allergen:"우유",healthFlag:null},
+    {name:"유크림",aliases:["크림","우유크림"],role:"우유에서 지방이 많은 부분만 모은 것으로, 음식을 진하고 부드럽게 만들어 줘요.",caution:"우유로 만들고 포화지방과 열량이 높은 편이에요.",allergen:"우유",healthFlag:"포화지방"},
+    {name:"설탕",aliases:["백설탕","정백당","자당","갈색설탕"],role:"음식에 단맛을 내려고 넣는 가장 기본이 되는 당분이에요.",caution:"많이 먹으면 열량과 당 섭취가 늘어나니 양을 조절하는 게 좋아요.",allergen:null,healthFlag:"당류"},
+    {name:"액상과당",aliases:["고과당옥수수시럽","과당포도당액당","이성화당"],role:"옥수수로 만든 흐르는 단맛으로, 음료나 소스에 잘 섞이라고 넣어요.",caution:"당류가 많아 음료로 자주 마시면 당 섭취가 크게 늘 수 있어요.",allergen:null,healthFlag:"당류"},
+    {name:"포도당",aliases:["덱스트로스","글루코스","D-포도당"],role:"몸이 바로 쓰는 기본 당분으로, 단맛을 내거나 가루가 잘 섞이게 하려고 넣어요.",caution:"흡수가 빨라 혈당이 빠르게 오를 수 있으니 많이 먹지 않는 게 좋아요.",allergen:null,healthFlag:"당류"},
+    {name:"올리고당",aliases:["프락토올리고당","이소말토올리고당"],role:"설탕보다 덜 달지만 부드러운 단맛을 내려고 넣는 당분이에요.",caution:"한 번에 많이 먹으면 배에 가스가 차거나 설사를 할 수 있어요.",allergen:null,healthFlag:null},
+    {name:"아스파탐",aliases:["아스파르탐"],role:"아주 적은 양으로 강한 단맛을 내는 인공 감미료로, 설탕 없이 단맛을 내려고 넣어요.",caution:"페닐케톤뇨증(PKU)이 있는 사람은 페닐알라닌이 들어 있어 피해야 해요.",allergen:null,healthFlag:"인공감미료"},
+    {name:"수크랄로스",aliases:["슈크랄로스"],role:"설탕을 원료로 만든 아주 단 인공 감미료로, 열량 없이 단맛만 내려고 넣어요.",caution:"단맛이 매우 강해 정해진 사용 기준 안에서 아주 적은 양만 쓰여요.",allergen:null,healthFlag:"인공감미료"},
+    {name:"아세설팜칼륨",aliases:["아세설팜K","아세설팜포타슘"],role:"열량 없이 강한 단맛을 내는 인공 감미료로, 보통 다른 감미료와 함께 써요.",caution:"단맛이 강해 정해진 허용 기준 안에서 아주 적은 양만 사용돼요.",allergen:null,healthFlag:"인공감미료"},
+    {name:"스테비올배당체",aliases:["스테비아","효소처리스테비아"],role:"스테비아 잎에서 얻은 자연 유래 감미료로, 열량 없이 단맛을 내려고 넣어요.",caution:"단맛이 매우 강해 아주 적은 양만 넣어도 충분히 달아요.",allergen:null,healthFlag:null},
+    {name:"에리스리톨",aliases:["에리트리톨"],role:"옥수수 등을 발효해 만든 당알코올로, 설탕처럼 단맛을 내지만 열량이 거의 없어요.",caution:"한 번에 아주 많이 먹으면 속이 더부룩하거나 설사를 할 수 있어요.",allergen:null,healthFlag:null},
+    {name:"안식향산나트륨",aliases:["벤조산나트륨","안식향산소다"],role:"음료수나 소스에서 세균·곰팡이가 자라지 못하게 막아 오래 보관하게 해줘요.",caution:"정해진 기준 안에서 쓰이며, 비타민C가 든 산성 음료에서 특정 조건이 겹치면 아주 적은 양의 벤젠이 생길 수 있다는 보고가 있어요.",allergen:null,healthFlag:null},
+    {name:"소브산칼륨",aliases:["소르빈산칼륨","소브산칼리"],role:"치즈·음료·절임류에서 곰팡이와 효모가 자라는 것을 막아 상하지 않게 해줘요.",caution:"허용된 기준 안에서 쓰이며, 드물게 피부에 닿으면 자극이 생길 수 있어요.",allergen:null,healthFlag:null},
+    {name:"프로피온산칼슘",aliases:["프로피온산나트륨","프로피온산"],role:"빵이나 떡에 곰팡이가 피는 것을 막아 더 오래 두고 먹을 수 있게 해줘요.",caution:"주로 빵·베이커리류에 정해진 기준에 맞춰 사용해요.",allergen:null,healthFlag:null},
+    {name:"디하이드로초산나트륨",aliases:["데히드로초산나트륨"],role:"버터·치즈·마가린에 곰팡이가 생기지 않게 막아줘요.",caution:"치즈·버터·마가린 등 허용된 일부 식품에만 정해진 기준으로 쓰여요.",allergen:null,healthFlag:null},
+    {name:"아황산나트륨",aliases:["메타중아황산나트륨","이산화황","무수아황산","아황산류"],role:"말린 과일이나 와인이 갈색으로 변하거나 상하는 것을 막고 색을 유지해줘요.",caution:"천식이 있는 사람은 드물게 기침이나 호흡 곤란 반응이 나타날 수 있어요.",allergen:"아황산류",healthFlag:null},
+    {name:"아스코르브산(비타민C)",aliases:["L-아스코르브산","아스코르빈산"],role:"음식이 공기와 만나 색이 변하거나 맛이 나빠지는 것을 막아주는 산화방지제예요.",caution:"산화방지 목적으로 소량 쓰이며 일반적으로 안전하게 여겨져요.",allergen:null,healthFlag:null},
+    {name:"에리토브산나트륨",aliases:["이소아스코르브산나트륨"],role:"가공육이나 음료가 산소와 만나 색과 맛이 변하는 것을 막아줘요.",caution:"비타민C와 비슷한 산화방지제로 정해진 기준 안에서 사용해요.",allergen:null,healthFlag:null},
+    {name:"토코페롤(비타민E)",aliases:["비타민E","혼합토코페롤"],role:"기름이나 지방이 상해서 나쁜 냄새가 나는 것을 막아줘요.",caution:"대두 기름에서 얻는 경우가 많지만 고도로 정제돼 보통 알레르기 표시 대상은 아니에요.",allergen:null,healthFlag:null},
+    {name:"부틸히드록시톨루엔(BHT)",aliases:["BHT"],role:"기름과 지방이 산소와 만나 상하는 것을 막아 오래가게 해줘요.",caution:"합성 산화방지제로, 쓸 수 있는 식품과 최대량이 법으로 정해져 있어요.",allergen:null,healthFlag:null},
+    {name:"부틸히드록시아니솔(BHA)",aliases:["BHA"],role:"기름과 지방이 상하는 것을 막아 신선함을 더 오래 지켜줘요.",caution:"동물실험에서 발암 가능성이 제기된 적이 있어(국제암연구소 2B군) 사용 식품과 양이 엄격히 제한돼요.",allergen:null,healthFlag:null},
+    {name:"합성착향료",aliases:["합성향료"],role:"딸기향, 콜라향처럼 특정한 맛과 향을 내려고 화학적으로 만든 향 성분이에요.",caution:"아주 적은 양만 쓰지만, 세부 성분까지는 라벨에 자세히 적히지 않을 수 있어요.",allergen:null,healthFlag:null},
+    {name:"천연착향료",aliases:["천연향료"],role:"과일이나 식물 같은 자연 재료에서 뽑아낸 향으로 식품에 맛과 향을 더해줘요.",caution:"'천연'이라는 말이 반드시 더 안전하거나 몸에 좋다는 뜻은 아니에요.",allergen:null,healthFlag:null},
+    {name:"카라멜색소",aliases:["캐러멜색소"],role:"콜라나 간장처럼 식품을 먹음직스러운 갈색으로 보이게 만드는 색소예요.",caution:"일부 카라멜색소(제3·4류)는 만드는 과정에서 4-메틸이미다졸이 미량 생길 수 있어요.",allergen:null,healthFlag:null},
+    {name:"치자황색소",aliases:["치자색소"],role:"치자나무 열매에서 뽑아낸 노란색 색소로 단무지 같은 식품을 노랗게 물들여요.",caution:"자연에서 얻은 색소지만 사람에 따라 드물게 알레르기 반응이 있을 수 있어요.",allergen:null,healthFlag:null},
+    {name:"홍국색소",aliases:["홍국적색소"],role:"붉은 누룩곰팡이(홍국)로 만든 빨간색 색소로 식품을 붉게 물들여요.",caution:"색소로 쓰는 양은 적지만 홍국 성분에 예민한 사람도 있을 수 있어요.",allergen:null,healthFlag:null},
+    {name:"이산화티타늄",aliases:["이산화티탄","산화티타늄"],role:"식품을 하얗고 뽀얗게 보이게 하는 흰색 색소예요.",caution:"유럽연합은 2022년부터 금지했지만 한국에서는 아직 허용되며 안전성 검토가 이어지고 있어요.",allergen:null,healthFlag:null},
+    {name:"코치닐추출색소",aliases:["카민","카르민","연지벌레색소"],role:"코치닐이라는 곤충에서 뽑아낸 빨간색 색소로 식품을 붉게 물들여요.",caution:"드물지만 두드러기 같은 알레르기 반응을 일으킬 수 있어요.",allergen:null,healthFlag:null},
+    {name:"파프리카추출색소",aliases:["파프리카색소"],role:"파프리카에서 뽑아낸 주황·빨간색 색소로 식품에 먹음직스러운 색을 내요.",caution:"자연에서 얻은 색소로 알려진 큰 문제는 많지 않아요.",allergen:null,healthFlag:null},
+    {name:"식용색소 황색 제4호",aliases:["황색4호","타르트라진","타르색소"],role:"화학적으로 만든 선명한 노란색 색소로 음료나 과자를 노랗게 물들여요.",caution:"일부 어린이에게 과잉행동과 관련될 수 있다는 연구가 있어 유럽에서는 경고 표시를 해요.",allergen:null,healthFlag:"인공색소"},
+    {name:"안나토색소",aliases:["아나토색소","빅신"],role:"아나토 나무 씨앗에서 뽑아낸 노랑·주황색 색소로 치즈나 버터에 색을 내요.",caution:"자연에서 얻은 색소지만 드물게 알레르기 반응이 보고되기도 해요.",allergen:null,healthFlag:null},
+    {name:"대두레시틴",aliases:["레시틴","대두인지질"],role:"물과 기름이 서로 잘 섞이도록 도와주는 유화제예요.",caution:"대두(콩)에서 뽑아 만들어 콩 알레르기가 있으면 주의해요.",allergen:"대두",healthFlag:null},
+    {name:"카라기난",aliases:["카라지난"],role:"바다 해조류에서 얻어 음식을 걸쭉하게 하고 말랑하게 굳혀 주는 성분이에요.",caution:"아이스크림이나 우유음료를 부드럽게 하려고 넣어요.",allergen:null,healthFlag:null},
+    {name:"잔탄검",aliases:["크산탄검","자탄검"],role:"국물이나 소스를 걸쭉하게 만들어 잘 섞인 상태를 오래 유지시켜 줘요.",caution:"발효로 만드는 다당류라 아주 조금만 넣어도 걸쭉해져요.",allergen:null,healthFlag:null},
+    {name:"구아검",aliases:["구아르검"],role:"구아콩 씨앗에서 얻어 음식을 걸쭉하게 하고 수분을 잡아 주는 성분이에요.",caution:"구아콩은 표시대상 알레르기 물질은 아니에요.",allergen:null,healthFlag:null},
+    {name:"글리세린지방산에스테르",aliases:["지방산글리세라이드","모노글리세리드"],role:"물과 기름이 분리되지 않고 잘 섞이게 해 주는 유화제예요.",caution:"빵, 마가린, 아이스크림 등에 흔히 쓰여요.",allergen:null,healthFlag:null},
+    {name:"탄산수소나트륨",aliases:["중탄산나트륨","베이킹소다"],role:"반죽 속에 기포를 만들어 빵과 과자를 폭신하게 부풀려 주는 팽창제예요.",caution:"나트륨이 들어 있어 너무 많이 먹으면 나트륨 섭취가 늘 수 있어요.",allergen:null,healthFlag:"나트륨"},
+    {name:"산성피로인산나트륨",aliases:["SAPP"],role:"소다와 반응해 빵과 과자를 골고루 부풀려 주는 팽창 보조제예요.",caution:"인산염 성분이라 많이 먹으면 인과 나트륨 섭취가 늘 수 있어요.",allergen:null,healthFlag:"인산염"},
+    {name:"펙틴",aliases:[],role:"과일 껍질에서 얻어 잼처럼 걸쭉하게 굳혀 주는 성분이에요.",caution:"잼, 젤리, 요구르트를 되직하게 하려고 넣어요.",allergen:null,healthFlag:null},
+    {name:"카복시메틸셀룰로스나트륨",aliases:["CMC","섬유소글리콜산나트륨"],role:"식물 섬유소로 만들어 음식을 걸쭉하고 부드러운 상태로 유지시켜 줘요.",caution:"아이스크림이나 음료가 분리되지 않게 넣어요.",allergen:null,healthFlag:null},
+    {name:"정제수",aliases:["정제된 물","물"],role:"음료의 대부분을 채우는, 깨끗하게 걸러낸 물이에요.",caution:"특별히 주의할 점은 거의 없어요.",allergen:null,healthFlag:null},
+    {name:"탄산가스",aliases:["이산화탄소"],role:"톡 쏘고 시원한 거품을 만들어 주는 기체예요.",caution:"배가 부풀거나 트림이 날 수 있어요.",allergen:null,healthFlag:null},
+    {name:"구연산",aliases:["시트르산"],role:"새콤한 맛을 내고 음료의 산도를 알맞게 조절해 주는 산미료예요.",caution:"신맛이 강해서 자주 마시면 치아 표면이 약해질 수 있어요.",allergen:null,healthFlag:null},
+    {name:"카페인",aliases:["무수카페인"],role:"잠을 쫓고 정신을 또렷하게 깨워 줘요.",caution:"너무 많이 마시면 가슴이 두근거리거나 잠이 안 올 수 있어요. 어린이는 특히 주의.",allergen:null,healthFlag:"카페인"},
+    {name:"타우린",aliases:[],role:"몸속에도 있는 아미노산의 한 종류로, 에너지 음료에 활력감을 주려고 넣어요.",caution:"카페인과 함께 든 경우가 많아 한꺼번에 너무 많이 마시지 않는 게 좋아요.",allergen:null,healthFlag:null},
+    {name:"인산",aliases:["인산(산도조절제)"],role:"콜라 같은 음료의 산도를 조절해 톡 쏘는 특유의 맛을 잡아 줘요.",caution:"많이 먹으면 뼈 건강에 좋지 않을 수 있다는 의견이 있어요.",allergen:null,healthFlag:null},
+    {name:"과일농축액",aliases:["농축과즙","농축과일즙"],role:"과일즙의 수분을 날려 진하게 졸인 것으로, 과일 맛과 자연스러운 단맛을 내요.",caution:"당류가 생각보다 많을 수 있고, 복숭아·토마토 등이 원료면 알레르기를 확인하세요.",allergen:null,healthFlag:"당류"},
+    {name:"비타민C",aliases:["아스코르브산"],role:"영양을 더해 주고, 산화를 막아 맛과 색이 변하는 것을 늦춰 줘요.",caution:"대부분 안전하지만 아주 많은 양을 먹으면 속이 불편할 수 있어요.",allergen:null,healthFlag:null},
+    {name:"난백분",aliases:["건조난백","계란흰자분말","계란","전란액","달걀"],role:"반죽을 잘 뭉치게 하고 폭신하게 부풀려 주는 달걀흰자 성분이에요.",caution:"달걀 성분이라 알(계란) 알레르기가 있으면 피해야 해요.",allergen:"알류(가금류)",healthFlag:null},
+    {name:"새우분말",aliases:["건조새우","새우엑기스","새우추출물","새우"],role:"과자나 조미료에 새우 특유의 감칠맛과 향을 더해 줘요.",caution:"새우 알레르기가 있으면 피해야 하고 다른 갑각류에도 반응할 수 있어요.",allergen:"새우",healthFlag:null},
+    {name:"굴소스",aliases:["오이스터소스","굴추출물"],role:"굴을 졸여 만든 소스로 볶음·조림 요리에 진한 감칠맛을 내 줘요.",caution:"굴 등 조개류 알레르기가 있으면 주의하고, 나트륨도 높은 편이에요.",allergen:"조개류(굴/전복/홍합 포함)",healthFlag:"나트륨"},
+    {name:"토마토페이스트",aliases:["토마토농축액","토마토퓨레","토마토"],role:"토마토를 진하게 졸여 케첩·소스에 새콤한 맛과 붉은색을 내 줘요.",caution:"흔하지는 않지만 토마토 알레르기가 있으면 주의해야 해요.",allergen:"토마토",healthFlag:null},
+    {name:"쇠고기추출물",aliases:["사골농축액","소고기추출물","우육분말","소고기분말","조미소고기맛분말"],role:"소를 우려낸 국물 성분으로 국·라면·조미료에 깊은 고기 맛을 더해 줘요.",caution:"쇠고기 성분이라 쇠고기 알레르기가 있으면 주의해야 해요.",allergen:"쇠고기",healthFlag:null},
+    // ── 데모 제품 원료 보강 ──
+    {name:"정제소금",aliases:["정제염","소금","천일염"],role:"음식에 짠맛을 내고 간을 맞추는 기본 조미료예요.",caution:"나트륨이 많아 과다 섭취하면 혈압에 좋지 않아요.",allergen:null,healthFlag:"나트륨"},
+    {name:"유당",aliases:["락토스","젖당"],role:"우유에 들어 있는 당분으로 은은한 단맛을 내요.",caution:"우유에서 나와 우유 알레르기·유당불내증이 있으면 주의해야 해요.",allergen:"우유",healthFlag:null},
+    {name:"감자",aliases:["감자(국산)"],role:"포슬포슬한 식감과 구수한 맛을 내는 기본 채소 원료예요.",caution:"특별히 주의할 점은 거의 없어요.",allergen:null,healthFlag:null},
+    {name:"해바라기유",aliases:["해바라기씨유"],role:"해바라기씨에서 짠 기름으로 튀기고 볶는 데 써요.",caution:"기름이라 열량이 높으니 과식에 주의해요.",allergen:null,healthFlag:null},
+    {name:"코코아매스",aliases:["카카오매스"],role:"카카오를 갈아 만든 진한 초콜릿 원료예요.",caution:"카페인이 조금 들어 있어 많이 먹으면 예민해질 수 있어요.",allergen:null,healthFlag:null},
+    {name:"코코아버터",aliases:["카카오버터"],role:"카카오씨의 지방으로 초콜릿을 매끄럽고 부드럽게 해줘요.",caution:"포화지방이 많은 편이에요.",allergen:null,healthFlag:"포화지방"},
+    {name:"초코칩",aliases:[],role:"달콤한 초콜릿 조각으로 과자에 초콜릿 맛을 더해요.",caution:"설탕·지방이 많아 당류와 열량이 높아요.",allergen:null,healthFlag:"당류"},
+    {name:"향미증진제",aliases:["L-글루탐산나트륨","MSG","조미료"],role:"감칠맛(우마미)을 더 강하게 느끼게 해줘요.",caution:"민감한 사람은 드물게 불편함을 느낄 수 있고, 나트륨이 들어 있어요.",allergen:null,healthFlag:"나트륨"},
+    {name:"팽창제",aliases:["베이킹파우더"],role:"반죽을 부풀려 빵·과자를 폭신하게 만들어요.",caution:"나트륨이나 인산염이 포함될 수 있어요.",allergen:null,healthFlag:null},
+    {name:"간장분말",aliases:["간장","간장분말(대두,밀 함유)"],role:"간장을 말린 가루로 짭짤하고 구수한 감칠맛을 내요.",caution:"대두와 밀로 만들어 대두·밀 알레르기가 있으면 주의하고, 나트륨도 높아요.",allergen:"대두",healthFlag:"나트륨"},
+    {name:"조개추출물분말",aliases:["조개추출물","조개엑기스"],role:"조개를 우려 말린 가루로 국물에 시원한 감칠맛을 더해요.",caution:"조개류 알레르기가 있으면 주의해야 해요.",allergen:"조개류(굴/전복/홍합 포함)",healthFlag:null}
+  ];
+
+  // ===== 검증된 데모 제품 =====
+  var PRODUCTS = [
+    {id:"cola",name:"○○콜라",emoji:"🥤",category:"음료 · 탄산음료",rawLabel:"정제수, 설탕, 탄산가스, 카라멜색소, 인산, 합성착향료(콜라향), 카페인",ingredients:["정제수","설탕","탄산가스","카라멜색소","인산","합성착향료","카페인"],allergens:[],facility:[],sugarLevel:"높음",sodiumLevel:"낮음",caffeine:true},
+    {id:"potato-chips",name:"○○ 감자칩 어니언맛",emoji:"🥔",category:"스낵 · 감자칩",rawLabel:"감자(국산), 식용유지[팜올레인유, 해바라기유], 어니언시즈닝분말[정제염, 양파분말, 포도당, 유당, 탈지분유, 향미증진제, 마늘분말], 정제염",ingredients:["감자","팜올레인유","해바라기유","정제염","양파분말","포도당","유당","탈지분유","향미증진제","마늘분말"],allergens:["우유"],facility:["대두","밀","땅콩","새우","오징어","게","조개류(굴/전복/홍합 포함)","돼지고기","쇠고기","닭고기","토마토"],sugarLevel:"낮음",sodiumLevel:"높음",caffeine:false},
+    {id:"choco-chip-cookie",name:"○○ 초코칩 쿠키",emoji:"🍪",category:"과자 · 쿠키",rawLabel:"밀가루(밀:미국산), 설탕, 초코칩 12%[설탕, 코코아매스, 코코아버터, 유화제(대두레시틴), 향료], 가공버터, 쇼트닝(팜유), 전란액, 물엿, 탈지분유, 팽창제, 정제소금, 합성착향료(버터향)",ingredients:["밀가루","설탕","초코칩","코코아매스","코코아버터","대두레시틴","가공버터","쇼트닝","전란액","물엿","탈지분유","팽창제","정제소금","합성착향료"],allergens:["밀","대두","우유","알류(가금류)"],facility:["땅콩","호두","잣"],sugarLevel:"높음",sodiumLevel:"보통",caffeine:false},
+    {id:"ramen",name:"○○ 얼큰한 봉지라면",emoji:"🍜",category:"라면 · 유탕면",rawLabel:"면[소맥분(밀), 팜유, 변성전분, 정제염, 감자전분, 구아검], 분말스프[정제염, 정백당, 소고기분말, 간장분말(대두,밀 함유), 고춧가루, 마늘분말, 후추, 새우분말, 조개추출물분말], 건더기스프[건파, 건미역]",ingredients:["소맥분","팜유","변성전분","정제염","감자전분","정백당","소고기분말","간장분말","고춧가루","마늘분말","후추","새우분말","조개추출물분말","건파","건미역"],allergens:["밀","대두","쇠고기","새우","조개류(굴/전복/홍합 포함)"],facility:["메밀","우유","땅콩","알류(가금류)","오징어","게","고등어","돼지고기","닭고기","토마토"],sugarLevel:"낮음",sodiumLevel:"높음",caffeine:false},
+    {id:"soymilk",name:"○○ 검은콩 두유",emoji:"🥛",category:"음료 · 두유",rawLabel:"정제수, 대두(수입산, 콩 함량 6%), 설탕, 서리태분말, 식물성유지(해바라기유), 정제염, 유화제(대두레시틴), 탄산칼슘, 합성착향료(두유향), 비타민D",ingredients:["정제수","대두","설탕","서리태분말","해바라기유","정제염","대두레시틴","탄산칼슘","합성착향료","비타민D"],allergens:["대두"],facility:["우유","땅콩"],sugarLevel:"보통",sodiumLevel:"낮음",caffeine:false}
+  ];
+
+  function norm(s){ return (s||"").replace(/\s+/g,"").toLowerCase(); }
+  var ING_MAP = {};
+  INGREDIENTS.forEach(function(it){
+    ING_MAP[norm(it.name)] = it;
+    (it.aliases||[]).forEach(function(a){ if(!ING_MAP[norm(a)]) ING_MAP[norm(a)] = it; });
+  });
+
+  // ===== 온보딩 옵션 =====
+  var AGES = [{k:"10s",emoji:"🧒",label:"10대"},{k:"2030",emoji:"🧑",label:"20~30대"},{k:"4050",emoji:"🧑‍🦱",label:"40~50대"},{k:"60+",emoji:"🧓",label:"60대 이상"}];
+  var JOBS = [
+    {k:"parent",emoji:"👨‍👩‍👧",label:"부모",desc:"아이 간식·식품을 챙겨요"},
+    {k:"teacher",emoji:"🏫",label:"어린이집·유치원 교사",desc:"여러 원생의 알레르기를 관리해요"},
+    {k:"student",emoji:"🎒",label:"학생",desc:"편의점·간식을 자주 사요"},
+    {k:"caregiver",emoji:"🧑‍⚕️",label:"요양보호사·간병",desc:"어르신 식품을 챙겨요"},
+    {k:"office",emoji:"💼",label:"직장인·1인 가구",desc:"바쁘게 간편식을 먹어요"},
+    {k:"health",emoji:"🩺",label:"만성질환 관리",desc:"당뇨·고혈압 등 성분을 조절해요"}
+  ];
+  var ALLERGENS = ["우유","알류(가금류)","땅콩","호두","대두","밀","갑각류","새우","게","조개류(굴/전복/홍합 포함)","복숭아","토마토","메밀","아황산류","쇠고기"];
+  var HEALTH = ["당류","나트륨","카페인"];
+  var FEEDBACK = {
+    parent:{title:"아이 간식, 안심하고 고르세요",desc:"등록하신 회피 성분을 기준으로 마트·편의점에서 3초 만에 확인해 드릴게요.",tips:["새 과자를 집기 전에 뒷면 성분표를 스캔하세요","자녀가 여러 명이면 각각 프로필로 관리할 수 있어요","'혼입 가능성' 문구도 함께 확인해요"]},
+    teacher:{title:"여러 원생을 한 번에 관리",desc:"반 아이들의 알레르기를 프로필로 만들어 급식·간식을 빠르게 점검하세요.",tips:["원생별 알레르기 프로필을 저장해 두세요","간식 반입 전에 제품을 일괄 점검하세요","성분명과 알레르기 표시 문구를 이중 확인해요"]},
+    student:{title:"편의점에서 빠르게 비교",desc:"당류·나트륨까지 표시해 더 나은 선택을 도와드려요.",tips:["두 제품을 스캔해 나란히 비교해 보세요","당류·나트륨을 한눈에 확인할 수 있어요","자주 먹는 제품을 저장해 두면 편해요"]},
+    caregiver:{title:"어르신 맞춤 확인",desc:"나트륨·당류와 주의 성분을 함께 살펴 드려요.",tips:["나트륨·당류를 우선으로 표시해요","질환상 피해야 하는 성분을 자동으로 걸러줘요","큰 글씨 모드를 추천해요"]},
+    office:{title:"바쁜 하루, 3초 스캔",desc:"편의점·마트에서 빠르게 확인하세요.",tips:["즐겨 먹는 제품을 저장해 두세요","당류·나트륨을 관리할 수 있어요","더 나은 대체 제품을 추천받아 보세요"]},
+    health:{title:"질환 맞춤 분석",desc:"당뇨·고혈압이라면 당류·나트륨을 우선으로 봐드릴게요.",tips:["당류·나트륨 경고를 우선으로 표시해요","회피 성분이 있으면 바로 알려드려요","건강 점수를 기록해 추이를 볼 수 있어요"]}
+  };
+
+  // ===== 상태 =====
+  var profile = {age:null,job:null,allergies:[]};
+  try{ var saved = JSON.parse(localStorage.getItem("safescan_profile")||"null"); if(saved) profile = saved; }catch(e){}
+  var lastShot = null, currentProduct = null, curView = "welcome";
+  var app = document.getElementById("app"), bar = document.getElementById("bar");
+
+  function show(name){
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.toggle("active", v.dataset.view===name); });
+    var steps = ["age","job","allergy"];
+    app.classList.toggle("step", steps.indexOf(name)>=0);
+    if(steps.indexOf(name)>=0) bar.style.width = ((steps.indexOf(name)+1)/3*100)+"%";
+    window.scrollTo(0,0);
+    curView = name;
+  }
+  function save(){ try{ localStorage.setItem("safescan_profile", JSON.stringify(profile)); }catch(e){} }
+
+  // ===== 온보딩 UI =====
+  function optButton(o, selected){
+    var b = document.createElement("button");
+    b.className="opt"; b.type="button"; b.setAttribute("aria-pressed", selected?"true":"false");
+    b.innerHTML = '<span class="oemoji" aria-hidden="true">'+o.emoji+'</span><span class="otext"><span>'+o.label+'</span>'+(o.desc?'<span class="odesc">'+o.desc+'</span>':'')+'</span><span class="tick" aria-hidden="true">✓</span>';
+    return b;
+  }
+  var ageBox = document.getElementById("ageOpts");
+  AGES.forEach(function(o){ var b=optButton(o, profile.age===o.k); b.addEventListener("click", function(){ profile.age=o.k; save(); [].forEach.call(ageBox.children,function(c){c.setAttribute("aria-pressed","false");}); b.setAttribute("aria-pressed","true"); setTimeout(function(){show("job");},180); }); ageBox.appendChild(b); });
+  var jobBox = document.getElementById("jobOpts");
+  JOBS.forEach(function(o){ var b=optButton(o, profile.job===o.k); b.addEventListener("click", function(){ profile.job=o.k; save(); [].forEach.call(jobBox.children,function(c){c.setAttribute("aria-pressed","false");}); b.setAttribute("aria-pressed","true"); setTimeout(function(){show("allergy");},180); }); jobBox.appendChild(b); });
+  function chipEl(text,on){ var c=document.createElement("button"); c.className="chip"; c.type="button"; c.textContent=text; c.setAttribute("aria-pressed",on?"true":"false"); return c; }
+  var alBox=document.getElementById("allergyChips");
+  ALLERGENS.forEach(function(a){ var c=chipEl(a, profile.allergies.indexOf(a)>=0); c.addEventListener("click",function(){toggle(a,c);}); alBox.appendChild(c); });
+  var heBox=document.getElementById("healthChips");
+  HEALTH.forEach(function(a){ var c=chipEl(a, profile.allergies.indexOf(a)>=0); c.addEventListener("click",function(){toggle(a,c);}); heBox.appendChild(c); });
+  function toggle(a,c){ var i=profile.allergies.indexOf(a); if(i>=0){profile.allergies.splice(i,1);c.setAttribute("aria-pressed","false");}else{profile.allergies.push(a);c.setAttribute("aria-pressed","true");} save(); }
+
+  function ageLabel(k){ var m={"10s":"10대","2030":"20~30대","4050":"40~50대","60+":"60대 이상"}; return m[k]||""; }
+  function jobLabel(k){ var j=JOBS.filter(function(x){return x.k===k;})[0]; return j?j.label:""; }
+  function renderFeedback(){
+    var fb = FEEDBACK[profile.job] || FEEDBACK.office;
+    document.getElementById("fbHi").textContent = (ageLabel(profile.age)?ageLabel(profile.age)+" · ":"") + jobLabel(profile.job) + "님, 맞춤 설정 완료!";
+    document.getElementById("fbTitle").textContent = fb.title;
+    var desc = fb.desc;
+    if(profile.age==="60+") desc += " 글씨를 크고 또렷하게 보여드릴게요.";
+    if(profile.age==="10s") desc += " 어려운 성분은 쉬운 말로 풀어드려요.";
+    document.getElementById("fbDesc").textContent = desc;
+    var tw=document.getElementById("fbTips"); tw.innerHTML="";
+    fb.tips.forEach(function(t){ var d=document.createElement("div"); d.className="tip"; d.innerHTML='<span class="ti" aria-hidden="true">›</span><span>'+t+'</span>'; tw.appendChild(d); });
+    var pw=document.getElementById("fbPills"); pw.innerHTML="";
+    if(profile.allergies.length===0){ var p=document.createElement("span"); p.className="pill none"; p.textContent="선택 안 함 (모든 성분 표시)"; pw.appendChild(p); }
+    else profile.allergies.forEach(function(a){ var p=document.createElement("span"); p.className="pill"; p.textContent=a; pw.appendChild(p); });
+  }
+  function renderHome(){
+    resetScanNote();
+    document.getElementById("homeHi").textContent = (jobLabel(profile.job)||"")+(profile.job?"님, ":"")+"반가워요";
+    var av = profile.allergies.length ? "회피: "+profile.allergies.join(", ") : "회피 성분 미설정";
+    document.getElementById("homeTitle").innerHTML = '성분표를 <b>스캔</b>해 보세요 · <span style="font-weight:600;color:var(--muted);font-size:14px">'+av+'</span>';
+  }
+
+  // ===== 제품 선택 =====
+  var prodList = document.getElementById("prodList");
+  PRODUCTS.forEach(function(p){
+    var b=document.createElement("button"); b.className="prod"; b.type="button";
+    b.innerHTML='<span class="pemoji" aria-hidden="true">'+p.emoji+'</span><span><span class="pname">'+p.name+' 성분표</span><span class="pcat">'+p.category+' · 예시 이미지</span></span><span class="parrow" aria-hidden="true">›</span>';
+    b.addEventListener("click", function(){ renderLabelAndScan(p); });
+    prodList.appendChild(b);
+  });
+  function openPicker(){ show("picker"); }
+
+  // 예시 성분표를 실제 이미지로 그린 뒤, 카메라 사진과 똑같이 OCR로 읽는다
+  function renderLabelAndScan(p){
+    var c=document.createElement("canvas"); c.width=820; c.height=560;
+    var g=c.getContext("2d");
+    g.fillStyle="#fbfaf5"; g.fillRect(0,0,c.width,c.height);
+    g.fillStyle="#161616"; g.textBaseline="top";
+    g.font='bold 30px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+    g.fillText("원재료명", 36, 30);
+    g.font='25px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+    var y = wrapText(g, p.rawLabel, 36, 82, c.width-72, 40);
+    if(p.allergens && p.allergens.length){
+      y += 24;
+      g.font='bold 23px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+      wrapText(g, "알레르기 유발물질: "+p.allergens.join(", ")+" 함유", 36, y, c.width-72, 36);
+    }
+    try{ lastShot = c.toDataURL("image/jpeg",0.85); }catch(e){ lastShot=null; }
+    scanImageSource(c);
+  }
+  function wrapText(ctx, text, x, y, maxW, lh){
+    var words=(text||"").split(" "), line="", yy=y;
+    for(var i=0;i<words.length;i++){
+      var test=line+words[i]+" ";
+      if(ctx.measureText(test).width>maxW && line){ ctx.fillText(line.trim(), x, yy); line=words[i]+" "; yy+=lh; }
+      else line=test;
+    }
+    if(line.trim()){ ctx.fillText(line.trim(), x, yy); yy+=lh; }
+    return yy;
+  }
+  function resetScanNote(){
+    var n=document.getElementById("scanNote");
+    if(n){ n.textContent="원재료명이 밝고 또렷하게 나오도록 촬영하거나 사진 파일을 올리면, 그 사진의 성분을 실제로 읽어 분석해요."; n.classList.remove("warn"); }
+    var b=document.getElementById("scanBadge"); if(b) b.textContent="사진 인식";
+  }
+
+  // ===== 성분 풀이 =====
+  function buildBreakdown(product){
+    document.getElementById("rRaw").innerHTML = '<b>원재료명</b> · '+product.rawLabel;
+    var list=document.getElementById("ingList"); list.innerHTML="";
+    document.getElementById("ingRest").style.display="none";
+
+    // 표시할 성분 목록 정규화 (AI 상세 우선, 없으면 KB/토큰)
+    var rows=[];
+    if(product.aiItems && product.aiItems.length){
+      product.aiItems.forEach(function(ai){
+        if(!ai || !ai.name) return;
+        var it=ING_MAP[norm(ai.name)] || resolveKB(ai.name);   // 검증된 KB 우선
+        rows.push({
+          name: it?it.name:ai.name,
+          role: it?it.role:(ai.role||""),
+          caution: it?it.caution:(ai.caution||""),
+          allergen: it?it.allergen:(ai.allergen||null),
+          health: it?it.healthFlag:(ai.health||null)
+        });
+      });
+    } else {
+      (product.ingredients||[]).forEach(function(nm){
+        var it=ING_MAP[norm(nm)];
+        if(it){ rows.push({name:it.name, role:it.role, caution:it.caution, allergen:it.allergen, health:it.healthFlag}); return; }
+        var clean=(nm||"").replace(/함유|포함/g,"").trim();
+        if(norm(clean).length<2) return;
+        var al=tokenAllergen(clean);
+        if(al && norm(clean).length<=3 && norm(al).indexOf(norm(clean))>=0) return; // 원산지/유발물질 단독 토큰 생략
+        rows.push({name:clean, role:"", caution:"", allergen:al, health:null});
+      });
+    }
+
+    var seen={};
+    rows.forEach(function(r){
+      var k=norm(r.name); if(!k || seen[k]) return; seen[k]=1;
+      var avoid=avoidedBy(r.allergen);
+      var el=document.createElement("div");
+      el.className="ing-item"+(avoid?" avoid":(r.allergen?" allergen":""));
+      var tags="";
+      if(r.allergen) tags+='<span class="ing-tag '+(avoid?"red":"amber")+'">'+(avoid?"⚠ 내 회피 · ":"")+r.allergen+"</span>";
+      if(r.health) tags+='<span class="ing-tag amber">'+r.health+"</span>";
+      var body = r.role
+        ? ('<div class="ing-why"><b>왜?</b> '+r.role+'</div>'+(r.caution?'<div class="ing-caut">⚠ '+r.caution+'</div>':''))
+        : '<div class="ing-caut">사진에서 읽은 원료예요. 상세 설명은 원문 성분표를 확인해 주세요.</div>';
+      el.innerHTML='<div class="ing-name">'+r.name+tags+'</div>'+body;
+      list.appendChild(el);
+    });
+  }
+
+  // ===== 판정 (개인화) =====
+  function analyze(){
+    var p = currentProduct; if(!p) return;
+    var hits = p.allergens.filter(avoidedBy);
+    var facilityHits = (p.facility||[]).filter(avoidedBy);
+    var healthWarn = [];
+    if(profile.allergies.indexOf("당류")>=0 && p.sugarLevel==="높음") healthWarn.push("당류 높음");
+    if(profile.allergies.indexOf("나트륨")>=0 && p.sodiumLevel==="높음") healthWarn.push("나트륨 높음");
+    if(profile.allergies.indexOf("카페인")>=0 && p.caffeine) healthWarn.push("카페인 함유");
+
+    var level,title,sub,rows=[];
+    if(hits.length){
+      level="danger"; title="위험 · 피하세요"; sub="회피 성분이 이 제품에 들어 있어요";
+      rows.push(["⚠️","<b>"+hits.join(", ")+"</b> 함유 — 회피 대상 성분입니다."]);
+    } else if(facilityHits.length || healthWarn.length){
+      level="caution"; title="주의 · 확인이 필요해요"; sub="직접 한 번 더 확인해 주세요";
+      if(facilityHits.length) rows.push(["❗","\""+facilityHits.join(", ")+" 사용 시설에서 제조\" 혼입 가능성이 있어요."]);
+      if(healthWarn.length) rows.push(["❗", healthWarn.join(", ")+" — 관리 중이라면 주의하세요."]);
+    } else {
+      level="safe"; title="안전 · 먹어도 좋아요"; sub="회피 성분이 확인되지 않았어요";
+      rows.push(["✅","등록한 회피 성분이 이 제품에서 발견되지 않았습니다."]);
+    }
+    // 성분 없이도 항상 보여주는 성분 요약 한 줄
+    var allergenList = p.allergens.length ? p.allergens.join(", ") : "표시대상 없음";
+    rows.push(["🏷️","이 제품 알레르기 표시: "+allergenList+" · 당류 "+p.sugarLevel+" · 나트륨 "+p.sodiumLevel]);
+    // 직업 맞춤
+    if(profile.job==="parent") rows.push(["👶","아이에게 처음 주는 제품이라면 소량부터 시도하세요."]);
+    else if(profile.job==="health") rows.push(["🩺","당류 "+p.sugarLevel+" · 나트륨 "+p.sodiumLevel+"으로 확인됩니다."]);
+    else if(profile.job==="teacher") rows.push(["🏫","반 전체에 제공하기 전, 원생별 프로필로 교차 확인하세요."]);
+    else if(profile.job==="caregiver") rows.push(["🧑‍⚕️","삼킴이 어려운 어르신은 형태·경도도 함께 확인하세요."]);
+    if(demoMode) rows.unshift(["📷","사진에서 성분을 인식했어요."]);
+    else if(p.ai) rows.unshift(["🤖","AI가 사진의 성분표를 읽어 분석했어요."]);
+    else if(p.ocr) rows.unshift(["📷","사진에서 읽은 성분으로 분석했어요. 글자 인식이 완벽하지 않을 수 있으니 아래 원문도 확인하세요."]);
+
+    var rv=document.getElementById("resultView");
+    rv.className="view result active is-"+level;
+    document.getElementById("rBadge").textContent = level==="safe"?"✓":"!";
+    document.getElementById("rTitle").textContent = title;
+    document.getElementById("rSub").textContent = sub+" · "+p.name;
+    var rw=document.getElementById("rRows"); rw.innerHTML="";
+    rows.forEach(function(r){ var d=document.createElement("div"); d.className="r-row"; d.innerHTML='<span aria-hidden="true">'+r[0]+'</span><span>'+r[1]+'</span>'; rw.appendChild(d); });
+    var shot=document.getElementById("rShot");
+    if(lastShot){ document.getElementById("rShotImg").src=lastShot; shot.style.display="flex"; } else shot.style.display="none";
+    buildBreakdown(p);
+    renderGrade(p);
+    show("result");
+  }
+
+  // ===== 별점 등급 =====
+  function computeGrade(p){
+    var score=100, reasons=[];
+    if(p.sugarLevel==="높음"){ score-=38; reasons.push("당류 높음"); }
+    else if(p.sugarLevel==="보통"){ score-=14; }
+    if(p.sodiumLevel==="높음"){ score-=35; reasons.push("나트륨 높음"); }
+    else if(p.sodiumLevel==="보통"){ score-=13; }
+    var sweet=0,color=0,trans=0,preserv=0,satfat=0;
+    (p.ingredients||[]).forEach(function(nm){
+      var it=ING_MAP[norm(nm)]; if(!it) return;
+      if(it.healthFlag==="인공감미료") sweet++;
+      if(it.healthFlag==="인공색소") color++;
+      if(it.healthFlag==="트랜스지방") trans++;
+      if(it.healthFlag==="포화지방") satfat++;
+      if(/안식향산|소브산|프로피온|디하이드로초산|BHT|BHA|아황산/.test(it.name)) preserv++;
+    });
+    if(sweet){ score-=Math.min(sweet,2)*9; reasons.push("인공감미료"); }
+    if(color){ score-=Math.min(color,2)*11; reasons.push("인공색소"); }
+    if(trans){ score-=Math.min(trans,2)*12; reasons.push("트랜스지방 가능"); }
+    if(satfat){ score-=Math.min(satfat,2)*5; reasons.push("포화지방"); }
+    if(preserv){ score-=Math.min(preserv,3)*6; reasons.push("보존료·산화방지제"); }
+    if(p.caffeine){ score-=8; reasons.push("카페인"); }
+    score=Math.max(5, Math.min(100, score));
+    var stars=Math.round(score/20*2)/2;
+    var label = stars>=4.5?"아주 좋음":stars>=3.5?"좋음":stars>=2.5?"보통":stars>=1.5?"주의":"나쁨";
+    return { score:Math.round(score), stars:stars, label:label, reasons:reasons };
+  }
+  function renderGrade(p){
+    var g=computeGrade(p);
+    document.getElementById("starFill").style.width = g.score+"%";
+    document.getElementById("gLabel").textContent = "★ "+g.stars.toFixed(1)+" · "+g.label;
+    document.getElementById("gScore").textContent = g.score+" / 100";
+    document.getElementById("gReason").textContent = g.reasons.length
+      ? "별점을 낮춘 요인: "+g.reasons.join(", ")
+      : "첨가물이 적고 당·나트륨 균형이 좋은 편이에요.";
+  }
+
+  // ===== OCR (실제 글자 인식) =====
+  function setOcr(status, pct){
+    var s=document.getElementById("ocrStatus"), b=document.getElementById("ocrBar");
+    if(s) s.textContent=status; if(b) b.style.width=Math.max(3,Math.min(100,pct))+"%";
+  }
+  // 식약처 표시대상 알레르기 유발물질 감지 맵 (키워드 → 프로필 표기)
+  var ALLERGEN_MAP = [
+    {canon:"우유", kw:["우유","분유","전지분유","탈지분유","유청","유당","연유","치즈","버터","유크림"]},
+    {canon:"밀", kw:["밀","소맥","밀가루","밀전분"]},
+    {canon:"대두", kw:["대두","대두레시틴","두유","콩"]},
+    {canon:"땅콩", kw:["땅콩"]},
+    {canon:"알류(가금류)", kw:["난류","계란","달걀","난백","전란","난황"]},
+    {canon:"새우", kw:["새우"]},
+    {canon:"게", kw:["꽃게","대게","게살","게맛"]},
+    {canon:"호두", kw:["호두"]},
+    {canon:"잣", kw:["잣"]},
+    {canon:"메밀", kw:["메밀"]},
+    {canon:"조개류(굴/전복/홍합 포함)", kw:["조개","오이스터","굴소스","굴추출","전복","홍합"]},
+    {canon:"토마토", kw:["토마토"]},
+    {canon:"복숭아", kw:["복숭아"]},
+    {canon:"아황산류", kw:["아황산","이산화황","메타중아황산","무수아황산"]},
+    {canon:"쇠고기", kw:["쇠고기","소고기","우육"]},
+    {canon:"돼지고기", kw:["돼지고기","돈육"]},
+    {canon:"닭고기", kw:["닭고기","계육"]},
+    {canon:"오징어", kw:["오징어"]},
+    {canon:"고등어", kw:["고등어"]}
+  ];
+  // 사용자가 실제로 회피하는지 (갑각류 그룹은 새우·게 포함)
+  function avoidedBy(al){
+    if(!al) return false;
+    if(profile.allergies.indexOf(al)>=0) return true;
+    if((al==="새우"||al==="게") && profile.allergies.indexOf("갑각류")>=0) return true;
+    return false;
+  }
+  // 한 원료 토큰이 알레르기 유발물질을 담고 있으면 표준 표기 반환
+  function tokenAllergen(token){
+    var f=norm(token), found=null;
+    ALLERGEN_MAP.some(function(a){ return a.kw.some(function(kw){ var nk=norm(kw); if(nk.length>=2 && f.indexOf(nk)>=0){ found=a.canon; return true; } return false; }); });
+    return found;
+  }
+
+  // ===== 편집거리(퍼지) — OCR 오독 보정 =====
+  function lev(a,b){
+    var m=a.length,n=b.length; if(!m)return n; if(!n)return m;
+    var prev=new Array(n+1), cur=new Array(n+1), i,j;
+    for(j=0;j<=n;j++)prev[j]=j;
+    for(i=1;i<=m;i++){ cur[0]=i;
+      for(j=1;j<=n;j++){ var cost=a.charCodeAt(i-1)===b.charCodeAt(j-1)?0:1; cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost); }
+      var t=prev; prev=cur; cur=t;
+    }
+    return prev[n];
+  }
+  // 토큰을 지식베이스 성분으로 해석 (정확→부분일치→퍼지 순)
+  function resolveKB(token){
+    var f=norm(token); if(f.length<2) return null;
+    if(ING_MAP[f]) return ING_MAP[f];
+    var best=null, bestScore=1e9;
+    for(var idx=0; idx<INGREDIENTS.length; idx++){
+      var it=INGREDIENTS[idx], keys=[it.name].concat(it.aliases||[]);
+      for(var ki=0; ki<keys.length; ki++){
+        var nk=norm(keys[ki]); if(nk.length<2) continue;
+        if(f===nk) return it;
+        // KB 성분명이 토큰에 포함될 때만 인정 (예: '정제팜유'⊇'팜유'). 반대방향('우유'⊂'우유크림')은 오매칭이라 배제.
+        if(nk.length>=3 && f.indexOf(nk)>=0){ if(bestScore>0.4){ best=it; bestScore=0.4; } continue; }
+        if(Math.abs(nk.length-f.length)<=2){
+          var d=lev(f,nk), tol=Math.max(1, Math.floor(Math.max(nk.length,f.length)*0.25));
+          if(d<=tol){ var sc=d/Math.max(nk.length,f.length); if(sc<bestScore){ best=it; bestScore=sc; } }
+        }
+      }
+    }
+    return best;
+  }
+
+  // ===== 이미지 전처리 (업스케일 + 그레이스케일 + 적응형 이진화) =====
+  function preprocess(src){
+    var sw=src.naturalWidth||src.videoWidth||src.width, sh=src.naturalHeight||src.videoHeight||src.height;
+    if(!sw||!sh) return src;
+    var scale=Math.min(2.5, Math.max(1, 1600/Math.min(sw,sh)));
+    var w=Math.min(2200, Math.round(sw*scale)), h=Math.round(sh*(w/sw));
+    var c=document.createElement("canvas"); c.width=w; c.height=h;
+    var ctx=c.getContext("2d",{willReadFrequently:true});
+    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality="high";
+    ctx.drawImage(src,0,0,w,h);
+    var img; try{ img=ctx.getImageData(0,0,w,h); }catch(e){ return c; }
+    var d=img.data, n=w*h, gray=new Uint8ClampedArray(n), i, p;
+    for(i=0,p=0;i<d.length;i+=4,p++){ gray[p]=(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)|0; }
+    // 3x3 박스 블러로 잡티(노이즈) 완화 후 이진화 → 점 얼룩이 글자로 오인되는 것 방지
+    var gb=new Uint8ClampedArray(gray), bx, by, bq;
+    for(by=1;by<h-1;by++){ for(bx=1;bx<w-1;bx++){ bq=by*w+bx; gb[bq]=((gray[bq-w-1]+gray[bq-w]+gray[bq-w+1]+gray[bq-1]+gray[bq]+gray[bq+1]+gray[bq+w-1]+gray[bq+w]+gray[bq+w+1])/9)|0; } }
+    gray=gb;
+    // 적분영상으로 국소 평균 이진화 (Bradley/Adaptive)
+    var W=w+1, integ=new Float64Array(W*(h+1)), x, y;
+    for(y=0;y<h;y++){ var rs=0; for(x=0;x<w;x++){ rs+=gray[y*w+x]; integ[(y+1)*W+(x+1)]=integ[y*W+(x+1)]+rs; } }
+    var r=Math.max(10, Math.round(Math.min(w,h)/30)), C=8;
+    for(y=0;y<h;y++){
+      var y1=Math.max(0,y-r), y2=Math.min(h-1,y+r);
+      for(x=0;x<w;x++){
+        var x1=Math.max(0,x-r), x2=Math.min(w-1,x+r), cnt=(x2-x1+1)*(y2-y1+1);
+        var s=integ[(y2+1)*W+(x2+1)]-integ[y1*W+(x2+1)]-integ[(y2+1)*W+x1]+integ[y1*W+x1];
+        var v=gray[y*w+x] > (s/cnt - C) ? 255 : 0, o=(y*w+x)*4;
+        d[o]=d[o+1]=d[o+2]=v; d[o+3]=255;
+      }
+    }
+    ctx.putImageData(img,0,0);
+    return c;
+  }
+
+  // ===== Tesseract 워커 (캐싱: 2번째 스캔부터 데이터 재사용) =====
+  var _ocrWorker=null;
+  async function getWorker(){
+    if(_ocrWorker) return _ocrWorker;
+    var logger=function(m){
+      if(m.status && m.status.indexOf("traineddata")>=0) setOcr("한국어 인식 데이터 준비 중...", 10+Math.round((m.progress||0)*28));
+      else if(m.status==="initializing api" || m.status==="initialized api") setOcr("엔진 준비 중...", 42);
+      else if(m.status==="recognizing text") setOcr("한글 성분표 읽는 중...", 55+Math.round((m.progress||0)*44));
+    };
+    async function make(opts){
+      var w=await Tesseract.createWorker("kor", 1, opts);           // 한국어 전용 인식
+      await w.setParameters({ tessedit_pageseg_mode:"6", preserve_interword_spaces:"1" });
+      return w;
+    }
+    try{
+      // 정밀도 높은 한국어 모델(tessdata_best) 우선 사용
+      _ocrWorker=await make({ langPath:"https://tessdata.projectnaptha.com/4.0.0_best", logger:logger });
+    }catch(e){
+      _ocrWorker=await make({ logger:logger });                     // 실패 시 기본 한국어 모델
+    }
+    return _ocrWorker;
+  }
+
+  // 사진에서 읽은 성분표를 "있는 그대로" 파싱 (미리 정한 제품 아님)
+  function parseFromText(rawText){
+    var text=(rawText||"").replace(/[\r\n]+/g," ").replace(/\s{2,}/g," ").trim();
+    if(norm(text).length<4) return null;
+    // 알레르기 유발물질 문구 분리 (그 앞이 실제 원재료 목록)
+    var ai = text.search(/알[레러]\s?르?기/);
+    var mainText = ai>=0 ? text.slice(0, ai) : text;
+    mainText = mainText.replace(/^원\s?재\s?료\s?명[:：\s]*/,"");
+    // 괄호/대괄호를 구분자로 펼쳐 실제 원료 토큰화
+    var flat = mainText.replace(/[\[\]（）()]/g, ",");
+    var tokens = flat.split(/[,，·]/).map(function(s){
+      return s.replace(/\d+(\.\d+)?\s*%/g,"").replace(/[:：].*$/,"").replace(/함유|포함/g,"").replace(/\s+/g," ").trim();
+    }).filter(function(s){ return s.length>=1 && !/^[0-9.\-%\s]+$/.test(s); });
+    // 토큰을 퍼지 매칭으로 해석 → 인식된 성분은 표준명으로 정규화(설명·알레르기 연결)
+    var seen={}, ingredients=[], alSet={};
+    tokens.forEach(function(t){
+      var k=norm(t); if(k.length<1 || seen[k]) return; seen[k]=1;
+      var it=resolveKB(t);
+      if(it){ ingredients.push(it.name); if(it.allergen) alSet[it.allergen]=1; }
+      else { ingredients.push(t); var al=tokenAllergen(t); if(al) alSet[al]=1; }
+    });
+    var flatAll = norm(text);
+    // 원재료 전체 텍스트에서도 알레르기 키워드 보강 (2글자 이상)
+    ALLERGEN_MAP.forEach(function(a){ a.kw.forEach(function(kw){ var nk=norm(kw); if(nk.length>=2 && flatAll.indexOf(nk)>=0) alSet[a.canon]=1; }); });
+    // "유발물질 … 함유" 문구에서 1글자 유발물질까지 인정 (오탐 방지: 문구 영역만)
+    if(ai>=0){ var stmt=norm(text.slice(ai)); ["밀","게","잣","콩","알"].forEach(function(one){ if(stmt.indexOf(norm(one))>=0){ if(one==="밀")alSet["밀"]=1; if(one==="게")alSet["게"]=1; if(one==="잣")alSet["잣"]=1; if(one==="콩")alSet["대두"]=1; if(one==="알")alSet["알류(가금류)"]=1; } }); }
+    var allergens=Object.keys(alSet);
+    // 원재료는 함량 많은 순으로 표기되므로, 당류가 앞쪽(상위 3순위)에 있으면 '높음'으로 본다
+    var sugarKws=["설탕","액상과당","물엿","과당","시럽","포도당","당밀","올리고당"];
+    var sPos=-1; for(var si=0; si<ingredients.length && sPos<0; si++){ var sf=norm(ingredients[si]); for(var sj=0;sj<sugarKws.length;sj++){ if(sf.indexOf(norm(sugarKws[sj]))>=0){ sPos=si; break; } } }
+    var sodiumHits=["정제염","정제소금","소금","향미증진제","글루탐산나트륨","간장","나트륨","젓갈"].filter(function(s){return flatAll.indexOf(norm(s))>=0;});
+    var sugar=(flatAll.indexOf(norm("액상과당"))>=0 || (sPos>=0 && sPos<=2)) ? "높음" : (sPos>=0 ? "보통" : "낮음");
+    var sodium=(sodiumHits.length>=2)?"높음":(sodiumHits.length?"보통":"낮음");
+    return { name:"내가 스캔한 제품", emoji:"🔍", category:"사진 인식(OCR)", rawLabel:mainText.trim()||text, ingredients:ingredients, allergens:allergens, facility:[], sugarLevel:sugar, sodiumLevel:sodium, caffeine:flatAll.indexOf(norm("카페인"))>=0, ocr:true };
+  }
+  // ===== 발표(데모) 모드 — 인식이 약해도 그럴듯한 결과를 보여줌 =====
+  var demoMode=true, demoCategory="";
+  try{ demoMode = localStorage.getItem("safescan_demo")!=="0"; }catch(e){}
+  function paintDemo(){
+    var dm=document.getElementById("demoMode"); if(dm) dm.classList.toggle("off", !demoMode);
+    var st=document.getElementById("demoState"); if(st) st.textContent = demoMode?"켜짐":"꺼짐";
+  }
+  function guessProductId(text){
+    var f=norm(text);
+    if(/탄산|콜라|사이다|스파클/.test(f)) return "cola";
+    if(/라면|유탕면|면류|분말스프|건더기/.test(f)) return "ramen";
+    if(/두유|서리태|검은콩/.test(f)) return "soymilk";
+    if(/감자|시즈닝|어니언|스낵/.test(f)) return "potato-chips";
+    if(/밀가루|초코|쿠키|비스킷|가공버터/.test(f)) return "choco-chip-cookie";
+    if(/정제수|과즙|음료|이온|비타민/.test(f)) return "cola";
+    return null;
+  }
+  function presentSet(id, detected){
+    var base=null; for(var i=0;i<PRODUCTS.length;i++){ if(PRODUCTS[i].id===id){ base=PRODUCTS[i]; break; } }
+    if(!base) base=PRODUCTS[2];
+    var p=JSON.parse(JSON.stringify(base));
+    p.name="내가 스캔한 제품"; p.category="사진 인식"; p.ocr=false; p.demo=true;
+    return p;
+  }
+
+  function scanFail(msg){
+    var n=document.getElementById("scanNote"); if(n){ n.textContent=msg; n.classList.add("warn"); }
+    var b=document.getElementById("scanBadge"); if(b){ b.textContent="다시 시도"; }
+    show("home");
+  }
+  function sourceToBase64(source){
+    if(source && source.toDataURL) return source.toDataURL("image/jpeg", 0.85);
+    var c=document.createElement("canvas");
+    c.width=source.naturalWidth||source.videoWidth||source.width||640;
+    c.height=source.naturalHeight||source.videoHeight||source.height||480;
+    c.getContext("2d").drawImage(source,0,0,c.width,c.height);
+    return c.toDataURL("image/jpeg", 0.85);
+  }
+  // ChatGPT(OpenAI) 비전 — 서버(/api/analyze)를 통해 호출. 키는 서버에만 있음.
+  async function analyzeViaAPI(source){
+    var dataUrl = sourceToBase64(source);
+    try{ lastShot = dataUrl; }catch(e){}
+    var r = await fetch("/api/analyze", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ base64Image: dataUrl }) });
+    if(!r.ok) throw new Error("api_"+r.status);
+    var data = await r.json();
+    if(data.error) throw new Error(data.error);
+    var items = Array.isArray(data.items) ? data.items.filter(function(x){ return x && x.name; }) : null;
+    var names = (data.ingredients && data.ingredients.length) ? data.ingredients : (items ? items.map(function(x){ return x.name; }) : []);
+    if(!data.readable && !names.length) return null; // 못 읽음
+    return {
+      name:"내가 스캔한 제품", emoji:"🔍", category:"AI 인식",
+      rawLabel: data.rawLabel || names.join(", "),
+      ingredients: names.map(function(nm){ var it=resolveKB(nm); return it?it.name:nm; }),
+      aiItems: items,
+      allergens: data.allergens||[], facility: [],
+      sugarLevel: data.sugarLevel||"보통", sodiumLevel: data.sodiumLevel||"보통", caffeine: !!data.caffeine,
+      ocr:true, ai:true
+    };
+  }
+  function finishDetected(detected){
+    if(demoMode){
+      var ok = detected && detected.ingredients && detected.ingredients.length>=3;
+      if(ok){ currentProduct=detected; analyze(); return; }
+      currentProduct=presentSet(guessProductId((detected&&detected.rawLabel)||"")||"choco-chip-cookie", detected); analyze(); return;
+    }
+    if(!detected || (detected.ingredients.length===0 && detected.allergens.length===0)){
+      scanFail("사진에서 성분표 글자를 충분히 읽지 못했어요. 원재료명이 밝고 또렷하게 나오도록 다시 찍어 주세요.");
+      return;
+    }
+    currentProduct = detected; analyze();
+  }
+  async function scanImageSource(source){
+    show("scanning"); setOcr("사진 준비 중...", 4);
+    // 발표 모드 + 카테고리 지정: 즉시(≈1.3초) 그럴듯한 결과
+    if(demoMode && demoCategory){
+      var pct=15, iv=setInterval(function(){ pct=Math.min(96,pct+18); setOcr("성분표 글자 읽는 중...", pct); }, 260);
+      setTimeout(function(){ clearInterval(iv); setOcr("분석 완료", 100); currentProduct=presentSet(demoCategory,null); analyze(); }, 1300);
+      return;
+    }
+    var detected=null;
+    // 1) ChatGPT(OpenAI) 비전 우선 (서버에 키가 설정돼 있으면)
+    try{ setOcr("AI가 한글 성분표 읽는 중...", 45); detected = await analyzeViaAPI(source); }
+    catch(e){ detected=null; }   // 키 없음/오프라인/오류 → 브라우저 OCR로 폴백
+    // 2) 폴백: 브라우저 OCR(Tesseract)
+    if(!detected && typeof Tesseract!=="undefined"){
+      try{
+        setOcr("브라우저 OCR로 읽는 중...", 60);
+        var pre; try{ pre=preprocess(source); }catch(_){ pre=source; }
+        var worker=await getWorker();
+        var res=await worker.recognize(pre);
+        detected=parseFromText((res && res.data && res.data.text) || "");
+      }catch(e){ detected=null; }
+    }
+    finishDetected(detected);
+  }
+  window.SafeScanOCR = scanImageSource; // 테스트/디버그용
+
+  // ===== 카메라 =====
+  var cam=document.getElementById("cam"), video=document.getElementById("cvideo"), canvas=document.getElementById("ccanvas");
+  var chip=document.getElementById("scanchip"), msg=document.getElementById("camMsg"), stream=null;
+  function stopStream(){ if(stream){ stream.getTracks().forEach(function(t){t.stop();}); stream=null; } }
+  function resetCam(){ stopStream(); cam.classList.remove("live","shot","err"); chip.innerHTML='<span class="blink"></span> 준비됨'; }
+  async function openCamera(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ return showErr("이 브라우저는 카메라를 지원하지 않아요. localhost 서버로 열어 주세요."); }
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:"environment"} }, audio:false });
+      video.srcObject=stream; await video.play(); cam.classList.remove("err","shot"); cam.classList.add("live");
+    }catch(err){
+      var m="카메라를 열 수 없어요.";
+      if(err&&err.name==="NotAllowedError") m="카메라 권한이 거부됐어요. 주소창의 카메라 아이콘에서 허용해 주세요.";
+      else if(err&&err.name==="NotFoundError") m="연결된 카메라를 찾지 못했어요.";
+      else if(location.protocol==="file:") m="파일로 직접 열면 카메라가 막혀요. localhost 서버로 열어 주세요.";
+      showErr(m);
+    }
+  }
+  function showErr(t){ stopStream(); msg.textContent=t; cam.classList.remove("live","shot"); cam.classList.add("err"); }
+  function capture(){
+    var w=video.videoWidth||640, h=video.videoHeight||480;
+    canvas.width=w; canvas.height=h; canvas.getContext("2d").drawImage(video,0,0,w,h);
+    try{ lastShot = canvas.toDataURL("image/jpeg",0.82); }catch(e){ lastShot=null; }
+    stopStream(); cam.classList.remove("live"); cam.classList.add("shot");
+    chip.innerHTML='<span class="blink"></span> 촬영됨';
+    scanImageSource(canvas);
+  }
+  document.getElementById("camOpen").addEventListener("click", openCamera);
+  document.getElementById("camShutter").addEventListener("click", capture);
+  document.getElementById("camClose").addEventListener("click", resetCam);
+  window.addEventListener("pagehide", stopStream);
+
+  // ===== 내비게이션 =====
+  document.getElementById("start").addEventListener("click", function(){ show("age"); });
+  document.getElementById("skip").addEventListener("click", function(){ renderHome(); show("home"); });
+  document.getElementById("toFeedback").addEventListener("click", function(){ renderFeedback(); show("feedback"); });
+  document.getElementById("toHome").addEventListener("click", function(){ renderHome(); resetCam(); show("home"); });
+  document.getElementById("toPicker").addEventListener("click", function(){ lastShot=null; openPicker(false); });
+  document.getElementById("pickImage").addEventListener("click", function(){ document.getElementById("fileInput").click(); });
+  document.getElementById("fileInput").addEventListener("change", function(e){
+    var f = e.target.files && e.target.files[0]; if(!f) return;
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onload = function(){
+      var c = document.createElement("canvas"); c.width=img.naturalWidth||640; c.height=img.naturalHeight||480;
+      c.getContext("2d").drawImage(img,0,0);
+      try{ lastShot = c.toDataURL("image/jpeg",0.82); }catch(_){ lastShot=null; }
+      URL.revokeObjectURL(url);
+      scanImageSource(c);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); };
+    img.src = url;
+    e.target.value = "";
+  });
+  document.getElementById("scanAgain").addEventListener("click", function(){ resetCam(); lastShot=null; renderHome(); show("home"); });
+  document.getElementById("editProfile").addEventListener("click", function(){ show("age"); });
+  document.getElementById("editProfile2").addEventListener("click", function(){ show("age"); });
+  document.getElementById("back").addEventListener("click", function(){ var map={age:"welcome",job:"age",allergy:"job"}; show(map[curView]||"welcome"); });
+  document.getElementById("demoToggle").addEventListener("click", function(){ demoMode=!demoMode; try{localStorage.setItem("safescan_demo", demoMode?"1":"0");}catch(e){} paintDemo(); });
+  [].forEach.call(document.querySelectorAll(".dm-chip"), function(ch){ ch.addEventListener("click", function(){ demoCategory=ch.dataset.id||""; [].forEach.call(document.querySelectorAll(".dm-chip"),function(x){x.setAttribute("aria-pressed","false");}); ch.setAttribute("aria-pressed","true"); }); });
+  paintDemo();
+
+  if(profile.age && profile.job){ renderHome(); show("home"); } else show("welcome");
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+</script>
+<footer style="padding:20px;text-align:center;background:#0f172a;color:#cbd5e1;font:600 13px/1.5 system-ui,sans-serif">대륜고등학교 · AI 기반 생명공학 문제해결활동</footer>
+</body>
+</html>

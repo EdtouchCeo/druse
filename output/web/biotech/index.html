@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="대륜고등학교 AI 기반 생명공학 문제해결활동 학생 결과물 갤러리">
+  <title>AI 기반 생명공학 문제해결활동 | 대륜고등학교</title>
+  <style>
+    :root{--brand:#4f46e5;--brand-dark:#3730a3;--brand-soft:#eef2ff;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--surface:#fff;--bg:#f8fafc;--warning:#fffbeb;--warning-line:#f59e0b}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;line-height:1.65}
+    a{color:inherit}
+    .wrap{width:min(1120px,calc(100% - 32px));margin:auto}
+    header{background:linear-gradient(135deg,#312e81,#4f46e5 58%,#0f766e);color:#fff;padding:20px 0 70px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:.9rem;color:#e0e7ff}
+    .school{font-size:.82rem;font-weight:700;letter-spacing:.06em;color:#c7d2fe}
+    .hero{max-width:760px;padding-top:62px}
+    .eyebrow{margin:0 0 10px;font-size:.84rem;font-weight:800;letter-spacing:.12em;color:#a7f3d0}
+    h1{margin:0;font-size:clamp(2rem,5vw,3.65rem);line-height:1.15;letter-spacing:-.04em}
+    .lead{margin:20px 0 0;max-width:670px;color:#e0e7ff;font-size:clamp(1rem,2vw,1.13rem)}
+    main{padding:52px 0 72px}
+    .heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}
+    h2{margin:0;font-size:clamp(1.45rem,3vw,2rem);letter-spacing:-.025em}
+    .count{color:var(--muted);font-size:.9rem}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+    .project{display:flex;flex-direction:column;min-height:290px;padding:25px;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 28px rgba(15,23,42,.06);transition:transform .2s,box-shadow .2s}
+    .project:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(15,23,42,.11)}
+    .project-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--brand-soft);font-size:1.5rem}
+    .tag{padding:4px 9px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:.75rem;font-weight:700}
+    .project h3{margin:22px 0 8px;font-size:1.25rem;letter-spacing:-.02em}
+    .project p{margin:0;color:var(--muted);font-size:.93rem}
+    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:20px}
+    .open{display:inline-flex;flex:1 1 auto;align-items:center;justify-content:center;gap:7px;padding:11px 14px;border-radius:11px;background:var(--brand);color:#fff;text-decoration:none;font-weight:750;font-size:.9rem}
+    .open:hover{background:var(--brand-dark)}
+    .open.secondary{background:#eef2ff;color:var(--brand-dark);border:1px solid #c7d2fe}
+    .open.secondary:hover{background:#e0e7ff}
+    .notice{margin-top:32px;padding:18px 20px;border-left:4px solid var(--warning-line);border-radius:12px;background:var(--warning);font-size:.88rem;color:#744210}
+    .notice strong{display:block;margin-bottom:3px;color:#713f12}
+    .empty{grid-column:1/-1;padding:44px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:#fff}
+    footer{padding:25px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:.82rem}
+    @media(max-width:840px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:580px){.wrap{width:min(100% - 24px,1120px)}header{padding-bottom:52px}.hero{padding-top:42px}.top{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.heading{align-items:flex-start;flex-direction:column;gap:4px}.project{min-height:265px}main{padding-top:38px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="top">
+        <a class="back" href="../#student/special/ai" aria-label="대륜고 사용설명서 AI 기반 생명공학 활동으로 돌아가기">← 대륜고 사용설명서</a>
+        <span class="school">DAERYUN HIGH SCHOOL</span>
+      </div>
+      <div class="hero">
+        <p class="eyebrow">STUDENT PROJECT GALLERY</p>
+        <h1>AI 기반 생명공학<br>문제해결활동</h1>
+        <p class="lead">학생들이 생명과학의 실제 문제를 발견하고, AI와 디지털 기술을 활용해 설계한 해결 아이디어와 프로토타입을 소개합니다.</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="heading">
+      <h2>학생 문제해결 결과물</h2>
+      <span class="count" id="project-count" aria-live="polite"></span>
+    </div>
+    <div class="grid" id="project-grid"></div>
+    <aside class="notice" aria-label="이용 안내">
+      <strong>건강·의료 정보 이용 안내</strong>
+      이 페이지의 결과물은 교육 목적의 학생 프로젝트이며, 건강·의료 개념을 시연한 프로토타입입니다. 질병의 진단·치료 또는 전문적인 의학적 조언을 대신하지 않습니다.
+    </aside>
+  </main>
+
+  <footer><div class="wrap">대륜고등학교 · AI 기반 생명공학 문제해결활동</div></footer>
+
+  <script>
+    // 새 결과물은 아래 배열에 객체 하나를 추가하면 카드로 자동 표시됩니다.
+    const PROJECTS = [
+      {
+        title: '푸드케어 렌즈',
+        description: '식품과 건강 정보를 AI로 살펴보는 생명공학 문제해결 프로젝트입니다.',
+        url: 'https://mldld3276-wq.github.io/foodcare-lens/',
+        icon: '🥗',
+        category: '식품·건강',
+        external: true
+      },
+      {
+        title: '디지털 피부 트윈',
+        description: '피부 상태와 관련된 생명과학 정보를 디지털 트윈 개념으로 탐색하는 프로젝트입니다.',
+        url: './dermatwin.html',
+        icon: '🧬',
+        category: '디지털 헬스',
+        external: false
+      },
+      {
+        title: 'GenoTrack',
+        description: 'AI 분석을 활용해 생명공학 데이터를 이해하고 탐색하는 플랫폼 프로젝트입니다.',
+        url: 'https://ai-analysis-platform-intro.netlify.app/',
+        icon: '🧪',
+        category: '유전체·분석',
+        external: true
+      },
+      {
+        title: '엑토인 생산 공장 AI 시뮬레이터',
+        description: '미생물 배양 조건과 엑토인 생산량의 관계를 탐색하며 AI 최적화 과정을 체험하는 시뮬레이터입니다.',
+        url: './ectoine.html', icon: '🏭', category: '바이오공정', external: false
+      },
+      {
+        title: 'ResisMap',
+        description: '항생제 내성의 확산과 위험 요인을 데이터로 탐색하고 대응 전략을 설계하는 프로젝트입니다.',
+        url: './resismap.html', icon: '🦠', category: '항생제 내성', external: false,
+        links: [{ label: '사업 기획서 보기', url: './resismap-plan.html', external: false }]
+      },
+      {
+        title: 'AEROVITAL',
+        description: '생체 신호를 활용해 항공 종사자의 건강과 안전을 지원하는 웨어러블 헬스케어 프로젝트입니다.',
+        url: './aerovital.html', icon: '✈️', category: '웨어러블 헬스', external: false
+      },
+      {
+        title: '알레르기 세이프스캔',
+        description: '식품 정보를 바탕으로 알레르기 위험을 확인하고 안전한 선택을 돕는 교육용 프로젝트입니다.',
+        url: './safescan/', icon: '🛡️', category: '식품 알레르기', external: false
+      }
+    ];
+
+    const grid = document.getElementById('project-grid');
+    const count = document.getElementById('project-count');
+    count.textContent = `총 ${PROJECTS.length}개 프로젝트`;
+
+    if (!PROJECTS.length) {
+      grid.innerHTML = '<div class="empty">등록된 결과물이 없습니다.</div>';
+    } else {
+      PROJECTS.forEach(project => {
+        const article = document.createElement('article');
+        article.className = 'project';
+
+        const top = document.createElement('div');
+        top.className = 'project-top';
+        const icon = document.createElement('span');
+        icon.className = 'icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = project.icon || '🔬';
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = project.category || '학생 프로젝트';
+        top.append(icon, tag);
+
+        const title = document.createElement('h3');
+        title.textContent = project.title;
+        const description = document.createElement('p');
+        description.textContent = project.description;
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        const linkData = [{ label: project.external ? '프로젝트 새 창에서 보기 ↗' : '프로젝트 보기 →', url: project.url, external: project.external }, ...(project.links || [])];
+        linkData.forEach((item, index) => {
+          const link = document.createElement('a');
+          link.className = `open${index ? ' secondary' : ''}`;
+          link.href = item.url;
+          link.textContent = item.label;
+          if (item.external) { link.target = '_blank'; link.rel = 'noopener noreferrer'; }
+          link.setAttribute('aria-label', `${project.title} ${item.label}`);
+          actions.append(link);
+        });
+
+        article.append(top, title, description, actions);
+        grid.append(article);
+      });
+    }
+  </script>
+</body>
+</html>

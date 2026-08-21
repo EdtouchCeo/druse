@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="성분표를 찍으면 우리 아이가 먹어도 되는지 3초 안에 알려주는 알레르기 안전 스캐너">
+<meta name="theme-color" content="#157A5B">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="세이프스캔">
+<title>알레르기 세이프 스캐너 — 성분표를 찍으면 3초 안에</title>
+<style>
+  :root{
+    --sans: system-ui, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", Roboto, sans-serif;
+    --bg:#F4F6F1; --surface:#FFFFFF; --surface-2:#EDF1EA;
+    --ink:#12201A; --ink-soft:#45564C; --muted:#7C8C82; --line:#E1E7DD;
+    --brand:#157A5B; --brand-strong:#0E5E45; --brand-tint:rgba(21,122,91,.10);
+    --safe:#1FA265; --safe-tint:rgba(31,162,101,.12);
+    --caution:#D9930C; --caution-tint:rgba(217,147,12,.14);
+    --danger:#D8443A; --danger-tint:rgba(216,68,58,.12);
+    --shadow:0 1px 2px rgba(18,32,26,.05), 0 12px 34px rgba(18,32,26,.09);
+    --radius:18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0C1310; --surface:#121C17; --surface-2:#17231C;
+      --ink:#EAF2EC; --ink-soft:#AAB9B0; --muted:#7E8E84; --line:#23332A;
+      --brand:#41D28E; --brand-strong:#74E4B0; --brand-tint:rgba(65,210,142,.12);
+      --safe:#35C97F; --safe-tint:rgba(53,201,127,.14);
+      --caution:#F0B23E; --caution-tint:rgba(240,178,62,.15);
+      --danger:#F0625A; --danger-tint:rgba(240,98,90,.14);
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#F4F6F1; --surface:#FFFFFF; --surface-2:#EDF1EA;
+    --ink:#12201A; --ink-soft:#45564C; --muted:#7C8C82; --line:#E1E7DD;
+    --brand:#157A5B; --brand-strong:#0E5E45; --brand-tint:rgba(21,122,91,.10);
+    --safe:#1FA265; --safe-tint:rgba(31,162,101,.12);
+    --caution:#D9930C; --caution-tint:rgba(217,147,12,.14);
+    --danger:#D8443A; --danger-tint:rgba(216,68,58,.12);
+    --shadow:0 1px 2px rgba(18,32,26,.05), 0 12px 34px rgba(18,32,26,.09);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0C1310; --surface:#121C17; --surface-2:#17231C;
+    --ink:#EAF2EC; --ink-soft:#AAB9B0; --muted:#7E8E84; --line:#23332A;
+    --brand:#41D28E; --brand-strong:#74E4B0; --brand-tint:rgba(65,210,142,.12);
+    --safe:#35C97F; --safe-tint:rgba(53,201,127,.14);
+    --caution:#F0B23E; --caution-tint:rgba(240,178,62,.15);
+    --danger:#F0625A; --danger-tint:rgba(240,98,90,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .page{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  .wrap{max-width:1120px; margin:0 auto; padding:0 24px;}
+  h1,h2,h3{margin:0; text-wrap:balance; line-height:1.15; letter-spacing:-.02em;}
+  p{margin:0;}
+  a{color:inherit;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:700;
+    letter-spacing:.06em; text-transform:uppercase; color:var(--brand);
+    background:var(--brand-tint); padding:7px 13px; border-radius:999px;
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:9px;
+    font:inherit; font-weight:700; border-radius:12px; padding:14px 22px;
+    border:1px solid transparent; cursor:pointer; text-decoration:none; font-size:16px;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn-primary{background:var(--brand); color:#fff;}
+  @media (prefers-color-scheme: dark){ .btn-primary{color:#08130D;} }
+  :root[data-theme="dark"] .btn-primary{color:#08130D;}
+  :root[data-theme="light"] .btn-primary{color:#fff;}
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 10px 24px var(--brand-tint);}
+  .btn-ghost{background:transparent; color:var(--ink); border-color:var(--line);}
+  .btn-ghost:hover{border-color:var(--brand); color:var(--brand);}
+  .btn:focus-visible{outline:3px solid var(--brand); outline-offset:2px;}
+
+  /* Nav */
+  .nav{position:sticky; top:0; z-index:40; backdrop-filter:saturate(1.2) blur(10px);
+    background:color-mix(in srgb, var(--bg) 82%, transparent); border-bottom:1px solid var(--line);}
+  .nav-in{display:flex; align-items:center; justify-content:space-between; height:64px;}
+  .brand{display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:-.01em; font-size:17px;}
+  .mark{width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+    background:var(--brand); color:#fff; flex:0 0 auto;}
+  :root[data-theme="dark"] .mark{color:#08130D;}
+  .nav-cta{display:flex; align-items:center; gap:14px;}
+  .nav-links{display:flex; gap:22px; font-size:15px; color:var(--ink-soft); font-weight:600;}
+  .nav-links a{text-decoration:none;}
+  .nav-links a:hover{color:var(--brand);}
+
+  /* Hero */
+  .hero{padding:64px 0 40px; position:relative;}
+  .hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:48px; align-items:center;}
+  .hero h1{font-size:clamp(30px, 4.6vw, 52px); font-weight:800; margin:20px 0 18px;}
+  .hero h1 .hl{color:var(--brand);}
+  .lede{font-size:clamp(16px,1.4vw,19px); color:var(--ink-soft); max-width:33em;}
+  .hero-cta{display:flex; gap:12px; margin-top:28px; flex-wrap:wrap;}
+  .trustline{display:flex; align-items:center; gap:10px; margin-top:22px; font-size:14px; color:var(--muted);}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--safe);}
+
+  /* Phone */
+  .phone-stage{display:flex; justify-content:center; position:relative;}
+  .glow{position:absolute; inset:-6% -4% -10% -4%; background:
+    radial-gradient(60% 55% at 62% 30%, var(--brand-tint), transparent 70%);
+    filter:blur(6px); z-index:0;}
+  .phone{position:relative; z-index:1; width:300px; max-width:82vw; background:var(--surface);
+    border:1px solid var(--line); border-radius:38px; padding:14px; box-shadow:var(--shadow);}
+  .screen{background:var(--surface-2); border-radius:26px; overflow:hidden; border:1px solid var(--line);}
+  .cam{position:relative; height:150px; background:
+    linear-gradient(135deg,#2b2b2f,#43433f 60%,#585850);
+    display:grid; place-items:center; overflow:hidden;}
+  .label-card{width:76%; background:#f7f4ec; color:#2a2a26; border-radius:8px; padding:10px 11px;
+    font-size:9.5px; line-height:1.45; box-shadow:0 6px 18px rgba(0,0,0,.35); transform:rotate(-1.4deg);}
+  .label-card b{font-size:10px;}
+  .scanline{position:absolute; left:6%; right:6%; height:2px; border-radius:2px;
+    background:linear-gradient(90deg,transparent,var(--brand),transparent);
+    box-shadow:0 0 14px 2px var(--brand-tint); top:8%; animation:scan 2.8s ease-in-out infinite;}
+  @keyframes scan{0%,100%{top:10%; opacity:.25} 50%{top:82%; opacity:1}}
+  .scanchip{position:absolute; top:10px; right:10px; font-size:10px; font-weight:700; color:#fff;
+    background:rgba(0,0,0,.42); padding:4px 9px; border-radius:999px; display:flex; gap:6px; align-items:center;}
+  .blink{width:6px; height:6px; border-radius:50%; background:var(--safe); animation:blink 1.2s infinite;}
+  @keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+
+  /* camera */
+  #cvideo, #ccanvas{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none;}
+  .cam-open{position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:3;
+    font:inherit; font-size:11px; font-weight:700; color:#fff; background:rgba(0,0,0,.55);
+    border:1px solid rgba(255,255,255,.25); padding:7px 12px; border-radius:999px; cursor:pointer;
+    display:inline-flex; gap:6px; align-items:center; backdrop-filter:blur(4px);}
+  .cam-open:hover{background:rgba(0,0,0,.7);}
+  .cam-close{position:absolute; top:9px; left:9px; z-index:4; display:none; width:26px; height:26px;
+    border-radius:50%; border:none; background:rgba(0,0,0,.5); color:#fff; font-size:13px; cursor:pointer;}
+  .cam-shutter{position:absolute; bottom:12px; left:50%; transform:translateX(-50%); z-index:4; display:none;
+    width:48px; height:48px; border-radius:50%; background:#fff; border:4px solid rgba(255,255,255,.55);
+    box-shadow:0 3px 12px rgba(0,0,0,.45); cursor:pointer;}
+  .cam-shutter:active{transform:translateX(-50%) scale(.92);}
+  .cam-msg{position:absolute; left:8%; right:8%; bottom:12px; z-index:4; display:none; text-align:center;
+    font-size:11px; font-weight:600; color:#fff; background:rgba(0,0,0,.6); padding:8px 10px; border-radius:9px; line-height:1.45;}
+  .cam-open:focus-visible, .cam-close:focus-visible, .cam-shutter:focus-visible{outline:3px solid var(--brand); outline-offset:2px;}
+  /* live state: show video, hide demo label + open btn */
+  #cam.live .label-card{display:none;}
+  #cam.live #cvideo{display:block;}
+  #cam.live .cam-open{display:none;}
+  #cam.live .cam-close{display:block;}
+  #cam.live .cam-shutter{display:block;}
+  #cam.live .scanline{display:none;}
+  #cam.live .scanchip{display:none;}
+  /* shot state: show frozen canvas + scan then done */
+  #cam.shot .label-card{display:none;}
+  #cam.shot #ccanvas{display:block;}
+  #cam.shot .cam-open{display:none;}
+  #cam.shot .cam-close{display:block;}
+  #cam.shot .scanchip{display:flex;}
+  /* error state */
+  #cam.err .cam-msg{display:block;}
+  #cam.err .cam-open{display:none;}
+  #cam.err .cam-close{display:block;}
+
+  .screen-body{padding:13px 13px 16px;}
+  .prod{display:flex; align-items:center; gap:9px; font-size:12.5px; font-weight:700; margin-bottom:11px;}
+  .prod .thumb{width:30px;height:30px;border-radius:8px;background:var(--brand-tint);display:grid;place-items:center;color:var(--brand);flex:0 0 auto;}
+  .scanned{display:none; align-items:center; gap:10px; margin:0 0 11px; padding:8px; border-radius:11px;
+    background:var(--surface-2); border:1px solid var(--line); animation:fade .3s ease;}
+  .scanned.show{display:flex;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+  .scanned img{width:46px; height:46px; border-radius:8px; object-fit:cover; flex:0 0 auto; border:1px solid var(--line);}
+  .scanned-cap{display:flex; flex-direction:column; line-height:1.3;}
+  .scanned-cap b{font-size:12px; color:var(--ink);}
+  .scanned-cap span{font-size:11px; color:var(--muted);}
+  .seg{display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:11px; border:1px solid var(--line);}
+  .seg button{flex:1; font:inherit; font-size:12px; font-weight:700; padding:7px 4px; border-radius:8px;
+    border:none; background:transparent; color:var(--ink-soft); cursor:pointer; transition:.15s;}
+  .seg button[aria-selected="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.12);}
+  .seg button:focus-visible{outline:2px solid var(--brand); outline-offset:1px;}
+  .verdict{margin-top:12px; border-radius:14px; padding:14px; border:1px solid var(--line); background:var(--surface);}
+  .verdict-head{display:flex; align-items:center; gap:10px;}
+  .vbadge{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;font-size:20px;font-weight:800;}
+  .v-title{font-size:15px; font-weight:800;}
+  .v-sub{font-size:12px; color:var(--muted);}
+  .v-reason{margin-top:11px; font-size:12px; padding:9px 11px; border-radius:9px; line-height:1.5;}
+  .is-danger .vbadge{background:var(--danger-tint); color:var(--danger);}
+  .is-danger .v-title{color:var(--danger);}
+  .is-danger .v-reason{background:var(--danger-tint); color:var(--danger);}
+  .is-safe .vbadge{background:var(--safe-tint); color:var(--safe);}
+  .is-safe .v-title{color:var(--safe);}
+  .is-safe .v-reason{background:var(--safe-tint); color:var(--safe);}
+  .is-caution .vbadge{background:var(--caution-tint); color:var(--caution);}
+  .is-caution .v-title{color:var(--caution);}
+  .is-caution .v-reason{background:var(--caution-tint); color:var(--caution);}
+
+  /* Sections */
+  section{padding:66px 0;}
+  .sec-head{max-width:40em; margin-bottom:38px;}
+  .sec-head h2{font-size:clamp(24px,3vw,36px); font-weight:800; margin:14px 0 12px;}
+  .sec-head p{color:var(--ink-soft); font-size:17px;}
+
+  .vs{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  .vs-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:26px; box-shadow:var(--shadow);}
+  .vs-card.them{opacity:.96;}
+  .vs-tag{font-size:13px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;}
+  .vs-card.them .vs-tag{color:var(--muted);}
+  .vs-card.us .vs-tag{color:var(--brand);}
+  .vs-card h3{font-size:20px; margin:8px 0 16px; font-weight:800;}
+  .vlist{display:flex; flex-direction:column; gap:12px; font-size:15px; color:var(--ink-soft);}
+  .vlist li{display:flex; gap:11px; align-items:flex-start; list-style:none;}
+  .vlist{padding:0; margin:0;}
+  .ic{width:22px;height:22px;border-radius:7px;flex:0 0 auto;display:grid;place-items:center;font-size:13px;font-weight:800;margin-top:1px;}
+  .ic.no{background:var(--danger-tint); color:var(--danger);}
+  .ic.yes{background:var(--safe-tint); color:var(--safe);}
+
+  .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; counter-reset:s;}
+  .step{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:26px; box-shadow:var(--shadow);}
+  .step .num{font-size:13px; font-weight:800; color:var(--brand); letter-spacing:.08em;}
+  .step h3{font-size:18px; margin:12px 0 8px; font-weight:800;}
+  .step p{color:var(--ink-soft); font-size:14.5px;}
+  .step .emoji{font-size:26px;}
+
+  .aud{display:grid; grid-template-columns:1.3fr 1fr; gap:18px; align-items:stretch;}
+  .aud-primary{background:linear-gradient(155deg,var(--brand),var(--brand-strong)); color:#fff; border-radius:var(--radius); padding:32px; box-shadow:var(--shadow); position:relative; overflow:hidden;}
+  :root[data-theme="dark"] .aud-primary{color:#08130D;}
+  .aud-primary .k{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.85;}
+  .aud-primary h3{font-size:24px; margin:12px 0 10px; font-weight:800;}
+  .aud-primary p{font-size:15px; opacity:.94; max-width:26em;}
+  .aud-next{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:26px; box-shadow:var(--shadow);}
+  .aud-next h4{margin:0 0 14px; font-size:14px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted);}
+  .chips{display:flex; flex-wrap:wrap; gap:9px;}
+  .chip{font-size:14px; font-weight:600; padding:9px 13px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink-soft);}
+  .chip b{color:var(--ink);}
+
+  .price{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  .plan{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:30px; box-shadow:var(--shadow); display:flex; flex-direction:column;}
+  .plan.reco{border-color:var(--brand); box-shadow:0 0 0 1px var(--brand), var(--shadow);}
+  .plan .pname{font-weight:800; font-size:16px; display:flex; align-items:center; gap:10px;}
+  .tagr{font-size:11px; font-weight:800; color:#fff; background:var(--brand); padding:3px 9px; border-radius:999px;}
+  :root[data-theme="dark"] .tagr{color:#08130D;}
+  .cost{font-size:34px; font-weight:800; margin:16px 0 4px; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
+  .cost span{font-size:15px; font-weight:600; color:var(--muted);}
+  .plan ul{list-style:none; padding:0; margin:18px 0 24px; display:flex; flex-direction:column; gap:11px; font-size:14.5px; color:var(--ink-soft);}
+  .plan li{display:flex; gap:10px; align-items:flex-start;}
+  .check{color:var(--brand); font-weight:800;}
+  .plan .btn{margin-top:auto;}
+
+  .trust{background:var(--surface-2); border:1px solid var(--line); border-radius:22px; padding:38px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;}
+  .trust-item h3{font-size:16px; margin:0 0 8px; font-weight:800; display:flex; gap:9px; align-items:center;}
+  .trust-item p{font-size:14px; color:var(--ink-soft);}
+  .trust .tic{width:30px;height:30px;border-radius:9px;background:var(--brand-tint);color:var(--brand);display:grid;place-items:center;flex:0 0 auto;}
+
+  /* Final CTA */
+  .final{background:var(--ink); color:var(--bg); border-radius:26px; padding:56px 40px; text-align:center; position:relative; overflow:hidden;}
+  .final h2{font-size:clamp(26px,3.4vw,40px); font-weight:800; color:var(--surface); margin-bottom:14px;}
+  .final p{color:color-mix(in srgb, var(--surface) 72%, transparent); max-width:34em; margin:0 auto 26px; font-size:17px;}
+  .badges{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+  .storebadge{display:inline-flex; align-items:center; gap:10px; background:var(--surface); color:var(--ink); padding:12px 18px; border-radius:13px; font-weight:700; text-decoration:none; font-size:14px;}
+  .storebadge small{display:block; font-size:10px; font-weight:600; color:var(--muted); letter-spacing:.04em;}
+  .storebadge span{font-size:15px; line-height:1.1;}
+
+  footer{padding:38px 0 60px; color:var(--muted); font-size:13px;}
+  .foot-in{display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; align-items:center;}
+  .disclaimer{max-width:44em; line-height:1.6;}
+
+  .reveal{opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1; transform:none;}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr; gap:36px;}
+    .phone-stage{order:-1;}
+    .nav-links{display:none;}
+    .vs,.aud,.price,.trust{grid-template-columns:1fr;}
+    .steps{grid-template-columns:1fr;}
+    .final{padding:44px 22px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .scanline{animation:none; top:46%;}
+    .blink{animation:none;}
+    .reveal{opacity:1; transform:none; transition:none;}
+    .btn,.btn-primary:hover{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <nav class="nav">
+    <div class="wrap nav-in">
+      <div class="brand"><span class="mark" aria-hidden="true">✓</span> 세이프스캔</div>
+      <div class="nav-links">
+        <a href="#why">왜 다른가</a>
+        <a href="#how">작동 방식</a>
+        <a href="#price">요금</a>
+        <a href="#trust">정확도</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-primary" href="app.html">무료로 시작</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">바코드가 필요 없는 성분표 스캐너</span>
+        <h1>우리 아이가 먹어도 될까?<br><span class="hl">성분표만 찍으면</span> 3초 안에 답이 나와요.</h1>
+        <p class="lede">가족 각자의 알레르기를 등록해 두면, 사진 한 장으로 <b>안전</b>인지 <b>위험</b>인지 바로 알려줍니다. 데이터베이스에 없는 수입 과자도, 동네 빵집 쿠키도.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="app.html">무료로 시작하기</a>
+          <a class="btn btn-ghost" href="#how">작동 방식 보기</a>
+        </div>
+        <div class="trustline"><span class="dot"></span> 식약처 지정 알레르기 유발물질 20여 종 지원 · 가입 즉시 무료</div>
+      </div>
+
+      <div class="phone-stage">
+        <div class="glow" aria-hidden="true"></div>
+        <div class="phone" role="img" aria-label="성분표를 스캔해 가족별 안전 여부를 보여주는 앱 화면">
+          <div class="screen">
+            <div class="cam" id="cam">
+              <div class="label-card">
+                <b>원재료명</b><br>
+                밀가루, 설탕, 식물성유지, 전지분유(<b>우유</b>), 가공버터, 땅콩분태, 코코아매스, 유화제(대두), 합성착향료, 정제소금
+              </div>
+              <video id="cvideo" playsinline muted></video>
+              <canvas id="ccanvas" aria-hidden="true"></canvas>
+              <div class="scanline"></div>
+              <div class="scanchip" id="scanchip"><span class="blink"></span> 분석 중</div>
+              <button class="cam-open" id="camOpen" type="button">📷 실제 카메라로 스캔</button>
+              <button class="cam-close" id="camClose" type="button" aria-label="카메라 닫기">✕</button>
+              <button class="cam-shutter" id="camShutter" type="button" aria-label="촬영"></button>
+              <div class="cam-msg" id="camMsg"></div>
+            </div>
+            <div class="screen-body">
+              <div class="prod"><span class="thumb" aria-hidden="true">🍪</span> ○○ 초코칩 쿠키</div>
+              <div class="scanned" id="scanned">
+                <img id="scannedImg" alt="방금 촬영한 성분표 사진">
+                <div class="scanned-cap"><b>방금 스캔한 성분표</b><span>이 사진을 분석했어요</span></div>
+              </div>
+              <div class="seg" role="tablist" aria-label="가족 구성원 선택">
+                <button role="tab" data-m="0" aria-selected="true">첫째</button>
+                <button role="tab" data-m="1" aria-selected="false">둘째</button>
+                <button role="tab" data-m="2" aria-selected="false">엄마</button>
+              </div>
+              <div id="verdict" class="verdict is-danger">
+                <div class="verdict-head">
+                  <div class="vbadge" id="vbadge">!</div>
+                  <div>
+                    <div class="v-title" id="vtitle">위험 · 먹이지 마세요</div>
+                    <div class="v-sub" id="vsub">첫째 · 회피: 땅콩, 견과류</div>
+                  </div>
+                </div>
+                <div class="v-reason" id="vreason">성분표에서 <b>‘땅콩분태’</b> 검출. 첫째가 회피해야 하는 성분입니다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="why">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">차별점</span>
+        <h2>바코드를 찍는 앱은, 등록된 제품만 압니다.</h2>
+        <p>해외 유명 앱은 바코드로 제품을 찾기 때문에 데이터베이스에 없으면 아무것도 못 합니다. 우리는 성분표 글자 자체를 읽습니다.</p>
+      </div>
+      <div class="vs">
+        <div class="vs-card them reveal">
+          <div class="vs-tag">바코드 스캔 앱</div>
+          <h3>제품이 DB에 있어야만 작동</h3>
+          <ul class="vlist">
+            <li><span class="ic no">✕</span> 동네 빵집·소규모 브랜드 → 조회 불가</li>
+            <li><span class="ic no">✕</span> 갓 들어온 수입 과자 → 정보 없음</li>
+            <li><span class="ic no">✕</span> 바코드가 손상되면 인식 실패</li>
+            <li><span class="ic no">✕</span> 가족별 알레르기 판정이 아니라 일반 점수</li>
+          </ul>
+        </div>
+        <div class="vs-card us reveal">
+          <div class="vs-tag">세이프스캔 (성분표 OCR)</div>
+          <h3>글자를 읽어 거의 모든 제품에서 작동</h3>
+          <ul class="vlist">
+            <li><span class="ic yes">✓</span> 포장에 성분표만 있으면 <b>어떤 제품이든</b></li>
+            <li><span class="ic yes">✓</span> 수입·소규모·신제품도 즉시 분석</li>
+            <li><span class="ic yes">✓</span> 가족 구성원별 <b>맞춤 안전 판정</b></li>
+            <li><span class="ic yes">✓</span> ‘혼입 가능성’ 문구까지 함께 확인</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="background:var(--surface-2);">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">작동 방식</span>
+        <h2>세 단계, 3초.</h2>
+        <p>줄 서서 기다릴 필요 없이 마트 진열대 앞에서 바로.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal"><div class="emoji" aria-hidden="true">📷</div><div class="num">STEP 01</div><h3>성분표를 촬영</h3><p>제품 뒷면 원재료명을 사진 한 장으로 찍습니다. 바코드를 찾을 필요가 없습니다.</p></div>
+        <div class="step reveal"><div class="emoji" aria-hidden="true">🧠</div><div class="num">STEP 02</div><h3>AI가 성분을 해석</h3><p>글자를 읽어 첨가물의 역할과 알레르기 유발물질을 찾아냅니다. 애매하면 확인을 요청합니다.</p></div>
+        <div class="step reveal"><div class="emoji" aria-hidden="true">🚦</div><div class="num">STEP 03</div><h3>가족별 안전 신호</h3><p>등록해 둔 가족 각자의 기준으로 안전·주의·위험을 신호등처럼 보여줍니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="who">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">누구를 위해</span>
+        <h2>가장 절박한 사람부터 시작합니다.</h2>
+        <p>알레르기는 ‘알면 좋은 정보’가 아니라 ‘틀리면 응급실’인 문제입니다.</p>
+      </div>
+      <div class="aud">
+        <div class="aud-primary reveal">
+          <div class="k">1순위 고객</div>
+          <h3>알레르기가 있는 아이를 둔 부모</h3>
+          <p>마트에서 새 과자를 집을 때마다 “이거 우리 애 먹여도 되나?”를 불안하게 확인하는 사람들. 정확하고 빠른 확인이라면 기꺼이 비용을 냅니다.</p>
+        </div>
+        <div class="aud-next reveal">
+          <h4>이후 확장</h4>
+          <div class="chips">
+            <span class="chip"><b>만성질환자</b> · 당뇨·고혈압 성분 회피</span>
+            <span class="chip"><b>건강관리족</b> · 당류·나트륨·첨가물</span>
+            <span class="chip"><b>청소년·1인 가구</b> · 빠른 비교 구매</span>
+          </div>
+          <p style="margin-top:16px; font-size:14px; color:var(--muted);">좁게 시작해 강한 지점에서 넓힙니다. 순서가 전략입니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="price" style="background:var(--surface-2);">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">요금</span>
+        <h2>기본은 무료. 안심은 구독.</h2>
+        <p>돈을 내는 이유가 분명해야 한다고 믿습니다. 그 이유는 ‘우리 가족 맞춤 판정’입니다.</p>
+      </div>
+      <div class="price">
+        <div class="plan reveal">
+          <div class="pname">무료</div>
+          <div class="cost">₩0</div>
+          <ul>
+            <li><span class="check">✓</span> 성분표 촬영 &amp; 첨가물 설명</li>
+            <li><span class="check">✓</span> 기본 알레르기 성분 표시</li>
+            <li><span class="check">✓</span> 하루 스캔 횟수 제한</li>
+          </ul>
+          <a class="btn btn-ghost" href="app.html">무료로 시작</a>
+        </div>
+        <div class="plan reco reveal">
+          <div class="pname">프리미엄 <span class="tagr">추천</span></div>
+          <div class="cost">₩3,900<span> / 월</span></div>
+          <ul>
+            <li><span class="check">✓</span> <b>가족별 알레르기 프로필</b> (인원 무제한)</li>
+            <li><span class="check">✓</span> 당뇨·고혈압 맞춤 성분 분석</li>
+            <li><span class="check">✓</span> 무제한 스캔 · 건강점수 기록</li>
+            <li><span class="check">✓</span> 제품 비교 &amp; 대체 제품 추천</li>
+          </ul>
+          <a class="btn btn-primary" href="app.html">7일 무료 체험</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trust">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">정확도를 정면으로</span>
+        <h2>틀릴 수 있음을 인정하고 설계했습니다.</h2>
+        <p>안전이 걸린 제품이기에, 확신하지 못할 땐 확신하는 척하지 않습니다. 그게 진짜 신뢰입니다.</p>
+      </div>
+      <div class="trust reveal">
+        <div class="trust-item"><h3><span class="tic" aria-hidden="true">👁</span> 애매하면 원문</h3><p>인식 확신이 낮으면 판정을 미루고 “확인 불가 — 원문을 직접 확인하세요”와 함께 촬영본을 크게 보여줍니다.</p></div>
+        <div class="trust-item"><h3><span class="tic" aria-hidden="true">⛨</span> 이중 확인</h3><p>알레르기 성분은 성분명과 ‘알레르기 표시 문구’를 동시에 검사해 놓치는 경우를 줄입니다.</p></div>
+        <div class="trust-item"><h3><span class="tic" aria-hidden="true">ⓘ</span> 명확한 고지</h3><p>이 앱은 참고용이며 최종 확인은 실제 성분표로 한다는 점을 분명히 안내합니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="get">
+    <div class="wrap">
+      <div class="final reveal">
+        <h2>지금, 우리 가족 알레르기부터 등록하세요.</h2>
+        <p>다음 장보기부터 마음이 편해집니다. 설치는 무료, 우리 가족 프로필 등록까지 2분.</p>
+        <div class="badges">
+          <a class="storebadge" href="app.html"><span aria-hidden="true">🍎</span><span><small>Download on the</small>App Store</span></a>
+          <a class="storebadge" href="app.html"><span aria-hidden="true">▶</span><span><small>GET IT ON</small>Google Play</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap foot-in">
+      <div class="brand"><span class="mark" aria-hidden="true">✓</span> 세이프스캔</div>
+      <p class="disclaimer">본 서비스는 성분 확인을 돕는 참고 도구입니다. 심각한 알레르기가 있는 경우 최종 판단은 실제 제품 성분표와 전문의 상담을 따르세요. · 시안용 데모 페이지</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  (function(){
+    var data = [
+      {cls:'is-danger', badge:'!', title:'위험 · 먹이지 마세요', sub:'첫째 · 회피: 땅콩, 견과류', reason:'성분표에서 <b>‘땅콩분태’</b> 검출. 첫째가 회피해야 하는 성분입니다.'},
+      {cls:'is-safe', badge:'✓', title:'안전 · 먹어도 좋아요', sub:'둘째 · 회피: 우유', reason:'회피 대상 <b>‘우유’</b>가 있지만 둘째 프로필엔 해당 없음. 위험 성분이 확인되지 않았습니다.'},
+      {cls:'is-caution', badge:'!', title:'주의 · 확인이 필요해요', sub:'엄마 · 회피: 갑각류', reason:'“<b>새우</b>를 사용한 시설에서 제조” 혼입 가능성 문구 발견. 직접 확인을 권합니다.'}
+    ];
+    // second member avoids milk; make it genuinely safe by treating milk as not-avoided for demo clarity
+    data[1].reason = '둘째가 회피하는 성분이 성분표에서 확인되지 않았습니다. 먹어도 안전합니다.';
+    var v = document.getElementById('verdict');
+    var tabs = document.querySelectorAll('.seg button');
+    var current = 0;
+    function set(i){
+      current = i;
+      var d = data[i];
+      v.className = 'verdict ' + d.cls;
+      document.getElementById('vbadge').textContent = d.badge;
+      document.getElementById('vtitle').textContent = d.title;
+      document.getElementById('vsub').textContent = d.sub;
+      document.getElementById('vreason').innerHTML = d.reason;
+      tabs.forEach(function(t,idx){ t.setAttribute('aria-selected', idx===i ? 'true':'false'); });
+    }
+    tabs.forEach(function(t){ t.addEventListener('click', function(){ set(+t.dataset.m); }); });
+
+    /* ---- 카메라 기능 ---- */
+    var cam = document.getElementById('cam');
+    var video = document.getElementById('cvideo');
+    var canvas = document.getElementById('ccanvas');
+    var chip = document.getElementById('scanchip');
+    var msg = document.getElementById('camMsg');
+    var scanned = document.getElementById('scanned');
+    var scannedImg = document.getElementById('scannedImg');
+    var stream = null;
+
+    function stopStream(){
+      if(stream){ stream.getTracks().forEach(function(tr){ tr.stop(); }); stream = null; }
+    }
+    function resetCam(){
+      stopStream();
+      cam.classList.remove('live','shot','err');
+      chip.innerHTML = '<span class="blink"></span> 분석 중';
+      scanned.classList.remove('show');
+    }
+    async function openCamera(){
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        showError('이 브라우저에서는 카메라를 지원하지 않아요. 파일을 localhost 서버로 열면 사용할 수 있습니다.');
+        return;
+      }
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } }, audio:false });
+        video.srcObject = stream;
+        await video.play();
+        cam.classList.remove('err','shot');
+        cam.classList.add('live');
+      }catch(err){
+        var m = '카메라를 열 수 없어요.';
+        if(err && err.name === 'NotAllowedError') m = '카메라 권한이 거부됐어요. 브라우저 주소창의 카메라 아이콘에서 허용해 주세요.';
+        else if(err && err.name === 'NotFoundError') m = '연결된 카메라를 찾지 못했어요.';
+        else if(location.protocol === 'file:') m = '파일로 직접 열면 카메라가 막혀요. localhost 서버(node server.mjs)로 열어 주세요.';
+        showError(m);
+      }
+    }
+    function showError(text){
+      stopStream();
+      msg.textContent = text;
+      cam.classList.remove('live','shot');
+      cam.classList.add('err');
+    }
+    function capture(){
+      var w = video.videoWidth || 640, h = video.videoHeight || 480;
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+      try{ scannedImg.src = canvas.toDataURL('image/jpeg', 0.82); }catch(e){}
+      stopStream();
+      cam.classList.remove('live');
+      cam.classList.add('shot');
+      chip.innerHTML = '<span class="blink"></span> 성분 분석 중...';
+      setTimeout(function(){
+        chip.innerHTML = '✓ 분석 완료 (데모)';
+        scanned.classList.add('show');   // 방금 찍은 사진을 결과에 함께 표시
+        set(current); // 현재 선택된 가족 기준으로 판정 표시
+      }, 1700);
+    }
+
+    var camOpen = document.getElementById('camOpen');
+    var camClose = document.getElementById('camClose');
+    var camShutter = document.getElementById('camShutter');
+    if(camOpen) camOpen.addEventListener('click', openCamera);
+    if(camShutter) camShutter.addEventListener('click', capture);
+    if(camClose) camClose.addEventListener('click', resetCam);
+    window.addEventListener('pagehide', stopStream);
+
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+    }, {threshold:.14});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  })();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+</script>
+<footer style="padding:20px;text-align:center;background:#0f172a;color:#cbd5e1;font:600 13px/1.5 system-ui,sans-serif">대륜고등학교 · AI 기반 생명공학 문제해결활동</footer>
+</body>
+</html>

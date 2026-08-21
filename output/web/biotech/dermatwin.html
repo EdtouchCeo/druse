@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>디지털 피부 트윈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700;900&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F1E8;
+    --ink:#20241F;
+    --derm-teal:#2F6459;
+    --derm-teal-soft:#DDE9E4;
+    --risk:#C1502E;
+    --risk-soft:#F3DCD1;
+    --skin-line:#DCD2BE;
+    --epi:#F1C9A6;
+    --derm:#E3A276;
+    --hypo:#F4DB9C;
+    --muted:#6B6357;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    min-height:100vh;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+
+  /* header */
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    color:var(--derm-teal);
+    text-transform:uppercase;
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Noto Serif KR', serif;
+    font-weight:900;
+    font-size:clamp(28px,5vw,42px);
+    line-height:1.15;
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  .lede{
+    font-size:15px;
+    color:var(--muted);
+    max-width:560px;
+    line-height:1.6;
+    margin:0 0 28px;
+  }
+  .divider{height:1px;background:var(--skin-line);margin:0 0 28px;}
+
+  /* layout */
+  .grid{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:22px;
+  }
+  @media (max-width:760px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:#FFFDF9;
+    border:1px solid var(--skin-line);
+    border-radius:14px;
+    padding:20px 20px 22px;
+  }
+  .panel h2{
+    font-family:'Noto Serif KR',serif;
+    font-size:16px;
+    font-weight:700;
+    margin:0 0 4px;
+  }
+  .panel .sub{
+    font-size:12px;
+    color:var(--muted);
+    margin:0 0 16px;
+  }
+
+  fieldset{border:none;padding:0;margin:0 0 20px;}
+  legend{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--derm-teal);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+
+  .skintype-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+  }
+  .skintype-row label{
+    border:1px solid var(--skin-line);
+    border-radius:9px;
+    padding:9px 6px;
+    text-align:center;
+    font-size:12.5px;
+    cursor:pointer;
+    background:#fff;
+    transition:.15s;
+    user-select:none;
+  }
+  .skintype-row input{position:absolute;opacity:0;pointer-events:none;}
+  .skintype-row input:checked + span{color:var(--derm-teal);font-weight:700;}
+  .skintype-row label:has(input:checked){
+    border-color:var(--derm-teal);
+    background:var(--derm-teal-soft);
+  }
+
+  .ingredient-list{display:flex;flex-direction:column;gap:2px;}
+  .ing-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 8px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:13.5px;
+  }
+  .ing-item:hover{background:#F4EEE1;}
+  .ing-item input{accent-color:var(--derm-teal);width:16px;height:16px;flex:none;}
+  .ing-item .name{flex:1;}
+  .ing-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    padding:2px 6px;
+    border-radius:20px;
+    flex:none;
+  }
+  .tag-risk{background:var(--risk-soft);color:var(--risk);}
+  .tag-safe{background:var(--derm-teal-soft);color:var(--derm-teal);}
+
+  .search-row{display:flex;gap:6px;margin-bottom:4px;}
+  .search-row input{
+    flex:1;
+    padding:9px 11px;
+    border:1px solid var(--skin-line);
+    border-radius:8px;
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:13.5px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .search-row input:focus{outline:2px solid var(--derm-teal);outline-offset:1px;}
+  .search-row button{
+    flex:none;
+    padding:9px 14px;
+    border:none;
+    border-radius:8px;
+    background:var(--derm-teal);
+    color:#fff;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .search-row button:hover{background:#254E45;}
+  .search-msg{
+    font-size:11.5px;
+    min-height:16px;
+    margin:4px 2px 10px;
+  }
+  .search-msg.err{color:var(--risk);}
+  .search-msg.ok{color:var(--derm-teal);}
+
+  .quick-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .quick-chip{
+    font-size:11.5px;
+    padding:5px 10px;
+    border-radius:20px;
+    border:1px solid var(--skin-line);
+    background:#fff;
+    cursor:pointer;
+    color:var(--muted);
+  }
+  .quick-chip:hover{border-color:var(--derm-teal);color:var(--derm-teal);}
+
+  .chips-wrap{display:flex;flex-wrap:wrap;gap:7px;min-height:8px;margin-bottom:6px;}
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 6px 6px 12px;
+    border-radius:20px;
+    font-size:12.5px;
+    font-weight:500;
+  }
+  .chip.risk{background:var(--risk-soft);color:var(--risk);}
+  .chip.safe{background:var(--derm-teal-soft);color:var(--derm-teal);}
+  .chip.estimated{
+    background:#fff;
+    border:1.5px dashed var(--skin-line);
+  }
+  .chip.estimated.risk{border-color:var(--risk);}
+  .chip.estimated.safe{border-color:var(--derm-teal);}
+  .chip .hz{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    opacity:.85;
+  }
+  .est-badge{
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.03em;
+  }
+  .chip button{
+    border:none;
+    background:rgba(0,0,0,.12);
+    color:inherit;
+    width:17px;height:17px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:11px;
+    line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .db-toggle{
+    font-size:11.5px;
+    color:var(--derm-teal);
+    cursor:pointer;
+    text-decoration:underline;
+    margin:2px 0 10px;
+    display:inline-block;
+  }
+  .db-list{
+    max-height:220px;
+    overflow-y:auto;
+    border:1px solid var(--skin-line);
+    border-radius:8px;
+    padding:4px;
+    margin-bottom:14px;
+    display:none;
+  }
+  .db-list.open{display:block;}
+  .db-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 8px;
+    border-radius:6px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .db-row:hover{background:#F4EEE1;}
+  .db-row .hz-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    padding:1px 7px;
+    border-radius:20px;
+    flex:none;
+  }
+  .source-note{
+    font-size:10.5px;
+    color:var(--muted);
+    line-height:1.5;
+    margin:0 0 16px;
+  }
+
+  .run-btn{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:10px;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Noto Sans KR',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    letter-spacing:.01em;
+    transition:.15s;
+  }
+  .run-btn:hover{background:var(--derm-teal);}
+  .run-btn:active{transform:scale(.98);}
+
+  /* result panel */
+  .result-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .score-block{display:flex;align-items:baseline;gap:10px;}
+  .score-num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:44px;
+    font-weight:600;
+    line-height:1;
+  }
+  .score-label{font-size:12px;color:var(--muted);}
+  .score-verdict{
+    font-family:'Noto Serif KR',serif;
+    font-weight:700;
+    font-size:15px;
+    padding:6px 14px;
+    border-radius:20px;
+  }
+
+  .cross-section{
+    background:#FFFDF9;
+    border:1px solid var(--skin-line);
+    border-radius:12px;
+    padding:14px 6px 8px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .cross-section svg{max-width:280px;}
+  .layer-labels{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--muted);
+    padding:0 14px 10px;
+    text-align:center;
+    letter-spacing:.06em;
+  }
+
+  .bars{margin-top:18px;}
+  .bar-row{
+    display:grid;
+    grid-template-columns:130px 1fr 46px;
+    align-items:center;
+    gap:10px;
+    margin-bottom:9px;
+    font-size:12.5px;
+  }
+  .bar-track{
+    height:10px;
+    background:#EFE9DA;
+    border-radius:6px;
+    overflow:hidden;
+    position:relative;
+  }
+  .bar-fill{
+    height:100%;
+    border-radius:6px;
+    transition:width .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bar-val{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    text-align:right;
+    color:var(--muted);
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--muted);
+    font-size:13.5px;
+    line-height:1.7;
+  }
+
+  .footnote{
+    margin-top:26px;
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.6;
+    border-top:1px solid var(--skin-line);
+    padding-top:14px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">AI Tissue Simulation — Concept Demo</p>
+  <h1>디지털 피부 트윈</h1>
+  <p class="lede">화장품 성분을 조직 샘플 기반 AI 모델에 입력해, 피부 타입별 자극 반응을 예측하는 개념 시연입니다. 탐구보고서 Ⅲ장에서 설계한 4단계 파이프라인(특징 추출→생성→예측→설명가능성)의 마지막 두 단계를 시각화했습니다.</p>
+  <div class="divider"></div>
+
+  <div class="grid">
+
+    <!-- LEFT: controls -->
+    <div class="panel">
+      <h2>가상 개체 조건 설정</h2>
+      <p class="sub">조건부 생성 모델에 입력할 프로필입니다</p>
+
+      <fieldset>
+        <legend>피부 타입</legend>
+        <div class="skintype-row" id="skintype-row"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>성분 검색 및 추가</legend>
+        <div class="search-row">
+          <input type="text" id="ing-search" placeholder="예: 파라벤, retinol, SLS ..." list="ing-datalist" autocomplete="off">
+          <button id="ing-add-btn">추가</button>
+        </div>
+        <datalist id="ing-datalist"></datalist>
+        <div class="search-msg" id="search-msg"></div>
+
+        <div class="quick-row" id="quick-row"></div>
+
+        <div class="chips-wrap" id="chips-wrap"></div>
+
+        <span class="db-toggle" id="db-toggle">전체 성분·유해도 목록 보기 (41종)</span>
+        <div class="db-list" id="db-list"></div>
+        <p class="source-note">유해도는 EWG(Environmental Working Group) Skin Deep의 1–10점 위해도 체계와 관련 공개 자료를 참고하여 탐구용으로 정리한 근사치입니다. 목록에 없는 성분을 입력하면 성분명 패턴(파라벤류·황산염·향료 등 성분군 특징)을 기반으로 유해도를 추정하며, 점선 테두리와 "추정" 표시로 데이터베이스 값과 구분해 보여줍니다.</p>
+      </fieldset>
+
+      <button class="run-btn" id="run-btn">시뮬레이션 실행</button>
+    </div>
+
+    <!-- RIGHT: result -->
+    <div class="panel">
+      <div class="result-top">
+        <div class="score-block">
+          <div>
+            <div class="score-num" id="score-num">—</div>
+            <div class="score-label">자극 지수 / 100</div>
+          </div>
+        </div>
+        <div class="score-verdict" id="score-verdict" style="background:#EFE9DA;color:#6B6357;">대기 중</div>
+      </div>
+
+      <div class="cross-section">
+        <svg id="skin-svg" viewBox="0 0 400 470" width="100%" style="display:block;"></svg>
+        <div class="layer-labels" id="layer-caption">정면 — 예측된 피부 반응</div>
+      </div>
+
+      <div class="bars" id="bars-wrap">
+        <div class="empty-state" id="empty-state">왼쪽에서 피부 타입과 성분을 선택한 뒤<br>시뮬레이션을 실행하면<br>성분별 기여도(설명가능성)가 여기에 표시됩니다.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="footnote">본 시뮬레이터는 탐구활동 보고서를 위해 제작된 개념적 데모이며, 규칙 기반 점수 산정 로직으로 작동합니다. 실제 임상 데이터로 학습된 모델이 아니므로 의학적 판단이나 실제 제품 안전성 평가에 사용할 수 없습니다.</p>
+
+</div>
+
+<script>
+const SKIN_TYPES = [
+  {id:'dry', name:'건성', mult:1.15},
+  {id:'oily', name:'지성', mult:0.9},
+  {id:'sensitive', name:'민감성', mult:1.5},
+  {id:'combo', name:'복합성', mult:1.0},
+  {id:'normal', name:'정상', mult:0.8},
+];
+
+// 성분 유해도 데이터베이스 (EWG Skin Deep 1–10점 체계 및 관련 공개 자료를 참고해 정리한 근사치, 탐구용)
+const INGREDIENT_DB = [
+  {kr:'부틸파라벤', en:'Butylparaben', aliases:['부틸 파라벤'], hazard:9},
+  {kr:'프로필파라벤', en:'Propylparaben', aliases:[], hazard:8},
+  {kr:'이소부틸파라벤', en:'Isobutylparaben', aliases:[], hazard:9},
+  {kr:'이소프로필파라벤', en:'Isopropylparaben', aliases:[], hazard:9},
+  {kr:'메틸파라벤', en:'Methylparaben', aliases:['파라벤'], hazard:4},
+  {kr:'트리클로산', en:'Triclosan', aliases:[], hazard:8},
+  {kr:'옥시벤존', en:'Oxybenzone', aliases:['벤조페논-3','Benzophenone-3','BP-3'], hazard:8},
+  {kr:'레티닐팔미테이트', en:'Retinyl Palmitate', aliases:['비타민A팔미테이트','레티놀','Retinol'], hazard:8},
+  {kr:'포름알데하이드', en:'Formaldehyde', aliases:[], hazard:10},
+  {kr:'DMDM히단토인', en:'DMDM Hydantoin', aliases:['DMDM Hydantoin'], hazard:7},
+  {kr:'이미다졸리디닐우레아', en:'Imidazolidinyl Urea', aliases:[], hazard:7},
+  {kr:'쿼터늄-15', en:'Quaternium-15', aliases:[], hazard:8},
+  {kr:'디에틸프탈레이트', en:'Diethyl Phthalate', aliases:['프탈레이트','Phthalate'], hazard:8},
+  {kr:'톨루엔', en:'Toluene', aliases:[], hazard:9},
+  {kr:'하이드로퀴논', en:'Hydroquinone', aliases:[], hazard:8},
+  {kr:'콜타르색소', en:'Coal Tar', aliases:['콜타르'], hazard:9},
+  {kr:'메칠이소치아졸리논', en:'Methylisothiazolinone', aliases:['MIT','MI'], hazard:7},
+  {kr:'향료', en:'Fragrance', aliases:['Parfum','인공향료'], hazard:7},
+  {kr:'라우릴황산나트륨', en:'Sodium Lauryl Sulfate', aliases:['SLS'], hazard:3},
+  {kr:'라우레스황산나트륨', en:'Sodium Laureth Sulfate', aliases:['SLES'], hazard:4},
+  {kr:'디에탄올아민', en:'Diethanolamine', aliases:['DEA'], hazard:6},
+  {kr:'트리에탄올아민', en:'Triethanolamine', aliases:['TEA'], hazard:5},
+  {kr:'PEG화합물', en:'PEG Compounds', aliases:['PEG','폴리에틸렌글라이콜'], hazard:3},
+  {kr:'부틸하이드록시아니솔', en:'BHA', aliases:['Butylated Hydroxyanisole'], hazard:7},
+  {kr:'부틸하이드록시톨루엔', en:'BHT', aliases:['Butylated Hydroxytoluene'], hazard:3},
+  {kr:'탈크', en:'Talc', aliases:[], hazard:3},
+  {kr:'알루미늄클로로하이드레이트', en:'Aluminum Chlorohydrate', aliases:['알루미늄'], hazard:4},
+  {kr:'미네랄오일', en:'Mineral Oil', aliases:['광물유'], hazard:3},
+  {kr:'이산화티타늄', en:'Titanium Dioxide', aliases:[], hazard:2},
+  {kr:'프로필렌글라이콜', en:'Propylene Glycol', aliases:[], hazard:3},
+  {kr:'변성알코올', en:'Alcohol Denat', aliases:['변성 알코올'], hazard:4},
+  {kr:'나이아신아마이드', en:'Niacinamide', aliases:[], hazard:1},
+  {kr:'히알루론산', en:'Hyaluronic Acid', aliases:[], hazard:1},
+  {kr:'세라마이드', en:'Ceramide NP', aliases:['세라마이드'], hazard:1},
+  {kr:'판테놀', en:'Panthenol', aliases:[], hazard:1},
+  {kr:'글리세린', en:'Glycerin', aliases:['Glycerol'], hazard:1},
+  {kr:'병풀추출물', en:'Centella Asiatica Extract', aliases:['시카'], hazard:1},
+  {kr:'스쿠알란', en:'Squalane', aliases:[], hazard:1},
+  {kr:'알란토인', en:'Allantoin', aliases:[], hazard:1},
+  {kr:'아데노신', en:'Adenosine', aliases:[], hazard:1},
+  {kr:'토코페롤', en:'Tocopherol', aliases:['비타민E'], hazard:2},
+];
+
+const QUICK_IDS = ['부틸파라벤','향료','라우릴황산나트륨','옥시벤존','나이아신아마이드','히알루론산','세라마이드'];
+
+// 데이터베이스에 없는 성분명을 위한 패턴 기반 추정 규칙 (성분군 특징 키워드 → 근사 유해도)
+// 우선순위가 높은(더 구체적인) 규칙을 앞쪽에 배치
+const ESTIMATION_RULES = [
+  {patterns:['포름알데하이드','formaldehyde'], hazard:9, why:'포름알데하이드 계열 키워드'},
+  {patterns:['파라벤','paraben'], hazard:7, why:'파라벤류(방부제) 키워드'},
+  {patterns:['프탈레이트','phthalate'], hazard:8, why:'프탈레이트 계열 키워드'},
+  {patterns:['트리클로산','triclosan'], hazard:8, why:'항균 방부제 키워드'},
+  {patterns:['옥시벤존','벤조페논','oxybenzone','benzophenone'], hazard:8, why:'화학적 자외선 차단 성분 키워드'},
+  {patterns:['하이드로퀴논','hydroquinone'], hazard:8, why:'미백 성분(하이드로퀴논 계열) 키워드'},
+  {patterns:['콜타르','coaltar'], hazard:9, why:'콜타르 색소 키워드'},
+  {patterns:['레티놀','레티닐','retinol','retinyl'], hazard:7, why:'비타민A(레티노이드) 계열 키워드'},
+  {patterns:['이소치아졸리논','isothiazolinone'], hazard:7, why:'방부제(이소치아졸리논 계열) 키워드'},
+  {patterns:['향료','향료','fragrance','parfum','perfume','착향'], hazard:6, why:'향료 계열 키워드'},
+  {patterns:['톨루엔','toluene'], hazard:9, why:'유기용제 키워드'},
+  {patterns:['황산','sulfate'], hazard:4, why:'황산계 계면활성제 키워드'},
+  {patterns:['계면활성제','surfactant'], hazard:4, why:'계면활성제 일반 키워드'},
+  {patterns:['에탄올아민','ethanolamine'], hazard:5, why:'알칸올아민류 키워드'},
+  {patterns:['peg','폴리에틸렌글라이콜'], hazard:3, why:'PEG(에톡실화) 계열 키워드'},
+  {patterns:['변성알코올','알코올','alcohol denat'], hazard:4, why:'알코올 계열 키워드'},
+  {patterns:['실리콘','메티콘','silicone','methicone'], hazard:2, why:'실리콘 계열 키워드'},
+  {patterns:['추출물','extract','즙'], hazard:2, why:'식물 추출물 계열 키워드'},
+  {patterns:['오일','oil'], hazard:2, why:'오일 계열 키워드'},
+  {patterns:['세라마이드','ceramide'], hazard:1, why:'세라마이드 계열 키워드'},
+  {patterns:['히알루론','hyaluron'], hazard:1, why:'히알루론산 계열 키워드'},
+  {patterns:['펩타이드','peptide'], hazard:1, why:'펩타이드 계열 키워드'},
+  {patterns:['글리세린','glycerin','glycerol'], hazard:1, why:'글리세린 계열 키워드'},
+];
+
+function estimateHazard(query){
+  const q = norm(query);
+  for(const rule of ESTIMATION_RULES){
+    if(rule.patterns.some(p=>q.includes(norm(p)))){
+      return {hazard:rule.hazard, why:rule.why};
+    }
+  }
+  return {hazard:5, why:'일치하는 성분군 패턴을 찾지 못해 중간값(5)으로 추정'};
+}
+
+let selectedSkin = 'combo';
+let selectedIngredients = []; // array of INGREDIENT_DB entries
+
+function norm(s){ return s.toLowerCase().replace(/[\s\-\_]/g,''); }
+
+function findIngredient(query){
+  const q = norm(query);
+  if(!q) return null;
+  return INGREDIENT_DB.find(item=>{
+    if(norm(item.kr)===q || norm(item.en)===q) return true;
+    return item.aliases.some(a=>norm(a)===q);
+  }) || INGREDIENT_DB.find(item=>{
+    if(norm(item.kr).includes(q) || norm(item.en).includes(q)) return true;
+    return item.aliases.some(a=>norm(a).includes(q));
+  });
+}
+
+function hazardColorClass(hazard){ return hazard >= 6 ? 'risk' : 'safe'; }
+
+function addIngredient(item){
+  if(!item) return;
+  if(selectedIngredients.some(i=>i.kr===item.kr)){
+    showMsg('이미 추가된 성분입니다.', 'err');
+    return;
+  }
+  selectedIngredients.push(item);
+  const tag = item.estimated ? ' (추정)' : '';
+  showMsg(`"${item.kr}"${tag} 추가됨 — 유해도 ${item.hazard}/10`, 'ok');
+  renderChips();
+}
+
+function removeIngredient(kr){
+  selectedIngredients = selectedIngredients.filter(i=>i.kr!==kr);
+  renderChips();
+}
+
+function showMsg(text, type){
+  const el = document.getElementById('search-msg');
+  el.textContent = text;
+  el.className = 'search-msg ' + (type||'');
+}
+
+function renderChips(){
+  const wrap = document.getElementById('chips-wrap');
+  wrap.innerHTML = selectedIngredients.map(i=>`
+    <span class="chip ${hazardColorClass(i.hazard)} ${i.estimated?'estimated':''}" ${i.why?`title="${i.why}"`:''}>
+      ${i.kr}${i.estimated?' <span class="est-badge">추정</span>':''} <span class="hz">${i.hazard}/10</span>
+      <button data-kr="${i.kr}" aria-label="제거">×</button>
+    </span>
+  `).join('');
+  wrap.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=> removeIngredient(btn.dataset.kr));
+  });
+}
+
+function renderQuickRow(){
+  const row = document.getElementById('quick-row');
+  row.innerHTML = QUICK_IDS.map(kr=>`<span class="quick-chip" data-kr="${kr}">+ ${kr}</span>`).join('');
+  row.querySelectorAll('.quick-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const item = INGREDIENT_DB.find(i=>i.kr===chip.dataset.kr);
+      addIngredient(item);
+    });
+  });
+}
+
+function renderDatalist(){
+  const dl = document.getElementById('ing-datalist');
+  dl.innerHTML = INGREDIENT_DB.map(i=>`<option value="${i.kr}"><option value="${i.en}">`).join('');
+}
+
+function renderDbList(){
+  const box = document.getElementById('db-list');
+  const sorted = INGREDIENT_DB.slice().sort((a,b)=>b.hazard-a.hazard);
+  box.innerHTML = sorted.map(i=>`
+    <div class="db-row" data-kr="${i.kr}">
+      <span>${i.kr} <span style="color:var(--muted);font-size:10.5px;">(${i.en})</span></span>
+      <span class="hz-badge" style="background:${i.hazard>=6?'var(--risk-soft)':'var(--derm-teal-soft)'};color:${i.hazard>=6?'var(--risk)':'var(--derm-teal)'};">${i.hazard}/10</span>
+    </div>
+  `).join('');
+  box.querySelectorAll('.db-row').forEach(row=>{
+    row.addEventListener('click', ()=>{
+      const item = INGREDIENT_DB.find(i=>i.kr===row.dataset.kr);
+      addIngredient(item);
+    });
+  });
+}
+
+function handleSearchAdd(){
+  const input = document.getElementById('ing-search');
+  const q = input.value.trim();
+  if(!q){ showMsg('성분명을 입력해 주세요.', 'err'); return; }
+  const match = findIngredient(q);
+  if(match){
+    addIngredient(match);
+    input.value = '';
+    return;
+  }
+  // 데이터베이스에 없으면 패턴 기반으로 추정치를 생성해 추가
+  const est = estimateHazard(q);
+  addIngredient({kr:q, en:'', aliases:[], hazard:est.hazard, estimated:true, why:est.why});
+  input.value = '';
+}
+
+function renderSkinTypes(){
+  const row = document.getElementById('skintype-row');
+  row.innerHTML = SKIN_TYPES.map(s => `
+    <label style="position:relative;">
+      <input type="radio" name="skintype" value="${s.id}" ${s.id==='combo'?'checked':''}>
+      <span>${s.name}</span>
+    </label>
+  `).join('');
+  row.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change', e => selectedSkin = e.target.value);
+  });
+}
+
+function drawSkinSVG(score){
+  const svg = document.getElementById('skin-svg');
+  const redAlpha = Math.min(0.8, score/110);
+  const heavy = score > 60;
+  const mid = score > 32;
+
+  svg.innerHTML = `
+    <defs>
+      <radialGradient id="faceGrad" cx="42%" cy="34%" r="75%">
+        <stop offset="0%" stop-color="#F8DFC2"/>
+        <stop offset="100%" stop-color="#EFC49B"/>
+      </radialGradient>
+      <clipPath id="faceClip">
+        <path d="M200,34 C130,34 96,110 96,190 C96,250 104,300 126,352 C146,398 172,432 200,446 C228,432 254,398 274,352 C296,300 304,250 304,190 C304,110 270,34 200,34 Z"/>
+      </clipPath>
+    </defs>
+
+    <!-- neck / shoulders -->
+    <path d="M150,410 L150,460 Q200,478 250,460 L250,410 Z" fill="#EFC49B"/>
+    <path d="M60,470 Q200,410 340,470 L340,480 L60,480 Z" fill="#3A3F3A"/>
+
+    <!-- ears -->
+    <ellipse cx="93" cy="210" rx="14" ry="22" fill="#EFC49B"/>
+    <ellipse cx="307" cy="210" rx="14" ry="22" fill="#EFC49B"/>
+
+    <!-- face base -->
+    <path d="M200,34 C130,34 96,110 96,190 C96,250 104,300 126,352 C146,398 172,432 200,446 C228,432 254,398 274,352 C296,300 304,250 304,190 C304,110 270,34 200,34 Z" fill="url(#faceGrad)"/>
+
+    <g clip-path="url(#faceClip)">
+      <!-- hairline shadow -->
+      <path d="M96,150 C96,90 140,40 200,40 C260,40 304,90 304,150 C270,110 230,96 200,96 C170,96 130,110 96,150 Z" fill="#33302A"/>
+
+      <!-- eyebrows -->
+      <path d="M128,178 Q152,160 178,174" stroke="#4A3B2E" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M222,174 Q248,160 272,178" stroke="#4A3B2E" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+      <!-- eyes -->
+      <path d="M136,200 Q154,190 172,200 Q154,210 136,200 Z" fill="#fff"/>
+      <circle cx="154" cy="200" r="6.5" fill="#3B2E22"/>
+      <path d="M228,200 Q246,190 264,200 Q246,210 228,200 Z" fill="#fff"/>
+      <circle cx="246" cy="200" r="6.5" fill="#3B2E22"/>
+
+      <!-- nose -->
+      <path d="M198,205 Q192,250 186,268 Q198,278 210,268 Q204,250 198,205" fill="none" stroke="#D9A876" stroke-width="3" stroke-linejoin="round"/>
+
+      <!-- mouth -->
+      <path d="M168,318 Q200,332 228,318 Q200,340 168,318 Z" fill="#C97A5F"/>
+
+      <!-- === reaction overlay regions === -->
+      <ellipse cx="200" cy="90" rx="72" ry="26" fill="#D6432A" opacity="${redAlpha*0.5}"/>
+      <ellipse cx="140" cy="250" rx="42" ry="46" fill="#D6432A" opacity="${redAlpha}"/>
+      <ellipse cx="262" cy="250" rx="42" ry="46" fill="#D6432A" opacity="${redAlpha}"/>
+      <ellipse cx="200" cy="400" rx="30" ry="22" fill="#D6432A" opacity="${redAlpha*0.6}"/>
+      <ellipse cx="198" cy="235" rx="16" ry="22" fill="#D6432A" opacity="${redAlpha*0.35}"/>
+
+      ${mid ? blemishDots() : ''}
+      ${heavy ? '<ellipse cx="140" cy="250" rx="42" ry="46" fill="#B5301B" opacity="0.18"/><ellipse cx="262" cy="250" rx="42" ry="46" fill="#B5301B" opacity="0.18"/>' : ''}
+    </g>
+
+    <!-- outline -->
+    <path d="M200,34 C130,34 96,110 96,190 C96,250 104,300 126,352 C146,398 172,432 200,446 C228,432 254,398 274,352 C296,300 304,250 304,190 C304,110 270,34 200,34 Z" fill="none" stroke="#00000018" stroke-width="1.5"/>
+  `;
+}
+
+function blemishDots(){
+  const spots = [
+    [118,232],[158,268],[122,272],[150,224],
+    [280,232],[242,268],[278,272],[250,224],
+    [176,96],[224,96],[200,72]
+  ];
+  return spots.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${3+(i%3)}" fill="#B5301B" opacity="0.55"/>`).join('');
+}
+
+function runSimulation(){
+  const skin = SKIN_TYPES.find(s=>s.id===selectedSkin);
+
+  let raw = 20; // baseline
+  const contributions = selectedIngredients.map(item=>{
+    const contrib = (item.hazard - 5) * 4 * skin.mult;
+    raw += contrib;
+    return {name:item.kr, hazard:item.hazard, contrib, estimated:!!item.estimated};
+  });
+  const score = Math.max(2, Math.min(98, Math.round(raw)));
+
+  // score number + verdict
+  document.getElementById('score-num').textContent = score;
+  const verdictEl = document.getElementById('score-verdict');
+  if(score < 30){
+    verdictEl.textContent = '낮은 자극 반응 예측';
+    verdictEl.style.background = '#DDE9E4'; verdictEl.style.color = '#2F6459';
+  } else if(score < 60){
+    verdictEl.textContent = '경미한 자극 가능성';
+    verdictEl.style.background = '#F4E9C9'; verdictEl.style.color = '#8A6A1F';
+  } else {
+    verdictEl.textContent = '자극·알레르기 위험 높음';
+    verdictEl.style.background = '#F3DCD1'; verdictEl.style.color = '#C1502E';
+  }
+
+  drawSkinSVG(score);
+
+  // explainability bars
+  const wrap = document.getElementById('bars-wrap');
+  if(contributions.length === 0){
+    wrap.innerHTML = '<div class="empty-state">추가된 성분이 없습니다. 왼쪽에서 성분을 검색해 추가해 주세요.</div>';
+    return;
+  }
+  const maxAbs = Math.max(...contributions.map(c=>Math.abs(c.contrib)), 10);
+  const sorted = contributions.slice().sort((a,b)=>Math.abs(b.contrib)-Math.abs(a.contrib));
+  wrap.innerHTML = `<div class="sub" style="margin-bottom:10px;">설명가능성(XAI) — 성분별 기여도</div>` +
+    sorted.map(c=>{
+      const pct = Math.round(Math.abs(c.contrib)/maxAbs*100);
+      const color = c.contrib >= 0 ? '#C1502E' : '#2F6459';
+      const sign = c.contrib >= 0 ? '+' : '−';
+      return `
+        <div class="bar-row">
+          <div>${c.name}${c.estimated?' <span class="est-badge" style="color:var(--muted);">(추정)</span>':''} <span style="color:var(--muted);">(${c.hazard}/10)</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div>
+          <div class="bar-val">${sign}${Math.abs(Math.round(c.contrib))}</div>
+        </div>
+      `;
+    }).join('');
+}
+
+renderSkinTypes();
+renderQuickRow();
+renderDatalist();
+renderDbList();
+drawSkinSVG(0);
+document.getElementById('run-btn').addEventListener('click', runSimulation);
+document.getElementById('ing-add-btn').addEventListener('click', handleSearchAdd);
+document.getElementById('ing-search').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); handleSearchAdd(); }
+});
+document.getElementById('db-toggle').addEventListener('click', ()=>{
+  const box = document.getElementById('db-list');
+  box.classList.toggle('open');
+  document.getElementById('db-toggle').textContent = box.classList.contains('open')
+    ? '전체 성분·유해도 목록 닫기'
+    : '전체 성분·유해도 목록 보기 (41종)';
+});
+</script>
+<footer style="padding:20px;text-align:center;background:#0f172a;color:#cbd5e1;font:600 13px/1.5 system-ui,sans-serif">대륜고등학교 · AI 기반 생명공학 문제해결활동</footer>
+</body>
+</html>

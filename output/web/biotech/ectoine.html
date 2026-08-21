@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>엑토인 생산 공장 AI 시뮬레이터</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f6f7f9; --panel2:#eceef2; --line:#dfe2e8;
+    --tx:#1b2130; --mut:#6b7280; --acc:#2d7ff0; --good:#2fa84f; --warn:#e0a92a; --bad:#e23b3b;
+    --ec:#b0479e;
+    --teal:#159b9d; --green:#2ea64f; --blue:#2d7ff0; --orange:#e8820c; --magenta:#b0479e; --purple:#7b52d6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI","Malgun Gothic",sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  header{padding:24px 26px 18px;background:var(--panel)}
+  header h1{margin:0;font-size:26px;font-weight:300;letter-spacing:.2px}
+  header .sub{color:var(--mut);font-size:13px;margin-top:6px;max-width:1100px}
+  .banner{margin:16px 26px 0;padding:12px 16px;background:#fbf3d8;border-left:4px solid var(--warn);color:#6d5410;font-size:12.5px;line-height:1.65}
+  .wrap{display:grid;grid-template-columns:360px 1fr;gap:18px;padding:18px 26px 34px;align-items:start}
+  @media(max-width:1000px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:18px}
+  .card h2{margin:0 0 14px;font-size:14px;font-weight:600;color:var(--tx);padding-left:10px;border-left:3px solid var(--acc);letter-spacing:.2px}
+  .card h2 .subtle{font-weight:400}
+  .fixed{font-size:12.5px;color:var(--mut);line-height:1.9}
+  .fixed b{color:var(--tx);font-weight:600}
+  .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:2px;color:#fff;margin-left:6px;vertical-align:middle;font-weight:600}
+  .badge.assume{background:var(--warn);color:#2a2100}
+  .badge.lit{background:var(--green)}
+  .badge.fit{background:var(--blue)}
+  .badge.tag{background:var(--purple)}
+  .badge:not(.assume):not(.lit):not(.fit):not(.tag){background:#e2e5ea;color:#586074}
+  .sld{margin:14px 0;padding-bottom:12px;border-bottom:1px solid #e6e9ef}
+  .sld:last-child{border-bottom:0}
+  .sld .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .sld .nm{font-weight:600}
+  .sld .val{font-variant-numeric:tabular-nums;color:var(--acc);font-weight:600;font-size:15px}
+  .sld input[type=range]{width:100%;margin:9px 0 3px;accent-color:var(--acc)}
+  .sld .hint{font-size:11px;color:var(--mut);line-height:1.5}
+  .expbtn{background:transparent;border:1px solid var(--line);color:var(--acc);font-size:10px;padding:2px 8px;border-radius:2px;font-weight:600;cursor:pointer;margin-left:6px;vertical-align:middle}
+  .expbtn:hover{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .expbox{display:none;margin-top:10px;padding:12px;background:var(--panel2);border-radius:2px;font-size:11.5px;line-height:1.65}
+  .expbox>div{margin-bottom:9px}
+  .expbox>div:last-child{margin-bottom:0}
+  .expbox .lowhi{padding-left:10px;border-left:3px solid var(--line)}
+  .expbox .low{border-left-color:var(--warn)}
+  .expbox .high{border-left-color:var(--bad)}
+  .expbox b{color:var(--tx)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .metric{background:var(--panel2);border-radius:2px;padding:14px}
+  .metric .k{font-size:11px;color:var(--mut);font-weight:600;letter-spacing:.3px}
+  .metric .v{font-size:30px;font-weight:300;font-variant-numeric:tabular-nums;margin-top:4px;line-height:1.1}
+  .metric .u{font-size:10.5px;color:var(--mut);margin-top:3px}
+  .metric.tile{color:#fff}
+  .metric.tile .k{color:rgba(255,255,255,.85)}
+  .metric.tile .v{color:#fff}
+  .metric.tile .u{color:rgba(255,255,255,.78)}
+  .t-teal{background:var(--teal)} .t-green{background:var(--green)} .t-blue{background:var(--blue)}
+  .t-orange{background:var(--orange)} .t-magenta{background:var(--magenta)} .t-purple{background:var(--purple)}
+  .bar{height:6px;border-radius:0;background:rgba(0,0,0,.28);overflow:hidden;margin-top:8px}
+  .metric:not(.tile) .bar{background:#e6e9ef}
+  .bar>i{display:block;height:100%}
+  canvas{width:100%;display:block;background:#ffffff;border:1px solid var(--line);border-radius:2px}
+  .flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  button{background:var(--acc);color:#fff;border:0;border-radius:2px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:13px}
+  button:hover{filter:brightness(1.08)}
+  button.ghost{background:transparent;color:var(--tx);border:1px solid var(--line)}
+  input[type=number]{background:#ffffff;color:var(--tx);border:1px solid var(--line);border-radius:2px;padding:7px 9px;width:110px}
+  label.inl{font-size:12px;color:var(--mut)}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px;margin-top:10px}
+  .kv b{color:var(--tx);font-variant-numeric:tabular-nums;text-align:right}
+  .note{font-size:11.5px;color:var(--mut);margin-top:10px;line-height:1.6}
+  .pricetbl{font-size:12px;margin-top:12px;border-top:1px solid #e6e9ef;padding-top:10px}
+  .pricetbl .prow{display:flex;justify-content:space-between;padding:3px 0}
+  .pricetbl .prow b{color:var(--tx);font-variant-numeric:tabular-nums}
+  .pill{font-size:11px;padding:4px 11px;border-radius:2px;background:var(--panel2);color:var(--tx);font-weight:600}
+  .toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
+  .legend{display:flex;gap:14px;font-size:11.5px;color:var(--mut);margin:8px 2px 0;flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .swatch{width:12px;height:3px;border-radius:0;display:inline-block}
+  .stack{display:flex;flex-direction:column;gap:18px}
+  .subtle{color:var(--mut);font-size:12px}
+  .warnbox{background:#fdecea;border-left:4px solid var(--bad);color:#b3241b;border-radius:2px;padding:10px 14px;font-size:12.5px;display:none;margin-top:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>엑토인(Ectoine) 생산 미생물 공장 · AI 의사결정 시뮬레이터</h1>
+  <div class="sub">7개 배양 조건 → 미생물 생존률 → 엑토인 합성량 → 초기 투자비 · 회수 기간을 예측하고, 목표 생산량을 가장 싸게 달성하는 조건을 역으로 찾아줍니다.</div>
+</header>
+
+<div class="banner">
+  엑토인 생산 조건을 조절해 <b>생존률 · 합성량 · 투자비 · 회수 기간</b>을 예측하고, 목표 생산량을 가장 경제적으로 달성하는 조건을 찾아주는 <b>공정 최적화 도구</b>입니다.
+  공식의 뼈대(Monod · Rosso · six-tenths 등)는 확립된 공정공학이며, 핵심 변수는 문헌 실측으로 보정했습니다:
+  <span class="badge lit">문헌 근거 4</span>(칼륨 · 질소 · 온도 · 삼투압 쇼크) ·
+  <span class="badge fit">문헌 정합 2</span>(포도당 · DO) ·
+  <span class="badge assume">가정값 1</span>(CO₂) · 단가는 2025–26 시장 평균(USD) · 삼투압 내성 곡선은 Kuhlmann &amp; Bremer 2002(Fig.6)로 보정.
+  <b>적용 범위:</b> 파일럿 데이터 확보 전 단계의 의사결정 지원용이며, 실제 투자 확정에는 추가 실측 보정이 필요합니다.
+</div>
+
+<div class="wrap">
+
+  <!-- LEFT: controls -->
+  <div class="stack">
+    <div class="card">
+      <h2>고정 조건 <span class="badge">슬라이더 아님</span></h2>
+      <div class="fixed">
+        · 균주 <b>Halomonas elongata</b> 야생형 &nbsp;· 반응기 <b>100 L 파일럿</b><br>
+        · 배양 염도(NaCl) <b>7% w/v 고정</b> <span class="badge lit">생물량·엑토인 축적 최적 ~8% (문헌)</span><br>
+        · pH는 <b>CO₂(6번)</b>로 간접 제어(근사) &nbsp;· 감가상각 <b>정액 10년</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>7개 공정 변수 <span class="subtle">(각 변수의 <b>설명</b> 버튼 → 필요 이유·과잉/부족 문제)</span></h2>
+      <div id="sliders"></div>
+    </div>
+
+    <div class="card">
+      <h2>경제성 가정 <span class="badge lit">시장 평균 단가 (USD)</span></h2>
+      <div class="flex">
+        <label class="inl">엑토인 판매 단가</label>
+        <input id="price" type="number" value="7500" step="100">
+        <span class="subtle">$/kg</span>
+      </div>
+      <div class="note">고순도(의약·화장품) 등급 수입 실거래가 기준(≈ $7,500/kg). 벌크 화장품 등급은 ≈ $1,000/kg 수준이므로, 목표 시장에 맞게 조정하세요.</div>
+      <div class="pricetbl" id="priceTbl"></div>
+      <div class="note">원료 단가는 2025–2026년 세계 시장 평균(웹 검색 기준)입니다. 고부가 엑토인에서는 원료비 비중이 작고, 인건비·전력·정제비가 운전비를 지배합니다.</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: outputs -->
+  <div class="stack">
+
+    <div class="card">
+      <h2>예측 결과</h2>
+      <div class="grid3">
+        <div class="metric tile" id="tileSurv">
+          <div class="k">미생물 생존률</div>
+          <div class="v" id="mSurv">–</div><div class="u">배양+수확 후 생존 세포 비율</div>
+          <div class="bar"><i id="bSurv"></i></div>
+        </div>
+        <div class="metric tile t-magenta">
+          <div class="k">엑토인 역가</div>
+          <div class="v" id="mTiter">–</div><div class="u">g/L (배양액)</div>
+          <div class="bar"><i id="bTiter"></i></div>
+        </div>
+        <div class="metric tile t-teal">
+          <div class="k">연간 생산량</div>
+          <div class="v" id="mYield">–</div><div class="u">kg / 년</div>
+          <div class="bar"><i id="bYield"></i></div>
+        </div>
+        <div class="metric tile t-orange">
+          <div class="k">초기 투자비 (CAPEX)</div>
+          <div class="v" id="mCapex">–</div><div class="u">지수 (기준=100)</div>
+          <div class="bar"><i id="bCapex"></i></div>
+        </div>
+        <div class="metric tile t-blue">
+          <div class="k">단위 생산 원가</div>
+          <div class="v" id="mUnit">–</div><div class="u">$ / kg</div>
+        </div>
+        <div class="metric tile" id="tilePay">
+          <div class="k">투자 회수 기간</div>
+          <div class="v" id="mPay">–</div><div class="u">년</div>
+        </div>
+      </div>
+      <div class="warnbox" id="warnBox"></div>
+      <div class="kv">
+        <span class="subtle">생물량 (건조 세포)</span><b id="kX">–</b>
+        <span class="subtle">배치당 회수량</span><b id="kRec">–</b>
+        <span class="subtle">배치 주기</span><b id="kCyc">–</b>
+        <span class="subtle">연간 배치 수</span><b id="kBat">–</b>
+        <span class="subtle">초기 투자비 (절대)</span><b id="kCapexUsd">–</b>
+        <span class="subtle">연간 운전비</span><b id="kOpex">–</b>
+        <span class="subtle">삼투 보호 (fOsm)</span><b id="kOsm">–</b>
+        <span class="subtle">유효 내염성 (NaCl₅₀)</span><b id="kN50">–</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>발효액 탁도 <span class="subtle">(모델 추정 OD₅₇₈ · 실측 아님)</span></h2>
+      <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+        <svg id="turbSvg" viewBox="0 0 200 220" width="150" height="165" style="flex:0 0 auto;background:#f7f8fa;border:1px solid var(--line);border-radius:2px">
+          <!-- 배지 뒤 참조 표식: 맑으면 비쳐 보이고 탁하면 가려짐 -->
+          <line x1="100" y1="96" x2="100" y2="188" stroke="#2d7ff0" stroke-width="3" opacity="0.85"/>
+          <line x1="66" y1="150" x2="134" y2="150" stroke="#2d7ff0" stroke-width="3" opacity="0.85"/>
+          <text x="100" y="140" text-anchor="middle" font-size="30" fill="#2d7ff0" opacity="0.9" font-weight="700" font-family="Segoe UI">R</text>
+          <!-- 액체(플라스크 몸통에 클립) -->
+          <clipPath id="flaskClip"><path d="M85,70 L40,188 Q40,193 45,193 L155,193 Q160,193 160,188 L115,70 Z"/></clipPath>
+          <g clip-path="url(#flaskClip)">
+            <rect id="turbLiquid" x="30" y="98" width="140" height="100" fill="rgba(214,203,120,0.45)"/>
+            <rect id="turbHaze" x="30" y="98" width="140" height="100" fill="#f3f0d6" opacity="0.18"/>
+          </g>
+          <!-- 유리 외곽선 -->
+          <path d="M85,70 L40,188 Q40,193 45,193 L155,193 Q160,193 160,188 L115,70" fill="none" stroke="#6b7280" stroke-width="2.5"/>
+          <path d="M85,70 L85,26 Q85,20 91,20 L109,20 Q115,20 115,26 L115,70" fill="none" stroke="#6b7280" stroke-width="2.5"/>
+          <line x1="82" y1="22" x2="118" y2="22" stroke="#6b7280" stroke-width="3"/>
+        </svg>
+        <div style="flex:1 1 auto;min-width:150px">
+          <div class="kv" style="margin-top:0">
+            <span class="subtle">모델 추정 OD₅₇₈</span><b id="turbOD">–</b>
+            <span class="subtle">건조 균체량 (X)</span><b id="turbX">–</b>
+            <span class="subtle">탁도 판정</span><b id="turbLabel">–</b>
+          </div>
+          <div class="note">투명한 배지 뒤의 파란 <b>R</b> 표식이 균이 자랄수록(탁도 ↑) 흐려집니다. OD₅₇₈ 1 ≈ 0.35 g/L 건조중량 가정으로 X를 환산한 <b>모델 추정치</b>이며, 실제 분광광도계 측정값이 아닙니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>변수 반응 곡선 <span class="subtle">(마지막으로 움직인 슬라이더 기준)</span></h2>
+      <div class="flex" style="margin-bottom:6px">
+        <span class="pill" id="sweepName">온도</span>
+        <label class="toggle"><input type="checkbox" id="mcToggle"> 불확실성 밴드 표시</label>
+        <span class="subtle" id="mcNote"></span>
+      </div>
+      <canvas id="sweep" height="220"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#2fa84f"></i>생존률</span>
+        <span><i class="swatch" style="background:#a94fd6"></i>연간 생산량</span>
+        <span><i class="swatch" style="background:#2d7ff0"></i>현재 값</span>
+        <span class="subtle">밴드 = 가정 파라미터 ±12% 몬테카를로 (예측이 흔들리는 구간 = 밴드가 넓음)</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>파레토 전선 <span class="subtle">(삼투압 쇼크 타이밍 스윕: 생산량 ↔ 투자비)</span></h2>
+      <canvas id="pareto" height="200"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#d99a1a"></i>타이밍에 따른 (생산량, CAPEX) 궤적</span>
+        <span><i class="swatch" style="background:#2d7ff0"></i>현재</span>
+        <span class="subtle">한 변수가 생산량과 투자비를 동시에 움직입니다 → 단일 최적점이 없습니다.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>삼투압 내성 곡선 <span class="subtle">(Kuhlmann &amp; Bremer 2002, Fig.6 기반: 성장 ↔ 염도)</span></h2>
+      <canvas id="osm" height="200"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#8a93a5"></i>보호 없음 (적합용질 0)</span>
+        <span><i class="swatch" style="background:#2fa84f"></i>현재 엑토인 축적 상태</span>
+        <span><i class="swatch" style="background:#2d7ff0"></i>배양 염도 7% (1.2 M)</span>
+        <span class="subtle">엑토인이 쌓일수록 곡선이 오른쪽으로 이동 → 같은 염도를 더 잘 버팁니다(내성 중점 ↑).</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>AI 역설계 · 사업 계획 <span class="subtle">"이만큼 만들려면 가장 싸게 어떻게?"</span></h2>
+      <div class="flex">
+        <label class="inl">목표 연간 생산량</label>
+        <input id="target" type="number" value="18" step="1">
+        <span class="subtle">kg/년</span>
+        <button id="btnInverse">역설계 실행 → 슬라이더 자동 설정</button>
+      </div>
+      <div id="invOut" class="note"></div>
+    </div>
+
+    <div class="card">
+      <h2>작동 원리</h2>
+      <div class="subtle" id="eduBox" style="line-height:1.8"></div>
+    </div>
+
+    <div class="card">
+      <h2>데이터 출처 &amp; 인용</h2>
+      <div class="subtle" style="line-height:1.9">
+        <span class="badge lit">문헌 근거</span> 파라미터를 실측 최적점으로 보정한 변수 ·
+        <span class="badge fit">문헌 정합</span> 반응 모양만 문헌과 일치 ·
+        <span class="badge assume">가정값</span> 문헌 미확보<br><br>
+        <b>[1] He et al. 2015</b> — <i>Microbial Cell Factories</i> 14:55 · DOI 10.1186/s12934-015-0238-0<br>
+        &nbsp;&nbsp;→ <b>칼륨</b>: 최적 100 mM, 300 mM에서 2.59→1.25 mg/mL (48%로 급감). <span class="subtle">whole-cell 생물전환 실험.</span><br>
+        <b>[2] Ma et al. 2020</b> — <i>Nature Communications</i> 11:3313 · DOI 10.1038/s41467-020-17223-3<br>
+        &nbsp;&nbsp;→ <b>질소</b>: urea 3 g/L 최적 → ectoine 2.83 g/L, 성장 영향 거의 없음. <span class="subtle">H. bluephagenesis 개량주.</span><br>
+        <b>[3] Dong et al. 2021</b> — <i>Bioprocess Biosyst Eng</i> 44:1557 · DOI 10.1007/s00449-021-02541-7<br>
+        &nbsp;&nbsp;→ <b>포도당·DO</b>: 낮은 잔류 유리(비선형), DO 20~50% 시험. 생산량 스케일 보정(플라스크 2.6~2.9 / 발효조 25~48 g/L). <span class="subtle">재조합 대장균.</span><br>
+        <b>[4] Sauer &amp; Galinski 1998</b> — <i>Biotechnol Bioeng</i> 57:306 · DOI 10.1002/(SICI)1097-0290(19980205)57:3&lt;306::AID-BIT7&gt;3.0.CO;2-L<br>
+        &nbsp;&nbsp;→ <b>삼투압 쇼크(bacterial milking)</b>: 고염(2.57 M NaCl) 배양 후 저삼투 다운쇼크로 엑토인을 배지로 방출, <b>155 mg/g CDW</b> 수율. 세포는 살아남아 재축적·반복 수확 가능. <span class="subtle">최적화 시 세포내 함량 최대 540 mg/g CDW 보고. H. elongata 8% NaCl 부근서 생물량·엑토인 축적 최대.</span><br>
+        <b>[5] Kuhlmann &amp; Bremer 2002</b> — <i>Appl Environ Microbiol</i> 68(2):772 · DOI 10.1128/AEM.68.2.772-783.2002<br>
+        &nbsp;&nbsp;→ <b>삼투압 내성 곡선</b>: B. pasteurii를 SMM+2% urea+2 M NaCl에서 배양 시 적합용질 없으면 OD 0.15(성장 정지), 1 mM 엑토인 첨가로 OD 2.85로 회복(Fig.6A). 염도별 성장 곡선(Fig.6B)에서 1 mM 엑토인이 내염성 중점을 ~1.1 → 1.6 M로 우측 이동. <span class="subtle">교차균종 유사체 — 삼투 보호의 곡선 모양·이동 크기를 차용해 fOsm에 반영.</span><br>
+        <b>[6] Vreeland et al. 1980</b> — <i>Can J Microbiol</i> 26:791 · DOI 10.1139/m80-130<br>
+        &nbsp;&nbsp;→ <b>온도·성장률</b>: H. elongata 최적 30°C, 생육 4~45°C, pH 5~9. 1 M NaCl·포도당에서 μ = 0.443±0.039/h(최대). <span class="subtle">균주 특성 규명 원전 → 온도·μmax 보정 근거.</span><br>
+        <b>[7] Yu et al. 2022</b> — <i>Biotechnol Bioeng</i> 119(12):3509 · DOI 10.1002/bit.28222<br>
+        &nbsp;&nbsp;→ <b>생물량·엑토인 역가</b>: DSM 2581, 8% NaCl에서 최대 생물량 <b>41.37 g/L</b>·엑토인 <b>12.91 g/L</b>(함량 312 mg/gCDW). NaCl 1→13%로 갈수록 엑토인 합성이 비성장연계→성장연계로 전환. <span class="subtle">Xmax·ecmax 보정 근거.</span><br>
+        <b>[8] Halomonas 산소–엑토인</b> — <i>Microb Cell Fact</i> 2026 · DOI 10.1186/s12934-026-02951-w · (+ H. hydrothermalis/salifodinae 공정 DO ~30% 표준)<br>
+        &nbsp;&nbsp;→ <b>DO</b>: Halomonas는 성장이 DO에 강건하나, 적응진화로 산소 감지가 개선되자 엑토인 생산이 <b>79% 감소</b> — 가벼운 산소 제한이 엑토인 유도의 스트레스 신호. 산업 배양은 DO ~30% 유지. <span class="subtle">엑토인-DO 상충을 ecO2에 반영(곡선 모양은 문헌 정합).</span><br><br>
+        <span style="color:var(--warn)">⚠ 여덟 논문은 서로 다른 균주·공정입니다. <i>H. elongata</i> DSM 2581 실측(온도·μmax·생물량·엑토인 함량)과 Halomonas 공정 표준(DO ~30%)은 반영했지만, CO₂는 아직 실측 미확보 가정값이고, 삼투 내성 곡선(B. pasteurii)과 DO-엑토인 곡선 모양은 교차균종·정성 근거입니다. 원료·설비 단가는 2025–26 시장 평균이며 실제 견적으로 교체하면 회수 기간이 바뀝니다.</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   엑토인 생산 공정 기계론 모델
+   삼투압 관련 파라미터(칼륨·삼투압 쇼크·엑토인 함량)는 문헌으로 보정.
+   온도·DO·CO₂는 아직 가정값(H. elongata 실측 확보 전).
+============================================================ */
+const P = {
+  mumax:0.44, Ks:2.0, Ki:90.0,          // μmax=0.44/h: DSM 2581, 1 M NaCl·포도당 실측 (Vreeland 1980)
+  KN:0.5, KI_n:6.0, nHill:2.5,          // 질소 최적 ~3 g/L (Ma 2020, urea 3 g/L)
+  Tmin:10.0, Topt:30.0, Tmax:45.0,      // 온도 최적 30°C, 생육 4~45°C: H. elongata 실측 (Vreeland 1980)
+  KO:10.0, DOcrit:55.0, kROS:0.015,     // DO: Halomonas는 성장이 DO에 강건 → 고DO ROS 페널티 약화
+  ecO2floor:0.25, kO2ec:0.03, DOref_ec:30, // 산소 제한이 엑토인 유도(스트레스응답): 고DO서 함량↓ (MCF 2026, 79%↓), 30% 기준 정규화
+  Kopt:100.0, Ksig:0.95, kKtox:0.0003,  // 칼륨 최적 100 mM, 300mM서 48%로 급감 (He 2015)
+  CO2opt:3.0, kAcid:0.35, kLowCO2:0.01,
+  t8opt:30.0, t8sig:0.30,               // 삼투압 쇼크 타이밍 (Sauer & Galinski 1998, milking)
+  ecmax:0.31, Xmax:41.37,               // Xmax=41.4 g/L, 함량 312 mg/gCDW(=12.91/41.37): DSM 2581 8% NaCl 실측 (Yu 2022)
+  // 삼투압 내성 곡선 (Kuhlmann & Bremer 2002, Fig.6): 성장-NaCl 시그모이드 + 적합용질(엑토인)에 의한 우측 이동
+  NaCl_fix:1.2,      // 배양 염도 7% w/v ≈ 1.2 M NaCl (고정)
+  NaCl50base:1.1,    // 보호 없을 때 내염성 중점 (Fig.6B ● 곡선 판독)
+  kOsm:4.0,          // 시그모이드 급경사 (Fig.6B 전이폭 ~1 M)
+  shiftEc:0.5        // 엑토인 완전 축적 시 내염성 우측 이동량 (Fig.6B ●→■, 1 mM 엑토인 = +0.5 M)
+};
+// 몬테카를로로 흔들 "가정/보정 파라미터" 목록
+const MC_KEYS = ["Topt","Tmax","DOcrit","kROS","Kopt","t8opt","ecmax","Ki","NaCl50base"];
+
+// 슬라이더 정의: 범위·기본값·교과연계·설명(왜 필요/부족/과잉)
+const VARS = [
+  {key:"S",  nm:"1. 포도당 공급",        unit:"g/L", min:0, max:80,  step:1,   def:22,  src:"fit", cite:"Dong 2021", edu:"세포호흡/에너지 대사",
+    hint:"낮은 잔류가 유리·단순 비례 아님(Dong 2021) / 과잉→기질 억제",
+    why:"세포 호흡과 에너지 대사의 주 탄소원입니다. 성장과 엑토인 합성에 쓰이는 ATP와 탄소 골격을 모두 여기서 얻습니다.",
+    low:"탄소·에너지가 고갈돼 세포가 아사합니다 — 성장이 멈추고 생산량이 0에 수렴합니다.",
+    high:"기질 억제(substrate inhibition)가 걸립니다 — 잔당이 삼투 스트레스와 부산물 독성을 유발해 오히려 세포가 사멸하고 원료도 낭비됩니다."},
+  {key:"N",  nm:"2. 질소원 (C/N)",       unit:"g/L", min:0, max:10,  step:0.1, def:3.0, src:"lit", cite:"Ma 2020", edu:"단백질 합성/질소 동화",
+    hint:"최적 ~3 g/L (Ma 2020, urea 3 g/L→2.83 g/L) / 부족→합성 불가",
+    why:"엑토인은 질소를 포함한 분자입니다. 아미노산·단백질과 엑토인 골격을 만드는 질소를 공급합니다.",
+    low:"질소가 없으면 엑토인 자체를 합성할 수 없고 성장도 멈춥니다.",
+    high:"질소가 과하면 성장은 되지만 삼투 스트레스가 완화돼 엑토인 축적 신호가 약해집니다 — 균체는 늘어도 엑토인 함량이 떨어집니다(C/N 균형이 핵심)."},
+  {key:"T",  nm:"3. 배양 온도",          unit:"°C",  min:15,max:45,  step:0.5, def:30,  src:"lit", cite:"Vreeland 1980", edu:"효소 최적온도/변성",
+    hint:"최적 30°C, 생육 4~45°C (H. elongata 실측, Vreeland 1980) / 과잉→단백질 변성 절벽",
+    why:"모든 효소 반응의 속도를 결정합니다. H. elongata는 30°C에서 성장률이 최대(μ≈0.44/h)이고 4~45°C 범위에서 자랍니다(Vreeland 1980).",
+    low:"저온에서는 효소 반응이 느려져 성장과 생산이 지연됩니다.",
+    high:"45°C를 넘으면 단백질이 변성되고 효소가 실활해 세포가 급격히 전멸합니다(온도 절벽)."},
+  {key:"DO", nm:"4. 용존 산소 (DO)",     unit:"%",   min:0, max:100, step:1,   def:30,  src:"fit", cite:"Halomonas 공정 표준", edu:"호기성 호흡/ATP",
+    hint:"산업 기준 ~30% / 고DO→엑토인 함량↓ (MCF 2026, 79%↓) → 성장↔엑토인 상충, 역가는 중간 DO서 최대",
+    why:"산소는 성장(ATP)에 필요하지만, 엑토인은 스트레스 대사물이라 '가벼운 산소 제한'이 오히려 함량을 높입니다. Halomonas 공정은 보통 DO ~30%로 운전합니다. 성장(산소 多)과 엑토인 함량(적당한 산소 제한)이 상충해 역가가 중간 DO에서 최대가 됩니다.",
+    low:"산소가 너무 부족하면 성장이 느려져 균체량 자체가 줄고 혐기 부산물이 쌓입니다.",
+    high:"산소가 과하면 스트레스가 풀려 엑토인 함량이 최대 79%까지 떨어지고(MCF 2026), 산기·교반 전력만 낭비됩니다."},
+  {key:"K",  nm:"5. 초기 칼륨 (K⁺)",     unit:"mM",  min:0, max:500, step:5,   def:100, src:"lit", cite:"He 2015", edu:"삼투압 조절/막수송",
+    hint:"최적 100 mM, 300 mM서 48%로 급감 (He 2015)",
+    why:"고염 스트레스 초기에 세포는 K⁺를 안으로 끌어와 삼투압 균형을 잡습니다(엑토인 합성 전 1차 방어). 이후 삼투압 쇼크 생존율을 좌우합니다.",
+    low:"칼륨이 부족하면 삼투 방어가 취약해져 쇼크 단계에서 세포가 사멸합니다.",
+    high:"칼륨이 과하면 이온 독성이 생겨 300 mM에서 생산량이 최적 대비 48%로 급감합니다(He 2015)."},
+  {key:"CO2",nm:"6. 이산화탄소 (CO₂)",   unit:"%",   min:0, max:15,  step:0.5, def:3,   src:"assume", cite:"", edu:"용액 pH/완충",
+    hint:"부족→거의 무해 / 과잉→산성화 pH 붕괴 · 문헌 미확보",
+    why:"용액의 pH를 간접 제어합니다(탄산 완충계).",
+    low:"CO₂가 낮으면 완충력이 약해질 뿐 거의 무해합니다.",
+    high:"CO₂가 과하면 탄산이 쌓여 배지가 산성화되고 pH가 붕괴해 효소가 실활합니다."},
+  {key:"t8", nm:"7. 삼투압 쇼크 타이밍",  unit:"h",   min:0, max:48,  step:1,   def:30,  src:"lit", cite:"Sauer & Galinski 1998", edu:"세포막 투과/용해",
+    hint:"고염 축적 후 저삼투 쇼크로 엑토인 방출(Sauer&Galinski 1998, 155 mg/gCDW) / 이름→저수율, 늦음→용해",
+    why:"고염에서 엑토인을 축적한 세포를 저삼투(예: 증류수)로 옮기면 엑토인을 배지로 방출합니다 — 세포를 죽이지 않고 반복 수확하는 'bacterial milking'(Sauer & Galinski 1998, 155 mg/g CDW 수율). 언제 쇼크를 주느냐가 수율을 결정합니다.",
+    low:"너무 이르면 엑토인이 충분히 축적되기 전에 방출돼 수율이 낮고, 강제 파쇄가 필요해 정제비가 올라갑니다.",
+    high:"너무 늦으면 세포가 용해(lysis)되어 사멸하고, 세포 내용물이 배지에 섞여 정제가 어려워집니다."}
+];
+
+const state = {};
+VARS.forEach(v=>state[v.key]=v.def);
+let lastTouched = "T";
+
+/* ---------- 반응 함수들 ---------- */
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function CPM(T,p=P){ // Rosso cardinal parameter model
+  if(T<=p.Tmin||T>=p.Tmax) return 0;
+  const num=(T-p.Tmax)*Math.pow(T-p.Tmin,2);
+  const den=(p.Topt-p.Tmin)*((p.Topt-p.Tmin)*(T-p.Topt)-(p.Topt-p.Tmax)*(p.Topt+p.Tmin-2*T));
+  if(den===0) return 0;
+  return clamp(num/den,0,1);
+}
+function fS(S,p=P){ const so=Math.sqrt(p.Ks*p.Ki); const rp=so/(p.Ks+so+so*so/p.Ki);
+  const raw=S/(p.Ks+S+S*S/p.Ki); return raw/rp; }
+function fNgrow(N,p=P){ return N/(p.KN+N); }
+function sigmaN(N,p=P){ return 1/(1+Math.pow(N/p.KI_n,p.nHill)); }
+function fDO(DO,p=P){ const lim=DO/(p.KO+DO);
+  const ros=Math.exp(-p.kROS*Math.max(0,DO-p.DOcrit)); return lim*ros; }
+function ecO2(DO,p=P){ // 산소 제한 → 엑토인 함량 유도 (DO 30% 기준 정규화, MCF 2026)
+  const raw=p.ecO2floor+(1-p.ecO2floor)*Math.exp(-p.kO2ec*DO);
+  const ref=p.ecO2floor+(1-p.ecO2floor)*Math.exp(-p.kO2ec*p.DOref_ec);
+  return clamp(raw/ref,0.4,1.3); }
+function fK(K,p=P){ if(K<=0) return 0;
+  return Math.exp(-0.5*Math.pow(Math.log(K/p.Kopt)/p.Ksig,2))*Math.exp(-p.kKtox*Math.max(0,K-p.Kopt)); }
+function Kcharge(K,p=P){ return K/(p.Kopt+K); }
+function fCO2(C,p=P){ return C<=p.CO2opt ? (1-p.kLowCO2*(p.CO2opt-C)) : Math.exp(-p.kAcid*(C-p.CO2opt)); }
+function recEff(t8,p=P){ return Math.exp(-0.5*Math.pow(Math.log((t8+1e-6)/p.t8opt)/p.t8sig,2)); }
+function ppEarly(t8,p=P){ return t8>=p.t8opt?0:Math.min(1,(p.t8opt-t8)/p.t8opt); }
+function ppLate (t8,p=P){ return t8<=p.t8opt?0:Math.min(1,(t8-p.t8opt)/p.t8opt); }
+
+/* ---------- 삼투압 내성 (Kuhlmann & Bremer 2002, Fig.6) ----------
+   세포는 고염 스트레스를 적합용질(엑토인)로 방어한다. 엑토인이 쌓일수록
+   내염성 곡선이 오른쪽으로 이동해 같은 염도를 더 잘 버틴다 → 엑토인은 제품이자 생존 수단. */
+function ecStatus(N,p=P){ return sigmaN(N,p)*Math.sqrt(fNgrow(N,p)); } // 세포내 엑토인 축적도 0~1: 질소제한이 유도하되(sigmaN) 합성엔 질소가 필요(fNgrow)
+function osmGrowth(NaCl,status,p=P){ const n50=p.NaCl50base+p.shiftEc*status; return 1/(1+Math.exp(p.kOsm*(NaCl-n50))); } // Fig.6B 시그모이드
+function NaCl50eff(N,p=P){ return p.NaCl50base+p.shiftEc*ecStatus(N,p); } // 유효 내염성 중점 (M)
+function fOsm(N,p=P){ return osmGrowth(p.NaCl_fix,ecStatus(N,p),p); }      // 배양 염도에서의 삼투 보호 인자 0~1
+
+/* ---------- 통합 계산 ---------- */
+function simulate(c,p=P){
+  const ft=CPM(c.T,p), fdo=fDO(c.DO,p), fk=fK(c.K,p), fco2=Math.max(0,fCO2(c.CO2,p));
+  const fosm=fOsm(c.N,p);   // 삼투압 내성 (누적 엑토인 보호, Kuhlmann & Bremer 2002)
+  // 포도당(fS)도 생존률에 포함: 결핍→아사, 과잉→기질억제 사멸. 삼투 보호(fosm)가 함께 곱해짐.
+  const viab=fS(c.S,p)*ft*fdo*fk*fco2*fosm;
+  let shock=recEff(c.t8,p)*(0.3+0.7*Kcharge(c.K,p)/0.5); shock=Math.min(1,shock);
+  const survival=clamp(viab*shock,0,1);
+  const mu=p.mumax*fS(c.S,p)*fNgrow(c.N,p)*ft*fdo*fk*fco2*fosm;
+  const X=p.Xmax*(mu/p.mumax)*Math.max(0.001,viab);
+  const ecFrac=p.ecmax*sigmaN(c.N,p)*ecO2(c.DO,p);   // 질소·산소 제한이 함께 엑토인 함량을 좌우
+  const titer=X*ecFrac;
+  const recovery_g=titer*100*recEff(c.t8,p)*viab;
+  const cycle_h=c.t8+24;
+  const annual_batches=(300*24)/cycle_h;
+  const annual_kg=recovery_g/1000*annual_batches;
+  return {survival,mu,X,ecFrac,titer,recovery_g,cycle_h,annual_batches,annual_kg,
+          ppE:ppEarly(c.t8,p),ppL:ppLate(c.t8,p),viab,fosm,n50:NaCl50eff(c.N,p)};
+}
+
+/* ---------- 원료 단가 (2025–2026 세계 시장 평균, 웹 검색 기준, USD) ---------- */
+const PRICES = {
+  ectoine: 7500,  // $/kg  고순도(의약·화장품) 등급 수입 실거래가. 벌크 화장품 등급은 ≈$1,000/kg.
+  glucose: 0.65,  // $/kg  액상 포도당 ≈$650/톤
+  urea:    0.45,  // $/kg  요소(질소원) ≈$420/톤 세계 평균
+  kcl:     0.45,  // $/kg  염화칼륨(칼륨원) ≈$450/톤 세계 평균
+  nacl:    0.12   // $/kg  공업용 소금 ≈$120/톤
+};
+const V_L = 100;                 // 반응기 부피 (L)
+const CAPEX_REF_USD = 450000;    // 기준 조건 100 L 파일럿 설비비 (가정 스케일, 약 6억원)
+
+/* ---------- 비용/경제성 (전부 USD) ---------- */
+const REF={S:22,N:3.0,T:30,DO:30,K:100,CO2:3,t8:30};
+function capexRaw(c){
+  const base=40;
+  const thermal=8*Math.pow(Math.abs(c.T-25)/8,1.2);
+  const oxygen=10*(c.DO/35);
+  const agit=6;
+  const offgas=4*(1+0.1*Math.abs(c.CO2-3));
+  const down=12*(1+4*ppEarly(c.t8)+8*ppLate(c.t8));
+  return base+thermal+oxygen+agit+offgas+down;
+}
+const REF_CAPEX=capexRaw(REF);
+function reagentCostUSD(c){ // $/배치 (100 L)
+  const glucose  = c.S/1000*V_L*PRICES.glucose;               // S g/L → kg
+  const nitrogen = c.N/1000*V_L*PRICES.urea;                  // N g/L → kg
+  const potassium= c.K*74.55/1000/1000*V_L*PRICES.kcl;        // K mM → g KCl/L (MW 74.55) → kg
+  const salt     = 70/1000*V_L*PRICES.nacl;                   // 7% w/v NaCl 고정
+  return glucose+nitrogen+potassium+salt;
+}
+function processCostUSD(c){ // $/배치  인건비·전력·용수·정제 소모품
+  const base=240;
+  const thermal=30*Math.pow(Math.abs(c.T-25)/8,1.2);   // 가열/냉각 에너지
+  const aeration=18*(c.DO/50);                          // 산기·교반 전력
+  const offgas=6*(1+0.1*Math.abs(c.CO2-3));             // 배기 처리
+  const down=40*(1+4*ppEarly(c.t8)+8*ppLate(c.t8));     // 다운스트림(강제 파쇄/용해 대응)
+  return base+thermal+aeration+offgas+down;
+}
+function economics(c,sim,price){
+  const capexIndex=capexRaw(c)/REF_CAPEX*100;
+  const capexUSD=capexIndex/100*CAPEX_REF_USD;
+  const opexPerBatch=reagentCostUSD(c)+processCostUSD(c);   // $/배치
+  const opexAnnual=opexPerBatch*sim.annual_batches;         // $/년
+  const deprec=capexUSD/10;                                 // 정액 10년
+  const unit=sim.annual_kg>0.01 ? (opexAnnual+deprec)/sim.annual_kg : Infinity; // $/kg
+  const revenue=price*sim.annual_kg;                        // $/년
+  const denom=revenue-opexAnnual;
+  const payback= denom>0 ? capexUSD/denom : Infinity;
+  return {capexIndex,capexUSD,opexAnnual,unit,revenue,payback};
+}
+
+/* ============================================================
+   UI
+============================================================ */
+const $=id=>document.getElementById(id);
+
+// 원료 단가 표
+$("priceTbl").innerHTML =
+  [["포도당","$"+PRICES.glucose.toFixed(2)+" /kg"],
+   ["질소원 (요소)","$"+PRICES.urea.toFixed(2)+" /kg"],
+   ["칼륨 (KCl)","$"+PRICES.kcl.toFixed(2)+" /kg"],
+   ["NaCl 배지염","$"+PRICES.nacl.toFixed(2)+" /kg"]]
+  .map(r=>`<div class="prow"><span class="subtle">${r[0]}</span><b>${r[1]}</b></div>`).join("");
+
+// build sliders
+const sc=$("sliders");
+VARS.forEach(v=>{
+  const d=document.createElement("div"); d.className="sld";
+  const srcBadge = v.src==="lit" ? `<span class="badge lit">문헌 근거 · ${v.cite}</span>`
+                 : v.src==="fit" ? `<span class="badge fit">문헌 정합 · ${v.cite}</span>`
+                 : `<span class="badge assume">가정값</span>`;
+  d.innerHTML=`
+    <div class="row"><span class="nm">${v.nm}${srcBadge}</span>
+      <span class="val"><span id="v_${v.key}"></span> ${v.unit}</span></div>
+    <input type="range" id="s_${v.key}" min="${v.min}" max="${v.max}" step="${v.step}" value="${v.def}">
+    <div class="hint">${v.hint} <button type="button" class="expbtn" id="e_${v.key}">설명 ▾</button></div>
+    <div class="expbox" id="exp_${v.key}">
+      <div><b>왜 필요한가</b><br>${v.why}</div>
+      <div class="lowhi low"><b>부족하면</b><br>${v.low}</div>
+      <div class="lowhi high"><b>과잉이면</b><br>${v.high}</div>
+    </div>`;
+  sc.appendChild(d);
+  const inp=$("s_"+v.key);
+  inp.addEventListener("input",()=>{ state[v.key]=parseFloat(inp.value); lastTouched=v.key; render(); });
+  const eb=$("e_"+v.key), ex=$("exp_"+v.key);
+  eb.addEventListener("click",()=>{ const open=ex.style.display==="block";
+    ex.style.display=open?"none":"block"; eb.textContent=open?"설명 ▾":"설명 ▴"; });
+});
+
+function fmt(x,d=1){ if(!isFinite(x)) return "∞"; return x.toLocaleString("ko-KR",{maximumFractionDigits:d,minimumFractionDigits:d}); }
+function usd(x,d=0){ return isFinite(x)? "$"+fmt(x,d) : "–"; }
+function color(f){ return f>0.66?"var(--good)":f>0.33?"var(--warn)":"var(--bad)"; }
+
+function render(){
+  VARS.forEach(v=>{ $("v_"+v.key).textContent = (v.step<1?state[v.key].toFixed(v.step<0.1?2:1):Math.round(state[v.key])); });
+  const price=parseFloat($("price").value)||0;
+  const s=simulate(state);
+  const e=economics(state,s,price);
+
+  const barFill="rgba(255,255,255,.9)";
+  $("mSurv").textContent=fmt(s.survival*100,0)+"%"; $("tileSurv").style.background=color(s.survival);
+  $("bSurv").style.width=(s.survival*100)+"%"; $("bSurv").style.background=barFill;
+  $("mTiter").textContent=fmt(s.titer,2); $("bTiter").style.width=clamp(s.titer/13*100,0,100)+"%"; $("bTiter").style.background=barFill;
+  $("mYield").textContent=fmt(s.annual_kg,1); $("bYield").style.width=clamp(s.annual_kg/50*100,0,100)+"%"; $("bYield").style.background=barFill;
+  $("mCapex").textContent=fmt(e.capexIndex,0); $("bCapex").style.width=clamp(e.capexIndex/200*100,0,100)+"%"; $("bCapex").style.background=barFill;
+  $("mUnit").textContent=isFinite(e.unit)?usd(e.unit,0):"–";
+  $("mPay").textContent=isFinite(e.payback)?fmt(e.payback,1):"회수 불가";
+  $("tilePay").style.background=isFinite(e.payback)?(e.payback<6?"var(--good)":"var(--warn)"):"var(--bad)";
+
+  $("kX").textContent=fmt(s.X,2)+" g/L";
+  $("kRec").textContent=fmt(s.recovery_g,0)+" g";
+  $("kCyc").textContent=fmt(s.cycle_h,0)+" h";
+  $("kBat").textContent=fmt(s.annual_batches,0)+" 회/년";
+  $("kCapexUsd").textContent=usd(e.capexUSD,0);
+  $("kOpex").textContent=usd(e.opexAnnual,0)+" /년";
+  $("kOsm").textContent=fmt(s.fosm*100,0)+"%";
+  $("kN50").textContent=fmt(s.n50,2)+" M";
+
+  const wb=$("warnBox"); let w=[];
+  if(s.survival<0.15) w.push("⚠ 미생물이 거의 전멸했습니다 — 조건이 생존 절벽을 넘었습니다.");
+  if(!isFinite(e.payback)) w.push("⚠ 연간 수익이 운전비보다 낮아 <b>투자 회수가 불가능</b>합니다.");
+  if(s.annual_kg<0.5) w.push("⚠ 생산량이 사실상 0 — 사업이 성립하지 않습니다.");
+  wb.innerHTML=w.join("<br>"); wb.style.display=w.length?"block":"none";
+
+  drawSweep(); drawPareto(); drawOsm(); drawTurb(s);
+  const v=VARS.find(x=>x.key===lastTouched);
+  $("sweepName").textContent=v.nm;
+}
+
+/* ---------- canvas helpers ---------- */
+function setup(cv){
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth, h=cv.clientHeight;
+  cv.width=w*dpr; cv.height=h*dpr;
+  const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  return {ctx,w,h};
+}
+function axis(ctx,w,h,pad,xlab){
+  ctx.strokeStyle="#d0d5de"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad,8); ctx.lineTo(pad,h-22); ctx.lineTo(w-8,h-22); ctx.stroke();
+  ctx.fillStyle="#6b7280"; ctx.font="11px Segoe UI"; ctx.textAlign="center";
+  ctx.fillText(xlab,(pad+w)/2,h-6);
+}
+
+function drawSweep(){
+  const cv=$("sweep"); const {ctx,w,h}=setup(cv);
+  const pad=38;
+  const v=VARS.find(x=>x.key===lastTouched);
+  const N=80; const xs=[],surv=[],yld=[];
+  for(let i=0;i<=N;i++){ const val=v.min+(v.max-v.min)*i/N;
+    const c={...state,[v.key]:val}; const s=simulate(c);
+    xs.push(val); surv.push(s.survival); yld.push(s.annual_kg);
+  }
+  const yldMax=Math.max(0.001,...yld);
+  axis(ctx,w,h,pad,v.nm+" ("+v.unit+")");
+  const X=val=> pad+(w-8-pad)*(val-v.min)/(v.max-v.min);
+  const Ys=f=> 8+(h-22-8)*(1-f);            // survival 0..1
+  const Yy=y=> 8+(h-22-8)*(1-y/yldMax);     // yield normalized
+
+  // MC uncertainty band on yield
+  if($("mcToggle").checked){
+    const R=24; const lo=new Array(N+1).fill(Infinity), hi=new Array(N+1).fill(-Infinity);
+    for(let r=0;r<R;r++){
+      const pp={...P}; MC_KEYS.forEach(k=> pp[k]=P[k]*(1+0.12*(Math.sin(r*12.9898+k.length*78.233)%1*2-1)) );
+      for(let i=0;i<=N;i++){ const c={...state,[v.key]:xs[i]}; const s=simulate(c,pp);
+        lo[i]=Math.min(lo[i],s.annual_kg); hi[i]=Math.max(hi[i],s.annual_kg); }
+    }
+    ctx.fillStyle="rgba(196,113,237,0.16)"; ctx.beginPath();
+    for(let i=0;i<=N;i++){ const x=X(xs[i]); const y=Yy(clamp(hi[i],0,yldMax)); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    for(let i=N;i>=0;i--){ const x=X(xs[i]); const y=Yy(clamp(lo[i],0,yldMax)); ctx.lineTo(x,y); }
+    ctx.closePath(); ctx.fill();
+  }
+
+  const line=(arr,Y,col)=>{ ctx.strokeStyle=col; ctx.lineWidth=2; ctx.beginPath();
+    arr.forEach((val,i)=>{ const x=X(xs[i]),y=Y(val); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke(); };
+  line(surv,Ys,"#2fa84f");
+  line(yld,Yy,"#a94fd6");
+
+  // current marker
+  const cx=X(state[v.key]);
+  ctx.strokeStyle="#2d7ff0"; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(cx,8); ctx.lineTo(cx,h-22); ctx.stroke(); ctx.setLineDash([]);
+  // y labels
+  ctx.fillStyle="#8a93a5"; ctx.font="10px Segoe UI"; ctx.textAlign="right";
+  ctx.fillText("100%",pad-4,14); ctx.fillText("0",pad-4,h-24);
+}
+
+function drawPareto(){
+  const cv=$("pareto"); const {ctx,w,h}=setup(cv);
+  const pad=44;
+  const pts=[]; for(let t=8;t<=48;t+=1){ const c={...state,t8:t}; const s=simulate(c); pts.push({t,y:s.annual_kg,cx:capexRaw(c)/REF_CAPEX*100}); }
+  const yMax=Math.max(1,...pts.map(p=>p.y)); const cMax=Math.max(...pts.map(p=>p.cx),120);
+  ctx.strokeStyle="#d0d5de"; ctx.beginPath(); ctx.moveTo(pad,8); ctx.lineTo(pad,h-22); ctx.lineTo(w-8,h-22); ctx.stroke();
+  ctx.fillStyle="#6b7280"; ctx.font="11px Segoe UI"; ctx.textAlign="center";
+  ctx.fillText("연간 생산량 (kg) →",(pad+w)/2,h-6);
+  ctx.save(); ctx.translate(12,(h-22)/2); ctx.rotate(-Math.PI/2); ctx.fillText("CAPEX 지수 →",0,0); ctx.restore();
+  const X=y=> pad+(w-8-pad)*(y/yMax);
+  const Y=cx=> 8+(h-22-8)*(1-(cx)/cMax);
+  ctx.strokeStyle="#d99a1a"; ctx.lineWidth=2; ctx.beginPath();
+  pts.forEach((p,i)=>{ const x=X(p.y),yy=Y(p.cx); i?ctx.lineTo(x,yy):ctx.moveTo(x,yy); }); ctx.stroke();
+  // current
+  const cs=simulate(state); const ccx=capexRaw(state)/REF_CAPEX*100;
+  ctx.fillStyle="#2d7ff0"; ctx.beginPath(); ctx.arc(X(cs.annual_kg),Y(ccx),5,0,7); ctx.fill();
+}
+
+/* ---------- 발효액 탁도 (모델 추정 OD₅₇₈) ----------
+   건조 균체량 X(g/L)를 OD로 환산(OD 1 ≈ 0.35 g/L 가정)해 배지 흐림 정도로 표현.
+   OD가 올라갈수록 액체가 우윳빛으로 불투명해져 뒤의 참조 표식(R)이 가려진다. */
+const DCW_PER_OD = 0.35;      // OD₅₇₈ 1.0 당 건조중량(g/L) 가정 (일반 세균 0.3~0.5 범위)
+function drawTurb(s){
+  const OD = s.X / DCW_PER_OD;
+  const t = clamp(OD/40, 0, 1);   // 시각적 탁도 0~1 (OD 40에서 포화)
+  const r=Math.round(214+(244-214)*t), g=Math.round(203+(240-203)*t), b=Math.round(120+(216-120)*t);
+  const a=(0.40+0.58*t).toFixed(2);
+  const liq=$("turbLiquid"); if(liq) liq.setAttribute("fill",`rgba(${r},${g},${b},${a})`);
+  const haze=$("turbHaze"); if(haze) haze.setAttribute("opacity",(0.12+0.82*t).toFixed(2));
+  $("turbOD").textContent=fmt(OD,1);
+  $("turbX").textContent=fmt(s.X,2)+" g/L";
+  const lbl = OD<2?"거의 맑음 (무성장)" : OD<8?"약간 탁함" : OD<20?"탁함" : "매우 탁함 (고밀도)";
+  $("turbLabel").textContent=lbl;
+  $("turbLabel").style.color = OD<2?"var(--bad)" : OD<8?"var(--warn)" : "var(--good)";
+}
+
+function drawOsm(){
+  const cv=$("osm"); const {ctx,w,h}=setup(cv);
+  const pad=40; const Nmax=3;
+  const status=ecStatus(state.N);
+  ctx.strokeStyle="#d0d5de"; ctx.beginPath(); ctx.moveTo(pad,8); ctx.lineTo(pad,h-22); ctx.lineTo(w-8,h-22); ctx.stroke();
+  ctx.fillStyle="#6b7280"; ctx.font="11px Segoe UI"; ctx.textAlign="center";
+  ctx.fillText("NaCl (M)",(pad+w)/2,h-6);
+  ctx.save(); ctx.translate(12,(h-22)/2); ctx.rotate(-Math.PI/2); ctx.fillText("성장 인자 (0~1)",0,0); ctx.restore();
+  // x축 눈금
+  ctx.fillStyle="#8a93a5"; ctx.font="10px Segoe UI"; ctx.textAlign="center";
+  for(let n=0;n<=3;n++){ const x=pad+(w-8-pad)*(n/Nmax); ctx.fillText(n,x,h-24); }
+  const X=n=> pad+(w-8-pad)*(n/Nmax);
+  const Y=g=> 8+(h-22-8)*(1-g);
+  const curve=(st,col,dash)=>{ ctx.strokeStyle=col; ctx.lineWidth=2; ctx.setLineDash(dash||[]); ctx.beginPath();
+    for(let i=0;i<=120;i++){ const n=Nmax*i/120; const g=osmGrowth(n,st); const x=X(n),y=Y(g); i?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke(); ctx.setLineDash([]); };
+  curve(0,"#8a93a5");         // 보호 없음
+  curve(status,"#2fa84f");    // 현재 엑토인 축적 상태
+  // 배양 염도 마커 (1.2 M)
+  const cx=X(P.NaCl_fix);
+  ctx.strokeStyle="#2d7ff0"; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(cx,8); ctx.lineTo(cx,h-22); ctx.stroke(); ctx.setLineDash([]);
+  // y 라벨
+  ctx.fillStyle="#8a93a5"; ctx.textAlign="right"; ctx.fillText("1",pad-4,14); ctx.fillText("0",pad-4,h-24);
+}
+
+/* ---------- 역설계 & 검증 ---------- */
+function objective(c,price,target){
+  const s=simulate(c); const e=economics(c,s,price);
+  if(s.annual_kg<target) return {feasible:false,pen:1e9+(target-s.annual_kg)*1e4, unit:e.unit, s,e};
+  return {feasible:true,pen:e.unit, unit:e.unit, s,e};
+}
+function randCond(){ const c={}; VARS.forEach(v=> c[v.key]=v.min+(v.max-v.min)*Math.random()); return c; }
+function globalSearch(price,target,tries=5000){
+  let best=null;
+  for(let i=0;i<tries;i++){ const c=randCond(); const o=objective(c,price,target);
+    if(!best||o.pen<best.o.pen){ best={c,o}; } }
+  // local refine around best
+  for(let pass=0;pass<3;pass++){
+    VARS.forEach(v=>{ let bv=best.c[v.key];
+      for(let i=0;i<=40;i++){ const val=v.min+(v.max-v.min)*i/40; const c={...best.c,[v.key]:val};
+        const o=objective(c,price,target); if(o.pen<best.o.pen){ best={c,o}; bv=val; } }
+      best.c[v.key]=bv;
+    });
+  }
+  return best;
+}
+function coordinateSearch(price,target){
+  // 단일 시작점(중앙값)에서 한 변수씩 최적화 — 수렴까지
+  let c={}; VARS.forEach(v=> c[v.key]=(v.min+v.max)/2 );
+  let best={c:{...c},o:objective(c,price,target)};
+  for(let pass=0;pass<6;pass++){
+    let improved=false;
+    VARS.forEach(v=>{ let bestVal=best.c[v.key], bestPen=best.o.pen;
+      for(let i=0;i<=60;i++){ const val=v.min+(v.max-v.min)*i/60; const cc={...best.c,[v.key]:val};
+        const o=objective(cc,price,target); if(o.pen<bestPen){ bestPen=o.pen; bestVal=val; } }
+      if(bestVal!==best.c[v.key]){ best.c[v.key]=bestVal; best.o=objective(best.c,price,target); improved=true; }
+    });
+    if(!improved) break;
+  }
+  return best;
+}
+
+$("btnInverse").addEventListener("click",()=>{
+  const price=parseFloat($("price").value)||0; const target=parseFloat($("target").value)||0;
+  const best=globalSearch(price,target);
+  const out=$("invOut");
+  if(!best.o.feasible){ out.innerHTML=`<span style="color:var(--bad)">목표 ${target} kg/년은 현재 모델에서 달성 불가능합니다. 목표를 낮춰보세요.</span>`; return; }
+  VARS.forEach(v=>{ state[v.key]=best.c[v.key]; $("s_"+v.key).value=best.c[v.key]; });
+  lastTouched="t8"; render();
+  const s=best.o.s, e=best.o.e;
+  out.innerHTML=`<b style="color:var(--good)">찾았습니다.</b> 목표 ${target} kg/년을 <b>단위원가 ${usd(e.unit,0)}/kg</b>, 회수기간 ${isFinite(e.payback)?fmt(e.payback,1)+"년":"불가"}로 달성하는 조건으로 슬라이더를 설정했습니다. `+
+    `<span class="subtle">(목표 생산량을 만족하면서 <b>단위 생산 원가</b>를 최소화 — CAPEX만 최소화하면 원료를 낭비하므로.)</span>`;
+});
+
+$("price").addEventListener("input",render);
+$("mcToggle").addEventListener("change",render);
+
+// education box
+$("eduBox").innerHTML = VARS.map(v=>`· <b>${v.nm}</b> — ${v.edu}`).join("<br>") +
+  `<br><br><b>핵심 원리:</b> 고염 배지에서 자란 세포는 삼투압을 버티려 엑토인을 축적하고, 저삼투압 쇼크(7번)를 주면 이를 방출합니다(bacterial milking, Sauer & Galinski 1998). ` +
+  `변수들은 독립이 아닙니다 — K⁺(5)가 삼투압 쇼크(7) 생존을 좌우하고, 질소(2)는 성장과 엑토인 합성을 반대로 움직이며, 온도(3)·DO(4)는 절벽형 실패 모드를 가집니다. ` +
+  `그래서 손으로 최적점을 못 찾고, 절벽 때문에 지형이 비볼록합니다 — AI 탐색이 필요한 이유입니다.` +
+  `<br><br><b>삼투압 내성 계산 (Kuhlmann & Bremer 2002, Fig.6):</b> 고염(7%, 1.2 M)에서 성장 인자는 NaCl에 대한 시그모이드로 떨어집니다 — <span style="font-variant-numeric:tabular-nums">fOsm = 1 / (1 + e<sup>k(NaCl − NaCl₅₀)</sup>)</span>. ` +
+  `세포가 엑토인을 많이 축적할수록(질소 2번이 유도) 내성 중점 NaCl₅₀이 오른쪽으로 이동해(1 mM 엑토인 = +0.5 M, Fig.6B) 같은 염도를 더 잘 버팁니다. ` +
+  `즉 엑토인은 '제품'이자 '생존 수단'입니다 — 이 삼투 보호 인자 fOsm이 생존률과 성장에 함께 곱해집니다.`;
+
+render();
+</script>
+<footer style="padding:20px;text-align:center;background:#0f172a;color:#cbd5e1;font:600 13px/1.5 system-ui,sans-serif">대륜고등학교 · AI 기반 생명공학 문제해결활동</footer>
+</body>
+</html>
