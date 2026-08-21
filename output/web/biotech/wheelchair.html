@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>휠체어 내리막 안전 제어 시스템</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1726; --panel:#16233A; --panel2:#1B2B45; --line:#2A3E5C;
+    --txt:#E8EEF6; --muted:#93A6C2; --faint:#5E7391;
+    --accent:#33D3BC; --accent-dim:#1E8C7E;
+    --safe:#3FB86B; --caution:#F2A93C; --danger:#EF5B5B;
+    --safe-bg:rgba(63,184,107,.12); --caution-bg:rgba(242,169,60,.12); --danger-bg:rgba(239,91,91,.12);
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --ui:"Pretendard",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--ui); background:var(--ink); color:var(--txt);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(1200px 600px at 80% -10%, rgba(51,211,188,.06), transparent 60%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1120px; margin:0 auto; padding:28px 22px 80px}
+
+  /* ---------- header ---------- */
+  header.top{display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; padding-bottom:22px; border-bottom:1px solid var(--line); margin-bottom:26px}
+  .brand-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin-bottom:10px}
+  h1{font-size:clamp(24px,3.4vw,36px); font-weight:800; letter-spacing:-.02em; line-height:1.15}
+  h1 .thin{color:var(--muted); font-weight:600}
+  .sub{color:var(--muted); margin-top:10px; max-width:56ch; font-size:15px}
+  .status-chip{font-family:var(--mono); font-size:11px; letter-spacing:.12em; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:7px 13px; white-space:nowrap; display:flex; align-items:center; gap:8px}
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(51,211,188,.6);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(51,211,188,.5)}70%{box-shadow:0 0 0 7px rgba(51,211,188,0)}100%{box-shadow:0 0 0 0 rgba(51,211,188,0)}}
+
+  /* ---------- main grid ---------- */
+  .console{display:grid; grid-template-columns:0.9fr 1.1fr; gap:20px}
+  @media(max-width:860px){.console{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line); border-radius:16px; padding:22px}
+  .card h2{font-size:13px; font-family:var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:18px; display:flex; align-items:center; gap:9px}
+  .card h2::before{content:""; width:14px; height:2px; background:var(--accent); border-radius:2px}
+
+  /* ---------- controls ---------- */
+  .field{margin-bottom:22px}
+  .field:last-child{margin-bottom:0}
+  .field-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:9px}
+  .field label{font-size:14px; font-weight:600}
+  .field .val{font-family:var(--mono); font-size:18px; font-weight:700; color:var(--accent)}
+  .field .val small{font-size:12px; color:var(--muted); font-weight:400; margin-left:2px}
+  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:6px; background:linear-gradient(90deg,var(--accent-dim),var(--accent)) no-repeat; background-size:var(--fill,50%) 100%; cursor:pointer}
+  input[type=range]{background-color:#22344F}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#EAF3FF; border:3px solid var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.4); cursor:pointer; transition:transform .12s}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#EAF3FF;border:3px solid var(--accent);cursor:pointer}
+  input[type=range]:focus-visible{outline:2px solid var(--accent); outline-offset:4px}
+
+  .seg{display:flex; gap:8px}
+  .seg button{flex:1; font-family:var(--ui); font-size:13px; font-weight:600; color:var(--muted); background:#20324D; border:1px solid var(--line); border-radius:10px; padding:11px 6px; cursor:pointer; transition:all .15s}
+  .seg button .em{display:block; font-size:11px; font-weight:400; color:var(--faint); margin-top:2px}
+  .seg button[aria-pressed=true]{color:var(--ink); background:var(--accent); border-color:var(--accent)}
+  .seg button[aria-pressed=true] .em{color:rgba(14,23,38,.7)}
+  .seg button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  .setting-note{margin-top:20px; padding-top:16px; border-top:1px dashed var(--line); font-size:12px; color:var(--faint); font-family:var(--mono)}
+
+  /* ---------- verdict ---------- */
+  .verdict{border-radius:14px; padding:20px; border:1px solid; margin-bottom:18px; transition:background .3s,border-color .3s}
+  .verdict.s-safe{background:var(--safe-bg); border-color:var(--safe)}
+  .verdict.s-caution{background:var(--caution-bg); border-color:var(--caution)}
+  .verdict.s-danger{background:var(--danger-bg); border-color:var(--danger)}
+  .verdict .tag{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted)}
+  .verdict .state{font-size:30px; font-weight:800; letter-spacing:-.02em; margin:4px 0 6px; display:flex; align-items:center; gap:11px}
+  .verdict.s-safe .state{color:var(--safe)} .verdict.s-caution .state{color:var(--caution)} .verdict.s-danger .state{color:var(--danger)}
+  .dot{width:13px;height:13px;border-radius:50%;background:currentColor;box-shadow:0 0 16px currentColor}
+  .verdict .why{font-size:14.5px; color:var(--txt)}
+  .verdict .why b{color:#fff}
+
+  /* ---------- scene ---------- */
+  .scene-row{display:grid; grid-template-columns:1.15fr .85fr; gap:16px; margin-bottom:18px}
+  @media(max-width:560px){.scene-row{grid-template-columns:1fr}}
+  .scene,.gauge-box{background:#101C30; border:1px solid var(--line); border-radius:12px; padding:12px; position:relative; overflow:hidden}
+  .scene svg,.gauge-box svg{width:100%; height:auto; display:block}
+  .mini-label{position:absolute; top:10px; left:12px; font-family:var(--mono); font-size:10px; letter-spacing:.12em; color:var(--faint); text-transform:uppercase}
+
+  /* ---------- readouts ---------- */
+  .readouts{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+  @media(max-width:560px){.readouts{grid-template-columns:1fr 1fr}}
+  .ro{background:#101C30; border:1px solid var(--line); border-radius:11px; padding:13px 14px}
+  .ro .k{font-size:11.5px; color:var(--muted); margin-bottom:5px}
+  .ro .v{font-family:var(--mono); font-size:21px; font-weight:700; color:var(--txt)}
+  .ro .v small{font-size:12px; color:var(--muted); font-weight:400}
+
+  /* ---------- chart ---------- */
+  .chartcard{margin-top:20px}
+  .chartcard svg{width:100%; height:auto; display:block}
+  .legend{display:flex; gap:18px; flex-wrap:wrap; margin-top:12px; font-size:12.5px; color:var(--muted)}
+  .legend span{display:flex; align-items:center; gap:7px}
+  .legend i{width:13px;height:3px;border-radius:2px;display:inline-block}
+
+  /* ---------- how it works ---------- */
+  .flow{margin-top:20px}
+  .flow-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:6px}
+  @media(max-width:720px){.flow-grid{grid-template-columns:1fr}}
+  .step{background:#101C30; border:1px solid var(--line); border-radius:12px; padding:18px}
+  .step .n{font-family:var(--mono); font-size:12px; color:var(--accent); letter-spacing:.1em}
+  .step h3{font-size:16px; margin:8px 0 6px; font-weight:700}
+  .step p{font-size:13.5px; color:var(--muted)}
+  .step .phys{margin-top:11px; font-family:var(--mono); font-size:12px; color:var(--txt); background:#0C1626; border:1px solid var(--line); border-radius:8px; padding:8px 10px}
+  .arrow{color:var(--accent-dim); text-align:center; align-self:center; font-size:20px}
+  @media(max-width:720px){.arrow{display:none}}
+
+  footer{margin-top:34px; padding-top:20px; border-top:1px solid var(--line); font-size:12.5px; color:var(--faint); line-height:1.8}
+  footer b{color:var(--muted)}
+
+  @media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="brand-eyebrow">Assistive Descent Control · 물리 × AI</div>
+      <h1>휠체어 내리막 <span class="thin">안전 제어 시스템</span></h1>
+      <p class="sub">언덕 학교에서 도우미 없이 안전하게 등하교하기 위한 알고리즘입니다. 경사·탑승 조건을 입력하면 위험을 실시간으로 판정하고, 회생제동으로 얼마나 감속해야 하는지 계산합니다.</p>
+    </div>
+    <div class="status-chip"><span class="pulse"></span> LIVE · 실시간 판정</div>
+  </header>
+
+  <div class="console">
+    <!-- LEFT: controls -->
+    <section class="card">
+      <h2>주행 조건 입력</h2>
+
+      <div class="field">
+        <div class="field-top"><label for="slope">언덕 경사각</label><span class="val" id="slopeV">8.0<small>°</small></span></div>
+        <input type="range" id="slope" min="0" max="15" step="0.5" value="8">
+      </div>
+
+      <div class="field">
+        <div class="field-top"><label for="mass">총질량 <small style="color:var(--faint);font-weight:400">사람 + 휠체어</small></label><span class="val" id="massV">100<small>kg</small></span></div>
+        <input type="range" id="mass" min="70" max="180" step="5" value="100">
+      </div>
+
+      <div class="field">
+        <div class="field-top"><label>노면 상태</label></div>
+        <div class="seg" id="surface" role="group" aria-label="노면 상태">
+          <button data-surf="dry" aria-pressed="true">마른 노면<span class="em">grip 100%</span></button>
+          <button data-surf="wet" aria-pressed="false">젖은 노면<span class="em">grip 60%</span></button>
+          <button data-surf="icy" aria-pressed="false">눈·빙판<span class="em">grip 35%</span></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-top"><label for="length">언덕 길이 <small style="color:var(--faint);font-weight:400">실측값으로 교체</small></label><span class="val" id="lengthV">150<small>m</small></span></div>
+        <input type="range" id="length" min="20" max="300" step="10" value="150">
+      </div>
+
+      <div class="setting-note">
+        시스템 설정값 · 안전속도 v_safe = 1.5 m/s (≈ 5.4 km/h) · 최대 제동력 F_max = 260 N · 회수효율 η = 0.30 · 전방전복 임계 = 28.1°
+      </div>
+    </section>
+
+    <!-- RIGHT: output -->
+    <section class="card">
+      <h2>판정 결과</h2>
+
+      <div class="verdict s-caution" id="verdict">
+        <div class="tag">SYSTEM VERDICT</div>
+        <div class="state"><span class="dot"></span><span id="stateText">주의</span></div>
+        <div class="why" id="whyText">회생제동을 적용하면 안전합니다.</div>
+      </div>
+
+      <div class="scene-row">
+        <div class="scene">
+          <span class="mini-label">Slope / 경사면</span>
+          <svg viewBox="0 0 300 180" id="sceneSvg" aria-label="경사면 위 휠체어">
+            <line x1="20" y1="160" x2="280" y2="160" stroke="#2A3E5C" stroke-width="1.5"/>
+            <path id="ramp" d="M20 160 L280 160 L280 100 Z" fill="rgba(51,211,188,.06)" stroke="var(--accent)" stroke-width="2"/>
+            <g id="chair">
+              <circle cx="0" cy="-9" r="9" fill="none" stroke="#EAF3FF" stroke-width="2.5"/>
+              <circle cx="0" cy="-9" r="2" fill="#EAF3FF"/>
+              <circle cx="-13" cy="-5" r="4" fill="none" stroke="#EAF3FF" stroke-width="2"/>
+              <path d="M-11 -22 L-4 -22 L2 -11" fill="none" stroke="#EAF3FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="-4" cy="-27" r="3.4" fill="#EAF3FF"/>
+            </g>
+            <text id="angleTxt" x="250" y="152" font-family="var(--mono)" font-size="12" fill="var(--muted)" text-anchor="end">8°</text>
+          </svg>
+        </div>
+        <div class="gauge-box">
+          <span class="mini-label">Uncontrolled speed</span>
+          <svg viewBox="0 0 200 150" id="gaugeSvg" aria-label="제동 없을 때 속도">
+            <path d="M25 130 A80 80 0 0 1 175 130" fill="none" stroke="#22344F" stroke-width="13" stroke-linecap="round"/>
+            <path id="gaugeSafe" d="M25 130 A80 80 0 0 1 175 130" fill="none" stroke="var(--safe)" stroke-width="13" stroke-linecap="round"/>
+            <line id="needle" x1="100" y1="130" x2="100" y2="60" stroke="#EAF3FF" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="100" cy="130" r="6" fill="#EAF3FF"/>
+            <text id="spdTxt" x="100" y="108" font-size="26" font-weight="800" fill="#EAF3FF" text-anchor="middle" font-family="var(--mono)">44</text>
+            <text x="100" y="124" font-size="10" fill="var(--muted)" text-anchor="middle" font-family="var(--mono)">km/h</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="readouts">
+        <div class="ro"><div class="k">필요 제동력</div><div class="v" id="roBrake">147<small> N</small></div></div>
+        <div class="ro"><div class="k">회생제동 출력</div><div class="v" id="roDuty">57<small> %</small></div></div>
+        <div class="ro"><div class="k">회수 에너지</div><div class="v" id="roEnergy">6.1<small> kJ</small></div></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- CHART -->
+  <section class="card chartcard">
+    <h2>경사각에 따른 폭주 속도</h2>
+    <svg viewBox="0 0 900 300" id="chartSvg" aria-label="경사각 대 속도 그래프"></svg>
+    <div class="legend">
+      <span><i style="background:var(--accent)"></i> 제동 없을 때 바닥 속도</span>
+      <span><i style="background:var(--safe)"></i> 안전 한계 (5.4 km/h)</span>
+      <span><i style="background:var(--danger);height:10px;width:10px;border-radius:50%"></i> 현재 조건</span>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="card flow">
+    <h2>시스템 작동 원리 · 물리 3개념</h2>
+    <div class="flow-grid">
+      <div class="step">
+        <div class="n">01 · 감지</div>
+        <h3>왜 위험한가</h3>
+        <p>경사 센서가 각도를, 속도 센서가 현재 속도를 읽습니다. 중력이 휠체어를 가속시킵니다.</p>
+        <div class="phys">등가속도운동<br>v = √(2·g(sinθ−μcosθ)·s)</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="n">02 · 제어</div>
+        <h3>어떻게 잡는가</h3>
+        <p>모터를 발전기로 돌려 제동력을 만들고, 그 전기로 배터리를 충전합니다. 빠를수록 더 세게 잡습니다.</p>
+        <div class="phys">전자기유도<br>F_제동 ∝ v · E = η·mgh</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="n">03 · 한계</div>
+        <h3>안전 범위 안에서</h3>
+        <p>너무 세게 제동하면 앞으로 고꾸라집니다. AI가 이 한계 안에서 최적 제동량을 판정합니다.</p>
+        <div class="phys">돌림힘<br>θ_전복 = arctan(d/h)</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <b>산출물 정체</b> · 이 웹 애플리케이션은 실제 휠체어에 탑재될 <b>안전 제어 알고리즘(두뇌)</b>입니다. 물리 방정식으로 위험을 정의하고, 6,000개 시뮬레이션 데이터로 학습한 판정 로직을 브라우저에서 실시간 실행합니다. 실제 회생제동 하드웨어 탑재 및 실차 시험은 후속 과제입니다.<br>
+    <b>주의</b> · 노면 길이·경사각은 학교 실측값으로 교체해야 실제 판정이 됩니다. 이 데모는 교육·탐구 목적의 물리 모형이며 실제 안전을 보증하지 않습니다.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var G=9.8, V_SAFE=1.5, F_MAX=260, ETA=0.30;
+  var TIP_DEG = Math.atan(0.32/0.60)*180/Math.PI; // ≈28.07
+  var surfaces = { dry:{mu:0.020, grip:1.00}, wet:{mu:0.015, grip:0.60}, icy:{mu:0.010, grip:0.35} };
+  var state = { slope:8, mass:100, length:150, surf:"dry" };
+
+  function rad(d){ return d*Math.PI/180; }
+  function accel(th,mu){ return G*(Math.sin(rad(th))-mu*Math.cos(rad(th))); }
+  function speedBottom(th,mu,L){ var a=accel(th,mu); return a<=0?0:Math.sqrt(2*a*L); }
+  function reqBrake(th,mu,m){ return Math.max(0, m*G*(Math.sin(rad(th))-mu*Math.cos(rad(th)))); }
+  function energyRec(th,m,L){ var H=L*Math.sin(rad(th)); return ETA*m*G*H; }
+
+  function classify(){
+    var s=surfaces[state.surf], mu=s.mu, fMaxEff=F_MAX*s.grip;
+    var vFree=speedBottom(state.slope,mu,state.length);
+    var fReq=reqBrake(state.slope,mu,state.mass);
+    var tip = state.slope>=TIP_DEG;
+    var duty = fMaxEff>0 ? fReq/fMaxEff*100 : 999;
+    var st;
+    if(vFree<=V_SAFE) st=0;
+    else if(fReq<=fMaxEff && !tip) st=1;
+    else st=2;
+    return { st:st, vFree:vFree, fReq:fReq, duty:duty, tip:tip,
+             energy:energyRec(state.slope,state.mass,state.length), fMaxEff:fMaxEff };
+  }
+
+  // ---- geometry helpers for the scene ----
+  function updateScene(){
+    var svg=document.getElementById("sceneSvg");
+    var baseX1=20, baseY=160, baseX2=280;
+    var len=baseX2-baseX1;
+    var rise=len*Math.tan(rad(state.slope));
+    if(rise>120) rise=120;
+    var topY=baseY-rise;
+    document.getElementById("ramp").setAttribute("d","M"+baseX1+" "+baseY+" L"+baseX2+" "+baseY+" L"+baseX2+" "+topY+" Z");
+    // place wheelchair partway up the ramp surface (from top-right corner down the hypotenuse)
+    var t=0.62; // fraction along ramp
+    var cx=baseX2 - (baseX2-baseX1)*t*0 - ( (baseX2-baseX1) )* (1-t); // along x
+    // simpler: point on hypotenuse from (baseX1,baseY) to (baseX2,topY)
+    var px=baseX1+(baseX2-baseX1)*t;
+    var py=baseY+(topY-baseY)*t;
+    var ang=-state.slope; // rotate chair to match slope
+    document.getElementById("chair").setAttribute("transform","translate("+px+","+py+") rotate("+ang+")");
+    document.getElementById("angleTxt").textContent=state.slope.toFixed(1)+"°";
+  }
+
+  function updateGauge(vFreeKmh, safeKmh){
+    var gmax=Math.max(20, Math.ceil(vFreeKmh/10)*10);
+    var frac=Math.min(vFreeKmh/gmax,1);
+    var ang=-90+frac*180; // -90..+90 deg from vertical
+    var cx=100, cy=130, r=70;
+    var nx=cx+r*Math.sin(rad(ang)), ny=cy-r*Math.cos(rad(ang));
+    document.getElementById("needle").setAttribute("x2",nx);
+    document.getElementById("needle").setAttribute("y2",ny);
+    document.getElementById("spdTxt").textContent=Math.round(vFreeKmh);
+    // safe arc portion
+    var sf=Math.min(safeKmh/gmax,1);
+    var a0=Math.PI, a1=Math.PI - sf*Math.PI; // along the 180deg arc
+    var ax0=100+80*Math.cos(a0), ay0=130-80*Math.sin(a0);
+    var ax1=100+80*Math.cos(a1), ay1=130-80*Math.sin(a1);
+    document.getElementById("gaugeSafe").setAttribute("d","M"+ax0+" "+ay0+" A80 80 0 0 1 "+ax1+" "+ay1);
+  }
+
+  function buildChart(){
+    var svg=document.getElementById("chartSvg");
+    var W=900,H=300, pl=52,pr=20,pt=18,pb=42;
+    var x0=pl, x1=W-pr, y0=H-pb, y1=pt;
+    var mu=surfaces[state.surf].mu, L=state.length;
+    // compute max speed for y-scale
+    var vmaxKmh=speedBottom(15,mu,L)*3.6; var yMax=Math.max(20,Math.ceil(vmaxKmh/20)*20);
+    function X(th){ return x0+(th/15)*(x1-x0); }
+    function Y(v){ return y0-(v/yMax)*(y0-y1); }
+    var parts=[];
+    // grid + y labels
+    for(var g=0; g<=yMax; g+=(yMax/4)){
+      parts.push('<line x1="'+x0+'" y1="'+Y(g)+'" x2="'+x1+'" y2="'+Y(g)+'" stroke="#22344F" stroke-width="1"/>');
+      parts.push('<text x="'+(x0-8)+'" y="'+(Y(g)+4)+'" fill="#5E7391" font-size="11" text-anchor="end" font-family="monospace">'+Math.round(g)+'</text>');
+    }
+    for(var th=0; th<=15; th+=3){
+      parts.push('<text x="'+X(th)+'" y="'+(y0+22)+'" fill="#5E7391" font-size="11" text-anchor="middle" font-family="monospace">'+th+'°</text>');
+    }
+    parts.push('<text x="'+((x0+x1)/2)+'" y="'+(H-6)+'" fill="#93A6C2" font-size="12" text-anchor="middle">경사각 (도)</text>');
+    parts.push('<text transform="translate(14,'+((y0+y1)/2)+') rotate(-90)" fill="#93A6C2" font-size="12" text-anchor="middle">바닥 속도 (km/h)</text>');
+    // safe line
+    var vs=V_SAFE*3.6;
+    parts.push('<line x1="'+x0+'" y1="'+Y(vs)+'" x2="'+x1+'" y2="'+Y(vs)+'" stroke="#3FB86B" stroke-width="2" stroke-dasharray="6 5"/>');
+    // curve + danger fill
+    var d="", fill="M"+x0+" "+Y(vs);
+    for(var t=0;t<=15.001;t+=0.25){
+      var v=speedBottom(t,mu,L)*3.6;
+      d+=(t===0?"M":"L")+X(t)+" "+Y(v)+" ";
+    }
+    for(var t2=15;t2>=0;t2-=0.25){
+      var vv=Math.max(speedBottom(t2,mu,L)*3.6, vs);
+      fill+="L"+X(t2)+" "+Y(vv)+" ";
+    }
+    fill+="Z";
+    parts.push('<path d="'+fill+'" fill="rgba(239,91,91,.12)"/>');
+    parts.push('<path d="'+d+'" fill="none" stroke="#33D3BC" stroke-width="2.5"/>');
+    // marker
+    var cvk=speedBottom(state.slope,mu,L)*3.6;
+    parts.push('<line x1="'+X(state.slope)+'" y1="'+y0+'" x2="'+X(state.slope)+'" y2="'+Y(cvk)+'" stroke="#EF5B5B" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>');
+    parts.push('<circle cx="'+X(state.slope)+'" cy="'+Y(cvk)+'" r="6" fill="#EF5B5B" stroke="#0E1726" stroke-width="2"/>');
+    svg.innerHTML=parts.join("");
+  }
+
+  function render(){
+    var r=classify();
+    var vKmh=r.vFree*3.6;
+    // verdict
+    var v=document.getElementById("verdict");
+    var stTxt=document.getElementById("stateText");
+    var why=document.getElementById("whyText");
+    v.classList.remove("s-safe","s-caution","s-danger");
+    if(r.st===0){
+      v.classList.add("s-safe"); stTxt.textContent="안전";
+      why.innerHTML="제동 없이도 바닥 속도가 안전 한계 이내입니다. 혼자 내려가도 괜찮습니다.";
+    } else if(r.st===1){
+      v.classList.add("s-caution"); stTxt.textContent="주의";
+      why.innerHTML="회생제동 <b>"+Math.round(r.duty)+"%</b>를 적용하면 <b>도우미 없이 안전하게</b> 내려갈 수 있습니다.";
+    } else {
+      v.classList.add("s-danger"); stTxt.textContent="위험";
+      if(r.tip) why.innerHTML="전방 전복 위험 각도(<b>"+TIP_DEG.toFixed(1)+"°</b>)를 초과했습니다. 이 경사는 혼자 내려가면 안 됩니다.";
+      else why.innerHTML="회생제동 최대(<b>"+Math.round(r.fMaxEff)+" N</b>)로도 속도를 안전 범위로 낮출 수 없습니다. 추가 대책이 필요합니다.";
+    }
+    // readouts
+    document.getElementById("roBrake").innerHTML=Math.round(r.fReq)+"<small> N</small>";
+    var dutyShow = r.duty>100?">100":Math.round(r.duty);
+    document.getElementById("roDuty").innerHTML=dutyShow+"<small> %</small>";
+    document.getElementById("roEnergy").innerHTML=(r.energy/1000).toFixed(1)+"<small> kJ</small>";
+    updateScene();
+    updateGauge(vKmh, V_SAFE*3.6);
+    buildChart();
+  }
+
+  // ---- wire up ----
+  function bindSlider(id,key,fmt,unit){
+    var el=document.getElementById(id), out=document.getElementById(id+"V");
+    function upd(){
+      state[key]=parseFloat(el.value);
+      el.style.setProperty("--fill",((el.value-el.min)/(el.max-el.min)*100)+"%");
+      out.innerHTML=fmt(state[key])+"<small>"+unit+"</small>";
+      render();
+    }
+    el.addEventListener("input",upd); upd();
+  }
+  bindSlider("slope","slope",function(x){return x.toFixed(1);},"°");
+  bindSlider("mass","mass",function(x){return x.toFixed(0);},"kg");
+  bindSlider("length","length",function(x){return x.toFixed(0);},"m");
+
+  var seg=document.getElementById("surface");
+  seg.addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    Array.prototype.forEach.call(seg.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed","false");});
+    b.setAttribute("aria-pressed","true");
+    state.surf=b.getAttribute("data-surf");
+    render();
+  });
+
+  render();
+})();
+</script>
+<footer style="padding:20px;text-align:center;background:#0f172a;color:#cbd5e1;font:600 13px/1.5 system-ui,sans-serif">대륜고등학교 · AI 기반 생명공학 문제해결활동</footer>
+</body>
+</html>
