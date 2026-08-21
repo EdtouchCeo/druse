@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>급식표가 말하지 않는 것 — 법정 19종 밖 알레르겐 확인</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- 고지: 예외 없이 항상 최상단 -->
+<div id="notice"><div class="in">
+  <span>⚠</span>
+  <span><b>이 도구는 급식의 안전을 보장하지 않습니다.</b>
+  메뉴 이름에서 알레르겐을 찾고, 조리법으로 재료를 추론합니다. 추론은 확정이 아닙니다.
+  경고가 없다고 해서 알레르겐이 없는 것이 아닙니다. 반드시 담당 의사와 영양교사에게 확인하십시오.</span>
+</div></div>
+
+
+<!-- ============================ 소개 ============================ -->
+<div class="screen on" id="screen-intro">
+<div class="wrap">
+
+  <header class="hero stack-l">
+    <div class="kicker">법정 표시 대상 19종 밖 알레르겐</div>
+    <h1>급식표에 <em>아무 번호도 붙지 않는</em> 날이 있습니다.</h1>
+    <p class="lede">학교급식 알레르기 표시 대상은 19종뿐입니다. 국내 소아 식품알레르기 10위인
+      아몬드가 그 안에 없습니다. 미국·EU·캐나다가 의무 표시하는 참깨도 없습니다.
+      급식표 사진을 올리면 <strong>이름에 이미 적혀 있는데도 규정상 표시되지 않는 알레르겐</strong>과,
+      <strong>조리법으로 짐작되는 재료</strong>를 나누어 보여줍니다.</p>
+  </header>
+
+  <section class="stack-l">
+    <h2>가장 깨끗한 사례</h2>
+    <p>어느 날 급식표에 이 메뉴가 올라옵니다. 규정은 완벽히 지켜졌습니다.</p>
+    <div class="rows">
+      <div class="row2"><div class="k">급식표 표기</div><div class="v mono">멸치아몬드볶음*</div></div>
+      <div class="row2"><div class="k">이름에 적힌 알레르겐</div>
+        <div class="v">아몬드 <span class="muted sm">— 숨어 있지 않습니다. 대놓고 적혀 있습니다.</span></div></div>
+      <div class="row2"><div class="k">국내 소아 즉시형<br>식품알레르기 순위</div><div class="v"><strong>10위</strong></div></div>
+      <div class="row2"><div class="k">급식표에 붙는 번호</div>
+        <div class="v"><span class="zero">없음</span> <span class="muted sm">— 19종에 아몬드가 없기 때문입니다.</span></div></div>
+    </div>
+    <p>이건 표시 누락이 아닙니다. <strong>규정을 정확히 지킨 결과입니다.</strong>
+      ⑭호두와 ⑲잣은 번호로 보입니다. 아몬드는 어디에도 없습니다.</p>
+    <blockquote>참깨도 같습니다. 미국은 2023년 참깨를 9번째 알레르겐으로 추가했고, EU·캐나다는 14품목,
+      일본은 27품목을 의무 표시합니다. 한국은 19품목이고 그 안에 참깨가 없습니다.
+      그리고 참기름은 한국 학교급식에 거의 매일 들어갑니다.</blockquote>
+  </section>
+
+  <section class="stack-l">
+    <h2>구체적인 효용</h2>
+    <div class="nums">
+      <div class="num"><span class="v">19</span><span class="k">학교급식 알레르기 표시 대상 품목 수</span></div>
+      <div class="num"><span class="v w">10 · 12 · 20</span><span class="k">아몬드 · 키위 · 캐슈넛의 국내 소아 알레르기 순위. 셋 다 표시 대상이 아닙니다</span></div>
+      <div class="num"><span class="v">5</span><span class="k">조사한 국내 급식 앱 수. 전부 19종 번호만 보여줍니다</span></div>
+      <div class="num"><span class="v w">0</span><span class="k">아몬드가 나오는 날 급식표에 붙는 번호</span></div>
+    </div>
+
+    <h3>이 도구가 줄이지 않는 것</h3>
+    <p><strong>이 도구는 도시락 싸는 날을 줄이지 않습니다. 늘릴 수도 있습니다.</strong> 몰랐던 것을 알게 되기 때문입니다.</p>
+    <p>우리가 파는 것은 시간 절약이 아닙니다. <strong>"모르고 먹는 상태"의 제거</strong>입니다.
+      이것을 편의로 포장하는 순간, 우리는 스스로 금지한 일을 하게 됩니다.</p>
+  </section>
+
+  <section class="stack-l">
+    <h2>범위</h2>
+    <div class="two">
+      <div class="do"><h4>하는 것</h4><ul>
+        <li>급식표 사진을 브라우저 안에서 글자로 바꿈 (로컬 OCR)</li>
+        <li>이름에 적힌 19종 밖 알레르겐 표시 — <strong>확정</strong></li>
+        <li>조리법으로 재료 짐작 — <strong>추론</strong>, 등급 표시</li>
+        <li>19종인데 급식표 번호가 빠진 것으로 보이면 확인 요청</li>
+        <li>교차반응을 혈청학적·임상적으로 <strong>나누어</strong> 표기</li>
+        <li>사진과 사진에서 읽은 글자는 기기 밖으로 안 나감</li>
+        <li>학교 이름으로 오늘·내일 급식 불러오기 (교육부 NEIS)</li>
+      </ul></div>
+      <div class="dont"><h4>하지 않는 것</h4><ul>
+        <li>추론을 확정처럼 표시</li>
+        <li>먹어도 되는지 판정</li>
+        <li>개인 알레르기 정보 등록·저장</li>
+        <li>로그인, 회원가입, 계정 만들기</li>
+        <li>사진·OCR 결과를 서버로 보내기</li>
+        <li>근거 없는 항목을 근거 있는 것처럼 표기</li>
+        <li>조리 중 교차오염 탐지 — 알 수 없습니다</li>
+      </ul></div>
+    </div>
+    <p class="sm muted">확정과 추론을 섞지 않는 것이 이 도구의 유일한 논리적 방어선입니다.
+      확정은 실선 빨강, 추론은 점선 주황으로 그립니다. 색을 못 보는 사람도 테두리로 구분할 수 있습니다.</p>
+  </section>
+
+  <section class="stack-l">
+    <h2>두 개의 화면</h2>
+    <p>아래 버튼으로 바로 갈 수 있습니다. 화면 오른쪽 가장자리의 <strong>세로 탭을 누르면</strong>
+      어디서든 두 화면 중 하나를 고를 수 있습니다. 같은 엔진의 결과를 다르게 보여줍니다.</p>
+    <div class="btnrow">
+      <button class="btn" data-go="student">학생 · 학부모용 — 사진 올려서 확인</button>
+      <button class="btn ghost" data-go="expert">전문가용 — 근거와 추적</button>
+    </div>
+    <div class="foot"><span data-ver></span><span>분석은 브라우저 안에서 · 급식 불러오기만 NEIS 조회</span></div>
+  </section>
+
+</div></div>
+
+
+<!-- ============================ 학생 · 학부모용 ============================ -->
+<div class="screen" id="screen-student">
+  <div class="shead"><div class="in">
+    <button class="back">← 소개</button>
+    <span class="ttl">학생 · 학부모용</span>
+    <span class="tag">사진 → 확인할 것</span>
+    <span class="sp"></span>
+    <button class="back" data-go="expert">전문가용 →</button>
+    <span class="tag" data-ver></span>
+  </div></div>
+
+  <div class="wrap wide" style="padding-top:var(--s3)">
+
+    <div class="upmode" role="tablist">
+      <button class="um on" data-mode="menu">급식표 사진<span class="s">글자를 읽습니다</span></button>
+      <button class="um" data-mode="school">학교로 불러오기<span class="s">오늘·내일 급식을 가져옵니다</span></button>
+    </div>
+
+    <div id="narrow" hidden></div>
+
+    <div id="school" hidden>
+      <div class="srch">
+        <input id="sc-q" type="search" autocomplete="off" spellcheck="false"
+          placeholder="학교 이름 (예: 남대구초등학교)" aria-label="학교 이름">
+        <button class="btn" id="sc-go">찾기</button>
+      </div>
+      <div id="sc-msg" class="xs muted"></div>
+      <div id="sc-list"></div>
+      <div id="sc-days"></div>
+      <p class="xs muted" style="margin-top:12px">급식은 교육부 <b>NEIS 학교급식식단정보</b>에서 가져옵니다.
+        <strong>이 기능을 쓸 때만 학교 이름이 기기 밖으로 나갑니다.</strong>
+        사진과 사진에서 읽은 글자는 나가지 않습니다. 고른 학교는 이 브라우저에만 저장되고 서버로 보내지 않습니다.</p>
+      <p class="xs muted">NEIS에 올라온 식단을 그대로 읽습니다. 학교가 아직 안 올렸거나 급식이 없는 날은 나오지 않습니다.
+        급식표에 적힌 번호도 함께 읽어 19종 표시와 대조합니다.</p>
+
+      <details class="more">
+        <summary>학교가 검색되지 않을 때 · NEIS 인증키</summary>
+        <div class="more-b">
+          <p class="xs muted" style="margin-bottom:9px">인증키 없이 조회하면 NEIS가 <b>검색 결과를 5곳까지만</b> 돌려줍니다.
+            학교 이름을 더 자세히 적으면 대개 해결됩니다. 그래도 안 나오면
+            <a href="https://open.neis.go.kr" target="_blank" rel="noopener">open.neis.go.kr</a> 에서 발급받은
+            인증키를 넣으십시오. 키는 이 브라우저에만 저장되고 NEIS 외에는 어디로도 보내지 않습니다.</p>
+          <input id="sc-key" type="text" autocomplete="off" spellcheck="false"
+            placeholder="NEIS 인증키 (선택)" aria-label="NEIS 인증키">
+        </div>
+      </details>
+    </div>
+
+    <div id="drop">
+      <div class="ico">📷</div>
+      <div class="big" id="drop-t">급식표 사진을 여기로</div>
+      <div class="sub" id="drop-s">끌어다 놓기 · 클릭해서 고르기 · <b>Ctrl+V</b> 로 붙여넣기</div>
+    </div>
+    <input type="file" id="file" accept="image/*" hidden>
+
+    <div class="bar"><i></i></div>
+    <div class="ocrlog"></div>
+    <div id="preview"><img alt="올린 사진"></div>
+    <div id="dish-pick"></div>
+    <div class="picked" id="picked"></div>
+
+    <details class="more" id="learnbox">
+      <summary>사진으로 가르치기 · 배운 것 관리</summary>
+      <div class="more-b">
+        <p class="xs muted" style="margin-bottom:10px">급식 사진을 모아 두셨다면 한 번에 가르칠 수 있습니다.
+          <b>폴더째 고르기</b>를 쓰면 <b>폴더 이름이 곧 메뉴 이름</b>이 됩니다 (예: <code>김치찌개/</code> 안의 사진들 → 김치찌개).
+          낱장으로 고르면 파일 이름에서 끝의 번호를 뗀 것이 메뉴 이름이 됩니다 (<code>깍두기_03.jpg</code> → 깍두기).
+          사전에 없는 이름도 배울 수 있고, 배운 이름은 다음 인식부터 후보에 함께 나옵니다.</p>
+        <p class="xs muted" style="margin-bottom:10px"><strong>사진 자체는 저장하지 않습니다.</strong>
+          사진마다 숫자 512개(임베딩)만 뽑아 메뉴별로 평균내 이 브라우저에 둡니다. 원본 사진은 복원되지 않고,
+          기기 밖으로도 나가지 않습니다.</p>
+        <div class="btnrow">
+          <button class="btn ghost" id="lrn-dir">폴더째 고르기</button>
+          <button class="btn ghost" id="lrn-pick">사진 여러 장 고르기</button>
+          <button class="lnk" id="lrn-clear">배운 것 모두 지우기</button>
+        </div>
+        <input type="file" id="lrn-dirf" accept="image/*" multiple webkitdirectory hidden>
+        <input type="file" id="lrn-files" accept="image/*" multiple hidden>
+        <div class="bar" id="lrn-bar"><i></i></div>
+        <div id="lrn-log" class="xs muted"></div>
+        <div id="lrn-list"></div>
+      </div>
+    </details>
+
+    <div class="btnrow" style="margin-top:14px">
+      <button class="lnk" id="stu-sample">사진 없이 예시로 보기</button>
+      <button class="lnk" id="stu-clear">지우기</button>
+    </div>
+
+    <div id="stu-out" style="margin-top:var(--s4)"></div>
+
+    <details class="more" id="fixbox">
+      <summary>읽은 글자 고치기 · 직접 입력</summary>
+      <div class="more-b">
+        <p class="xs muted" style="margin-bottom:9px">OCR은 자주 틀립니다. 특히 작은 글씨와 표 안의 번호를 놓칩니다.
+          고치면 결과가 바로 다시 계산됩니다. 한 줄에 한 메뉴, 알레르기 번호는 줄 끝에.</p>
+        <textarea id="ocr-text" spellcheck="false" aria-label="읽은 급식표 텍스트"
+          placeholder="멸치아몬드볶음* 7&#10;시금치나물&#10;어묵볶음 5.6"></textarea>
+      </div>
+    </details>
+
+    <div class="foot"><span data-ver></span><span>OCR: Tesseract.js · 브라우저 안에서 실행 · 급식: NEIS 오픈API</span></div>
+  </div>
+</div>
+
+
+<!-- ============================ 전문가용 ============================ -->
+<div class="screen" id="screen-expert">
+  <div class="shead"><div class="in">
+    <button class="back">← 소개</button>
+    <span class="ttl">전문가용</span>
+    <span class="tag">근거 등급 · 출처 · 매칭 추적 · 사전 감사</span>
+    <span class="sp"></span>
+    <button class="back" data-go="student">학생 · 학부모용 →</button>
+    <span class="tag" data-ver></span>
+  </div></div>
+
+  <div class="wrap wide" style="padding-top:var(--s4)">
+    <div class="blk"><div class="blk-h"><span>INPUT</span><span>급식표는 메뉴 이름에서, 원재료명은 라벨에서 찾습니다</span></div>
+      <div class="blk-b">
+
+        <div class="upmode" id="exp-tabs" role="tablist">
+          <button class="um on" data-in="menu" role="tab" aria-selected="true">급식표
+            <span class="s">이름 확정 + 조리법 추론</span></button>
+          <button class="um" data-in="ing" role="tab" aria-selected="false">원재료명 · 성분표
+            <span class="s">라벨에 적힌 성분 — 전부 확정</span></button>
+        </div>
+
+        <div data-pane="menu">
+          <textarea id="exp-text" spellcheck="false" aria-label="급식표 입력"
+            placeholder="급식표 텍스트를 붙여넣으세요. 별표·번호·괄호·슬래시 모두 처리합니다."></textarea>
+          <div class="btnrow" style="margin-top:10px">
+            <button class="lnk" id="exp-sample">예시 급식표</button>
+            <button class="lnk" id="exp-sync">학생용 화면의 입력 가져오기</button>
+          </div>
+        </div>
+
+        <div data-pane="ing" hidden>
+          <textarea id="ing-text" spellcheck="false" aria-label="원재료명 입력"
+            placeholder="가공식품 라벨의 원재료명을 그대로 붙여넣으세요.&#10;쉼표 · 중첩 괄호 · [함유] 선언 · 동일시설 문구를 나누어 읽습니다."></textarea>
+          <div class="btnrow" style="margin-top:10px">
+            <button class="lnk" id="ing-sample">예시 원재료명</button>
+            <button class="lnk" id="ing-clear">지우기</button>
+          </div>
+          <p class="xs muted" style="margin-top:9px">라벨의 원재료명은 짐작이 아니라 <strong>제조사가 표기한 사실</strong>입니다.
+            그래서 여기서 나오는 탐지는 전부 확정입니다. 다만 <strong>복합 원재료의 속</strong>은 라벨에 안 적히는 일이 잦고,
+            그 부분만 따로 추론해 아래에 나누어 표시합니다.</p>
+        </div>
+
+      </div></div>
+    <div id="exp-out"></div>
+    <div id="ing-out" hidden></div>
+    <div class="foot"><span data-ver></span><span>데이터: data/allergens.json · data/inference.json</span></div>
+  </div>
+</div>
+
+
+<!-- ============================ 우측 당기는 탭 ============================ -->
+<div id="scrim"></div>
+<div id="drawer" aria-hidden="true">
+  <button id="handle" aria-expanded="false" aria-controls="chooser" title="눌러서 열기 (끌어도 됩니다)">
+    <span class="arw">◀</span>
+    <span class="grip"><i></i><i></i><i></i></span>
+    <span class="lbl">눌러서 열기</span>
+    <span class="grip"><i></i><i></i><i></i></span>
+  </button>
+  <div id="chooser" role="dialog" aria-label="화면 고르기">
+    <div class="ch-h">
+      <div style="font-size:15px;font-weight:700">어느 화면으로 갈까요</div>
+      <div class="xs muted" style="margin-top:5px">같은 엔진, 다른 화면. 언제든 바꿀 수 있습니다.</div>
+    </div>
+    <div class="ch-b">
+      <button class="pick" data-go="student">
+        <div class="t">학생 · 학부모용</div>
+        <div class="d">급식표 사진을 올리면 글자로 읽고, 이름에 적힌 알레르겐과
+          조리법으로 짐작되는 재료를 나누어 알려줍니다.</div>
+        <div class="f">사진 업로드 · 로컬 OCR · 확정/추론 분리</div>
+      </button>
+      <button class="pick" data-go="expert">
+        <div class="t">전문가용</div>
+        <div class="d">교차반응 근거 등급과 출처, 문자열 매칭 추적, 추론 규칙 감사,
+          가공식품 원재료명 분석을 봅니다.</div>
+        <div class="f">S/C 등급 · 정규화 추적 · 사전 감사</div>
+      </button>
+      <button class="pick" data-go="intro">
+        <div class="t">소개로 돌아가기</div>
+        <div class="d">문제 정의와 효용 수치를 다시 봅니다.</div>
+        <div class="f">사례 · 숫자 · D 계산기 · 범위</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/tesseract/tesseract.min.js"></script>
+<!-- transformers.min.js 는 ESM 이라 여기서 태그로 넣지 않는다. app.js 가 동적 import 로 받는다. -->
+<script src="app.js"></script>
+<footer style="padding:20px;text-align:center;background:#0f172a;color:#cbd5e1;font:600 13px/1.5 system-ui,sans-serif">대륜고등학교 · AI 기반 생명공학 문제해결활동</footer>
+</body>
+</html>

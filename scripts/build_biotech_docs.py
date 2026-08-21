@@ -173,19 +173,63 @@ def drop_lines(text, drop=(), between=None):
 # ---------------------------------------------------------------- 마크다운 → HTML
 def md_to_html(md):
     out, code = [], False
-    ul = ol = False
+    ul = ol = quote = False
+    table = []
 
     def close():
-        nonlocal ul, ol
+        nonlocal ul, ol, quote
         if ul:
             out.append("</ul>")
             ul = False
         if ol:
             out.append("</ol>")
             ol = False
+        if quote:
+            out.append("</blockquote>")
+            quote = False
 
-    for raw in md.split("\n"):
+    def flush_table():
+        """모아 둔 마크다운 표 줄을 <table>로 내보낸다(구분선 행은 헤더 판정에만 사용)."""
+        if not table:
+            return
+        rows = [[c.strip() for c in r.strip().strip("|").split("|")] for r in table]
+        sep = len(rows) > 1 and all(re.fullmatch(r":?-{2,}:?", c or "") for c in rows[1])
+        out.append("<table>")
+        for i, cells in enumerate(rows):
+            if sep and i == 1:
+                continue
+            tag = "th" if (sep and i == 0) else "td"
+            out.append("<tr>" + "".join("<%s>%s</%s>" % (tag, inline(c), tag) for c in cells) + "</tr>")
+        out.append("</table>")
+        table.clear()
+
+    lines = md.split("\n")
+    for raw in lines:
         line = raw.rstrip()
+
+        # 표(| a | b |)는 연속 줄을 모아 한 번에 처리
+        if not code and line.strip().startswith("|") and line.strip().endswith("|"):
+            close()
+            table.append(line.strip())
+            continue
+        if table:
+            flush_table()
+
+        if not code and re.fullmatch(r"\s*(-{3,}|\*{3,}|_{3,})\s*", line):
+            close()
+            continue
+
+        if not code and line.lstrip().startswith(">"):
+            body = line.lstrip()[1:].strip()
+            if not quote:
+                close()
+                out.append("<blockquote>")
+                quote = True
+            if body:
+                out.append("<p>%s</p>" % inline(body))
+            continue
+        if quote:  # 인용 블록은 '>' 가 끊기는 줄에서 닫는다
+            close()
         if line.strip().startswith("```"):
             close()
             out.append("</pre>" if code else "<pre>")
@@ -226,6 +270,7 @@ def md_to_html(md):
             continue
         close()
         out.append("<p>%s</p>" % inline(line.strip()))
+    flush_table()
     close()
     if code:
         out.append("</pre>")
@@ -408,7 +453,18 @@ def build():
          "유전체 기준선과 후성유전·액체생검 종단 추적을 통합한 AI 정밀·예방의료 플랫폼 사업계획서",
          docx_to_html(src, skip_first=5))
 
-    # 5) 원본 PDF 그대로 게시
+    # 5) 급식표 알레르겐 도구 — 마크다운 사업기획안
+    src = P(BASE, "보고서 자료", "클로드", "급식-알레르기-교차반응-사업기획안.md")
+    text = io.open(src, encoding="utf-8").read()
+    text = drop_lines(text, drop=("# 사업기획안: 학교급식 알레르겐 확장 표시 도구",))
+    page("mealcheck-plan.html",
+         "학교급식 알레르겐 확장 표시 도구 사업기획안",
+         "사업 기획안",
+         "법정 19종 밖 알레르겐 — 급식표가 말하지 않는 것",
+         "학교급식 알레르기 표시 19종 밖 알레르겐과 교차반응을 보여주는 도구의 사업기획안",
+         md_to_html(text))
+
+    # 6) 원본 PDF 그대로 게시
     copy_pdf(P(BASE, "aerovital (김민준, 한연우, 이준희)",
                           "aerovital (김민준, 한연우, 이준희)",
                           "AEROVITAL_사업계획서(디자인).pdf"), "aerovital-plan.pdf")

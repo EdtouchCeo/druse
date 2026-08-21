@@ -1,0 +1,3078 @@
+{
+ "version": "2026-08-06",
+ "warning": "CLIP 은 영어 이미지-텍스트 쌍으로 학습된 모델이다. 한국 급식 반찬, 특히 나물류(시금치나물/콩나물무침/도라지나물)는 서로 비슷하게 생겨서 구분 정확도가 낮다. 그래서 이 목록은 '후보를 좁히는' 용도이며, 최종 판단은 반드시 사람이 한다. 모델 점수를 확정으로 취급하면 틀린 알레르겐을 알려주게 된다.",
+ "prompt_template": "a photo of {}",
+ "note_en": "en 은 문자열 또는 문자열 배열이다. 배열이면 각 문장을 따로 임베딩해 평균낸다(프롬프트 앙상블). 한 문장으로 한 음식을 규정하는 것보다 여러 각도로 적는 편이 정확하다.",
+ "note_source": "메뉴명은 교육부 NEIS 학교급식식단정보에서 실제 급식 10090행(전국 72개 학교, 12개 시도교육청, 2025-2026학년도)을 수확해 빈도순으로 골랐다. 'n' 은 수확 표본에서의 등장 횟수다. en 은 재료·조리법 낱말을 영어로 조립한 것이고, 앞의 132종은 손으로 쓴 문장이다.",
+ "dishes": [
+  {
+   "ko": "쌀밥",
+   "en": [
+    "plain white steamed rice in a bowl",
+    "a scoop of cooked short grain white rice"
+   ]
+  },
+  {
+   "ko": "잡곡밥",
+   "en": [
+    "mixed multigrain rice, brownish purple",
+    "steamed rice with barley and beans mixed in"
+   ]
+  },
+  {
+   "ko": "보리밥",
+   "en": [
+    "steamed barley rice, pale beige short grains",
+    "cooked rice mixed with pearl barley"
+   ]
+  },
+  {
+   "ko": "흑미밥",
+   "en": [
+    "purple black rice, steamed",
+    "steamed rice tinted dark purple by black rice"
+   ]
+  },
+  {
+   "ko": "콩나물밥",
+   "en": [
+    "steamed rice topped with soybean sprouts",
+    "rice bowl with bean sprouts on top"
+   ]
+  },
+  {
+   "ko": "볶음밥",
+   "en": [
+    "fried rice with diced vegetables",
+    "stir fried rice, grains separated, with peas and carrot"
+   ]
+  },
+  {
+   "ko": "비빔밥",
+   "en": [
+    "bibimbap, rice topped with assorted seasoned vegetables and red pepper paste",
+    "korean mixed rice bowl with colorful vegetable strips"
+   ]
+  },
+  {
+   "ko": "김밥",
+   "en": [
+    "gimbap, korean seaweed rice rolls cut into round slices",
+    "round sliced rice rolls wrapped in dark seaweed"
+   ]
+  },
+  {
+   "ko": "유부초밥",
+   "en": [
+    "seasoned fried tofu pouches stuffed with rice",
+    "inari sushi, brown tofu pockets filled with rice"
+   ]
+  },
+  {
+   "ko": "주먹밥",
+   "en": [
+    "korean rice balls, round and hand pressed",
+    "small round seasoned rice balls"
+   ]
+  },
+  {
+   "ko": "카레라이스",
+   "en": [
+    "yellow curry sauce poured over white rice",
+    "thick yellow curry with potato and carrot over rice"
+   ]
+  },
+  {
+   "ko": "짜장밥",
+   "en": [
+    "black bean sauce over white rice",
+    "dark brown black bean sauce poured on rice"
+   ]
+  },
+  {
+   "ko": "오므라이스",
+   "en": [
+    "omurice, fried rice wrapped in a thin yellow egg omelette",
+    "rice covered by a soft yellow egg blanket with ketchup"
+   ]
+  },
+  {
+   "ko": "제육덮밥",
+   "en": [
+    "spicy stir fried pork over rice",
+    "rice bowl topped with red spicy pork"
+   ]
+  },
+  {
+   "ko": "우동",
+   "en": [
+    "udon, thick white wheat noodles in clear broth",
+    "bowl of thick chewy noodles in light soup"
+   ]
+  },
+  {
+   "ko": "잔치국수",
+   "en": [
+    "thin wheat noodles in clear anchovy broth with garnish",
+    "korean banquet noodle soup, thin white noodles"
+   ]
+  },
+  {
+   "ko": "메밀국수",
+   "en": [
+    "buckwheat soba noodles, grayish brown, served cold",
+    "cold dark buckwheat noodles with dipping sauce"
+   ]
+  },
+  {
+   "ko": "칼국수",
+   "en": [
+    "kalguksu, hand cut wheat noodles in hot broth",
+    "flat knife cut noodles in milky soup"
+   ]
+  },
+  {
+   "ko": "스파게티",
+   "en": [
+    "spaghetti pasta with red tomato sauce",
+    "long pasta noodles coated in tomato sauce"
+   ]
+  },
+  {
+   "ko": "짜장면",
+   "en": [
+    "jajangmyeon, noodles under thick black bean sauce",
+    "noodles topped with glossy dark brown sauce"
+   ]
+  },
+  {
+   "ko": "짬뽕",
+   "en": [
+    "jjamppong, spicy red seafood noodle soup",
+    "noodles in fiery red broth with squid and mussels"
+   ]
+  },
+  {
+   "ko": "비빔국수",
+   "en": [
+    "cold noodles tossed in red spicy sauce",
+    "noodles mixed with bright red gochujang dressing"
+   ]
+  },
+  {
+   "ko": "쫄면",
+   "en": [
+    "chewy jjolmyeon noodles with spicy red sauce and vegetables",
+    "thick chewy noodles in red sauce with shredded cabbage"
+   ]
+  },
+  {
+   "ko": "냉면",
+   "en": [
+    "naengmyeon, cold buckwheat noodles in icy broth",
+    "cold noodle bowl with sliced egg and cucumber"
+   ]
+  },
+  {
+   "ko": "볶음우동",
+   "en": [
+    "stir fried thick udon noodles with vegetables",
+    "pan fried udon noodles, browned, with cabbage"
+   ]
+  },
+  {
+   "ko": "라면",
+   "en": [
+    "instant ramen noodles in spicy red soup",
+    "wavy instant noodles in orange red broth"
+   ]
+  },
+  {
+   "ko": "미역국",
+   "en": [
+    "miyeokguk, korean seaweed soup, dark green strands in clear broth",
+    "brown seaweed soup in a bowl"
+   ]
+  },
+  {
+   "ko": "된장국",
+   "en": [
+    "doenjang soup, cloudy brown soybean paste soup",
+    "murky brown fermented soybean paste soup"
+   ]
+  },
+  {
+   "ko": "김치찌개",
+   "en": [
+    "kimchi stew, bright red bubbling soup with cabbage kimchi",
+    "red kimchi stew with pork and tofu"
+   ]
+  },
+  {
+   "ko": "순두부찌개",
+   "en": [
+    "soft silken tofu stew in red broth",
+    "bubbling red stew with soft white tofu curds"
+   ]
+  },
+  {
+   "ko": "부대찌개",
+   "en": [
+    "army stew with sausage, ham and instant noodles in red broth",
+    "red spicy stew with sliced sausage and baked beans"
+   ]
+  },
+  {
+   "ko": "청국장",
+   "en": [
+    "cheonggukjang, thick pungent fermented soybean stew",
+    "chunky brown soybean stew with whole beans"
+   ]
+  },
+  {
+   "ko": "콩나물국",
+   "en": [
+    "clear soybean sprout soup",
+    "light clear broth full of yellow bean sprouts"
+   ]
+  },
+  {
+   "ko": "계란국",
+   "en": [
+    "clear egg drop soup with yellow egg ribbons",
+    "light broth with swirled beaten egg"
+   ]
+  },
+  {
+   "ko": "떡국",
+   "en": [
+    "tteokguk, sliced oval rice cakes in clear broth",
+    "white oval rice cake slices floating in soup"
+   ]
+  },
+  {
+   "ko": "만둣국",
+   "en": [
+    "dumpling soup, boiled dumplings in clear broth",
+    "bowl of soup with plump dumplings"
+   ]
+  },
+  {
+   "ko": "갈비탕",
+   "en": [
+    "galbitang, clear beef short rib soup with sliced radish and jujube",
+    "clear beef rib soup garnished with egg strips and green onion"
+   ]
+  },
+  {
+   "ko": "삼계탕",
+   "en": [
+    "samgyetang, whole young chicken in milky ginseng broth",
+    "white chicken soup with a whole small chicken"
+   ]
+  },
+  {
+   "ko": "육개장",
+   "en": [
+    "yukgaejang, spicy red beef soup with shredded beef and fern",
+    "fiery red soup with torn beef and green onion"
+   ]
+  },
+  {
+   "ko": "북엇국",
+   "en": [
+    "dried pollack soup, pale milky broth with egg",
+    "light colored fish soup with shredded dried pollack"
+   ]
+  },
+  {
+   "ko": "어묵국",
+   "en": [
+    "fish cake soup, clear broth with flat fish cake strips",
+    "clear soup with beige fish cake slices"
+   ]
+  },
+  {
+   "ko": "감자국",
+   "en": [
+    "clear potato soup with cubed potato",
+    "light broth with soft potato chunks"
+   ]
+  },
+  {
+   "ko": "시래기국",
+   "en": [
+    "dried radish green soup, brownish and rustic",
+    "soup with dark green dried radish leaves"
+   ]
+  },
+  {
+   "ko": "매운탕",
+   "en": [
+    "spicy fish stew in red broth with vegetables",
+    "red fish soup with chunks of white fish"
+   ]
+  },
+  {
+   "ko": "곰탕",
+   "en": [
+    "gomtang, milky white beef bone soup",
+    "cloudy white beef broth with sliced meat"
+   ]
+  },
+  {
+   "ko": "돈까스",
+   "en": [
+    "tonkatsu, breaded deep fried pork cutlet with brown sauce",
+    "golden breadcrumb coated fried cutlet, sliced"
+   ]
+  },
+  {
+   "ko": "생선까스",
+   "en": [
+    "breaded deep fried fish fillet",
+    "golden fried fish cutlet with tartar sauce"
+   ]
+  },
+  {
+   "ko": "탕수육",
+   "en": [
+    "sweet and sour pork, fried chunks in glossy orange sauce",
+    "deep fried pork pieces coated in shiny sweet sauce"
+   ]
+  },
+  {
+   "ko": "치킨",
+   "en": [
+    "korean fried chicken pieces, crispy golden brown",
+    "deep fried chicken drumsticks"
+   ]
+  },
+  {
+   "ko": "닭강정",
+   "en": [
+    "sweet and spicy glazed fried chicken chunks, sticky red",
+    "bite sized fried chicken in glossy red sauce"
+   ]
+  },
+  {
+   "ko": "너겟",
+   "en": [
+    "chicken nuggets, small golden fried pieces",
+    "breaded chicken nuggets on a plate"
+   ]
+  },
+  {
+   "ko": "핫도그",
+   "en": [
+    "korean corn dog, sausage on a stick in fried batter",
+    "deep fried battered sausage stick"
+   ]
+  },
+  {
+   "ko": "감자튀김",
+   "en": [
+    "french fries, golden potato sticks",
+    "deep fried potato sticks"
+   ]
+  },
+  {
+   "ko": "고구마튀김",
+   "en": [
+    "deep fried sweet potato slices in batter",
+    "battered fried sweet potato rounds"
+   ]
+  },
+  {
+   "ko": "오징어튀김",
+   "en": [
+    "deep fried squid rings in batter",
+    "golden fried calamari"
+   ]
+  },
+  {
+   "ko": "새우튀김",
+   "en": [
+    "deep fried breaded shrimp",
+    "golden fried prawn with tail"
+   ]
+  },
+  {
+   "ko": "크로켓",
+   "en": [
+    "croquette, oval breaded deep fried patty",
+    "golden breaded croquette"
+   ]
+  },
+  {
+   "ko": "만두",
+   "en": [
+    "korean dumplings, steamed or fried, pleated wrapper",
+    "plump dumplings with folded edges"
+   ]
+  },
+  {
+   "ko": "고등어구이",
+   "en": [
+    "grilled mackerel fillet, dark striped skin",
+    "pan grilled mackerel with browned skin"
+   ]
+  },
+  {
+   "ko": "삼치구이",
+   "en": [
+    "grilled spanish mackerel fillet",
+    "grilled white fish steak"
+   ]
+  },
+  {
+   "ko": "갈치구이",
+   "en": [
+    "grilled hairtail fish, long silver body",
+    "grilled silver cutlassfish steak"
+   ]
+  },
+  {
+   "ko": "동그랑땡",
+   "en": [
+    "small round pan fried meat patties with egg coating",
+    "flat round korean meat pancakes"
+   ]
+  },
+  {
+   "ko": "떡갈비",
+   "en": [
+    "tteokgalbi, grilled patties of minced beef with dark brown glaze",
+    "glossy brown grilled minced rib patties"
+   ]
+  },
+  {
+   "ko": "함박스테이크",
+   "en": [
+    "hamburg steak patty with brown gravy",
+    "oval beef patty covered in brown sauce"
+   ]
+  },
+  {
+   "ko": "계란말이",
+   "en": [
+    "rolled omelette sliced into pinwheels, yellow",
+    "korean rolled egg, cut into thick slices"
+   ]
+  },
+  {
+   "ko": "계란찜",
+   "en": [
+    "steamed egg custard, fluffy and pale yellow",
+    "soft steamed egg in a bowl, souffle like"
+   ]
+  },
+  {
+   "ko": "김치전",
+   "en": [
+    "kimchi pancake, reddish flat fried batter",
+    "round red tinted savory pancake"
+   ]
+  },
+  {
+   "ko": "부침개",
+   "en": [
+    "korean savory pancake, flat and golden with vegetables",
+    "pan fried flat batter pancake with green onion"
+   ]
+  },
+  {
+   "ko": "해물파전",
+   "en": [
+    "seafood and green onion pancake, large and flat",
+    "savory pancake with squid and long green onions"
+   ]
+  },
+  {
+   "ko": "제육볶음",
+   "en": [
+    "spicy stir fried pork in red gochujang sauce",
+    "red glazed stir fried pork slices with onion"
+   ]
+  },
+  {
+   "ko": "불고기",
+   "en": [
+    "bulgogi, thin marinated beef in dark soy sauce",
+    "sliced beef in glossy brown marinade with onion"
+   ]
+  },
+  {
+   "ko": "닭갈비",
+   "en": [
+    "dakgalbi, spicy stir fried chicken in red sauce with cabbage",
+    "red stir fried chicken chunks with rice cake"
+   ]
+  },
+  {
+   "ko": "찜닭",
+   "en": [
+    "braised chicken in dark soy sauce with glass noodles and potato",
+    "dark brown braised chicken with vegetables"
+   ]
+  },
+  {
+   "ko": "오징어볶음",
+   "en": [
+    "spicy stir fried squid in red sauce",
+    "red stir fried squid rings with onion"
+   ]
+  },
+  {
+   "ko": "낙지볶음",
+   "en": [
+    "spicy stir fried small octopus in red sauce",
+    "fiery red octopus stir fry"
+   ]
+  },
+  {
+   "ko": "소시지볶음",
+   "en": [
+    "stir fried sliced sausage with vegetables",
+    "pan fried sausage rounds, reddish"
+   ]
+  },
+  {
+   "ko": "어묵볶음",
+   "en": [
+    "stir fried fish cake strips in reddish brown sauce",
+    "glossy fish cake strips with onion"
+   ]
+  },
+  {
+   "ko": "멸치볶음",
+   "en": [
+    "stir fried tiny dried anchovies, small silver fish",
+    "pile of small dried anchovies, glazed"
+   ]
+  },
+  {
+   "ko": "감자조림",
+   "en": [
+    "braised potato cubes in soy glaze, glossy brown",
+    "soy braised potato chunks"
+   ]
+  },
+  {
+   "ko": "메추리알장조림",
+   "en": [
+    "braised quail eggs in dark soy sauce",
+    "small brown soy braised eggs"
+   ]
+  },
+  {
+   "ko": "두부조림",
+   "en": [
+    "braised tofu slices in red seasoning",
+    "pan fried tofu squares with red sauce"
+   ]
+  },
+  {
+   "ko": "마파두부",
+   "en": [
+    "mapo tofu, soft tofu cubes in spicy reddish sauce",
+    "white tofu cubes in glossy red brown sauce"
+   ]
+  },
+  {
+   "ko": "코다리조림",
+   "en": [
+    "braised half dried pollack in red sauce",
+    "red braised fish with radish"
+   ]
+  },
+  {
+   "ko": "고등어조림",
+   "en": [
+    "braised mackerel in red spicy sauce with radish",
+    "mackerel pieces simmered in red sauce"
+   ]
+  },
+  {
+   "ko": "잡채",
+   "en": [
+    "japchae, glass noodles stir fried with vegetables, glossy brown",
+    "translucent sweet potato noodles with colorful vegetables"
+   ]
+  },
+  {
+   "ko": "떡볶이",
+   "en": [
+    "tteokbokki, cylindrical rice cakes in thick red sauce",
+    "red glossy sauce coating white rice cake sticks"
+   ]
+  },
+  {
+   "ko": "라볶이",
+   "en": [
+    "rice cakes and ramen noodles in red spicy sauce",
+    "tteokbokki mixed with instant noodles"
+   ]
+  },
+  {
+   "ko": "시금치나물",
+   "en": [
+    "seasoned spinach, dark green wilted leaves",
+    "blanched spinach tossed with sesame"
+   ]
+  },
+  {
+   "ko": "콩나물무침",
+   "en": [
+    "seasoned soybean sprouts, pale yellow with heads",
+    "blanched bean sprouts side dish"
+   ]
+  },
+  {
+   "ko": "도라지나물",
+   "en": [
+    "seasoned bellflower root strips, white and fibrous",
+    "white root vegetable strips, chewy"
+   ]
+  },
+  {
+   "ko": "고사리나물",
+   "en": [
+    "seasoned bracken fern stems, brown and soft",
+    "dark brown fern shoots side dish"
+   ]
+  },
+  {
+   "ko": "취나물",
+   "en": [
+    "seasoned aster leaves, dark green and soft",
+    "dark green wild green side dish"
+   ]
+  },
+  {
+   "ko": "숙주나물",
+   "en": [
+    "seasoned mung bean sprouts, thin and white",
+    "short white sprouts side dish"
+   ]
+  },
+  {
+   "ko": "무생채",
+   "en": [
+    "shredded raw radish salad in red seasoning",
+    "julienned white radish tossed with red chili"
+   ]
+  },
+  {
+   "ko": "오이무침",
+   "en": [
+    "seasoned cucumber slices in red dressing",
+    "sliced cucumber with red chili seasoning"
+   ]
+  },
+  {
+   "ko": "부추무침",
+   "en": [
+    "seasoned garlic chives in red dressing",
+    "long green chives tossed with chili"
+   ]
+  },
+  {
+   "ko": "상추겉절이",
+   "en": [
+    "fresh lettuce salad tossed with red seasoning",
+    "torn lettuce leaves with red dressing"
+   ]
+  },
+  {
+   "ko": "미역줄기볶음",
+   "en": [
+    "stir fried seaweed stems, dark green strips",
+    "glossy dark seaweed stalk side dish"
+   ]
+  },
+  {
+   "ko": "파래무침",
+   "en": [
+    "seasoned green laver, fine dark green strands",
+    "fine green seaweed side dish"
+   ]
+  },
+  {
+   "ko": "두부무침",
+   "en": [
+    "seasoned crumbled tofu tossed with green leafy vegetables",
+    "mashed white tofu mixed with greens"
+   ]
+  },
+  {
+   "ko": "오징어무침",
+   "en": [
+    "spicy seasoned squid salad, shredded squid in red chili dressing",
+    "red dressed squid strips with vegetables"
+   ]
+  },
+  {
+   "ko": "골뱅이무침",
+   "en": [
+    "spicy sea snail salad in red dressing",
+    "red dressed whelk with vegetables"
+   ]
+  },
+  {
+   "ko": "김구이",
+   "en": [
+    "roasted seaweed sheets, thin black green rectangles",
+    "stack of crisp dark seaweed sheets"
+   ]
+  },
+  {
+   "ko": "배추김치",
+   "en": [
+    "napa cabbage kimchi, red leafy fermented cabbage",
+    "red chili coated cabbage kimchi"
+   ]
+  },
+  {
+   "ko": "깍두기",
+   "en": [
+    "cubed white radish kimchi with red seasoning",
+    "red coated radish cubes"
+   ]
+  },
+  {
+   "ko": "총각김치",
+   "en": [
+    "young whole radish kimchi with greens attached",
+    "small whole radishes in red kimchi seasoning"
+   ]
+  },
+  {
+   "ko": "열무김치",
+   "en": [
+    "young summer radish green kimchi, watery",
+    "leafy green kimchi in light red brine"
+   ]
+  },
+  {
+   "ko": "오이소박이",
+   "en": [
+    "stuffed cucumber kimchi, cut cucumber with red filling",
+    "cucumber pieces stuffed with red seasoning"
+   ]
+  },
+  {
+   "ko": "단무지",
+   "en": [
+    "pickled yellow radish strips",
+    "bright yellow pickled daikon slices"
+   ]
+  },
+  {
+   "ko": "샐러드",
+   "en": [
+    "fresh green salad with dressing",
+    "mixed leafy vegetable salad"
+   ]
+  },
+  {
+   "ko": "콘샐러드",
+   "en": [
+    "sweet corn salad with mayonnaise",
+    "yellow corn kernels in creamy dressing"
+   ]
+  },
+  {
+   "ko": "감자샐러드",
+   "en": [
+    "mashed potato salad with mayonnaise",
+    "creamy white potato salad with diced vegetables"
+   ]
+  },
+  {
+   "ko": "과일샐러드",
+   "en": [
+    "mixed fruit salad in a cup",
+    "diced assorted fruit with cream"
+   ]
+  },
+  {
+   "ko": "우유",
+   "en": [
+    "a small carton of milk",
+    "white milk in a school milk carton"
+   ]
+  },
+  {
+   "ko": "요구르트",
+   "en": [
+    "a small yogurt drink bottle",
+    "small plastic bottle of drinkable yogurt"
+   ]
+  },
+  {
+   "ko": "아이스크림",
+   "en": [
+    "a cup of ice cream with a small spoon",
+    "scoop of ice cream in a paper cup"
+   ]
+  },
+  {
+   "ko": "튜브아이스크림",
+   "en": [
+    "squeeze tube ice cream in a long plastic sleeve wrapper",
+    "long plastic tube of frozen dessert, colorful wrapper"
+   ]
+  },
+  {
+   "ko": "푸딩",
+   "en": [
+    "a cup of pudding, smooth and pale",
+    "custard pudding in a small cup"
+   ]
+  },
+  {
+   "ko": "케이크",
+   "en": [
+    "a slice of layered sponge cake",
+    "small piece of frosted cake"
+   ]
+  },
+  {
+   "ko": "빵",
+   "en": [
+    "a soft bread roll",
+    "piece of white bread or bun"
+   ]
+  },
+  {
+   "ko": "강정",
+   "en": [
+    "korean sweet puffed rice snack bar with seeds",
+    "crunchy sweet rice puff bar"
+   ]
+  },
+  {
+   "ko": "사과",
+   "en": [
+    "fresh apple slices",
+    "cut apple wedges with red skin"
+   ]
+  },
+  {
+   "ko": "키위",
+   "en": [
+    "kiwi fruit slices, bright green with black seeds",
+    "halved kiwi fruit"
+   ]
+  },
+  {
+   "ko": "바나나",
+   "en": [
+    "a yellow banana",
+    "whole banana with yellow peel"
+   ]
+  },
+  {
+   "ko": "수박",
+   "en": [
+    "watermelon slices, red with green rind",
+    "triangular watermelon wedges"
+   ]
+  },
+  {
+   "ko": "포도",
+   "en": [
+    "a bunch of grapes",
+    "cluster of purple grapes"
+   ]
+  },
+  {
+   "ko": "귤",
+   "en": [
+    "a mandarin orange, small and orange",
+    "peeled tangerine segments"
+   ]
+  },
+  {
+   "ko": "방울토마토",
+   "en": [
+    "cherry tomatoes, small and round red",
+    "a handful of small red tomatoes"
+   ]
+  },
+  {
+   "ko": "파인애플",
+   "en": [
+    "pineapple chunks, yellow",
+    "sliced yellow pineapple rings"
+   ]
+  },
+  {
+   "ko": "멜론",
+   "en": [
+    "melon slices, pale green flesh",
+    "wedge of honeydew melon"
+   ]
+  },
+  {
+   "ko": "배",
+   "en": [
+    "korean pear slices, pale and juicy",
+    "cut asian pear wedges"
+   ]
+  },
+  {
+   "ko": "아몬드",
+   "en": [
+    "a pile of almonds",
+    "whole almonds in a small dish"
+   ]
+  },
+  {
+   "ko": "현미밥",
+   "en": [
+    "steamed brown rice in a bowl",
+    "a bowl of steamed brown rice"
+   ],
+   "n": 537
+  },
+  {
+   "ko": "혼합잡곡밥",
+   "en": [
+    "steamed multigrain rice in a bowl",
+    "a bowl of steamed multigrain rice"
+   ],
+   "n": 396
+  },
+  {
+   "ko": "기장밥",
+   "en": [
+    "steamed millet rice in a bowl",
+    "a bowl of steamed millet rice"
+   ],
+   "n": 300
+  },
+  {
+   "ko": "배추겉절이",
+   "en": [
+    "freshly tossed napa cabbage kimchi salad, bright red",
+    "lightly seasoned fresh napa cabbage"
+   ],
+   "n": 297
+  },
+  {
+   "ko": "백미밥",
+   "en": [
+    "steamed white rice in a bowl",
+    "a bowl of steamed white rice"
+   ],
+   "n": 294
+  },
+  {
+   "ko": "차조밥",
+   "en": [
+    "steamed millet rice in a bowl",
+    "a bowl of steamed millet rice"
+   ],
+   "n": 257
+  },
+  {
+   "ko": "귀리밥",
+   "en": [
+    "steamed oat rice in a bowl",
+    "a bowl of steamed oat rice"
+   ],
+   "n": 250
+  },
+  {
+   "ko": "차수수밥",
+   "en": [
+    "steamed sorghum rice in a bowl",
+    "a bowl of steamed sorghum rice"
+   ],
+   "n": 249
+  },
+  {
+   "ko": "발아현미밥",
+   "en": [
+    "steamed sprouted brown rice in a bowl",
+    "a bowl of steamed sprouted brown rice"
+   ],
+   "n": 216
+  },
+  {
+   "ko": "백김치",
+   "en": [
+    "white kimchi in pale clear brine, not spicy",
+    "mild white vegetables kimchi, no red chili"
+   ],
+   "n": 204
+  },
+  {
+   "ko": "찹쌀밥",
+   "en": [
+    "steamed glutinous rice in a bowl",
+    "a bowl of steamed glutinous rice"
+   ],
+   "n": 204
+  },
+  {
+   "ko": "찰현미밥",
+   "en": [
+    "steamed brown rice in a bowl",
+    "a bowl of steamed brown rice"
+   ],
+   "n": 204
+  },
+  {
+   "ko": "포기김치",
+   "en": [
+    "vegetables kimchi, red chili coated fermented vegetable",
+    "red vegetables kimchi"
+   ],
+   "n": 202
+  },
+  {
+   "ko": "찰보리밥",
+   "en": [
+    "steamed barley rice in a bowl",
+    "a bowl of steamed barley rice"
+   ],
+   "n": 201
+  },
+  {
+   "ko": "쇠고기미역국",
+   "en": [
+    "korean beef and seaweed soup, in a bowl of clear broth",
+    "light beef and seaweed soup"
+   ],
+   "n": 196
+  },
+  {
+   "ko": "오렌지",
+   "en": [
+    "korean side dish of orange",
+    "orange, korean school lunch dish"
+   ],
+   "n": 183
+  },
+  {
+   "ko": "근대된장국",
+   "en": [
+    "korean chard and soybean paste soup, in a bowl of clear broth",
+    "light chard and soybean paste soup"
+   ],
+   "n": 161
+  },
+  {
+   "ko": "골드파인애플",
+   "en": [
+    "korean side dish of pineapple",
+    "pineapple, korean school lunch dish"
+   ],
+   "n": 155
+  },
+  {
+   "ko": "참치김치찌개",
+   "en": [
+    "korean tuna and kimchi stew, thick and bubbling in a pot",
+    "spicy tuna and kimchi stew"
+   ],
+   "n": 140
+  },
+  {
+   "ko": "찰흑미밥",
+   "en": [
+    "steamed black glutinous rice in a bowl",
+    "a bowl of steamed black glutinous rice"
+   ],
+   "n": 135
+  },
+  {
+   "ko": "학교김치",
+   "en": [
+    "vegetables kimchi, red chili coated fermented vegetable",
+    "red vegetables kimchi"
+   ],
+   "n": 125
+  },
+  {
+   "ko": "현미찹쌀밥",
+   "en": [
+    "steamed brown rice and glutinous rice in a bowl",
+    "a bowl of steamed brown rice and glutinous rice"
+   ],
+   "n": 125
+  },
+  {
+   "ko": "보쌈김치",
+   "en": [
+    "vegetables kimchi, red chili coated fermented vegetable",
+    "red vegetables kimchi"
+   ],
+   "n": 123
+  },
+  {
+   "ko": "수수밥",
+   "en": [
+    "steamed sorghum rice in a bowl",
+    "a bowl of steamed sorghum rice"
+   ],
+   "n": 119
+  },
+  {
+   "ko": "김치",
+   "en": [
+    "vegetables kimchi, red chili coated fermented vegetable",
+    "red vegetables kimchi"
+   ],
+   "n": 117
+  },
+  {
+   "ko": "골드키위",
+   "en": [
+    "korean side dish of kiwi",
+    "kiwi, korean school lunch dish"
+   ],
+   "n": 116
+  },
+  {
+   "ko": "마라탕",
+   "en": [
+    "korean vegetables soup, hearty broth in a bowl",
+    "rich vegetables soup"
+   ],
+   "n": 110
+  },
+  {
+   "ko": "사과주스",
+   "en": [
+    "a glass of apple juice",
+    "apple juice in a cup"
+   ],
+   "n": 110
+  },
+  {
+   "ko": "도시락김",
+   "en": [
+    "korean side dish of laver seaweed",
+    "laver seaweed, korean school lunch dish"
+   ],
+   "n": 103
+  },
+  {
+   "ko": "쇠고기무국",
+   "en": [
+    "korean beef and radish soup, in a bowl of clear broth",
+    "light beef and radish soup"
+   ],
+   "n": 100
+  },
+  {
+   "ko": "맑은콩나물국",
+   "en": [
+    "korean soybean sprout soup, in a bowl of clear broth",
+    "light soybean sprout soup"
+   ],
+   "n": 99
+  },
+  {
+   "ko": "돼지갈비찜",
+   "en": [
+    "steamed braised pork",
+    "pork steamed in seasoning"
+   ],
+   "n": 96
+  },
+  {
+   "ko": "김치콩나물국",
+   "en": [
+    "korean soybean sprout and kimchi soup, in a bowl of clear broth",
+    "light soybean sprout and kimchi soup"
+   ],
+   "n": 95
+  },
+  {
+   "ko": "시금치무침",
+   "en": [
+    "seasoned spinach salad, korean side dish",
+    "spinach tossed in seasoning"
+   ],
+   "n": 94
+  },
+  {
+   "ko": "강황쌀밥",
+   "en": [
+    "steamed white rice in a bowl",
+    "a bowl of steamed white rice"
+   ],
+   "n": 92
+  },
+  {
+   "ko": "닭개장",
+   "en": [
+    "korean side dish of chicken",
+    "chicken, korean school lunch dish"
+   ],
+   "n": 89
+  },
+  {
+   "ko": "들깨미역국",
+   "en": [
+    "korean seaweed and perilla seed soup, in a bowl of clear broth",
+    "light seaweed and perilla seed soup"
+   ],
+   "n": 87
+  },
+  {
+   "ko": "셀프시리얼우유",
+   "en": [
+    "a carton of vegetables milk",
+    "vegetables flavored milk carton"
+   ],
+   "n": 81
+  },
+  {
+   "ko": "딸기",
+   "en": [
+    "korean side dish of strawberry",
+    "strawberry, korean school lunch dish"
+   ],
+   "n": 81
+  },
+  {
+   "ko": "참외",
+   "en": [
+    "korean side dish of korean melon",
+    "korean melon, korean school lunch dish"
+   ],
+   "n": 80
+  },
+  {
+   "ko": "숙주나물무침",
+   "en": [
+    "seasoned mung bean sprout salad, korean side dish",
+    "mung bean sprout tossed in seasoning"
+   ],
+   "n": 78
+  },
+  {
+   "ko": "취나물무침",
+   "en": [
+    "seasoned aster green salad, korean side dish",
+    "aster green tossed in seasoning"
+   ],
+   "n": 76
+  },
+  {
+   "ko": "안동찜닭",
+   "en": [
+    "korean side dish of chicken",
+    "chicken, korean school lunch dish"
+   ],
+   "n": 76
+  },
+  {
+   "ko": "얼갈이된장국",
+   "en": [
+    "korean soybean paste soup, in a bowl of clear broth",
+    "light soybean paste soup"
+   ],
+   "n": 76
+  },
+  {
+   "ko": "참나물무침",
+   "en": [
+    "seasoned vegetables salad, korean side dish",
+    "vegetables tossed in seasoning"
+   ],
+   "n": 74
+  },
+  {
+   "ko": "아욱된장국",
+   "en": [
+    "korean mallow and soybean paste soup, in a bowl of clear broth",
+    "light mallow and soybean paste soup"
+   ],
+   "n": 73
+  },
+  {
+   "ko": "흰밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 72
+  },
+  {
+   "ko": "대체식코너당뇨식이밥흰죽",
+   "en": [
+    "korean vegetables porridge, thick and creamy",
+    "vegetables rice porridge"
+   ],
+   "n": 71
+  },
+  {
+   "ko": "율무밥",
+   "en": [
+    "steamed job's tears rice in a bowl",
+    "a bowl of steamed job's tears rice"
+   ],
+   "n": 70
+  },
+  {
+   "ko": "청국장찌개",
+   "en": [
+    "korean fermented soybean stew, thick and bubbling in a pot",
+    "spicy fermented soybean stew"
+   ],
+   "n": 68
+  },
+  {
+   "ko": "닭볶음탕",
+   "en": [
+    "korean chicken soup, hearty broth in a bowl",
+    "rich chicken soup"
+   ],
+   "n": 68
+  },
+  {
+   "ko": "들깨무채국",
+   "en": [
+    "korean perilla seed and radish soup, in a bowl of clear broth",
+    "light perilla seed and radish soup"
+   ],
+   "n": 67
+  },
+  {
+   "ko": "오징어무국",
+   "en": [
+    "korean squid and radish soup, in a bowl of clear broth",
+    "light squid and radish soup"
+   ],
+   "n": 67
+  },
+  {
+   "ko": "오이부추무침",
+   "en": [
+    "seasoned garlic chive and cucumber salad, korean side dish",
+    "garlic chive and cucumber tossed in seasoning"
+   ],
+   "n": 66
+  },
+  {
+   "ko": "닭곰탕",
+   "en": [
+    "korean chicken soup, hearty broth in a bowl",
+    "rich chicken soup"
+   ],
+   "n": 66
+  },
+  {
+   "ko": "갓김치",
+   "en": [
+    "vegetables kimchi, red chili coated fermented vegetable",
+    "red vegetables kimchi"
+   ],
+   "n": 65
+  },
+  {
+   "ko": "단무지무침",
+   "en": [
+    "seasoned pickled radish salad, korean side dish",
+    "pickled radish tossed in seasoning"
+   ],
+   "n": 64
+  },
+  {
+   "ko": "미소된장국",
+   "en": [
+    "korean soybean paste soup, in a bowl of clear broth",
+    "light soybean paste soup"
+   ],
+   "n": 64
+  },
+  {
+   "ko": "통밀밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 63
+  },
+  {
+   "ko": "김치배추김치",
+   "en": [
+    "napa cabbage and kimchi kimchi, red chili coated fermented vegetable",
+    "red napa cabbage and kimchi kimchi"
+   ],
+   "n": 61
+  },
+  {
+   "ko": "부추겉절이",
+   "en": [
+    "freshly tossed garlic chive kimchi salad, bright red",
+    "lightly seasoned fresh garlic chive"
+   ],
+   "n": 61
+  },
+  {
+   "ko": "돈육김치찌개",
+   "en": [
+    "korean pork and kimchi stew, thick and bubbling in a pot",
+    "spicy pork and kimchi stew"
+   ],
+   "n": 61
+  },
+  {
+   "ko": "찰기장밥",
+   "en": [
+    "steamed millet rice in a bowl",
+    "a bowl of steamed millet rice"
+   ],
+   "n": 60
+  },
+  {
+   "ko": "오이피클",
+   "en": [
+    "pickled cucumber, glossy and translucent",
+    "cucumber pickles"
+   ],
+   "n": 60
+  },
+  {
+   "ko": "팽이버섯된장국",
+   "en": [
+    "korean mushroom and enoki mushroom and soybean paste soup, in a bowl of clear broth",
+    "light mushroom and enoki mushroom and soybean paste soup"
+   ],
+   "n": 59
+  },
+  {
+   "ko": "미니밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 58
+  },
+  {
+   "ko": "숙주미나리무침",
+   "en": [
+    "seasoned water parsley and mung bean sprout salad, korean side dish",
+    "water parsley and mung bean sprout tossed in seasoning"
+   ],
+   "n": 57
+  },
+  {
+   "ko": "시금치된장국",
+   "en": [
+    "korean spinach and soybean paste soup, in a bowl of clear broth",
+    "light spinach and soybean paste soup"
+   ],
+   "n": 56
+  },
+  {
+   "ko": "달걀후라이",
+   "en": [
+    "korean side dish of egg",
+    "egg, korean school lunch dish"
+   ],
+   "n": 56
+  },
+  {
+   "ko": "오이지무침",
+   "en": [
+    "seasoned cucumber salad, korean side dish",
+    "cucumber tossed in seasoning"
+   ],
+   "n": 56
+  },
+  {
+   "ko": "조랭이떡국",
+   "en": [
+    "korean rice cake soup, in a bowl of clear broth",
+    "light rice cake soup"
+   ],
+   "n": 55
+  },
+  {
+   "ko": "현미찰밥",
+   "en": [
+    "steamed brown rice in a bowl",
+    "a bowl of steamed brown rice"
+   ],
+   "n": 55
+  },
+  {
+   "ko": "바나나우유",
+   "en": [
+    "a carton of banana milk",
+    "banana flavored milk carton"
+   ],
+   "n": 54
+  },
+  {
+   "ko": "흰쌀밥",
+   "en": [
+    "steamed white rice in a bowl",
+    "a bowl of steamed white rice"
+   ],
+   "n": 54
+  },
+  {
+   "ko": "열무된장국",
+   "en": [
+    "korean young radish leaf and soybean paste soup, in a bowl of clear broth",
+    "light young radish leaf and soybean paste soup"
+   ],
+   "n": 54
+  },
+  {
+   "ko": "상추쌈",
+   "en": [
+    "fresh lettuce leaves for wrapping",
+    "pile of lettuce wrap leaves"
+   ],
+   "n": 54
+  },
+  {
+   "ko": "배추된장국",
+   "en": [
+    "korean napa cabbage and soybean paste soup, in a bowl of clear broth",
+    "light napa cabbage and soybean paste soup"
+   ],
+   "n": 53
+  },
+  {
+   "ko": "치킨마요덮밥",
+   "en": [
+    "korean rice bowl topped with mayonnaise",
+    "rice covered with mayonnaise on top"
+   ],
+   "n": 53
+  },
+  {
+   "ko": "두부된장국",
+   "en": [
+    "korean tofu and soybean paste soup, in a bowl of clear broth",
+    "light tofu and soybean paste soup"
+   ],
+   "n": 52
+  },
+  {
+   "ko": "청경채무침",
+   "en": [
+    "seasoned bok choy salad, korean side dish",
+    "bok choy tossed in seasoning"
+   ],
+   "n": 52
+  },
+  {
+   "ko": "열무된장무침",
+   "en": [
+    "seasoned young radish leaf and soybean paste salad, korean side dish",
+    "young radish leaf and soybean paste tossed in seasoning"
+   ],
+   "n": 52
+  },
+  {
+   "ko": "검정쌀밥",
+   "en": [
+    "steamed white rice in a bowl",
+    "a bowl of steamed white rice"
+   ],
+   "n": 51
+  },
+  {
+   "ko": "보리차",
+   "en": [
+    "korean side dish of barley",
+    "barley, korean school lunch dish"
+   ],
+   "n": 50
+  },
+  {
+   "ko": "자장면",
+   "en": [
+    "vegetables noodles",
+    "bowl of vegetables noodles"
+   ],
+   "n": 50
+  },
+  {
+   "ko": "깻잎김치",
+   "en": [
+    "perilla leaf kimchi, red chili coated fermented vegetable",
+    "red perilla leaf kimchi"
+   ],
+   "n": 50
+  },
+  {
+   "ko": "칼슘기장밥",
+   "en": [
+    "steamed millet rice in a bowl",
+    "a bowl of steamed millet rice"
+   ],
+   "n": 49
+  },
+  {
+   "ko": "감귤주스",
+   "en": [
+    "a glass of tangerine and persimmon juice",
+    "tangerine and persimmon juice in a cup"
+   ],
+   "n": 49
+  },
+  {
+   "ko": "계란후라이",
+   "en": [
+    "korean side dish of egg",
+    "egg, korean school lunch dish"
+   ],
+   "n": 48
+  },
+  {
+   "ko": "진미채볶음",
+   "en": [
+    "stir fried dried squid strips, korean side dish",
+    "pan fried seasoned dried squid strips"
+   ],
+   "n": 48
+  },
+  {
+   "ko": "알감자버터구이",
+   "en": [
+    "grilled potato, browned surface",
+    "pan grilled potato"
+   ],
+   "n": 48
+  },
+  {
+   "ko": "청포도",
+   "en": [
+    "korean side dish of green grape",
+    "green grape, korean school lunch dish"
+   ],
+   "n": 47
+  },
+  {
+   "ko": "도토리묵무침",
+   "en": [
+    "seasoned acorn jelly salad, korean side dish",
+    "acorn jelly tossed in seasoning"
+   ],
+   "n": 47
+  },
+  {
+   "ko": "된장찌개",
+   "en": [
+    "korean soybean paste stew, thick and bubbling in a pot",
+    "spicy soybean paste stew"
+   ],
+   "n": 47
+  },
+  {
+   "ko": "감자수제비국",
+   "en": [
+    "korean dough flake and potato soup, in a bowl of clear broth",
+    "light dough flake and potato soup"
+   ],
+   "n": 46
+  },
+  {
+   "ko": "오리불고기",
+   "en": [
+    "korean side dish of marinated grilled meat and duck",
+    "marinated grilled meat and duck, korean school lunch dish"
+   ],
+   "n": 46
+  },
+  {
+   "ko": "소고기미역국",
+   "en": [
+    "korean beef and seaweed soup, in a bowl of clear broth",
+    "light beef and seaweed soup"
+   ],
+   "n": 46
+  },
+  {
+   "ko": "김자반",
+   "en": [
+    "korean side dish of laver seaweed",
+    "laver seaweed, korean school lunch dish"
+   ],
+   "n": 46
+  },
+  {
+   "ko": "감자채볶음",
+   "en": [
+    "stir fried potato, korean side dish",
+    "pan fried seasoned potato"
+   ],
+   "n": 45
+  },
+  {
+   "ko": "로제찜닭",
+   "en": [
+    "korean side dish of chicken",
+    "chicken, korean school lunch dish"
+   ],
+   "n": 45
+  },
+  {
+   "ko": "쫄면야채무침",
+   "en": [
+    "seasoned noodle salad, korean side dish",
+    "noodle tossed in seasoning"
+   ],
+   "n": 45
+  },
+  {
+   "ko": "짬뽕국",
+   "en": [
+    "korean vegetables soup, in a bowl of clear broth",
+    "light vegetables soup"
+   ],
+   "n": 45
+  },
+  {
+   "ko": "오이김치",
+   "en": [
+    "cucumber kimchi, red chili coated fermented vegetable",
+    "red cucumber kimchi"
+   ],
+   "n": 45
+  },
+  {
+   "ko": "샤인머스켓",
+   "en": [
+    "korean side dish of green grape",
+    "green grape, korean school lunch dish"
+   ],
+   "n": 44
+  },
+  {
+   "ko": "유부장국",
+   "en": [
+    "korean fried tofu pouch soup, in a bowl of clear broth",
+    "light fried tofu pouch soup"
+   ],
+   "n": 43
+  },
+  {
+   "ko": "무말랭이김치",
+   "en": [
+    "radish kimchi, red chili coated fermented vegetable",
+    "red radish kimchi"
+   ],
+   "n": 43
+  },
+  {
+   "ko": "시래기된장국",
+   "en": [
+    "korean dried radish green and soybean paste soup, in a bowl of clear broth",
+    "light dried radish green and soybean paste soup"
+   ],
+   "n": 43
+  },
+  {
+   "ko": "돈육메추리알장조림",
+   "en": [
+    "quail egg and pork braised in soy sauce, glossy brown",
+    "soy braised quail egg and pork"
+   ],
+   "n": 43
+  },
+  {
+   "ko": "쑥갓두부무침",
+   "en": [
+    "seasoned crown daisy and tofu salad, korean side dish",
+    "crown daisy and tofu tossed in seasoning"
+   ],
+   "n": 43
+  },
+  {
+   "ko": "비름나물무침",
+   "en": [
+    "seasoned vegetables salad, korean side dish",
+    "vegetables tossed in seasoning"
+   ],
+   "n": 43
+  },
+  {
+   "ko": "초코우유",
+   "en": [
+    "a carton of vegetables milk",
+    "vegetables flavored milk carton"
+   ],
+   "n": 43
+  },
+  {
+   "ko": "나박김치",
+   "en": [
+    "vegetables kimchi, red chili coated fermented vegetable",
+    "red vegetables kimchi"
+   ],
+   "n": 43
+  },
+  {
+   "ko": "비빔막국수",
+   "en": [
+    "vegetables noodles in broth",
+    "bowl of vegetables noodle soup"
+   ],
+   "n": 42
+  },
+  {
+   "ko": "양배추샐러드",
+   "en": [
+    "cabbage salad with dressing",
+    "fresh cabbage salad"
+   ],
+   "n": 42
+  },
+  {
+   "ko": "떡만두국",
+   "en": [
+    "korean dumpling and rice cake soup, in a bowl of clear broth",
+    "light dumpling and rice cake soup"
+   ],
+   "n": 42
+  },
+  {
+   "ko": "옥수수밥",
+   "en": [
+    "steamed sweet corn rice in a bowl",
+    "a bowl of steamed sweet corn rice"
+   ],
+   "n": 42
+  },
+  {
+   "ko": "양상추샐러드",
+   "en": [
+    "lettuce salad with dressing",
+    "fresh lettuce salad"
+   ],
+   "n": 42
+  },
+  {
+   "ko": "들기름막국수",
+   "en": [
+    "vegetables noodles in broth",
+    "bowl of vegetables noodle soup"
+   ],
+   "n": 41
+  },
+  {
+   "ko": "로제떡볶이",
+   "en": [
+    "tteokbokki, cylindrical rice cakes in thick red sauce with vegetables",
+    "red glazed rice cake sticks"
+   ],
+   "n": 41
+  },
+  {
+   "ko": "돼지국밥",
+   "en": [
+    "pork soup with rice in it",
+    "hot pork soup over rice"
+   ],
+   "n": 41
+  },
+  {
+   "ko": "열대과일샐러드",
+   "en": [
+    "vegetables salad with dressing",
+    "fresh vegetables salad"
+   ],
+   "n": 40
+  },
+  {
+   "ko": "순대국",
+   "en": [
+    "korean vegetables soup, in a bowl of clear broth",
+    "light vegetables soup"
+   ],
+   "n": 40
+  },
+  {
+   "ko": "무말랭이무침",
+   "en": [
+    "seasoned radish salad, korean side dish",
+    "radish tossed in seasoning"
+   ],
+   "n": 39
+  },
+  {
+   "ko": "오렌지주스",
+   "en": [
+    "a glass of orange juice",
+    "orange juice in a cup"
+   ],
+   "n": 39
+  },
+  {
+   "ko": "파래김자반",
+   "en": [
+    "korean side dish of green laver and laver seaweed",
+    "green laver and laver seaweed, korean school lunch dish"
+   ],
+   "n": 39
+  },
+  {
+   "ko": "볶음김치",
+   "en": [
+    "vegetables kimchi, red chili coated fermented vegetable",
+    "red vegetables kimchi"
+   ],
+   "n": 39
+  },
+  {
+   "ko": "국물떡볶이",
+   "en": [
+    "tteokbokki, cylindrical rice cakes in thick red sauce with vegetables",
+    "red glazed rice cake sticks"
+   ],
+   "n": 39
+  },
+  {
+   "ko": "꽃게탕",
+   "en": [
+    "korean crab soup, hearty broth in a bowl",
+    "rich crab soup"
+   ],
+   "n": 38
+  },
+  {
+   "ko": "애호박고추장찌개",
+   "en": [
+    "korean red chili paste and zucchini stew, thick and bubbling in a pot",
+    "spicy red chili paste and zucchini stew"
+   ],
+   "n": 38
+  },
+  {
+   "ko": "소떡소떡",
+   "en": [
+    "korean rice cake rice cake",
+    "rice cake rice cake pieces"
+   ],
+   "n": 38
+  },
+  {
+   "ko": "아삭이고추된장무침",
+   "en": [
+    "seasoned chili pepper and soybean paste salad, korean side dish",
+    "chili pepper and soybean paste tossed in seasoning"
+   ],
+   "n": 38
+  },
+  {
+   "ko": "건파래볶음",
+   "en": [
+    "stir fried green laver, korean side dish",
+    "pan fried seasoned green laver"
+   ],
+   "n": 38
+  },
+  {
+   "ko": "두부된장찌개",
+   "en": [
+    "korean tofu and soybean paste stew, thick and bubbling in a pot",
+    "spicy tofu and soybean paste stew"
+   ],
+   "n": 37
+  },
+  {
+   "ko": "옥수수수염차",
+   "en": [
+    "korean side dish of sweet corn",
+    "sweet corn, korean school lunch dish"
+   ],
+   "n": 37
+  },
+  {
+   "ko": "유채나물무침",
+   "en": [
+    "seasoned vegetables salad, korean side dish",
+    "vegetables tossed in seasoning"
+   ],
+   "n": 37
+  },
+  {
+   "ko": "잡곡밥곡",
+   "en": [
+    "korean side dish of multigrain",
+    "multigrain, korean school lunch dish"
+   ],
+   "n": 37
+  },
+  {
+   "ko": "돼지등뼈감자탕",
+   "en": [
+    "korean pork and potato soup, hearty broth in a bowl",
+    "rich pork and potato soup"
+   ],
+   "n": 37
+  },
+  {
+   "ko": "클로렐라쌀밥",
+   "en": [
+    "steamed white rice in a bowl",
+    "a bowl of steamed white rice"
+   ],
+   "n": 37
+  },
+  {
+   "ko": "연두부양념장",
+   "en": [
+    "korean side dish of tofu",
+    "tofu, korean school lunch dish"
+   ],
+   "n": 37
+  },
+  {
+   "ko": "등뼈감자탕",
+   "en": [
+    "korean potato soup, hearty broth in a bowl",
+    "rich potato soup"
+   ],
+   "n": 36
+  },
+  {
+   "ko": "매콤콩나물국",
+   "en": [
+    "korean soybean sprout soup, in a bowl of clear broth",
+    "light soybean sprout soup"
+   ],
+   "n": 36
+  },
+  {
+   "ko": "칼슘강화쌀밥",
+   "en": [
+    "steamed white rice in a bowl",
+    "a bowl of steamed white rice"
+   ],
+   "n": 36
+  },
+  {
+   "ko": "종합어묵국",
+   "en": [
+    "korean fish cake soup, in a bowl of clear broth",
+    "light fish cake soup"
+   ],
+   "n": 36
+  },
+  {
+   "ko": "아이스망고",
+   "en": [
+    "korean side dish of mango",
+    "mango, korean school lunch dish"
+   ],
+   "n": 36
+  },
+  {
+   "ko": "도토리묵야채무침",
+   "en": [
+    "seasoned acorn jelly salad, korean side dish",
+    "acorn jelly tossed in seasoning"
+   ],
+   "n": 36
+  },
+  {
+   "ko": "오이양파무침",
+   "en": [
+    "seasoned onion and cucumber salad, korean side dish",
+    "onion and cucumber tossed in seasoning"
+   ],
+   "n": 36
+  },
+  {
+   "ko": "두부구이양념장",
+   "en": [
+    "korean side dish of tofu",
+    "tofu, korean school lunch dish"
+   ],
+   "n": 36
+  },
+  {
+   "ko": "작은밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "달걀찜",
+   "en": [
+    "steamed braised egg",
+    "egg steamed in seasoning"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "연근조림",
+   "en": [
+    "lotus root braised in soy sauce, glossy brown",
+    "soy braised lotus root"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "알감자조림",
+   "en": [
+    "potato braised in soy sauce, glossy brown",
+    "soy braised potato"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "한우불고기",
+   "en": [
+    "korean side dish of marinated grilled meat and beef",
+    "marinated grilled meat and beef, korean school lunch dish"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "콩나물파채무침",
+   "en": [
+    "seasoned soybean sprout and green onion salad, korean side dish",
+    "soybean sprout and green onion tossed in seasoning"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "오징어김치전",
+   "en": [
+    "korean savory pancake with squid and kimchi, flat and pan fried",
+    "round squid and kimchi pancake"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "매운돼지갈비찜",
+   "en": [
+    "steamed braised pork",
+    "pork steamed in seasoning"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "회오리감자",
+   "en": [
+    "korean side dish of duck and potato",
+    "duck and potato, korean school lunch dish"
+   ],
+   "n": 35
+  },
+  {
+   "ko": "소고기무국",
+   "en": [
+    "korean beef and radish soup, in a bowl of clear broth",
+    "light beef and radish soup"
+   ],
+   "n": 34
+  },
+  {
+   "ko": "유부된장국",
+   "en": [
+    "korean fried tofu pouch and soybean paste soup, in a bowl of clear broth",
+    "light fried tofu pouch and soybean paste soup"
+   ],
+   "n": 34
+  },
+  {
+   "ko": "단호박카레라이스",
+   "en": [
+    "korean side dish of sweet pumpkin and curry",
+    "sweet pumpkin and curry, korean school lunch dish"
+   ],
+   "n": 33
+  },
+  {
+   "ko": "돼지고기김치찌개",
+   "en": [
+    "korean pork and kimchi stew, thick and bubbling in a pot",
+    "spicy pork and kimchi stew"
+   ],
+   "n": 33
+  },
+  {
+   "ko": "자장밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 33
+  },
+  {
+   "ko": "토마토스파게티",
+   "en": [
+    "korean side dish of tomato and crab and green onion",
+    "tomato and crab and green onion, korean school lunch dish"
+   ],
+   "n": 33
+  },
+  {
+   "ko": "치즈볼",
+   "en": [
+    "korean side dish of cheese",
+    "cheese, korean school lunch dish"
+   ],
+   "n": 33
+  },
+  {
+   "ko": "돈육김치볶음",
+   "en": [
+    "stir fried pork and kimchi, korean side dish",
+    "pan fried seasoned pork and kimchi"
+   ],
+   "n": 32
+  },
+  {
+   "ko": "야채계란말이",
+   "en": [
+    "rolled egg, sliced into pinwheels",
+    "egg rolled and sliced"
+   ],
+   "n": 32
+  },
+  {
+   "ko": "건새우아욱국",
+   "en": [
+    "korean shrimp and mallow soup, in a bowl of clear broth",
+    "light shrimp and mallow soup"
+   ],
+   "n": 32
+  },
+  {
+   "ko": "고구마맛탕",
+   "en": [
+    "korean sweet potato soup, hearty broth in a bowl",
+    "rich sweet potato soup"
+   ],
+   "n": 32
+  },
+  {
+   "ko": "메이플피칸파이",
+   "en": [
+    "korean side dish of green onion",
+    "green onion, korean school lunch dish"
+   ],
+   "n": 32
+  },
+  {
+   "ko": "완두콩밥",
+   "en": [
+    "steamed green pea rice in a bowl",
+    "a bowl of steamed green pea rice"
+   ],
+   "n": 32
+  },
+  {
+   "ko": "파김치",
+   "en": [
+    "green onion kimchi, red chili coated fermented vegetable",
+    "red green onion kimchi"
+   ],
+   "n": 32
+  },
+  {
+   "ko": "감자옹심이국",
+   "en": [
+    "korean potato soup, in a bowl of clear broth",
+    "light potato soup"
+   ],
+   "n": 31
+  },
+  {
+   "ko": "홍국쌀밥",
+   "en": [
+    "steamed white rice in a bowl",
+    "a bowl of steamed white rice"
+   ],
+   "n": 31
+  },
+  {
+   "ko": "청포묵김가루무침",
+   "en": [
+    "seasoned laver seaweed and jelly salad, korean side dish",
+    "laver seaweed and jelly tossed in seasoning"
+   ],
+   "n": 31
+  },
+  {
+   "ko": "칼슘보리밥",
+   "en": [
+    "steamed barley rice in a bowl",
+    "a bowl of steamed barley rice"
+   ],
+   "n": 31
+  },
+  {
+   "ko": "단감",
+   "en": [
+    "korean side dish of persimmon",
+    "persimmon, korean school lunch dish"
+   ],
+   "n": 30
+  },
+  {
+   "ko": "도토리묵양념장",
+   "en": [
+    "korean side dish of acorn jelly",
+    "acorn jelly, korean school lunch dish"
+   ],
+   "n": 30
+  },
+  {
+   "ko": "야채계란찜",
+   "en": [
+    "steamed braised egg",
+    "egg steamed in seasoning"
+   ],
+   "n": 30
+  },
+  {
+   "ko": "꼬치어묵국",
+   "en": [
+    "korean fish cake soup, in a bowl of clear broth",
+    "light fish cake soup"
+   ],
+   "n": 30
+  },
+  {
+   "ko": "찰옥수수밥",
+   "en": [
+    "steamed sweet corn rice in a bowl",
+    "a bowl of steamed sweet corn rice"
+   ],
+   "n": 30
+  },
+  {
+   "ko": "상추쌈쌈장",
+   "en": [
+    "korean side dish of lettuce",
+    "lettuce, korean school lunch dish"
+   ],
+   "n": 30
+  },
+  {
+   "ko": "모닝빵",
+   "en": [
+    "vegetables bread roll",
+    "piece of vegetables bread"
+   ],
+   "n": 30
+  },
+  {
+   "ko": "꼬들단무지무침",
+   "en": [
+    "seasoned pickled radish salad, korean side dish",
+    "pickled radish tossed in seasoning"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "단배추무생채",
+   "en": [
+    "korean side dish of napa cabbage and radish",
+    "napa cabbage and radish, korean school lunch dish"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "조각파인애플",
+   "en": [
+    "korean side dish of pineapple",
+    "pineapple, korean school lunch dish"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "물만두국",
+   "en": [
+    "korean dumpling soup, in a bowl of clear broth",
+    "light dumpling soup"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "미소장국",
+   "en": [
+    "korean vegetables soup, in a bowl of clear broth",
+    "light vegetables soup"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "세발나물무침",
+   "en": [
+    "seasoned vegetables salad, korean side dish",
+    "vegetables tossed in seasoning"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "궁채장아찌",
+   "en": [
+    "soy pickled vegetables, dark and salty",
+    "vegetables preserved in soy sauce"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "꽃맛살샐러드",
+   "en": [
+    "crab stick salad with dressing",
+    "fresh crab stick salad"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "도라지오이생채",
+   "en": [
+    "korean side dish of bellflower root and cucumber",
+    "bellflower root and cucumber, korean school lunch dish"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "시금치나물무침",
+   "en": [
+    "seasoned spinach salad, korean side dish",
+    "spinach tossed in seasoning"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "달걀실파국",
+   "en": [
+    "korean egg and green onion soup, in a bowl of clear broth",
+    "light egg and green onion soup"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "오징어초무침",
+   "en": [
+    "seasoned squid salad, korean side dish",
+    "squid tossed in seasoning"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "돼지고기김치찜",
+   "en": [
+    "steamed braised pork and kimchi",
+    "pork and kimchi steamed in seasoning"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "마늘빵",
+   "en": [
+    "garlic bread roll",
+    "piece of garlic bread"
+   ],
+   "n": 29
+  },
+  {
+   "ko": "컵시리얼우유",
+   "en": [
+    "a carton of vegetables milk",
+    "vegetables flavored milk carton"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "해물순두부찌개",
+   "en": [
+    "korean soft tofu stew, thick and bubbling in a pot",
+    "spicy soft tofu stew"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "애호박볶음",
+   "en": [
+    "stir fried zucchini, korean side dish",
+    "pan fried seasoned zucchini"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "치즈불닭",
+   "en": [
+    "korean side dish of cheese and chicken",
+    "cheese and chicken, korean school lunch dish"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "계란장조림",
+   "en": [
+    "egg braised in soy sauce, glossy brown",
+    "soy braised egg"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "꽃게된장국",
+   "en": [
+    "korean crab and soybean paste soup, in a bowl of clear broth",
+    "light crab and soybean paste soup"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "매콤돼지갈비찜",
+   "en": [
+    "steamed braised pork",
+    "pork steamed in seasoning"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "칼슘찹쌀밥",
+   "en": [
+    "steamed glutinous rice in a bowl",
+    "a bowl of steamed glutinous rice"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "감자탕",
+   "en": [
+    "korean potato soup, hearty broth in a bowl",
+    "rich potato soup"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "비빔만두",
+   "en": [
+    "korean dumplings with vegetables filling",
+    "plump vegetables dumplings"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "치즈닭갈비",
+   "en": [
+    "korean side dish of cheese and chicken",
+    "cheese and chicken, korean school lunch dish"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "무쌈",
+   "en": [
+    "fresh radish leaves for wrapping",
+    "pile of radish wrap leaves"
+   ],
+   "n": 28
+  },
+  {
+   "ko": "매콤콩나물무침",
+   "en": [
+    "seasoned soybean sprout salad, korean side dish",
+    "soybean sprout tossed in seasoning"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "압맥밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "우유두유선택",
+   "en": [
+    "korean side dish of milk",
+    "milk, korean school lunch dish"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "혼합곡밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "황태콩나물국",
+   "en": [
+    "korean soybean sprout and dried pollack soup, in a bowl of clear broth",
+    "light soybean sprout and dried pollack soup"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "가지나물무침",
+   "en": [
+    "seasoned eggplant salad, korean side dish",
+    "eggplant tossed in seasoning"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "딸기우유",
+   "en": [
+    "a carton of strawberry milk",
+    "strawberry flavored milk carton"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "그린샐러드",
+   "en": [
+    "vegetables salad with dressing",
+    "fresh vegetables salad"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "취나물된장무침",
+   "en": [
+    "seasoned soybean paste and aster green salad, korean side dish",
+    "soybean paste and aster green tossed in seasoning"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "김치볶음밥",
+   "en": [
+    "fried rice with kimchi, grains separated",
+    "stir fried rice with diced kimchi"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "맑은미역국",
+   "en": [
+    "korean seaweed soup, in a bowl of clear broth",
+    "light seaweed soup"
+   ],
+   "n": 27
+  },
+  {
+   "ko": "김치어묵국",
+   "en": [
+    "korean fish cake and kimchi soup, in a bowl of clear broth",
+    "light fish cake and kimchi soup"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "돈육고추장불고기",
+   "en": [
+    "korean side dish of marinated grilled meat and red chili paste and pork",
+    "marinated grilled meat and red chili paste and pork, korean school lunch dish"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "콩나물김치국",
+   "en": [
+    "korean soybean sprout and kimchi soup, in a bowl of clear broth",
+    "light soybean sprout and kimchi soup"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "크림스프",
+   "en": [
+    "creamy vegetables soup in a bowl",
+    "vegetables cream soup"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "밀크인증우유",
+   "en": [
+    "a carton of vegetables milk",
+    "vegetables flavored milk carton"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "감자미역국",
+   "en": [
+    "korean seaweed and potato soup, in a bowl of clear broth",
+    "light seaweed and potato soup"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "동태찌개",
+   "en": [
+    "korean pollack stew, thick and bubbling in a pot",
+    "spicy pollack stew"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "동파육",
+   "en": [
+    "korean side dish of green onion",
+    "green onion, korean school lunch dish"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "부추달걀국",
+   "en": [
+    "korean egg and garlic chive soup, in a bowl of clear broth",
+    "light egg and garlic chive soup"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "연두부달걀찜",
+   "en": [
+    "steamed braised egg and tofu",
+    "egg and tofu steamed in seasoning"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "가쓰오장국",
+   "en": [
+    "korean vegetables soup, in a bowl of clear broth",
+    "light vegetables soup"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "삼색나물",
+   "en": [
+    "seasoned blanched vegetables, korean vegetable side dish",
+    "vegetables namul side dish"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "냉이된장국",
+   "en": [
+    "korean soybean paste soup, in a bowl of clear broth",
+    "light soybean paste soup"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "돼지불고기",
+   "en": [
+    "korean side dish of marinated grilled meat and pork",
+    "marinated grilled meat and pork, korean school lunch dish"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "찹쌀콩멸치볶음",
+   "en": [
+    "stir fried glutinous rice and dried anchovy and soybean, korean side dish",
+    "pan fried seasoned glutinous rice and dried anchovy and soybean"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "양배추쌈",
+   "en": [
+    "fresh cabbage leaves for wrapping",
+    "pile of cabbage wrap leaves"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "김부각",
+   "en": [
+    "korean side dish of laver seaweed",
+    "laver seaweed, korean school lunch dish"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "북어국",
+   "en": [
+    "korean dried pollack soup, in a bowl of clear broth",
+    "light dried pollack soup"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "숙주맛살무침",
+   "en": [
+    "seasoned crab stick and mung bean sprout salad, korean side dish",
+    "crab stick and mung bean sprout tossed in seasoning"
+   ],
+   "n": 26
+  },
+  {
+   "ko": "미니찹쌀밥",
+   "en": [
+    "steamed glutinous rice in a bowl",
+    "a bowl of steamed glutinous rice"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "발아흑미밥",
+   "en": [
+    "steamed black rice in a bowl",
+    "a bowl of steamed black rice"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "얼큰콩나물국",
+   "en": [
+    "korean soybean sprout soup, in a bowl of clear broth",
+    "light soybean sprout soup"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "오이고추된장무침",
+   "en": [
+    "seasoned cucumber and chili pepper and soybean paste salad, korean side dish",
+    "cucumber and chili pepper and soybean paste tossed in seasoning"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "진미채조림",
+   "en": [
+    "dried squid strips braised in soy sauce, glossy brown",
+    "soy braised dried squid strips"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "치커리사과무침",
+   "en": [
+    "seasoned chicory and apple salad, korean side dish",
+    "chicory and apple tossed in seasoning"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "칼슘강화찹쌀밥",
+   "en": [
+    "steamed glutinous rice in a bowl",
+    "a bowl of steamed glutinous rice"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "클로렐라찹쌀밥",
+   "en": [
+    "steamed glutinous rice in a bowl",
+    "a bowl of steamed glutinous rice"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "견과류멸치볶음",
+   "en": [
+    "stir fried dried anchovy and nuts, korean side dish",
+    "pan fried seasoned dried anchovy and nuts"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "감자고추장찌개",
+   "en": [
+    "korean red chili paste and potato stew, thick and bubbling in a pot",
+    "spicy red chili paste and potato stew"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "계란파국",
+   "en": [
+    "korean egg and green onion soup, in a bowl of clear broth",
+    "light egg and green onion soup"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "새송이버섯볶음",
+   "en": [
+    "stir fried king oyster mushroom and mushroom, korean side dish",
+    "pan fried seasoned king oyster mushroom and mushroom"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "쇠고기감자국",
+   "en": [
+    "korean beef and potato soup, in a bowl of clear broth",
+    "light beef and potato soup"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "들깨수제비국",
+   "en": [
+    "korean dough flake and perilla seed soup, in a bowl of clear broth",
+    "light dough flake and perilla seed soup"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "클로렐라밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "얼갈이배추된장국",
+   "en": [
+    "korean napa cabbage and soybean paste soup, in a bowl of clear broth",
+    "light napa cabbage and soybean paste soup"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "닭꼬치",
+   "en": [
+    "korean side dish of chicken",
+    "chicken, korean school lunch dish"
+   ],
+   "n": 25
+  },
+  {
+   "ko": "부추양파무침",
+   "en": [
+    "seasoned onion and garlic chive salad, korean side dish",
+    "onion and garlic chive tossed in seasoning"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "칠분도미현미밥",
+   "en": [
+    "steamed brown rice in a bowl",
+    "a bowl of steamed brown rice"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "토마토",
+   "en": [
+    "korean side dish of tomato",
+    "tomato, korean school lunch dish"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "꼬지어묵국",
+   "en": [
+    "korean fish cake soup, in a bowl of clear broth",
+    "light fish cake soup"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "달걀말이",
+   "en": [
+    "rolled egg, sliced into pinwheels",
+    "egg rolled and sliced"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "포도주스",
+   "en": [
+    "a glass of grape juice",
+    "grape juice in a cup"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "베트남쌀국수",
+   "en": [
+    "white rice noodles in broth",
+    "bowl of white rice noodle soup"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "깻잎무쌈",
+   "en": [
+    "fresh perilla leaf and radish leaves for wrapping",
+    "pile of perilla leaf and radish wrap leaves"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "아몬드멸치볶음",
+   "en": [
+    "stir fried almond and dried anchovy, korean side dish",
+    "pan fried seasoned almond and dried anchovy"
+   ],
+   "n": 24
+  },
+  {
+   "ko": "가바쌀밥",
+   "en": [
+    "steamed white rice in a bowl",
+    "a bowl of steamed white rice"
+   ],
+   "n": 23
+  },
+  {
+   "ko": "간장불고기",
+   "en": [
+    "korean side dish of marinated grilled meat and soy sauce",
+    "marinated grilled meat and soy sauce, korean school lunch dish"
+   ],
+   "n": 23
+  },
+  {
+   "ko": "단배추된장국",
+   "en": [
+    "korean napa cabbage and soybean paste soup, in a bowl of clear broth",
+    "light napa cabbage and soybean paste soup"
+   ],
+   "n": 23
+  },
+  {
+   "ko": "십곡밥",
+   "en": [
+    "steamed vegetables rice in a bowl",
+    "a bowl of steamed vegetables rice"
+   ],
+   "n": 23
+  },
+  {
+   "ko": "어묵잡채",
+   "en": [
+    "korean side dish of fish cake and glass noodle stir fry",
+    "fish cake and glass noodle stir fry, korean school lunch dish"
+   ],
+   "n": 23
+  },
+  {
+   "ko": "청경채나물",
+   "en": [
+    "seasoned blanched bok choy, korean vegetable side dish",
+    "bok choy namul side dish"
+   ],
+   "n": 23
+  }
+ ],
+ "note_size": "사진 인식 후보는 400종으로 둔다. 전체 2000종은 menu-names.json 에 있다. 후보를 2000종으로 두면 프롬프트가 4000개가 되어 최초 임베딩에 206초가 걸리고 그동안 화면이 멈춘다(실측). 늘리려면 임베딩을 미리 계산해 파일로 싣는 구조가 먼저 필요하다."
+}

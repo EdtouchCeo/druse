@@ -1,0 +1,135 @@
+{
+  "version": "2026-08-06",
+  "warning": "이 파일은 추측이다. 확정이 아니다. 메뉴 이름에서 재료를 짐작하는 규칙이며, 학교와 납품업체에 따라 달라진다. 화면에서는 반드시 '추론'으로 구분 표시하고, 확정 결과와 같은 색·같은 강조로 그리지 않는다.",
+  "grades": {
+    "거의확실": {"w": 3, "label": "거의 확실", "desc": "한국 학교급식의 표준 조리법에서 관용적으로 거의 항상 들어갑니다"},
+    "흔함":    {"w": 2, "label": "흔함",     "desc": "자주 들어가지만 학교·납품업체·레시피에 따라 다릅니다"},
+    "가능":    {"w": 1, "label": "가능",     "desc": "들어갈 수 있습니다. 확인이 필요합니다"}
+  },
+  "policy": {
+    "legal19_missing_number": "19종 재료를 '거의확실' 등급으로 추론했는데 그 줄에서 해당 번호를 읽지 못했다면 표시 누락을 의심한다. 단, 그 줄에서 번호를 하나도 읽지 못한 경우에는 판정하지 않는다(OCR 실패와 구분할 수 없다).",
+    "never": "추론 결과로 '먹어도 된다'거나 '안 들어있다'는 판정을 내리지 않는다."
+  },
+
+  "rules": [
+    {"id":"namul","match":["나물"],"via":"참기름",
+     "infer":[{"allergen":"sesame","grade":"거의확실"}],
+     "why":"나물무침은 참기름으로 마무리하는 것이 표준 조리법입니다."},
+
+    {"id":"muchim","match":["무침","생채","숙채","겉절이"],"via":"참기름",
+     "infer":[{"allergen":"sesame","grade":"흔함"}],
+     "why":"무침류는 참기름 또는 통깨로 마무리하는 경우가 많습니다."},
+
+    {"id":"gim","match":["김구이","조미김","김자반","김가루","파래김","김무침"],"via":"참기름",
+     "infer":[{"allergen":"sesame","grade":"거의확실"}],
+     "why":"급식용 조미김은 참기름 또는 참기름·소금 배합으로 구워 나옵니다."},
+
+    {"id":"japchae","match":["잡채","당면"],"via":"참기름·간장",
+     "infer":[{"allergen":"sesame","grade":"거의확실"},{"allergen":"soy","grade":"거의확실"}],
+     "why":"잡채는 참기름과 간장으로 양념합니다."},
+
+    {"id":"bibim","match":["비빔밥","비빔국수","비빔면","회덮밥"],"via":"참기름",
+     "infer":[{"allergen":"sesame","grade":"거의확실"}],
+     "why":"비빔류는 참기름을 넣어 비빕니다."},
+
+    {"id":"gimbap","match":["김밥","유부초밥","주머니밥"],"via":"참기름",
+     "infer":[{"allergen":"sesame","grade":"거의확실"}],
+     "why":"김밥·초밥용 밥은 참기름으로 밑간합니다."},
+
+    {"id":"naengchae","match":["냉채","해파리"],"via":"참기름·겨자소스",
+     "infer":[{"allergen":"sesame","grade":"흔함"},{"allergen":"mustard","grade":"흔함"}],
+     "why":"냉채는 겨자소스를 쓰는 경우가 많고, 참기름으로 마무리합니다."},
+
+    {"id":"bulgogi","match":["불고기","제육","주물럭","떡갈비","갈비찜","닭갈비","돼지갈비","LA갈비","간장","조림","장조림","데리야끼","불닭"],"via":"간장·참기름",
+     "infer":[{"allergen":"sesame","grade":"흔함"},{"allergen":"soy","grade":"거의확실"}],
+     "why":"간장 양념 요리는 대두 가공품인 간장을 쓰고, 참기름으로 마무리하는 경우가 많습니다."},
+
+    {"id":"mandu","match":["만두","군만두","물만두","교자"],"via":"만두피·소",
+     "infer":[{"allergen":"wheat","grade":"거의확실"},{"allergen":"soy","grade":"흔함"},{"allergen":"sesame","grade":"흔함"},{"allergen":"pork","grade":"흔함"}],
+     "why":"만두피는 밀가루로 만들고, 소에 돼지고기·참기름이 들어가는 경우가 많습니다."},
+
+    {"id":"myeolchi","match":["멸치볶음","잔멸치","건새우볶음","뱅어포"],"via":"참기름",
+     "infer":[{"allergen":"sesame","grade":"흔함"}],
+     "why":"마른반찬 볶음은 참기름과 통깨로 마무리하는 경우가 많습니다."},
+
+    {"id":"miyeok","match":["미역국","미역냉국","미역줄기","미역무침"],"via":"참기름",
+     "infer":[{"allergen":"sesame","grade":"흔함"}],
+     "why":"미역국은 참기름에 볶아 끓이는 조리법이 일반적입니다."},
+
+    {"id":"gangjeong","match":["강정","약과","유과","산자","깨강정"],"via":"깨·견과",
+     "infer":[{"allergen":"sesame","grade":"흔함"},{"allergen":"almond","grade":"가능"},{"allergen":"peanut","grade":"가능"}],
+     "why":"강정·한과류에는 깨와 견과류가 들어가는 경우가 많습니다."},
+
+    {"id":"dressing","match":["드레싱","샐러드","사우전"],"via":"드레싱",
+     "infer":[{"allergen":"sesame","grade":"가능"},{"allergen":"mustard","grade":"가능"},{"allergen":"egg","grade":"가능"}],
+     "why":"드레싱 종류에 따라 참깨·겨자·난류(마요네즈)가 들어갈 수 있습니다."},
+
+    {"id":"bugak","match":["부각","튀각","장아찌"],"via":"참기름·깨",
+     "infer":[{"allergen":"sesame","grade":"가능"}],
+     "why":"참기름 또는 깨로 마무리할 수 있습니다."},
+
+    {"id":"mustard_sauce","match":["머스터드","머스타드","허니머스"],"via":"소스",
+     "infer":[{"allergen":"mustard","grade":"거의확실"}],
+     "why":"이름에 머스터드가 들어 있습니다."},
+
+    {"id":"nuts","match":["견과","넛츠","너트","믹스넛"],"via":"견과류",
+     "infer":[{"allergen":"almond","grade":"가능"},{"allergen":"cashew","grade":"가능"},{"allergen":"walnut","grade":"가능"},{"allergen":"peanut","grade":"가능"}],
+     "why":"어떤 견과가 들어가는지 이름만으로는 알 수 없습니다. 급식실에 확인해야 합니다."},
+
+    {"id":"cereal","match":["그래놀라","뮤슬리","시리얼","오트밀"],"via":"곡물·견과 배합",
+     "infer":[{"allergen":"almond","grade":"흔함"},{"allergen":"wheat","grade":"흔함"},{"allergen":"milk","grade":"가능"}],
+     "why":"시리얼·그래놀라 제품에는 아몬드가 들어가는 경우가 많습니다."},
+
+    {"id":"fruit","match":["과일샐러드","후르츠","모둠과일","제철과일","생과일","과일컵"],"via":"과일 구성",
+     "infer":[{"allergen":"apple","grade":"가능"},{"allergen":"kiwi","grade":"가능"},{"allergen":"melon","grade":"가능"},{"allergen":"peach","grade":"가능"}],
+     "why":"어떤 과일이 나오는지 이름만으로는 알 수 없습니다. 사과·키위·멜론은 19종 밖입니다."},
+
+    {"id":"eomuk","match":["어묵","오뎅","맛살","크래미","게맛살"],"via":"연육 가공품",
+     "infer":[{"allergen":"wheat","grade":"거의확실"},{"allergen":"soy","grade":"흔함"},{"allergen":"egg","grade":"가능"}],
+     "why":"어묵·맛살은 연육에 밀가루·전분을 섞어 만듭니다."},
+
+    {"id":"katsu","match":["돈까스","돈가스","치즈까스","생선까스","고로케","크로켓","커틀렛","탕수육","까스"],"via":"튀김옷",
+     "infer":[{"allergen":"wheat","grade":"거의확실"},{"allergen":"egg","grade":"흔함"},{"allergen":"milk","grade":"가능"}],
+     "why":"빵가루 튀김옷은 밀가루로 만들고, 반죽에 계란을 씁니다."},
+
+    {"id":"bread","match":["빵","머핀","케이크","와플","핫도그","도넛","비스킷","쿠키","카스테라","파이","피자","토스트","브레드","번"],"via":"제과제빵",
+     "infer":[{"allergen":"wheat","grade":"거의확실"},{"allergen":"egg","grade":"흔함"},{"allergen":"milk","grade":"흔함"}],
+     "why":"제과·제빵류는 밀가루가 기본이고 계란·우유가 들어가는 경우가 많습니다."},
+
+    {"id":"noodle","match":["우동","라면","국수","칼국수","수제비","파스타","스파게티","짜장","짬뽕","라볶이","쫄면","마카로니","누룽지탕"],"via":"면·전분",
+     "infer":[{"allergen":"wheat","grade":"거의확실"}],
+     "why":"면류는 밀가루로 만듭니다. 메밀국수도 순메밀이 아니면 밀이 섞입니다."},
+
+    {"id":"mayo","match":["마요네즈","타르타르","마요"],"via":"마요네즈",
+     "infer":[{"allergen":"egg","grade":"거의확실"},{"allergen":"soy","grade":"흔함"},{"allergen":"mustard","grade":"가능"}],
+     "why":"마요네즈는 난황으로 만듭니다. 제품에 따라 겨자가 들어갑니다."},
+
+    {"id":"jang","match":["된장","쌈장","춘장","고추장","초고추장","막장","청국장"],"via":"장류",
+     "infer":[{"allergen":"soy","grade":"거의확실"},{"allergen":"wheat","grade":"흔함"}],
+     "why":"장류는 대두를 발효시켜 만들고, 밀이 함께 쓰이는 제품이 많습니다."},
+
+    {"id":"dairy","match":["치즈","크림","그라탕","그라탱","라자냐","까르보나라","우유","요구르트","요플레","푸딩","버터","모짜렐라","리코타","아이스크림"],"via":"유제품",
+     "infer":[{"allergen":"milk","grade":"거의확실"}],
+     "why":"유제품이 이름에 들어 있습니다."},
+
+    {"id":"ham","match":["햄","소시지","베이컨","비엔나","프랑크","살라미","스팸","분쇄육"],"via":"육가공품",
+     "infer":[{"allergen":"pork","grade":"거의확실"},{"allergen":"soy","grade":"흔함"},{"allergen":"milk","grade":"가능"}],
+     "why":"육가공품은 돼지고기가 기본이고, 대두단백·유청단백이 결합재로 쓰입니다."},
+
+    {"id":"fry","match":["튀김","부침","동그랑땡","완자","전병","빈대떡","적"],"via":"반죽·튀김옷",
+     "infer":[{"allergen":"wheat","grade":"흔함"},{"allergen":"egg","grade":"흔함"}],
+     "why":"부침·튀김 반죽에 밀가루와 계란을 쓰는 경우가 많습니다."},
+
+    {"id":"curry","match":["카레","커리","하이라이스","크림스프","스프","수프","브라운소스"],"via":"루·소스",
+     "infer":[{"allergen":"wheat","grade":"흔함"},{"allergen":"milk","grade":"가능"}],
+     "why":"카레·스프의 루는 밀가루와 유지로 만듭니다."},
+
+    {"id":"tteok","match":["떡볶이","라볶이","궁중떡볶이"],"via":"떡",
+     "infer":[{"allergen":"wheat","grade":"가능"},{"allergen":"soy","grade":"흔함"}],
+     "why":"떡이 쌀떡인지 밀떡인지 이름만으로는 알 수 없습니다. 양념에 간장·고추장이 들어갑니다."},
+
+    {"id":"seafood_stew","match":["해물","모둠전","해산물","짬뽕국","오징어볶음","낙지"],"via":"해산물 구성",
+     "infer":[{"allergen":"squid","grade":"흔함"},{"allergen":"shrimp","grade":"흔함"},{"allergen":"shellfish","grade":"흔함"}],
+     "why":"어떤 해산물이 들어가는지 이름만으로는 알 수 없습니다."}
+  ]
+}

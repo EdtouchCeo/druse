@@ -1,0 +1,574 @@
+{
+ "version": "2026-08-06",
+ "note": "한국 급식 메뉴명은 '재료 + 조리법' 합성어다. 재료를 영어로 바꾸고 조리법 틀에 끼워 CLIP 프롬프트를 만든다. {i} 가 재료 자리. NEIS 가 준 임의의 메뉴명도 이걸로 즉석에서 영어로 바꾼다.",
+ "modifiers": [
+  "친환경",
+  "무농약",
+  "유기농",
+  "고품질",
+  "고칼슘",
+  "저지방",
+  "저당",
+  "무가당",
+  "국내산",
+  "우리쌀",
+  "우리밀",
+  "제철",
+  "신선",
+  "특제",
+  "특",
+  "수제",
+  "자율",
+  "선택",
+  "오늘의",
+  "정성",
+  "행복",
+  "사랑",
+  "건강",
+  "영양",
+  "알뜰",
+  "일품",
+  "청정",
+  "명품",
+  "프리미엄",
+  "자연산",
+  "맛있는",
+  "새콤",
+  "고소한",
+  "담백한",
+  "깔끔한"
+ ],
+ "fallback": [
+  "korean side dish of {i}",
+  "{i}, korean school lunch dish"
+ ],
+ "ingredients": {
+  "쌀": "white rice",
+  "백미": "white rice",
+  "현미": "brown rice",
+  "흑미": "black rice",
+  "찰흑미": "black glutinous rice",
+  "보리": "barley",
+  "찰보리": "barley",
+  "기장": "millet",
+  "차조": "millet",
+  "수수": "sorghum",
+  "차수수": "sorghum",
+  "귀리": "oat",
+  "율무": "job's tears",
+  "찹쌀": "glutinous rice",
+  "잡곡": "multigrain",
+  "혼합잡곡": "multigrain",
+  "발아현미": "sprouted brown rice",
+  "콩": "soybean",
+  "완두": "green pea",
+  "강낭": "kidney bean",
+  "팥": "red bean",
+  "쇠고기": "beef",
+  "소고기": "beef",
+  "한우": "beef",
+  "우육": "beef",
+  "불고기": "marinated grilled meat",
+  "돼지": "pork",
+  "돈육": "pork",
+  "제육": "spicy pork",
+  "삼겹": "pork belly",
+  "목살": "pork shoulder",
+  "닭": "chicken",
+  "계육": "chicken",
+  "닭고기": "chicken",
+  "오리": "duck",
+  "햄": "ham",
+  "소시지": "sausage",
+  "베이컨": "bacon",
+  "달걀": "egg",
+  "계란": "egg",
+  "메추리알": "quail egg",
+  "완자": "meatball",
+  "떡갈비": "minced meat patty",
+  "동그랑땡": "small meat patty",
+  "고등어": "mackerel",
+  "삼치": "mackerel",
+  "갈치": "cutlassfish",
+  "꽁치": "saury",
+  "임연수": "atka mackerel",
+  "가자미": "flounder",
+  "동태": "pollack",
+  "명태": "pollack",
+  "코다리": "half dried pollack",
+  "황태": "dried pollack",
+  "북어": "dried pollack",
+  "연어": "salmon",
+  "참치": "tuna",
+  "오징어": "squid",
+  "낙지": "octopus",
+  "쭈꾸미": "baby octopus",
+  "문어": "octopus",
+  "새우": "shrimp",
+  "게": "crab",
+  "꽃게": "crab",
+  "조개": "clam",
+  "바지락": "clam",
+  "홍합": "mussel",
+  "전복": "abalone",
+  "멸치": "dried anchovy",
+  "어묵": "fish cake",
+  "맛살": "crab stick",
+  "진미채": "dried squid strips",
+  "쥐포": "dried filefish",
+  "미역": "seaweed",
+  "다시마": "kelp",
+  "김": "laver seaweed",
+  "파래": "green laver",
+  "매생이": "seaweed",
+  "톳": "hijiki seaweed",
+  "감자": "potato",
+  "고구마": "sweet potato",
+  "당근": "carrot",
+  "양파": "onion",
+  "대파": "green onion",
+  "파": "green onion",
+  "마늘": "garlic",
+  "마늘종": "garlic scape",
+  "생강": "ginger",
+  "무": "radish",
+  "알타리": "young radish",
+  "열무": "young radish leaf",
+  "배추": "napa cabbage",
+  "양배추": "cabbage",
+  "적채": "red cabbage",
+  "시금치": "spinach",
+  "근대": "chard",
+  "아욱": "mallow",
+  "부추": "garlic chive",
+  "미나리": "water parsley",
+  "쑥갓": "crown daisy",
+  "깻잎": "perilla leaf",
+  "상추": "lettuce",
+  "치커리": "chicory",
+  "청경채": "bok choy",
+  "브로콜리": "broccoli",
+  "콜리플라워": "cauliflower",
+  "오이": "cucumber",
+  "호박": "zucchini",
+  "단호박": "sweet pumpkin",
+  "가지": "eggplant",
+  "고추": "chili pepper",
+  "피망": "bell pepper",
+  "파프리카": "bell pepper",
+  "토마토": "tomato",
+  "콩나물": "soybean sprout",
+  "숙주": "mung bean sprout",
+  "도라지": "bellflower root",
+  "더덕": "deodeok root",
+  "우엉": "burdock root",
+  "연근": "lotus root",
+  "죽순": "bamboo shoot",
+  "고사리": "bracken fern",
+  "취": "aster green",
+  "곤드레": "thistle green",
+  "시래기": "dried radish green",
+  "우거지": "outer cabbage leaf",
+  "버섯": "mushroom",
+  "표고": "shiitake mushroom",
+  "팽이": "enoki mushroom",
+  "느타리": "oyster mushroom",
+  "새송이": "king oyster mushroom",
+  "양송이": "button mushroom",
+  "목이": "wood ear mushroom",
+  "옥수수": "sweet corn",
+  "완두콩": "green pea",
+  "두부": "tofu",
+  "순두부": "soft tofu",
+  "유부": "fried tofu pouch",
+  "된장": "soybean paste",
+  "고추장": "red chili paste",
+  "간장": "soy sauce",
+  "청국장": "fermented soybean",
+  "카레": "curry",
+  "짜장": "black bean sauce",
+  "마요": "mayonnaise",
+  "치즈": "cheese",
+  "우유": "milk",
+  "떡": "rice cake",
+  "가래떡": "rice cake stick",
+  "조랭이떡": "rice cake",
+  "당면": "glass noodle",
+  "잡채": "glass noodle stir fry",
+  "국수": "noodle",
+  "면": "noodle",
+  "수제비": "dough flake",
+  "만두": "dumpling",
+  "김치": "kimchi",
+  "묵": "jelly",
+  "도토리묵": "acorn jelly",
+  "견과": "nuts",
+  "아몬드": "almond",
+  "땅콩": "peanut",
+  "호두": "walnut",
+  "깨": "sesame",
+  "들깨": "perilla seed",
+  "참깨": "sesame",
+  "미숫가루": "grain powder",
+  "단무지": "pickled radish",
+  "사과": "apple",
+  "배": "pear",
+  "귤": "tangerine",
+  "오렌지": "orange",
+  "바나나": "banana",
+  "포도": "grape",
+  "청포도": "green grape",
+  "샤인머스켓": "green grape",
+  "수박": "watermelon",
+  "참외": "korean melon",
+  "멜론": "melon",
+  "딸기": "strawberry",
+  "키위": "kiwi",
+  "파인애플": "pineapple",
+  "골드파인애플": "pineapple",
+  "복숭아": "peach",
+  "자두": "plum",
+  "방울토마토": "cherry tomato",
+  "블루베리": "blueberry",
+  "망고": "mango",
+  "한라봉": "tangerine",
+  "천혜향": "tangerine",
+  "단감": "persimmon",
+  "감": "persimmon",
+  "치킨": "fried chicken",
+  "초코": "chocolate",
+  "초콜릿": "chocolate",
+  "크림": "cream",
+  "단팥": "sweet red bean paste",
+  "카스테라": "sponge cake",
+  "머핀": "muffin",
+  "와플": "waffle",
+  "핫도그": "corn dog",
+  "피자": "pizza",
+  "버거": "burger",
+  "돈까스": "pork cutlet",
+  "탕수육": "sweet and sour pork",
+  "깐풍": "sweet and spicy sauce",
+  "야채": "mixed vegetables",
+  "채소": "mixed vegetables",
+  "모듬": "assorted",
+  "모둠": "assorted",
+  "부대": "sausage and ham",
+  "순대": "blood sausage",
+  "족발": "braised pig trotter",
+  "수육": "boiled sliced pork",
+  "볶": "stir fried",
+  "비빔": "mixed",
+  "물": "cold broth",
+  "알": "roe",
+  "떡국떡": "rice cake slices"
+ },
+ "methods": [
+  {
+   "suf": "떡볶이",
+   "en": [
+    "tteokbokki, cylindrical rice cakes in thick red sauce with {i}",
+    "red glazed rice cake sticks"
+   ]
+  },
+  {
+   "suf": "볶음밥",
+   "en": [
+    "fried rice with {i}, grains separated",
+    "stir fried rice with diced {i}"
+   ]
+  },
+  {
+   "suf": "덮밥",
+   "en": [
+    "korean rice bowl topped with {i}",
+    "rice covered with {i} on top"
+   ]
+  },
+  {
+   "suf": "비빔밥",
+   "en": [
+    "bibimbap, rice topped with assorted seasoned vegetables and {i}",
+    "mixed rice bowl with {i}"
+   ]
+  },
+  {
+   "suf": "주먹밥",
+   "en": [
+    "korean rice balls with {i}, hand pressed",
+    "small round seasoned rice balls"
+   ]
+  },
+  {
+   "suf": "김밥",
+   "en": [
+    "gimbap, korean seaweed rice roll with {i}, cut into round slices",
+    "sliced seaweed rice rolls"
+   ]
+  },
+  {
+   "suf": "볶음",
+   "en": [
+    "stir fried {i}, korean side dish",
+    "pan fried seasoned {i}"
+   ]
+  },
+  {
+   "suf": "무침",
+   "en": [
+    "seasoned {i} salad, korean side dish",
+    "{i} tossed in seasoning"
+   ]
+  },
+  {
+   "suf": "겉절이",
+   "en": [
+    "freshly tossed {i} kimchi salad, bright red",
+    "lightly seasoned fresh {i}"
+   ]
+  },
+  {
+   "suf": "나물",
+   "en": [
+    "seasoned blanched {i}, korean vegetable side dish",
+    "{i} namul side dish"
+   ]
+  },
+  {
+   "suf": "장조림",
+   "en": [
+    "{i} braised in dark soy sauce",
+    "soy braised {i}, dark and glossy"
+   ]
+  },
+  {
+   "suf": "조림",
+   "en": [
+    "{i} braised in soy sauce, glossy brown",
+    "soy braised {i}"
+   ]
+  },
+  {
+   "suf": "구이",
+   "en": [
+    "grilled {i}, browned surface",
+    "pan grilled {i}"
+   ]
+  },
+  {
+   "suf": "튀김",
+   "en": [
+    "deep fried {i} in batter, golden brown",
+    "crispy fried {i}"
+   ]
+  },
+  {
+   "suf": "까스",
+   "en": [
+    "breaded deep fried {i} cutlet, golden",
+    "panko fried {i} cutlet, sliced"
+   ]
+  },
+  {
+   "suf": "가스",
+   "en": [
+    "breaded deep fried {i} cutlet, golden",
+    "panko fried {i} cutlet"
+   ]
+  },
+  {
+   "suf": "강정",
+   "en": [
+    "sweet and sticky glazed fried {i}, red brown",
+    "glossy glazed fried {i} chunks"
+   ]
+  },
+  {
+   "suf": "찜",
+   "en": [
+    "steamed braised {i}",
+    "{i} steamed in seasoning"
+   ]
+  },
+  {
+   "suf": "찌개",
+   "en": [
+    "korean {i} stew, thick and bubbling in a pot",
+    "spicy {i} stew"
+   ]
+  },
+  {
+   "suf": "전골",
+   "en": [
+    "korean {i} hot pot with broth and vegetables",
+    "simmering {i} hotpot"
+   ]
+  },
+  {
+   "suf": "국밥",
+   "en": [
+    "{i} soup with rice in it",
+    "hot {i} soup over rice"
+   ]
+  },
+  {
+   "suf": "국",
+   "en": [
+    "korean {i} soup, in a bowl of clear broth",
+    "light {i} soup"
+   ]
+  },
+  {
+   "suf": "탕",
+   "en": [
+    "korean {i} soup, hearty broth in a bowl",
+    "rich {i} soup"
+   ]
+  },
+  {
+   "suf": "죽",
+   "en": [
+    "korean {i} porridge, thick and creamy",
+    "{i} rice porridge"
+   ]
+  },
+  {
+   "suf": "부침개",
+   "en": [
+    "korean savory pancake with {i}, flat and golden",
+    "pan fried {i} pancake"
+   ]
+  },
+  {
+   "suf": "전",
+   "en": [
+    "korean savory pancake with {i}, flat and pan fried",
+    "round {i} pancake"
+   ]
+  },
+  {
+   "suf": "말이",
+   "en": [
+    "rolled {i}, sliced into pinwheels",
+    "{i} rolled and sliced"
+   ]
+  },
+  {
+   "suf": "쌈",
+   "en": [
+    "fresh {i} leaves for wrapping",
+    "pile of {i} wrap leaves"
+   ]
+  },
+  {
+   "suf": "피클",
+   "en": [
+    "pickled {i}, glossy and translucent",
+    "{i} pickles"
+   ]
+  },
+  {
+   "suf": "장아찌",
+   "en": [
+    "soy pickled {i}, dark and salty",
+    "{i} preserved in soy sauce"
+   ]
+  },
+  {
+   "suf": "김치",
+   "en": [
+    "{i} kimchi, red chili coated fermented vegetable",
+    "red {i} kimchi"
+   ],
+   "whiteEn": [
+    "white kimchi in pale clear brine, not spicy",
+    "mild white {i} kimchi, no red chili"
+   ]
+  },
+  {
+   "suf": "샐러드",
+   "en": [
+    "{i} salad with dressing",
+    "fresh {i} salad"
+   ]
+  },
+  {
+   "suf": "스프",
+   "en": [
+    "creamy {i} soup in a bowl",
+    "{i} cream soup"
+   ]
+  },
+  {
+   "suf": "수프",
+   "en": [
+    "creamy {i} soup in a bowl",
+    "{i} cream soup"
+   ]
+  },
+  {
+   "suf": "주스",
+   "en": [
+    "a glass of {i} juice",
+    "{i} juice in a cup"
+   ]
+  },
+  {
+   "suf": "우유",
+   "en": [
+    "a carton of {i} milk",
+    "{i} flavored milk carton"
+   ]
+  },
+  {
+   "suf": "국수",
+   "en": [
+    "{i} noodles in broth",
+    "bowl of {i} noodle soup"
+   ]
+  },
+  {
+   "suf": "면",
+   "en": [
+    "{i} noodles",
+    "bowl of {i} noodles"
+   ]
+  },
+  {
+   "suf": "밥",
+   "en": [
+    "steamed {i} in a bowl",
+    "a bowl of steamed {i}"
+   ],
+   "riceDedup": true
+  },
+  {
+   "suf": "떡",
+   "en": [
+    "korean {i} rice cake",
+    "{i} rice cake pieces"
+   ]
+  },
+  {
+   "suf": "만두",
+   "en": [
+    "korean dumplings with {i} filling",
+    "plump {i} dumplings"
+   ]
+  },
+  {
+   "suf": "케이크",
+   "en": [
+    "a slice of {i} cake",
+    "{i} cake piece"
+   ]
+  },
+  {
+   "suf": "빵",
+   "en": [
+    "{i} bread roll",
+    "piece of {i} bread"
+   ]
+  }
+ ]
+}
