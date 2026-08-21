@@ -157,8 +157,8 @@
         },
         {
           "period": 2,
-          "subject": "",
-          "class": ""
+          "subject": "국어1",
+          "class": "1-2"
         },
         {
           "period": 3,
@@ -182,8 +182,8 @@
         },
         {
           "period": 7,
-          "subject": "국어1",
-          "class": "1-2"
+          "subject": "",
+          "class": ""
         }
       ]
     },
@@ -339,8 +339,8 @@
       "금": [
         {
           "period": 1,
-          "subject": "",
-          "class": ""
+          "subject": "수학3",
+          "class": "1-1"
         },
         {
           "period": 2,
@@ -349,8 +349,8 @@
         },
         {
           "period": 3,
-          "subject": "수학3",
-          "class": "1-1"
+          "subject": "",
+          "class": ""
         },
         {
           "period": 4,
@@ -3892,18 +3892,18 @@
       "금": [
         {
           "period": 1,
-          "subject": "영어",
-          "class": "1-1"
+          "subject": "",
+          "class": ""
         },
         {
           "period": 2,
-          "subject": "영어",
-          "class": "1-2"
+          "subject": "",
+          "class": ""
         },
         {
           "period": 3,
-          "subject": "",
-          "class": ""
+          "subject": "영어",
+          "class": "1-1"
         },
         {
           "period": 4,
@@ -3922,8 +3922,8 @@
         },
         {
           "period": 7,
-          "subject": "",
-          "class": ""
+          "subject": "영어",
+          "class": "1-2"
         }
       ]
     },
@@ -5607,6 +5607,193 @@
           "period": 7,
           "subject": "",
           "class": ""
+        }
+      ]
+    },
+    "이강산": {
+      "월": [
+        {
+          "period": 1,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 2,
+          "subject": "언생2",
+          "class": "2-6"
+        },
+        {
+          "period": 3,
+          "subject": "화법3",
+          "class": "2-1"
+        },
+        {
+          "period": 4,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 5,
+          "subject": "화법1",
+          "class": "2-4"
+        },
+        {
+          "period": 6,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 7,
+          "subject": "",
+          "class": ""
+        }
+      ],
+      "화": [
+        {
+          "period": 1,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 2,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 3,
+          "subject": "언생1",
+          "class": "2-12"
+        },
+        {
+          "period": 4,
+          "subject": "화법3",
+          "class": "2-1"
+        },
+        {
+          "period": 5,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 6,
+          "subject": "화법3",
+          "class": "2-2"
+        },
+        {
+          "period": 7,
+          "subject": "",
+          "class": ""
+        }
+      ],
+      "수": [
+        {
+          "period": 1,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 2,
+          "subject": "화법3",
+          "class": "2-3"
+        },
+        {
+          "period": 3,
+          "subject": "화법1",
+          "class": "2-5"
+        },
+        {
+          "period": 4,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 5,
+          "subject": "동아",
+          "class": "2-10"
+        },
+        {
+          "period": 6,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 7,
+          "subject": "",
+          "class": ""
+        }
+      ],
+      "목": [
+        {
+          "period": 1,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 2,
+          "subject": "화법3",
+          "class": "2-3"
+        },
+        {
+          "period": 3,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 4,
+          "subject": "화법3",
+          "class": "2-2"
+        },
+        {
+          "period": 5,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 6,
+          "subject": "화법1",
+          "class": "2-6"
+        },
+        {
+          "period": 7,
+          "subject": "",
+          "class": ""
+        }
+      ],
+      "금": [
+        {
+          "period": 1,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 2,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 3,
+          "subject": "화법3",
+          "class": "2-3"
+        },
+        {
+          "period": 4,
+          "subject": "화법3",
+          "class": "2-2"
+        },
+        {
+          "period": 5,
+          "subject": "",
+          "class": ""
+        },
+        {
+          "period": 6,
+          "subject": "언생2",
+          "class": "2-6"
+        },
+        {
+          "period": 7,
+          "subject": "화법3",
+          "class": "2-1"
         }
       ]
     },
@@ -13089,193 +13276,6 @@
           "class": "1-4"
         }
       ]
-    },
-    "이강산": {
-      "월": [
-        {
-          "period": 1,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 2,
-          "subject": "언생2",
-          "class": "2-6"
-        },
-        {
-          "period": 3,
-          "subject": "화법3",
-          "class": "2-1"
-        },
-        {
-          "period": 4,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 5,
-          "subject": "화법1",
-          "class": "2-4"
-        },
-        {
-          "period": 6,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 7,
-          "subject": "",
-          "class": ""
-        }
-      ],
-      "화": [
-        {
-          "period": 1,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 2,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 3,
-          "subject": "언생1",
-          "class": "2-12"
-        },
-        {
-          "period": 4,
-          "subject": "화법3",
-          "class": "2-1"
-        },
-        {
-          "period": 5,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 6,
-          "subject": "화법3",
-          "class": "2-2"
-        },
-        {
-          "period": 7,
-          "subject": "",
-          "class": ""
-        }
-      ],
-      "수": [
-        {
-          "period": 1,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 2,
-          "subject": "화법3",
-          "class": "2-3"
-        },
-        {
-          "period": 3,
-          "subject": "화법1",
-          "class": "2-5"
-        },
-        {
-          "period": 4,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 5,
-          "subject": "동아",
-          "class": "2-10"
-        },
-        {
-          "period": 6,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 7,
-          "subject": "",
-          "class": ""
-        }
-      ],
-      "목": [
-        {
-          "period": 1,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 2,
-          "subject": "화법3",
-          "class": "2-3"
-        },
-        {
-          "period": 3,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 4,
-          "subject": "화법3",
-          "class": "2-2"
-        },
-        {
-          "period": 5,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 6,
-          "subject": "화법1",
-          "class": "2-6"
-        },
-        {
-          "period": 7,
-          "subject": "",
-          "class": ""
-        }
-      ],
-      "금": [
-        {
-          "period": 1,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 2,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 3,
-          "subject": "화법3",
-          "class": "2-3"
-        },
-        {
-          "period": 4,
-          "subject": "화법3",
-          "class": "2-2"
-        },
-        {
-          "period": 5,
-          "subject": "",
-          "class": ""
-        },
-        {
-          "period": 6,
-          "subject": "언생2",
-          "class": "2-6"
-        },
-        {
-          "period": 7,
-          "subject": "화법3",
-          "class": "2-1"
-        }
-      ]
     }
   },
   "classes": {
@@ -13433,8 +13433,8 @@
         "금": [
           {
             "period": 1,
-            "subject": "영어",
-            "teacher": "신화룡"
+            "subject": "수학3",
+            "teacher": "구자용"
           },
           {
             "period": 2,
@@ -13443,8 +13443,8 @@
           },
           {
             "period": 3,
-            "subject": "수학3",
-            "teacher": "구자용"
+            "subject": "영어",
+            "teacher": "신화룡"
           },
           {
             "period": 4,
@@ -14008,8 +14008,8 @@
           },
           {
             "period": 2,
-            "subject": "영어",
-            "teacher": "신화룡"
+            "subject": "국어1",
+            "teacher": "김기철A"
           },
           {
             "period": 3,
@@ -14033,8 +14033,8 @@
           },
           {
             "period": 7,
-            "subject": "국어1",
-            "teacher": "김기철A"
+            "subject": "영어",
+            "teacher": "신화룡"
           }
         ]
       }
