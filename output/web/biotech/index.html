@@ -12,13 +12,19 @@
     a{color:inherit}
     .wrap{width:min(1120px,calc(100% - 32px));margin:auto}
     header{background:linear-gradient(135deg,#312e81,#4f46e5 58%,#0f766e);color:#fff;padding:20px 0 70px}
-    .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
-    .back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:.9rem;color:#e0e7ff}
-    .school{font-size:.82rem;font-weight:700;letter-spacing:.06em;color:#c7d2fe}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .identity{display:flex;align-items:center;gap:13px;text-decoration:none;color:#fff}
+    .identity img{width:72px;height:52px;object-fit:contain;filter:drop-shadow(0 5px 12px rgba(0,0,0,.22))}
+    .identity-name{display:block;font-size:1.04rem;font-weight:900;letter-spacing:-.02em}
+    .identity-desc{display:block;margin-top:1px;font-size:.76rem;color:#c7d2fe}
+    .back{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;text-decoration:none;font-size:.86rem;color:#eef2ff;background:rgba(255,255,255,.08)}
+    .back:hover{background:rgba(255,255,255,.16)}
     .hero{max-width:760px;padding-top:62px}
     .eyebrow{margin:0 0 10px;font-size:.84rem;font-weight:800;letter-spacing:.12em;color:#a7f3d0}
     h1{margin:0;font-size:clamp(2rem,5vw,3.65rem);line-height:1.15;letter-spacing:-.04em}
     .lead{margin:20px 0 0;max-width:670px;color:#e0e7ff;font-size:clamp(1rem,2vw,1.13rem)}
+    .mission{display:flex;align-items:flex-start;gap:12px;margin-top:26px;padding:15px 17px;max-width:700px;border:1px solid rgba(255,255,255,.2);border-radius:14px;background:rgba(15,23,42,.22);color:#e0e7ff;font-size:.9rem}
+    .mission strong{display:block;color:#fff;margin-bottom:2px}
     main{padding:52px 0 72px}
     .heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}
     h2{margin:0;font-size:clamp(1.45rem,3vw,2rem);letter-spacing:-.025em}
@@ -40,21 +46,28 @@
     .notice strong{display:block;margin-bottom:3px;color:#713f12}
     .empty{grid-column:1/-1;padding:44px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:#fff}
     footer{padding:25px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:.82rem}
+    .embed header,.embed footer{display:none}
+    .embed main{padding-top:28px}
     @media(max-width:840px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:580px){.wrap{width:min(100% - 24px,1120px)}header{padding-bottom:52px}.hero{padding-top:42px}.top{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.heading{align-items:flex-start;flex-direction:column;gap:4px}.project{min-height:265px}main{padding-top:38px}}
+    @media(max-width:580px){.wrap{width:min(100% - 24px,1120px)}header{padding-bottom:52px}.hero{padding-top:42px}.top{align-items:flex-start;flex-direction:column}.identity img{width:62px;height:46px}.grid{grid-template-columns:1fr}.heading{align-items:flex-start;flex-direction:column;gap:4px}.project{min-height:265px}main{padding-top:38px}}
   </style>
 </head>
 <body>
+  <script>if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed');</script>
   <header>
     <div class="wrap">
       <div class="top">
-        <a class="back" href="../#student/special/ai" aria-label="대륜고 사용설명서 AI 기반 생명공학 활동으로 돌아가기">← 대륜고 사용설명서</a>
-        <span class="school">DAERYUN HIGH SCHOOL</span>
+        <a class="identity" href="../#student/special/ai" aria-label="대륜고 사용 설명서로 돌아가기">
+          <img src="../logo.png" alt="대륜고등학교 로고">
+          <span><span class="identity-name">대륜고 사용 설명서</span><span class="identity-desc">DAERYUN HIGH SCHOOL · 학생 결과물 전시관</span></span>
+        </a>
+        <a class="back" href="../#student/special/ai">사용 설명서로 돌아가기 →</a>
       </div>
       <div class="hero">
         <p class="eyebrow">STUDENT PROJECT GALLERY</p>
         <h1>AI 기반 생명공학<br>문제해결활동</h1>
         <p class="lead">학생들이 생명과학의 실제 문제를 발견하고, AI와 디지털 기술을 활용해 설계한 해결 아이디어와 프로토타입을 소개합니다.</p>
+        <div class="mission"><span aria-hidden="true">✦</span><span><strong>배움의 과정을 기록하고, 서로의 성장을 연결합니다.</strong>대륜고 사용 설명서는 정확한 학교 정보와 학생이 직접 만든 배움의 결과를 한곳에서 공유하는 디지털 공간입니다.</span></div>
       </div>
     </div>
   </header>
@@ -71,7 +84,7 @@
     </aside>
   </main>
 
-  <footer><div class="wrap">대륜고등학교 · AI 기반 생명공학 문제해결활동</div></footer>
+  <footer><div class="wrap"><strong>대륜고 사용 설명서</strong><br>대륜고등학교 · AI 기반 생명공학 문제해결활동</div></footer>
 
   <script>
     // 새 결과물은 아래 배열에 객체 하나를 추가하면 카드로 자동 표시됩니다.
