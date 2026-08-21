@@ -11319,6 +11319,7 @@ function switchSpTab(id,btn){
     window.openBiotechGallery=function(){lastFocus=document.activeElement;if(!frame.src)frame.src='./biotech/?embed=1';modal.classList.add('open');document.body.style.overflow='hidden';var close=modal.querySelector('button[aria-label]');if(close)close.focus();};
     window.closeBiotechGallery=function(){modal.classList.remove('open');document.body.style.overflow='';if(lastFocus&&lastFocus.focus)lastFocus.focus();};
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))window.closeBiotechGallery();});
+    window.addEventListener('load',function(){var route=location.hash.replace(/^#/,'');if(!route||route==='school')setTimeout(window.openBiotechGallery,450);});
   })();
   </script>
 
