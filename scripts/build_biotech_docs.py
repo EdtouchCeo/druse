@@ -60,6 +60,11 @@ main{{padding:0 0 64px}}
 .doc pre{{margin:0 0 18px;padding:16px;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#0f172a;color:#e2e8f0;font-size:.84rem;line-height:1.5}}
 .doc code{{padding:1px 5px;border-radius:5px;background:#f1f5f9;font-size:.92em}}
 .doc pre code{{padding:0;background:none;color:inherit}}
+.pages{{display:flex;flex-direction:column;gap:20px}}
+.pages figure{{margin:0}}
+.pages img{{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(15,23,42,.08);background:#fff}}
+.pages figcaption{{margin-top:6px;text-align:right;font-size:.78rem;color:var(--muted)}}
+.origin{{margin:0 0 22px;padding:11px 14px;border-radius:11px;background:var(--brand-soft);font-size:.87rem;color:var(--brand-dark)}}
 .notice{{margin-top:30px;padding:16px 18px;border-left:4px solid #f59e0b;border-radius:12px;background:#fffbeb;font-size:.86rem;color:#744210}}
 .notice strong{{display:block;margin-bottom:3px;color:#713f12}}
 .docfoot{{margin-top:18px;font-size:.85rem;color:var(--muted)}}
@@ -401,6 +406,44 @@ def P(*parts):
     return cur
 
 
+def pdf_to_html(src, slug, scale=2.0, quality=80):
+    """PDF의 각 쪽을 이미지로 렌더해 웹 페이지 본문 HTML을 만든다.
+
+    디자인이 들어간 계획서·발표자료는 글자만 뽑으면 자간·배치가 깨지므로
+    쪽 이미지를 그대로 싣고, 원본 PDF는 내려받기 링크로 함께 남긴다.
+    """
+    import fitz
+
+    doc = fitz.open(src)
+    imgdir = os.path.join(OUT, slug)
+    os.makedirs(imgdir, exist_ok=True)
+    for old in os.listdir(imgdir):           # 재실행 시 이전 산출 정리
+        os.remove(os.path.join(imgdir, old))
+
+    ext, total = "webp", 0
+    out = ['<p class="origin">원본 PDF가 필요하면 '
+           '<a href="./%s.pdf" download>여기서 내려받을 수 있습니다</a>.</p>' % slug,
+           '<div class="pages">']
+    for i, pg in enumerate(doc, 1):
+        pix = pg.get_pixmap(matrix=fitz.Matrix(scale, scale))
+        try:
+            data = pix.tobytes(ext, jpg_quality=quality)
+        except Exception:                     # webp 미지원 빌드 → jpeg
+            ext = "jpg"
+            data = pix.tobytes(ext, jpg_quality=quality)
+        name = "p%02d.%s" % (i, ext)
+        with open(os.path.join(imgdir, name), "wb") as f:
+            f.write(data)
+        total += len(data)
+        out.append(
+            '<figure><img src="./%s/%s" width="%d" height="%d" loading="lazy" '
+            'alt="%d쪽" decoding="async"><figcaption>%d / %d</figcaption></figure>'
+            % (slug, name, pix.width, pix.height, i, i, len(doc)))
+    out.append("</div>")
+    print("  쪽 이미지 %d장 (%s, %.1f MB)" % (len(doc), ext, total / 1048576))
+    return "\n".join("    " + l for l in out)
+
+
 def copy_pdf(src, name):
     os.makedirs(OUT, exist_ok=True)
     dst = os.path.join(OUT, name)
@@ -417,9 +460,9 @@ def build():
                       drop=("최종 결과물 링크", "10.88.183.33", "[최종 기획 및 사업 계획 보고서]"))
     page("mirror-plan.html",
          "프로젝트 미러 (Project Mirror)",
-         "기획 · 사업 계획 보고서",
+         "사업계획서",
          "생성형 AI 기반 치료 은닉형 기능성 게임 플랫폼",
-         "고립 청년을 위한 치료 은닉형 힐링 RPG 《프로젝트 미러》 기획 및 사업 계획 보고서",
+         "고립 청년을 위한 치료 은닉형 힐링 RPG 《프로젝트 미러》 사업계획서",
          md_to_html(text))
 
     # 2) 세이프스캔 — hwp 사업 보고서(목차 블록 제거)
@@ -429,17 +472,17 @@ def build():
                       drop=("AI 식품 성분표 스캐너 '세이프스캔(SafeScan)' 사업 보고서",),
                       between=("[ 목차 ]", "9. 기대 효과 및 결론"))
     page("safescan-report.html",
-         "세이프스캔(SafeScan) 사업 보고서",
-         "사업 보고서",
+         "세이프스캔(SafeScan) 사업계획서",
+         "사업계획서",
          "AI 식품 성분표 스캐너 — 성분표를 찍으면 우리 가족이 먹어도 되는지",
-         "AI 식품 성분표 스캐너 세이프스캔 사업 보고서",
+         "AI 식품 성분표 스캐너 세이프스캔 사업계획서",
          numbered_to_html(text))
 
     # 3) DERMATWIN — docx 사업계획서(제목 3줄 제외)
     src = P(BASE, "DERMATWIN_AI_Digital_Skin_Twin_사업계획서 (1).docx")
     page("dermatwin-plan.html",
          "DERMATWIN 사업계획서",
-         "사업 계획서",
+         "사업계획서",
          "AI 기반 Digital Skin Twin — 화장품 연구개발을 위한 가상 피부 모델",
          "AI 기반 디지털 피부 트윈 플랫폼 DERMATWIN 사업계획서",
          docx_to_html(src, skip_first=3))
@@ -448,7 +491,7 @@ def build():
     src = P(BASE, "TalkFile_AI 기반 개인 DNA 변화 추적 및 예방 의료 관리 플랫폼 (개정본).docx")
     page("genotrack-plan.html",
          "GenoTrack 사업계획서",
-         "사업 계획서",
+         "사업계획서",
          "AI 기반 개인 DNA 변화 추적 및 예방 의료 관리 플랫폼",
          "유전체 기준선과 후성유전·액체생검 종단 추적을 통합한 AI 정밀·예방의료 플랫폼 사업계획서",
          docx_to_html(src, skip_first=5))
@@ -458,18 +501,32 @@ def build():
     text = io.open(src, encoding="utf-8").read()
     text = drop_lines(text, drop=("# 사업기획안: 학교급식 알레르겐 확장 표시 도구",))
     page("mealcheck-plan.html",
-         "학교급식 알레르겐 확장 표시 도구 사업기획안",
-         "사업 기획안",
+         "학교급식 알레르겐 확장 표시 도구 사업계획서",
+         "사업계획서",
          "법정 19종 밖 알레르겐 — 급식표가 말하지 않는 것",
-         "학교급식 알레르기 표시 19종 밖 알레르겐과 교차반응을 보여주는 도구의 사업기획안",
+         "학교급식 알레르기 표시 19종 밖 알레르겐과 교차반응을 보여주는 도구의 사업계획서",
          md_to_html(text))
 
-    # 6) 원본 PDF 그대로 게시
-    copy_pdf(P(BASE, "aerovital (김민준, 한연우, 이준희)",
-                          "aerovital (김민준, 한연우, 이준희)",
-                          "AEROVITAL_사업계획서(디자인).pdf"), "aerovital-plan.pdf")
-    copy_pdf(P(BASE, "채준서,김성엽,변승현,정지우 AI기반 생명공학문제해결활동 결과물",
-                          "사업계획서", "발표자료", "세이프스캔_발표.pdf"), "safescan-deck.pdf")
+    # 6) PDF는 쪽 이미지로 렌더한 웹 페이지로 변환(원본은 내려받기 링크로 함께 게시)
+    src = P(BASE, "aerovital (김민준, 한연우, 이준희)",
+            "aerovital (김민준, 한연우, 이준희)", "AEROVITAL_사업계획서(디자인).pdf")
+    copy_pdf(src, "aerovital-plan.pdf")
+    page("aerovital-plan.html",
+         "AEROVITAL 사업계획서",
+         "사업계획서",
+         "항공 종사자 생체 신호 모니터링 웨어러블",
+         "항공 종사자의 건강과 안전을 지원하는 웨어러블 헬스케어 AEROVITAL 사업계획서",
+         pdf_to_html(src, "aerovital-plan", scale=2.0))
+
+    src = P(BASE, "채준서,김성엽,변승현,정지우 AI기반 생명공학문제해결활동 결과물",
+            "사업계획서", "발표자료", "세이프스캔_발표.pdf")
+    copy_pdf(src, "safescan-deck.pdf")
+    page("safescan-deck.html",
+         "세이프스캔 발표 자료",
+         "발표 자료",
+         "성분표를 찍으면, 우리 가족이 먹어도 되는지 3초 안에",
+         "AI 식품 성분표 스캐너 세이프스캔 발표 자료",
+         pdf_to_html(src, "safescan-deck", scale=2.0))
 
 
 if __name__ == "__main__":
