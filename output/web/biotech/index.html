@@ -42,6 +42,11 @@
     .open:hover{background:var(--brand-dark)}
     .open.secondary{background:#eef2ff;color:var(--brand-dark);border:1px solid #c7d2fe}
     .open.secondary:hover{background:#e0e7ff}
+    .fbrow{display:flex;gap:8px;margin-top:10px;padding-top:12px;border-top:1px dashed var(--line)}
+    .fblike,.fbopen{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font:700 .84rem inherit;cursor:pointer;transition:.15s}
+    .fblike:hover,.fbopen:hover{border-color:#c7d2fe;background:var(--brand-soft);color:var(--brand-dark)}
+    .fblike.on{background:var(--brand);border-color:var(--brand);color:#fff}
+    .fbopen{flex:1}
     .notice{margin-top:32px;padding:18px 20px;border-left:4px solid var(--warning-line);border-radius:12px;background:var(--warning);font-size:.88rem;color:#744210}
     .notice strong{display:block;margin-bottom:3px;color:#713f12}
     .empty{grid-column:1/-1;padding:44px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:#fff}
@@ -86,11 +91,13 @@
 
   <footer><div class="wrap"><strong>대륜고 사용 설명서</strong><br>대륜고등학교 · AI 기반 생명공학 문제해결활동</div></footer>
 
+  <script src="./feedback.js"></script>
   <script>
     // 새 결과물은 아래 배열에 객체 하나를 추가하면 카드로 자동 표시됩니다.
     const PROJECTS = [
       {
         title: '푸드케어 렌즈',
+        slug: 'foodcare',
         description: '식품과 건강 정보를 AI로 살펴보는 생명공학 문제해결 프로젝트입니다.',
         url: 'https://mldld3276-wq.github.io/foodcare-lens/',
         icon: '🥗',
@@ -99,6 +106,7 @@
       },
       {
         title: '디지털 피부 트윈',
+        slug: 'dermatwin',
         description: '피부 상태와 관련된 생명과학 정보를 디지털 트윈 개념으로 탐색하는 프로젝트입니다.',
         url: './dermatwin.html',
         icon: '🧬',
@@ -108,6 +116,7 @@
       },
       {
         title: 'GenoTrack',
+        slug: 'genotrack',
         description: 'AI 분석을 활용해 생명공학 데이터를 이해하고 탐색하는 플랫폼 프로젝트입니다.',
         url: 'https://ai-analysis-platform-intro.netlify.app/',
         icon: '🧪',
@@ -117,23 +126,27 @@
       },
       {
         title: '엑토인 생산 공장 AI 시뮬레이터',
+        slug: 'ectoine',
         description: '미생물 배양 조건과 엑토인 생산량의 관계를 탐색하며 AI 최적화 과정을 체험하는 시뮬레이터입니다.',
         url: './ectoine.html', icon: '🏭', category: '바이오공정', external: false
       },
       {
         title: 'ResisMap',
+        slug: 'resismap',
         description: '항생제 내성의 확산과 위험 요인을 데이터로 탐색하고 대응 전략을 설계하는 프로젝트입니다.',
         url: './resismap.html', icon: '🦠', category: '항생제 내성', external: false,
         links: [{ label: '사업계획서 보기', url: './resismap-plan.html', external: false }]
       },
       {
         title: 'AEROVITAL',
+        slug: 'aerovital',
         description: '생체 신호를 활용해 항공 종사자의 건강과 안전을 지원하는 웨어러블 헬스케어 프로젝트입니다.',
         url: './aerovital.html', icon: '✈️', category: '웨어러블 헬스', external: false,
         links: [{ label: '사업계획서 보기', url: './docs/aerovital-plan.html', external: false }]
       },
       {
         title: '알레르기 세이프스캔',
+        slug: 'safescan',
         description: '식품 정보를 바탕으로 알레르기 위험을 확인하고 안전한 선택을 돕는 교육용 프로젝트입니다.',
         url: './safescan/', icon: '🛡️', category: '식품 알레르기', external: false,
         links: [
@@ -143,23 +156,27 @@
       },
       {
         title: '휠체어 내리막 안전 제어',
+        slug: 'wheelchair',
         description: '언덕길에서 휠체어가 위험 속도에 이르는 조건을 경사·노면·탑승 무게로 계산하고, 회생제동으로 얼마나 줄여야 안전한지 판정하는 시뮬레이터입니다.',
         url: './wheelchair.html', icon: '♿', category: '보조공학·안전', external: false
       },
       {
         title: '3중 스토브',
+        slug: 'stove',
         description: '연탄 난방의 불완전 연소로 생기는 실내 공기오염과 화상 위험을 세 겹의 벽 구조로 줄이는 설계 프로젝트입니다. 열·유동 시뮬레이션으로 구조를 검증하고 제작 도면까지 만들었습니다.',
         url: 'https://monumental-praline-9d1f87.netlify.app/',
         icon: '🔥', category: '적정기술·호흡기 건강', external: true
       },
       {
         title: '급식표가 말하지 않는 것',
+        slug: 'mealcheck',
         description: '학교급식 알레르기 표시 대상 19종 밖에 있는 알레르겐을 급식표에서 찾아 주는 도구입니다. 급식표를 붙여넣거나 사진을 올리면 브라우저 안에서 분석합니다.',
         url: './mealcheck/', icon: '🍱', category: '급식 알레르기', external: false,
         links: [{ label: '사업계획서 보기', url: './docs/mealcheck-plan.html', external: false }]
       },
       {
         title: '프로젝트 미러',
+        slug: 'mirror',
         description: '고립 청년을 위한 치료 은닉형 힐링 RPG입니다. 기억 조각을 잃은 동반자 로봇을 도우며 인지 왜곡을 스스로 되짚도록 설계했습니다. 3D 프로토타입을 직접 해 볼 수 있습니다.',
         url: './mirror/', icon: '🎮', category: '디지털 치료·게임', external: false,
         primaryLabel: '프로토타입 체험하기 →',
@@ -207,9 +224,53 @@
           actions.append(link);
         });
 
-        article.append(top, title, description, actions);
+        // 피드백 줄 — 좋아요(누구나) + 피드백 모달(갤러리·결과물 페이지 공용)
+        const fb = document.createElement('div');
+        fb.className = 'fbrow';
+        const likeBtn = document.createElement('button');
+        likeBtn.type = 'button';
+        likeBtn.className = 'fblike';
+        likeBtn.dataset.slug = project.slug;
+        likeBtn.textContent = '👍 0';
+        likeBtn.setAttribute('aria-label', `${project.title} 좋아요`);
+        likeBtn.addEventListener('click', () => {
+          const on = !likeBtn.classList.contains('on');
+          likeBtn.disabled = true;
+          window.DRFB.like(project.slug, on)
+            .then(d => { likeBtn.textContent = `👍 ${d.likes}`; likeBtn.classList.toggle('on', d.liked); })
+            .catch(() => {})
+            .then(() => { likeBtn.disabled = false; });
+        });
+        const fbBtn = document.createElement('button');
+        fbBtn.type = 'button';
+        fbBtn.className = 'fbopen';
+        fbBtn.dataset.slug = project.slug;
+        fbBtn.textContent = '💬 피드백 남기기';
+        fbBtn.addEventListener('click', () => window.DRFB.open(project.slug, project.title));
+        fb.append(likeBtn, fbBtn);
+
+        article.append(top, title, description, actions, fb);
         grid.append(article);
       });
+
+      // 팀별 좋아요·피드백 수 채우기
+      const paint = (counts) => {
+        Object.entries(counts).forEach(([slug, c]) => {
+          document.querySelectorAll(`.fblike[data-slug="${slug}"]`).forEach(b => {
+            b.textContent = `👍 ${c.likes || 0}`;
+          });
+          document.querySelectorAll(`.fbopen[data-slug="${slug}"]`).forEach(b => {
+            b.textContent = c.feedback ? `💬 피드백 ${c.feedback}` : '💬 피드백 남기기';
+          });
+        });
+      };
+      window.DRFB.onCounts(paint);
+      window.DRFB.counts(PROJECTS.map(p => p.slug)).then(paint);
+
+      // 링크로 바로 열기: /biotech/?p=mirror
+      const want = new URLSearchParams(location.search).get('p');
+      const target = PROJECTS.find(p => p.slug === want);
+      if (target) window.DRFB.open(target.slug, target.title);
     }
   </script>
 </body>

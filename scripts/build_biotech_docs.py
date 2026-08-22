@@ -100,7 +100,7 @@ footer{{padding:24px 0;border-top:1px solid var(--line);color:var(--muted);text-
   </article>
 </main>
 <footer><div class="wrap"><strong>대륜고 사용 설명서</strong><br>대륜고등학교 · AI 기반 생명공학 문제해결활동</div></footer>
-</body>
+{fbscript}</body>
 </html>
 """
 
@@ -118,13 +118,18 @@ def inline(s):
     return s
 
 
-def page(name, title, eyebrow, sub, desc, body):
+def page(name, title, eyebrow, sub, desc, body, slug=None, fbtitle=None):
+    """문서 페이지 1개 생성. slug를 주면 갤러리와 같은 피드백 위젯이 함께 붙는다."""
     path = os.path.join(OUT, name)
     subhtml = '<p class="sub">%s</p>' % esc(sub) if sub else ""
+    fbscript = ""
+    if slug:
+        fbscript = ('<script src="/biotech/feedback.js" data-fb-slug="%s" '
+                    'data-fb-title="%s"></script>\n' % (slug, esc(fbtitle or title)))
     os.makedirs(OUT, exist_ok=True)
     io.open(path, "w", encoding="utf-8", newline="\n").write(
         SHELL.format(title=esc(title), eyebrow=esc(eyebrow), subhtml=subhtml,
-                     desc=esc(desc), body=body))
+                     desc=esc(desc), body=body, fbscript=fbscript))
     print("생성:", path)
 
 
@@ -463,7 +468,8 @@ def build():
          "사업계획서",
          "생성형 AI 기반 치료 은닉형 기능성 게임 플랫폼",
          "고립 청년을 위한 치료 은닉형 힐링 RPG 《프로젝트 미러》 사업계획서",
-         md_to_html(text))
+         md_to_html(text),
+         slug='mirror', fbtitle='프로젝트 미러')
 
     # 2) 세이프스캔 — hwp 사업 보고서(목차 블록 제거)
     src = P(BASE, "채준서,김성엽,변승현,정지우 AI기반 생명공학문제해결활동 결과물",
@@ -476,7 +482,8 @@ def build():
          "사업계획서",
          "AI 식품 성분표 스캐너 — 성분표를 찍으면 우리 가족이 먹어도 되는지",
          "AI 식품 성분표 스캐너 세이프스캔 사업계획서",
-         numbered_to_html(text))
+         numbered_to_html(text),
+         slug='safescan', fbtitle='알레르기 세이프스캔')
 
     # 3) DERMATWIN — docx 사업계획서(제목 3줄 제외)
     src = P(BASE, "DERMATWIN_AI_Digital_Skin_Twin_사업계획서 (1).docx")
@@ -485,7 +492,8 @@ def build():
          "사업계획서",
          "AI 기반 Digital Skin Twin — 화장품 연구개발을 위한 가상 피부 모델",
          "AI 기반 디지털 피부 트윈 플랫폼 DERMATWIN 사업계획서",
-         docx_to_html(src, skip_first=3))
+         docx_to_html(src, skip_first=3),
+         slug='dermatwin', fbtitle='디지털 피부 트윈')
 
     # 4) GenoTrack — docx 사업계획서(표지 5줄 제외)
     src = P(BASE, "TalkFile_AI 기반 개인 DNA 변화 추적 및 예방 의료 관리 플랫폼 (개정본).docx")
@@ -494,7 +502,8 @@ def build():
          "사업계획서",
          "AI 기반 개인 DNA 변화 추적 및 예방 의료 관리 플랫폼",
          "유전체 기준선과 후성유전·액체생검 종단 추적을 통합한 AI 정밀·예방의료 플랫폼 사업계획서",
-         docx_to_html(src, skip_first=5))
+         docx_to_html(src, skip_first=5),
+         slug='genotrack', fbtitle='GenoTrack')
 
     # 5) 급식표 알레르겐 도구 — 마크다운 사업기획안
     src = P(BASE, "보고서 자료", "클로드", "급식-알레르기-교차반응-사업기획안.md")
@@ -505,7 +514,8 @@ def build():
          "사업계획서",
          "법정 19종 밖 알레르겐 — 급식표가 말하지 않는 것",
          "학교급식 알레르기 표시 19종 밖 알레르겐과 교차반응을 보여주는 도구의 사업계획서",
-         md_to_html(text))
+         md_to_html(text),
+         slug='mealcheck', fbtitle='급식표가 말하지 않는 것')
 
     # 6) PDF는 쪽 이미지로 렌더한 웹 페이지로 변환(원본은 내려받기 링크로 함께 게시)
     src = P(BASE, "aerovital (김민준, 한연우, 이준희)",
@@ -516,7 +526,8 @@ def build():
          "사업계획서",
          "항공 종사자 생체 신호 모니터링 웨어러블",
          "항공 종사자의 건강과 안전을 지원하는 웨어러블 헬스케어 AEROVITAL 사업계획서",
-         pdf_to_html(src, "aerovital-plan", scale=2.0))
+         pdf_to_html(src, "aerovital-plan", scale=2.0),
+         slug='aerovital', fbtitle='AEROVITAL')
 
     src = P(BASE, "채준서,김성엽,변승현,정지우 AI기반 생명공학문제해결활동 결과물",
             "사업계획서", "발표자료", "세이프스캔_발표.pdf")
@@ -526,7 +537,8 @@ def build():
          "발표 자료",
          "성분표를 찍으면, 우리 가족이 먹어도 되는지 3초 안에",
          "AI 식품 성분표 스캐너 세이프스캔 발표 자료",
-         pdf_to_html(src, "safescan-deck", scale=2.0))
+         pdf_to_html(src, "safescan-deck", scale=2.0),
+         slug='safescan', fbtitle='알레르기 세이프스캔')
 
 
 if __name__ == "__main__":
