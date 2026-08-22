@@ -29,7 +29,7 @@ SHELL = """<!doctype html>
 <style>
 :root{{--brand:#4f46e5;--brand-dark:#3730a3;--brand-soft:#eef2ff;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--surface:#fff;--bg:#f8fafc}}
 *{{box-sizing:border-box}}
-body{{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;line-height:1.72}}
+body{{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;line-height:1.72;word-break:keep-all;overflow-wrap:break-word}}
 a{{color:var(--brand-dark)}}
 .wrap{{width:min(880px,calc(100% - 32px));margin:auto}}
 header{{background:linear-gradient(135deg,#312e81,#4f46e5 58%,#0f766e);color:#fff;padding:18px 0 46px}}
