@@ -5250,5 +5250,144 @@
   <p>개발 및 운영: 교사 홍대화 &nbsp;|&nbsp; 문의: <a href="mailto:daveceo@edtouch.ai">daveceo@edtouch.ai</a></p>
 </footer>
 
+<!-- ▼ 학생 결과물 전시 안내 팝업 + 갤러리 뷰어 (셸 공통)
+     탭 콘텐츠 안에 두면 .tab-panel{display:none} 때문에 다른 탭에서 열리지 않는다.
+     그래서 body 끝(셸)에 둔다. 팝업 숨김 기간은 localStorage에 만료 시각으로 저장.
+     안내 내용을 바꿔 다시 띄우려면 NOTICE_KEY 의 v1 을 v2 로 올린다. -->
+<style>
+  .biotech-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.72);backdrop-filter:blur(5px)}
+  .biotech-modal.open{display:flex}
+  .biotech-dialog{width:min(1180px,100%);height:min(88vh,900px);display:flex;flex-direction:column;overflow:hidden;border-radius:18px;background:#fff;box-shadow:0 28px 80px rgba(0,0,0,.38)}
+  .biotech-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 14px 12px 18px;border-bottom:1px solid #e5e7eb;background:#fff}
+  .biotech-dialog-brand{display:flex;align-items:center;gap:10px;color:#1a3a6b;font-weight:800}
+  .biotech-dialog-brand img{width:52px;height:38px;object-fit:contain}
+  .biotech-dialog-actions{display:flex;align-items:center;gap:8px}
+  .biotech-dialog-actions a,.biotech-dialog-actions button{padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;font:700 .82rem inherit;text-decoration:none;cursor:pointer}
+  .biotech-dialog-actions button{font-size:1rem;line-height:1}
+  .biotech-dialog iframe{width:100%;height:100%;border:0;background:#f8fafc}
+  @media(max-width:640px){.biotech-modal{padding:0}.biotech-dialog{height:100%;border-radius:0}.biotech-dialog-brand span{font-size:.82rem}.biotech-dialog-actions a{display:none}}
+
+  .dr-notice{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
+  .dr-notice.open{display:flex}
+  .dr-notice-card{width:min(420px,100%);max-height:92vh;overflow-y:auto;border-radius:18px;background:#fff;box-shadow:0 26px 70px rgba(0,0,0,.4);animation:drNoticeIn .28s ease-out}
+  @keyframes drNoticeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .dr-notice-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;background:linear-gradient(135deg,#312e81,#4f46e5 60%,#0f766e);color:#fff;border-radius:18px 18px 0 0}
+  .dr-notice-brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:.92rem}
+  .dr-notice-brand img{width:44px;height:32px;object-fit:contain}
+  .dr-notice-x{border:0;background:rgba(255,255,255,.16);color:#fff;width:28px;height:28px;border-radius:8px;font-size:1rem;line-height:1;cursor:pointer}
+  .dr-notice-body{padding:20px 20px 16px}
+  .dr-notice-badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:.74rem;font-weight:800;letter-spacing:.02em}
+  .dr-notice-body h3{margin:11px 0 8px;font-size:1.22rem;line-height:1.3;letter-spacing:-.02em;color:#172033;word-break:keep-all}
+  .dr-notice-body p{margin:0;color:#475569;font-size:.93rem;line-height:1.65;word-break:keep-all}
+  .dr-notice-chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+  .dr-notice-chips span{padding:5px 10px;border:1px solid #e2e8f0;border-radius:999px;background:#f8fafc;font-size:.78rem;font-weight:700;color:#475569}
+  .dr-notice-acts{display:flex;gap:8px;margin-top:16px}
+  .dr-notice-go{flex:1;padding:12px 14px;border:0;border-radius:11px;background:#4f46e5;color:#fff;font:800 .95rem inherit;cursor:pointer}
+  .dr-notice-go:hover{background:#3730a3}
+  .dr-notice-new{padding:12px 14px;border:1px solid #c7d2fe;border-radius:11px;background:#fff;color:#3730a3;font:800 .9rem inherit;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center}
+  .dr-notice-foot{display:flex;border-top:1px solid #e5e7eb;background:#f8fafc;border-radius:0 0 18px 18px}
+  .dr-notice-foot button{flex:1;padding:13px 6px;border:0;background:none;color:#64748b;font:700 .84rem inherit;cursor:pointer}
+  .dr-notice-foot button+button{border-left:1px solid #e5e7eb}
+  .dr-notice-foot button:hover{background:#eef2ff;color:#3730a3}
+  @media(max-width:480px){.dr-notice{align-items:flex-end;padding:0}.dr-notice-card{width:100%;border-radius:18px 18px 0 0;max-height:88vh}.dr-notice-top{border-radius:18px 18px 0 0}.dr-notice-foot{border-radius:0}.dr-notice-body h3{font-size:1.12rem}}
+</style>
+
+<div class="biotech-modal" id="biotech-gallery-modal" role="dialog" aria-modal="true" aria-labelledby="biotech-gallery-title" onclick="if(event.target===this)closeBiotechGallery()">
+  <div class="biotech-dialog">
+    <div class="biotech-dialog-head">
+      <div class="biotech-dialog-brand"><img src="logo.png" alt=""><span id="biotech-gallery-title">대륜고 사용 설명서 · 학생 결과물 전시관</span></div>
+      <div class="biotech-dialog-actions"><a href="./biotech/" target="_blank" rel="noopener">새 페이지 ↗</a><button type="button" onclick="closeBiotechGallery()" aria-label="갤러리 팝업 닫기">✕</button></div>
+    </div>
+    <iframe id="biotech-gallery-frame" title="AI 기반 생명공학 학생 결과물 갤러리" loading="lazy"></iframe>
+  </div>
+</div>
+
+<div class="dr-notice" id="dr-notice" role="dialog" aria-modal="true" aria-labelledby="dr-notice-title" onclick="if(event.target===this)drNoticeClose()">
+  <div class="dr-notice-card">
+    <div class="dr-notice-top">
+      <div class="dr-notice-brand"><img src="logo.png" alt=""><span>대륜고 사용 설명서</span></div>
+      <button type="button" class="dr-notice-x" onclick="drNoticeClose()" aria-label="안내 닫기">✕</button>
+    </div>
+    <div class="dr-notice-body">
+      <span class="dr-notice-badge">학생 결과물 전시</span>
+      <h3 id="dr-notice-title">AI 기반 생명공학 문제해결활동</h3>
+      <p>학생들이 직접 만든 11개 문제해결 프로젝트를 공개합니다. 프로토타입을 직접 써 보고, 팀에게 의견도 남길 수 있습니다.</p>
+      <div class="dr-notice-chips">
+        <span>🎮 프로젝트 미러</span><span>♿ 휠체어 안전 제어</span><span>🛡️ 세이프스캔</span><span>🍱 급식표 알레르겐</span><span>🦠 ResisMap</span><span>외 6팀</span>
+      </div>
+      <div class="dr-notice-acts">
+        <button type="button" class="dr-notice-go" onclick="drNoticeGo()">결과물 보러 가기</button>
+        <a class="dr-notice-new" href="./biotech/" target="_blank" rel="noopener" onclick="drNoticeClose()">새 창 ↗</a>
+      </div>
+    </div>
+    <div class="dr-notice-foot">
+      <button type="button" onclick="drNoticeHide(1)">오늘 하루 보지 않기</button>
+      <button type="button" onclick="drNoticeHide(7)">일주일 보지 않기</button>
+      <button type="button" onclick="drNoticeClose()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var NOTICE_KEY='dr_notice_biotech_v1';
+  var modal=document.getElementById('biotech-gallery-modal');
+  var frame=document.getElementById('biotech-gallery-frame');
+  var notice=document.getElementById('dr-notice');
+  var lastFocus=null;
+
+  window.openBiotechGallery=function(){
+    lastFocus=document.activeElement;
+    if(!frame.src)frame.src='./biotech/?embed=1';
+    modal.classList.add('open');
+    document.body.style.overflow='hidden';
+    var close=modal.querySelector('button[aria-label]');
+    if(close)close.focus();
+  };
+  window.closeBiotechGallery=function(){
+    modal.classList.remove('open');
+    if(!notice.classList.contains('open'))document.body.style.overflow='';
+    if(lastFocus&&lastFocus.focus)lastFocus.focus();
+  };
+
+  window.drNoticeClose=function(){
+    notice.classList.remove('open');
+    if(!modal.classList.contains('open'))document.body.style.overflow='';
+  };
+  window.drNoticeHide=function(days){
+    try{localStorage.setItem(NOTICE_KEY,String(Date.now()+days*86400000));}catch(e){}
+    window.drNoticeClose();
+  };
+  window.drNoticeGo=function(){
+    window.drNoticeClose();
+    window.openBiotechGallery();
+  };
+
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape')return;
+    if(modal.classList.contains('open'))window.closeBiotechGallery();
+    else if(notice.classList.contains('open'))window.drNoticeClose();
+  });
+
+  function suppressed(){
+    try{
+      var v=localStorage.getItem(NOTICE_KEY);
+      return !!v&&Date.now()<Number(v);
+    }catch(e){return false;}
+  }
+  window.addEventListener('load',function(){
+    if(suppressed())return;
+    var route=location.hash.replace(/^#/,'');
+    if(route&&route!=='school')return;          // 특정 메뉴 링크로 들어온 방문자는 방해하지 않는다
+    setTimeout(function(){
+      notice.classList.add('open');
+      document.body.style.overflow='hidden';
+      var go=notice.querySelector('.dr-notice-go');
+      if(go)go.focus();
+    },700);
+  });
+})();
+</script>
+<!-- ▲ 학생 결과물 전시 안내 팝업 -->
 </body>
 </html>
