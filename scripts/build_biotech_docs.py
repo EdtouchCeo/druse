@@ -26,6 +26,20 @@ SHELL = """<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="{desc}">
 <title>{title} | 대륜고등학교 AI 기반 생명공학 문제해결활동</title>
+<link rel="canonical" href="{ogurl}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="대륜고 사용 설명서">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="{ogurl}">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:image" content="https://daeryun.life/biotech/og-biotech.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{desc}">
+<meta name="twitter:image" content="https://daeryun.life/biotech/og-biotech.jpg">
 <style>
 :root{{--brand:#4f46e5;--brand-dark:#3730a3;--brand-soft:#eef2ff;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--surface:#fff;--bg:#f8fafc}}
 *{{box-sizing:border-box}}
@@ -126,10 +140,11 @@ def page(name, title, eyebrow, sub, desc, body, slug=None, fbtitle=None):
     if slug:
         fbscript = ('<script src="/biotech/feedback.js" data-fb-slug="%s" '
                     'data-fb-title="%s"></script>\n' % (slug, esc(fbtitle or title)))
+    ogurl = "https://daeryun.life/biotech/docs/" + name
     os.makedirs(OUT, exist_ok=True)
     io.open(path, "w", encoding="utf-8", newline="\n").write(
         SHELL.format(title=esc(title), eyebrow=esc(eyebrow), subhtml=subhtml,
-                     desc=esc(desc), body=body, fbscript=fbscript))
+                     desc=esc(desc), body=body, fbscript=fbscript, ogurl=ogurl))
     print("생성:", path)
 
 
