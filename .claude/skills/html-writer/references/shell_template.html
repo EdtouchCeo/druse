@@ -5284,7 +5284,6 @@
   .dr-notice-acts{display:flex;gap:8px;margin-top:16px}
   .dr-notice-go{flex:1;padding:12px 14px;border:0;border-radius:11px;background:#4f46e5;color:#fff;font:800 .95rem inherit;cursor:pointer}
   .dr-notice-go:hover{background:#3730a3}
-  .dr-notice-new{padding:12px 14px;border:1px solid #c7d2fe;border-radius:11px;background:#fff;color:#3730a3;font:800 .9rem inherit;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center}
   .dr-notice-foot{display:flex;border-top:1px solid #e5e7eb;background:#f8fafc;border-radius:0 0 18px 18px}
   .dr-notice-foot button{flex:1;padding:13px 6px;border:0;background:none;color:#64748b;font:700 .84rem inherit;cursor:pointer}
   .dr-notice-foot button+button{border-left:1px solid #e5e7eb}
@@ -5311,13 +5310,12 @@
     <div class="dr-notice-body">
       <span class="dr-notice-badge">학생 결과물 전시</span>
       <h3 id="dr-notice-title">AI 기반 생명공학 문제해결활동</h3>
-      <p>학생들이 직접 만든 11개 문제해결 프로젝트를 공개합니다. 프로토타입을 직접 써 보고, 팀에게 의견도 남길 수 있습니다.</p>
+      <p>1, 2학년 학생들이 참여한 AI 기반 생명공학 문제해결활동 프로젝트를 전시 중입니다.</p>
       <div class="dr-notice-chips">
-        <span>🎮 프로젝트 미러</span><span>♿ 휠체어 안전 제어</span><span>🛡️ 세이프스캔</span><span>🍱 급식표 알레르겐</span><span>🦠 ResisMap</span><span>외 6팀</span>
+        <span>🎮 프로젝트 미러</span><span>♿ 휠체어 안전 제어</span><span>🛡️ 세이프스캔</span><span>🍱 급식표 알레르겐</span><span>🦠 ResisMap</span><span>외 6개 프로젝트</span>
       </div>
       <div class="dr-notice-acts">
         <button type="button" class="dr-notice-go" onclick="drNoticeGo()">결과물 보러 가기</button>
-        <a class="dr-notice-new" href="./biotech/" target="_blank" rel="noopener" onclick="drNoticeClose()">새 창 ↗</a>
       </div>
     </div>
     <div class="dr-notice-foot">
@@ -5360,7 +5358,7 @@
   };
   window.drNoticeGo=function(){
     window.drNoticeClose();
-    window.openBiotechGallery();
+    window.open('./biotech/','_blank','noopener');   // 새 창으로 갤러리 열기
   };
 
   document.addEventListener('keydown',function(e){
