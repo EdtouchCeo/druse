@@ -30,6 +30,7 @@ MAX_CHARS = 900   # build_index.py와 동일 기준
 
 DECREE_JSON = os.path.join(SRC_DIR, 'hakpok_enforcement_decree.json')
 QA_JSON = os.path.join(SRC_DIR, 'ddeqna_qa.json')
+GUIDE_JSON = os.path.join(SRC_DIR, 'dge_teacher_protection_guide.json')
 
 
 def split_lines(lines, cap=MAX_CHARS):
@@ -81,6 +82,28 @@ def qa_chunks(path):
     return label, chunks, site
 
 
+def section_chunks(path):
+    """쪽 단위 카드(Q&A·안내 절차)를 절 하나당 청크 하나로 만든다.
+
+    글자가 이미지로만 들어 있어 extract_folder.py가 못 읽는 인쇄물(리플렛 등)을
+    쪽 판독으로 옮겨 둔 소스가 대상이다. 절이 길면 줄 경계로 나눈다.
+    """
+    d = json.load(io.open(path, encoding='utf-8'))
+    label = d['source']['docLabel']
+    chunks = []
+    for sec in d['sections']:
+        ref = sec['ref']
+        parts = split_lines(sec['text'].split(chr(10)))
+        for pi, part in enumerate(parts):
+            text = chr(10).join(part).strip()
+            if not text:
+                continue
+            if pi > 0:
+                text = ref + ' (이어짐)' + chr(10) + text
+            chunks.append([ref, text])
+    return label, chunks
+
+
 def main():
     with io.open(IDX, encoding='utf-8') as f:
         data = json.load(f)
@@ -89,7 +112,8 @@ def main():
 
     label_d, ch_d = decree_chunks(DECREE_JSON)
     label_q, ch_q, _site = qa_chunks(QA_JSON)
-    extras = [(label_d, ch_d), (label_q, ch_q)]
+    label_g, ch_g = section_chunks(GUIDE_JSON)
+    extras = [(label_d, ch_d), (label_q, ch_q), (label_g, ch_g)]
     extra_labels = [e[0] for e in extras]
 
     # 멱등: 기존 덧붙임 문서 제거 (뒤쪽에만 있으므로 앞 청크 순서는 불변)

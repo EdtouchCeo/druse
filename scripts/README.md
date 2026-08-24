@@ -48,6 +48,10 @@ python scripts/build_law_struct.py     # 조문 결정 주입 사전 재생성
 현재 수록:
 - `data/sources/hakpok_enforcement_decree.json` — 학교폭력예방 및 대책에 관한 법률 시행령(본칙 45개 조문)
 - `data/sources/ddeqna_qa.json` — 든든첵 학교폭력 사안처리 Q&A 394건(대구광역시교육청, https://ddeqna.netlify.app/)
+- `data/sources/dge_teacher_protection_guide.json` — 선생님을 위한 2026 교육활동 보호 가이드(대구광역시교육청 리플렛 11쪽)
+  ※ 원본 PDF는 `input/teacher/법령지침/`에 있으나 **글자가 전부 이미지·도형이라 extract_folder.py가 0자를 뽑는다.**
+  쪽을 판독해 옮긴 문면을 이 JSON에 보관한다. 같은 사정의 인쇄물이 또 생기면 같은 형식(`sections`)으로 추가하고
+  `build_law_extras.py`의 `extras` 목록 **맨 뒤에** 등록한다(뒤에 붙어야 앞 청크 순서가 보존돼 임베딩 이어받기가 유효).
 
 ### 3) 커밋 대상
 - **반드시 커밋**: `output/web/data/law_search.json`, `output/web/data/curr_search.json`
