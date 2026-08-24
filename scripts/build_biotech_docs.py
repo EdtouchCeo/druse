@@ -26,6 +26,7 @@ SHELL = """<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="{desc}">
 <title>{title} | 대륜고등학교 AI 기반 생명공학 문제해결활동</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="canonical" href="{ogurl}">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="대륜고 사용 설명서">
@@ -464,6 +465,163 @@ def pdf_to_html(src, slug, scale=2.0, quality=80):
     return "\n".join("    " + l for l in out)
 
 
+# ---------------------------------------------------------------- 텍스트 PDF → HTML
+def _unwrap(s):
+    """PDF 줄바꿈을 되돌린다.
+
+    줄 끝에 공백이 있으면 어절 경계에서 접힌 것이므로 공백 하나로,
+    공백이 없으면 낱말 가운데가 접힌 것이므로 붙여서 잇는다.
+    (예: '무료 \n등급' → '무료 등급' / '중계 서\n버' → '중계 서버')
+    """
+    s = re.sub(r"[ \t]*\n[ \t]*", lambda m: " " if m.group(0)[0] in " \t" else "", s)
+    return re.sub(r"[ \t]+", " ", s).strip()
+
+
+def _cell_text(rect, spans):
+    """칸 안에 있는 글자 조각을 순서대로 이어 붙인다.
+
+    표의 기본 추출(extract)은 줄 끝 공백을 지워 버려서 '조건을'+'만족'이
+    '조건을만족'으로 붙는다. 글자 조각은 줄 끝 공백을 그대로 갖고 있으므로
+    조각을 이어 붙이면 줄바꿈이 원래대로 복원된다.
+    """
+    import fitz
+
+    if rect is None:
+        return ""
+    r = fitz.Rect(rect)
+    got = sorted((s[0].y0, s[0].x0, s[1]) for s in spans
+                 if r.contains(fitz.Point((s[0].x0 + s[0].x1) / 2,
+                                          (s[0].y0 + s[0].y1) / 2)))
+    return _unwrap("".join(g[2] for g in got))
+
+
+def _table_rows(tbl, spans):
+    """표 한 개의 행 목록을 정리한다(빈 칸 제거만, 조각 병합은 나중에)."""
+    rows = []
+    for row in tbl.rows:
+        cells = [c for c in (_cell_text(c, spans) for c in row.cells) if c]
+        if cells:
+            rows.append(cells)
+    return rows
+
+
+def _table_html(rows):
+    """행 목록을 표 HTML로. 칸이 하나뿐인 행은 앞 행 마지막 칸의 이어짐으로 본다."""
+    fixed = []
+    width = max(len(r) for r in rows)
+    for r in rows:
+        if len(r) == 1 and width > 1 and fixed:
+            fixed[-1][-1] = (fixed[-1][-1] + " " + r[0]).strip()
+            continue
+        fixed.append(list(r) + [""] * (width - len(r)))
+    out = ["<table>"]
+    for n, r in enumerate(fixed):
+        tag = "th" if n == 0 else "td"
+        out.append("<tr>" + "".join("<%s>%s</%s>" % (tag, inline(c), tag) for c in r) + "</tr>")
+    out.append("</table>")
+    return out
+
+
+def pdftext_to_html(src, skip_pages=(), drop=(),
+                    h2_min=13.5, h3_min=11.5, body_min=10.3, para_gap=24):
+    """글꼴 크기로 위계가 구분되는 텍스트 PDF를 문서 페이지 본문으로 변환한다.
+
+    쪽 이미지를 싣는 pdf_to_html()과 달리 글자를 그대로 옮기므로 검색·복사가 되고
+    본문 서식이 다른 문서 페이지와 같아진다. 디자인이 들어간 자료에는 쓰지 않는다.
+
+    skip_pages: 싣지 않을 쪽 번호(표지·목차 등)
+    drop      : 이 문자열이 들어간 줄은 제외
+    """
+    import fitz
+
+    doc = fitz.open(src)
+    items = []                       # ("h2"|"h3"|"p"|"li", 텍스트) 또는 ("table", 행목록)
+    buf = {"text": None, "kind": None}
+
+    def flush():
+        text = (buf["text"] or "").strip()
+        buf["text"] = None
+        if text:
+            items.append((buf["kind"], text))
+
+    for pno, pg in enumerate(doc, 1):
+        if pno in skip_pages:
+            continue
+        tables = pg.find_tables().tables
+        rects = [fitz.Rect(t.bbox) for t in tables]
+        spans = [(fitz.Rect(sp["bbox"]), sp["text"])
+                 for blk in pg.get_text("dict")["blocks"] if not blk["type"]
+                 for ln in blk["lines"] for sp in ln["spans"]]
+
+        els = [(r.y0, "table", _table_rows(t, spans)) for t, r in zip(tables, rects)]
+        for blk in pg.get_text("dict")["blocks"]:
+            if blk["type"]:
+                continue
+            r = fitz.Rect(blk["bbox"])
+            if any((r & tr).get_area() > r.get_area() * 0.5 for tr in rects):
+                continue            # 표 안의 글자는 표 쪽에서 처리
+            size = max(sp["size"] for ln in blk["lines"] for sp in ln["spans"])
+            text = "".join(sp["text"] for ln in blk["lines"] for sp in ln["spans"])
+            if not text.strip() or text.strip().isdigit():
+                continue            # 빈 줄·쪽 번호
+            if any(d in text for d in drop):
+                continue
+            els.append((r.y0, "line", (size, text)))
+        els.sort(key=lambda e: e[0])
+
+        # 쪽이 바뀔 때: 앞 문단이 문장으로 끝났으면 닫고, 아니면 이어서 잇는다
+        if buf["text"] and re.search(r"[.!?:)\]」』’\"']\s*$", buf["text"]):
+            flush()
+        prev_y = None
+
+        for y, kind, payload in els:
+            if kind == "table":
+                flush()
+                if payload:
+                    if items and items[-1][0] == "table" and items[-1][1][0] == payload[0]:
+                        items[-1][1].extend(payload[1:])   # 쪽을 넘어 이어진 표
+                    else:
+                        items.append(("table", payload))
+                prev_y = None
+                continue
+            size, text = payload
+            if size >= h2_min or size >= h3_min:
+                flush()
+                items.append(("h2" if size >= h2_min else "h3", text.strip()))
+                prev_y = None
+                continue
+            if size < body_min:
+                continue
+            if text.strip().startswith(("•", "▪", "-")) or (prev_y is not None and y - prev_y > para_gap):
+                flush()
+            if buf["text"] is None:
+                buf["kind"] = "li" if text.strip().startswith(("•", "▪")) else "p"
+            buf["text"] = (buf["text"] or "") + text
+            prev_y = y
+    flush()
+
+    out, in_ul = [], False
+    for kind, payload in items:
+        if kind != "li" and in_ul:
+            out.append("</ul>")
+            in_ul = False
+        if kind == "table":
+            out += _table_html(payload)
+        elif kind == "li":
+            if not in_ul:
+                out.append("<ul>")
+                in_ul = True
+            out.append("<li>%s</li>" % inline(re.sub(r"^[•▪]\s*", "", _unwrap(payload))))
+        elif kind in ("h2", "h3"):
+            out.append("<%s>%s</%s>" % (kind, inline(_unwrap(payload)), kind))
+        else:
+            out.append("<p>%s</p>" % inline(_unwrap(payload)))
+    if in_ul:
+        out.append("</ul>")
+    print("  본문 %d블록 (표 %d개)" % (len(items), sum(1 for k, _ in items if k == "table")))
+    return "\n".join("    " + l for l in out)
+
+
 def copy_pdf(src, name):
     os.makedirs(OUT, exist_ok=True)
     dst = os.path.join(OUT, name)
@@ -543,6 +701,17 @@ def build():
          "항공 종사자의 건강과 안전을 지원하는 웨어러블 헬스케어 AEROVITAL 사업계획서",
          pdf_to_html(src, "aerovital-plan", scale=2.0),
          slug='aerovital', fbtitle='AEROVITAL')
+
+    # 7) 푸드케어 렌즈 — 텍스트로 작성된 PDF 사업계획서
+    #    표지(1쪽)에 학생 실명이 있어 표지·목차는 싣지 않는다(다른 문서 페이지와 같은 기준).
+    src = P(BASE, "푸드케어렌즈_사업계획서.pdf")
+    page("foodcare-plan.html",
+         "푸드케어 렌즈 사업계획서",
+         "사업계획서",
+         "어린이가 스스로 영양을 관리하는 AI 앱",
+         "영양성분표를 찍으면 소아 영양섭취기준으로 판정해 주는 어린이용 앱 푸드케어 렌즈 사업계획서",
+         pdftext_to_html(src, skip_pages=(1, 2)),
+         slug='foodcare', fbtitle='푸드케어 렌즈')
 
     src = P(BASE, "채준서,김성엽,변승현,정지우 AI기반 생명공학문제해결활동 결과물",
             "사업계획서", "발표자료", "세이프스캔_발표.pdf")

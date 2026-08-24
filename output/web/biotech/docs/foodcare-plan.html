@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="영양성분표를 찍으면 소아 영양섭취기준으로 판정해 주는 어린이용 앱 푸드케어 렌즈 사업계획서">
+<title>푸드케어 렌즈 사업계획서 | 대륜고등학교 AI 기반 생명공학 문제해결활동</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="canonical" href="https://daeryun.life/biotech/docs/foodcare-plan.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="대륜고 사용 설명서">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="https://daeryun.life/biotech/docs/foodcare-plan.html">
+<meta property="og:title" content="푸드케어 렌즈 사업계획서">
+<meta property="og:description" content="영양성분표를 찍으면 소아 영양섭취기준으로 판정해 주는 어린이용 앱 푸드케어 렌즈 사업계획서">
+<meta property="og:image" content="https://daeryun.life/biotech/og-biotech.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="푸드케어 렌즈 사업계획서">
+<meta name="twitter:description" content="영양성분표를 찍으면 소아 영양섭취기준으로 판정해 주는 어린이용 앱 푸드케어 렌즈 사업계획서">
+<meta name="twitter:image" content="https://daeryun.life/biotech/og-biotech.jpg">
+<style>
+:root{--brand:#4f46e5;--brand-dark:#3730a3;--brand-soft:#eef2ff;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--surface:#fff;--bg:#f8fafc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;line-height:1.72;word-break:keep-all;overflow-wrap:break-word}
+a{color:var(--brand-dark)}
+.wrap{width:min(880px,calc(100% - 32px));margin:auto}
+header{background:linear-gradient(135deg,#312e81,#4f46e5 58%,#0f766e);color:#fff;padding:18px 0 46px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.identity{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff}
+.identity img{width:64px;height:46px;object-fit:contain;filter:drop-shadow(0 5px 12px rgba(0,0,0,.22))}
+.identity-name{display:block;font-size:.98rem;font-weight:900;letter-spacing:-.02em}
+.identity-desc{display:block;margin-top:1px;font-size:.74rem;color:#c7d2fe}
+.back{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;text-decoration:none;font-size:.84rem;color:#eef2ff;background:rgba(255,255,255,.08);white-space:nowrap}
+.back:hover{background:rgba(255,255,255,.16)}
+.hero{padding-top:34px}
+.eyebrow{margin:0 0 8px;font-size:.8rem;font-weight:800;letter-spacing:.12em;color:#a7f3d0}
+h1{margin:0;font-size:clamp(1.5rem,3.6vw,2.1rem);line-height:1.25;letter-spacing:-.03em}
+.sub{margin:12px 0 0;color:#e0e7ff;font-size:1rem}
+main{padding:0 0 64px}
+.doc{margin-top:-26px;padding:38px 40px 44px;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 10px 32px rgba(15,23,42,.07)}
+.doc h2{margin:38px 0 14px;padding-left:13px;border-left:5px solid var(--brand);font-size:1.32rem;letter-spacing:-.02em}
+.doc h2:first-child{margin-top:0}
+.doc h3{margin:26px 0 10px;font-size:1.08rem;color:var(--brand-dark);letter-spacing:-.01em}
+.doc h4{margin:20px 0 8px;font-size:1rem;color:var(--brand-dark)}
+.doc p{margin:0 0 14px}
+.doc ul,.doc ol{margin:0 0 16px;padding-left:22px}
+.doc li{margin-bottom:8px}
+.doc li>strong:first-child{color:var(--brand-dark)}
+.doc table{width:100%;margin:0 0 18px;border-collapse:collapse;font-size:.93rem}
+.doc th,.doc td{padding:9px 11px;border:1px solid var(--line);text-align:left;vertical-align:top}
+.doc th{background:var(--brand-soft);font-weight:800}
+.doc pre{margin:0 0 18px;padding:16px;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#0f172a;color:#e2e8f0;font-size:.84rem;line-height:1.5}
+.doc code{padding:1px 5px;border-radius:5px;background:#f1f5f9;font-size:.92em}
+.doc pre code{padding:0;background:none;color:inherit}
+.pages{display:flex;flex-direction:column;gap:20px}
+.pages figure{margin:0}
+.pages img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(15,23,42,.08);background:#fff}
+.pages figcaption{margin-top:6px;text-align:right;font-size:.78rem;color:var(--muted)}
+.origin{margin:0 0 22px;padding:11px 14px;border-radius:11px;background:var(--brand-soft);font-size:.87rem;color:var(--brand-dark)}
+.notice{margin-top:30px;padding:16px 18px;border-left:4px solid #f59e0b;border-radius:12px;background:#fffbeb;font-size:.86rem;color:#744210}
+.notice strong{display:block;margin-bottom:3px;color:#713f12}
+.docfoot{margin-top:18px;font-size:.85rem;color:var(--muted)}
+footer{padding:24px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:.8rem}
+@media(max-width:640px){.top{flex-direction:column;align-items:flex-start}.doc{padding:26px 20px 30px}}
+@media print{header,.back,footer{display:none}.doc{margin:0;border:0;box-shadow:none;padding:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <a class="identity" href="../" aria-label="학생 결과물 전시관으로">
+        <img src="../../logo.png" alt="대륜고등학교 로고">
+        <span><span class="identity-name">대륜고 사용 설명서</span><span class="identity-desc">DAERYUN HIGH SCHOOL · 학생 결과물 전시관</span></span>
+      </a>
+      <a class="back" href="../">← 결과물 갤러리</a>
+    </div>
+    <div class="hero">
+      <p class="eyebrow">사업계획서</p>
+      <h1>푸드케어 렌즈 사업계획서</h1>
+      <p class="sub">어린이가 스스로 영양을 관리하는 AI 앱</p>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <article class="doc">
+    <h2>1. 사업 요약</h2>
+    <h3>무엇을 만들었나</h3>
+    <p>음식이나 식품 포장 뒷면의 영양성분표를 사진으로 찍으면, 인공지능이 영양성분을 추정하고 그 값을 「2020 한국인 영양소 섭취기준」의 소아 기준과 비교해 신호등과 음성으로 알려 주는 모바일 웹 앱이다. 사용자는 어린이 본인이다.</p>
+    <p>핵심은 '어린이용'이라는 말을 글씨 크기나 그림이 아니라 판정 기준에서 지킨 것이다. 시중 식단 앱은 대부분 성인 기준으로 판정하기 때문에, 초등학생이 쓰면 실제로는 과다인 섭취량이 정상으로 표시된다.</p>
+    <h3>현재 단계 — 과장 없이</h3>
+    <table>
+    <tr><th>항목</th><th>현재 상태</th></tr>
+    <tr><td>제품</td><td>배포 완료. 주소만 열면 바로 동작 (설치 선택 가능)</td></tr>
+    <tr><td>버전</td><td>v4.2</td></tr>
+    <tr><td>사용자</td><td>팀원과 시연 대상자 수준. 유의미한 사용자 기반 없음</td></tr>
+    <tr><td>매출</td><td>0원. 과금 기능 없음</td></tr>
+    <tr><td>투입 비용</td><td>0원 (호스팅·서버·데이터베이스 모두 무료 범위)</td></tr>
+    </table>
+    <p>이 문서는 '이미 성장 중인 서비스'를 소개하는 문서가 아니다. 동작하는 제품이 있고 비용 구조가 확인되었으며, 여기서 무엇을 어떻게 이어갈 수 있는지를 정리한 계획서다.</p>
+    <h3>세 가지 차별점</h3>
+    <ul>
+    <li>나이별 소아 기준 판정 — 3~18세를 다섯 구간으로 나눠 열량·단백질·칼슘·철·나트륨 기준을 적용한다. 같은 나트륨 1,000mg이 성인에게는 초록불, 7세에게는 주의로 나온다.</li>
+    <li>부족분 채우기 — 과다 경고에 그치지 않고 단백질·칼슘·철 달성률을 게이지로 보여 주고, 가장 부족한 것의 급원 식품을 알려 준다. 성장기에 필요한 것은 절제보다 충족이다.</li>
+    <li>개인정보를 받지 않음 — 서버가 없고 회원가입도 없다. 기록은 기기에만 남는다. 아동 개인정보를 아예 수집하지 않는 구조다.</li>
+    </ul>
+    <h2>2. 문제 정의</h2>
+    <h3>어린이는 성분표를 읽지 못한다</h3>
+    <p>두 단계 문제가 겹쳐 있다. 첫째, 영양성분표를 찾아 읽지 않는다. 글씨가 작고 단위가 낯설다. 둘째, 읽어도 해석하지 못한다. '나트륨 620mg'을 보고 그것이 자기 하루 섭취량에서 어느 정도 비중인지 판단할 기준이 없다.</p>
+    <p>두 번째가 더 본질적이다. 숫자를 읽어 주는 것만으로는 행동이 바뀌지 않는다. '내 나이 기준으로 많은가 적은가'라는 판단이 필요하다.</p>
+    <h3>성인용 앱이 어린이에게 만드는 오류</h3>
+    <p>시장에 식단 기록 앱은 많다. 그러나 대부분 성인을 대상으로 설계되어 있고, 어린이가 쓰면 다음 문제가 생긴다.</p>
+    <table>
+    <tr><th>구분</th><th>성인용 앱의 설계</th><th>어린이 사용 시 결과</th></tr>
+    <tr><td>하루 열량</td><td>2,000kcal 고정 또는 체중 기반</td><td>7세 필요량은 약 1,600kcal. 과다가 정상으로 표시</td></tr>
+    <tr><td>나트륨</td><td>성인 기준 2,300mg</td><td>소아 기준은 1,000~1,900mg. 경고가 늦게 뜬다</td></tr>
+    <tr><td>당류</td><td>절대량 기준</td><td>열량이 다르므로 비율로 봐야 한다</td></tr>
+    <tr><td>체질량지수</td><td>성인 절단값 18.5/23/25</td><td>정상 발달 중인 아동이 '저체중'으로 분류</td></tr>
+    <tr><td>기본 목표</td><td>체중 감량</td><td>성장기에 부적절한 목표를 아이가 스스로 선택</td></tr>
+    </table>
+    <p>이 표는 우리 앱의 초기 버전에도 그대로 해당되었다. 개발 도중 우리 앱이 성인 기준으로 판정하고 있다는 것을 발견하고 전면 교정했다. 즉 이 문제는 추측이 아니라 우리가 직접 겪은 것이다.</p>
+    <h3>왜 아직 아무도 안 했나</h3>
+    <p>어린이 영양 관리 시장이 작기 때문이 아니라, 수익화가 어렵기 때문이라고 본다. 어린이는 결제하지 않는다. 보호자에게 과금하면 제품이 '아이를 감시하는 도구'로 기울고, 그러면 아이가 쓰지 않는다. 이 구조적 어려움이 §5에서 우리가 유료 구독을 접은 이유와 직결된다.</p>
+    <h2>3. 제품</h2>
+    <h3>지금 동작하는 기능</h3>
+    <p>아래는 배포된 앱에서 실제로 쓸 수 있는 기능이다. 계획 중인 기능은 §6에 따로 적었다.</p>
+    <table>
+    <tr><th>기능</th><th>설명</th></tr>
+    <tr><td>먹은 음식 찍기</td><td>음식 사진 → AI가 영양성분 추정 → 신호등 판정 → 식단 자동 기록</td></tr>
+    <tr><td>바코드 찍기</td><td>상품 바코드 → 공개 식품 데이터베이스에서 실제 등록값 조회 (가장 정확)</td></tr>
+    <tr><td>포장 뒤 표 찍기</td><td>영양성분표를 AI가 판독. 실패 시 무료 문자인식으로 폴백</td></tr>
+    <tr><td>오늘 영양 채우기</td><td>단백질·칼슘·철 달성률 게이지 + 부족한 것의 급원 식품 안내</td></tr>
+    <tr><td>씨앗·건강 나무</td><td>기록 5개 = 씨앗 1개. 최근 7일 판정으로 나무가 자라거나 시든다</td></tr>
+    <tr><td>못 먹는 음식</td><td>알레르기 등록 → 모든 경로에서 빨간 경고</td></tr>
+    <tr><td>밖에서 뭐 먹을까</td><td>메뉴판 사진 → 남은 한도에 맞는 메뉴 추천</td></tr>
+    <tr><td>몸이 좀 이상해요</td><td>증상 + 최근 식단 → 어른에게 말하기·병원·지켜보기 3단계 안내</td></tr>
+    <tr><td>아이 모드</td><td>기록을 지울 수 없게 잠금 (부모님이 비밀번호로 해제)</td></tr>
+    <tr><td>음성 + 자막</td><td>모든 안내를 소리와 화면 자막으로 동시 제공</td></tr>
+    </table>
+    <h3>기술적 핵심 세 가지</h3>
+    <p>첫째, 나이별 기준 적용이다. 나이를 입력받아 다음 값으로 판정한다. 성별을 묻지 않는 설계이므로 남녀 권장량의 중간값을 쓴다.</p>
+    <table>
+    <tr><th>나이</th><th>열량(kcal)</th><th>단백질(g)</th><th>칼슘(mg)</th><th>철(mg)</th><th>나트륨 상한 (mg)</th></tr>
+    <tr><td>3~5세</td><td>1,400</td><td>20</td><td>600</td><td>7</td><td>1,000</td></tr>
+    <tr><td>6~8세</td><td>1,600</td><td>35</td><td>700</td><td>9</td><td>1,200</td></tr>
+    <tr><td>9~11세</td><td>1,900</td><td>50</td><td>800</td><td>10</td><td>1,500</td></tr>
+    <tr><td>12~14세</td><td>2,250</td><td>57</td><td>1,000</td><td>15</td><td>1,900</td></tr>
+    <tr><td>15~18세</td><td>2,350</td><td>60</td><td>900</td><td>14</td><td>2,300</td></tr>
+    </table>
+    <p>당류 상한은 절대량이 아니라 비율로 구현했다. 세계보건기구와 식품의약품안전처가 총 열량의 10% 이내를 권고하므로, 나이별 열량이 바뀌면 당류 상한도 자동으로 따라 움직인다.</p>
+    <p>당류 상한(g) = 하루 열량(kcal) × 0.10 ÷ 4</p>
+    <p>둘째, 성장 영양소 게이지다. 단백질·칼슘·철을 골랐다. 성장기에 결핍이 실제로 문제가 되고, 인공지능이 사진이나 성분표에서 추정할 수 있는 항목이어야 했다. 비타민 D처럼 중요하지만 사진으로 추정이 어려운 항목은 제외했다.</p>
+    <p>셋째, 모르는 것을 안전하다고 말하지 않는 규칙이다. 성분표에 값이 없으면 0으로 합산하되 '정보 없음' 건수를 세어 등급을 최소 주의로 올린다. 100g 기준만 제공되는 바코드 상품은 판정을 보류하고 기록도 막는다. 소아 체질량지수는 성장도표 데이터가 없으므로 값만 보여 주고 분류하지 않는다.</p>
+    <h3>신뢰성 설계</h3>
+    <p>판정 로직을 브라우저 기능과 분리해 순수 함수로 만들었다. 카메라나 화면 없이 값만 넣어 결과를 확인할 수 있으므로 기준값이 제대로 적용되는지 기계적으로 검증할 수 있다. 개발 중 성인 기준 오류를 찾아낸 것도 이 구조 덕분이었다.</p>
+    <p>판정 로직 50개 항목을 검증해 전부 통과했다. 다만 개발 환경에 자동화 도구가 없어 저장된 검사 파일 전체를 일괄 실행하지는 못했고, 이는 남은 작업이다.</p>
+    <h2>4. 고객과 시장</h2>
+    <h3>사용자와 비용 부담자를 나눈다</h3>
+    <p>이 사업의 핵심 구조는 쓰는 사람과 돈을 내는 사람이 다르다는 것이다.</p>
+    <table>
+    <tr><th>구분</th><th>대상</th><th>무엇을 얻는가</th></tr>
+    <tr><td>사용자</td><td>초등학생~중학생</td><td>자기가 먹은 것을 알고, 뭘 더 먹어야 하는지 안다</td></tr>
+    <tr><td>조력자</td><td>보호자</td><td>아이가 스스로 관리하도록 돕는다. 감시하지 않는다</td></tr>
+    <tr><td>비용 부담자</td><td>학교·지역 보건소</td><td>보건교육·아동 영양 사업의 실습 도구를 확보한다</td></tr>
+    </table>
+    <p>개인 과금이 아니라 기관 부담을 기본으로 설계한 이유는 §5에 적었다.</p>
+    <h3>시장 규모 산정 틀</h3>
+    <p>우리는 검증되지 않은 시장 규모 숫자를 제시하지 않기로 했다. 대신 산정 방식과 출처를 명시하고, 실제 숫자는 공식 통계로 채우는 방식을 택했다.</p>
+    <table>
+    <tr><th>단계</th><th>산정식</th><th>출처</th></tr>
+    <tr><td>전체 대상</td><td>국내 초·중학생 수</td><td>교육통계서비스(KESS) 학교급별 학생 수</td></tr>
+    <tr><td>유효 대상</td><td>위 수치 × 스마트폰 보유율</td><td>과학기술정보통신부 인터넷이용실태조사</td></tr>
+    <tr><td>도달 가능</td><td>위 수치 × 협력 학교·보건소 관할 비율</td><td>협력 기관 확보 수에 따라 결정</td></tr>
+    </table>
+    <p>학생 팀이 근거 없이 큰 숫자를 적는 것보다, 어떤 자료로 어떻게 계산하는지를 밝히는 편이 검증 가능하다고 판단했다.</p>
+    <h3>경쟁</h3>
+    <table>
+    <tr><th>경쟁 유형</th><th>강점</th><th>우리와의 차이</th></tr>
+    <tr><td>성인 식단 기록 앱</td><td>식품 데이터베이스 규모, 완성도</td><td>판정 기준이 성인. 어린이에게 오판</td></tr>
+    <tr><td>어린이 영양 교육 자료</td><td>전문성, 공신력</td><td>읽기 자료. 지금 먹은 것에 대해 답하지 못함</td></tr>
+    <tr><td>학교 급식 안내 앱</td><td>정확한 식단 정보</td><td>급식 외 간식·외식을 다루지 않음</td></tr>
+    </table>
+    <p>우리의 위치는 '지금 손에 든 음식에 대해 내 나이 기준으로 답해 주는 도구'다. 데이터베이스 규모나 공신력으로 경쟁하지 않는다.</p>
+    <h2>5. 사업 모델</h2>
+    <h3>비용 구조 — 변동비가 하나뿐이다</h3>
+    <table>
+    <tr><th>항목</th><th>비용</th><th>근거</th></tr>
+    <tr><td>웹 호스팅</td><td>0원</td><td>GitHub Pages 무료 범위</td></tr>
+    <tr><td>서버·데이터베이스</td><td>0원</td><td>서버를 두지 않는 설계. 기록은 기기 저장</td></tr>
+    <tr><td>바코드 상품 조회</td><td>0원</td><td>공개 식품 데이터베이스 이용</td></tr>
+    <tr><td>인공지능 사진 판독</td><td>사용량 비례</td><td>유일한 변동비</td></tr>
+    <tr><td>인건비</td><td>0원</td><td>학생 팀 자체 개발</td></tr>
+    </table>
+    <p>유지비의 거의 전부가 인공지능 판독 비용이다. 사용자가 늘면 이 비용만 늘어난다. 따라서 사업 지속성 문제는 '이 변동비를 어떻게 감당하거나 줄이는가'로 좁혀진다.</p>
+    <h3>세 가지 방안</h3>
+    <p>첫째, 무료 등급 범위 내 운영이다. 현재 방식이다. 무료 등급 인공지능 키를 앱에 내장해 이용자가 설정 없이 바로 쓸 수 있게 했고, 하루 한도를 넘긴 이용자는 자기 키를 넣는 경로도 열어 두었다. 시연과 소규모 사용에는 충분하지만 확장에는 한계가 있다.</p>
+    <p>둘째, 기관 부담 배포다. 학교 보건교육이나 지역 보건소의 아동 영양 사업에 부속 도구로 제공하고, 기관이 사용량 비용을 부담하는 구조다. 아동에게는 무료라는 점이 핵심이고, 학교 급식 식단과 연계하면 정확도도 함께 올라간다.</p>
+    <p>셋째, 원가 절감이다. 바코드 조회는 비용이 들지 않고 정확도도 가장 높다. 아이들이 실제로 많이 먹는 포장 간식은 대부분 바코드가 있으므로, 사진 판독보다 바코드를 먼저 쓰도록 유도하면 변동비를 크게 낮출 수 있다. 수익을 늘리는 대신 비용을 줄이는 접근이며, 학생 팀이 당장 실행할 수 있는 가장 현실적인 방안이다.</p>
+    <h3>유료 구독을 선택하지 않은 이유</h3>
+    <p>초기에는 보호자 구독료를 받는 안을 검토했다. 대상을 어린이로 정하면서 접었다. 요금을 내는 사람과 쓰는 사람이 다르면, 결제한 보호자를 만족시키는 방향으로 기능이 기울기 쉽다. 아이의 기록을 보호자에게 보고하는 감시 도구가 되면 아이는 기록을 그만두거나 거짓으로 입력한다. 그러면 데이터가 망가지고 제품의 존재 이유가 사라진다.</p>
+    <p>이 판단은 기능에도 반영했다. 아이 모드에서 기록을 지울 수 없게 하되, 보호자에게 내용을 전송하는 기능은 넣지 않았다. 아이가 자기 기록의 주인이어야 계속 쓴다고 보았다.</p>
+    <h3>개인정보를 수익원으로 삼지 않는다</h3>
+    <p>아동의 식사 기록은 민감한 정보다. 광고나 데이터 판매를 수익 모델에서 제외했다. 서버를 두지 않는 설계 자체가 이 선택을 구조적으로 보장한다.</p>
+    <p>실제로 개발 도중, 보호자 대상 시절에 만든 경품 발송 절차가 남아 아동의 이름과 전화번호를 외부 시트로 전송하고 있는 것을 발견했다. 만 14세 미만 개인정보는 법정대리인 동의가 필요하고, 경품 발송이 아동 연락처를 받을 이유가 되지 않는다고 판단해 수집을 전면 폐지하고 기기 내 확인 번호 방식으로 대체했다. 기존 이용자 기기에 남은 기록도 앱 실행 시 자동 삭제하도록 했다.</p>
+    <h2>6. 실행 계획</h2>
+    <h3>이미 한 것</h3>
+    <table>
+    <tr><th>시기</th><th>내용</th></tr>
+    <tr><td>2026년 7월</td><td>판정 엔진·식단 기록·AI 연동 구현, 웹 배포, 안드로이드 설치 파일 배포</td></tr>
+    <tr><td>2026년 8월 초</td><td>대상을 어린이로 전환. 나이별 소아 기준 적용, 성장 영양소 추가</td></tr>
+    <tr><td>2026년 8월</td><td>홈 화면 재설계, 문구 전면 아동화, 개인정보 수집 폐지, 체중 목표 차단</td></tr>
+    </table>
+    <h3>다음 (우선순위 순)</h3>
+    <table>
+    <tr><th>우선순위</th><th>과제</th><th>이유</th></tr>
+    <tr><td>1</td><td>AI 음식 사진 추정 오차 개선</td><td>기준값이 정확해도 입력이 틀리면 판정도 틀린다. 가장 시급</td></tr>
+    <tr><td>2</td><td>협력 학교·보건소 1곳 확보</td><td>기관 부담 모델의 실현 가능성을 확인하는 최소 단위</td></tr>
+    <tr><td>3</td><td>바코드 우선 유도 설계</td><td>변동비 절감. 정확도도 함께 상승</td></tr>
+    <tr><td>4</td><td>소아 성장도표 백분위 내장</td><td>현재 판정을 보류한 체질량지수를 되살린다</td></tr>
+    <tr><td>5</td><td>성별 입력 추가</td><td>12세 이상 철 권장량 남녀 차이가 크다</td></tr>
+    <tr><td>6</td><td>검사 자동 실행 환경 구성</td><td>유지보수 안정성</td></tr>
+    </table>
+    <p>1번과 2번이 이 사업의 성패를 가른다. 1번이 안 되면 제품 신뢰가 무너지고, 2번이 안 되면 비용을 감당할 방법이 없다. 나머지는 개선 과제다.</p>
+    <h2>7. 위험과 대응</h2>
+    <table>
+    <tr><th>위험</th><th>영향</th><th>대응</th></tr>
+    <tr><td>내장 AI 키 폐기</td><td>AI 기능 전면 중단</td><td>키 교체를 설정 파일 한 줄로 만들어 즉시 복구 가능. 중계 서버 또는 기관 키로 이전</td></tr>
+    <tr><td>AI 추정 오차</td><td>잘못된 판정으로 신뢰 상실</td><td>바코드·성분표 경로 우선 유도. 추정 경로는 '추정'임을 항상 표시</td></tr>
+    <tr><td>의료 행위로 오인</td><td>법적 문제</td><td>진단명 사용 금지. 증상 기능은 3단계 행동 안내만. 애매하면 보수적으로 안내</td></tr>
+    <tr><td>아동 개인정보</td><td>법적 문제</td><td>수집하지 않음. 서버 없음. 구조적으로 차단</td></tr>
+    <tr><td>팀 지속성</td><td>대회 후 방치</td><td>서버가 없어 방치해도 계속 동작. 유지비 0원이 최소 조건을 만족</td></tr>
+    <tr><td>사용자 확보 실패</td><td>사업 무의미</td><td>기관 협력을 우선. 개인 마케팅에 의존하지 않음</td></tr>
+    </table>
+    <p>마지막 항목이 학생 팀 프로젝트가 가장 자주 실패하는 지점이라고 보았다. 그래서 '서버가 없으면 방치해도 죽지 않는다'는 점을 설계 단계에서부터 유지 조건으로 삼았다.</p>
+    <h2>8. 팀</h2>
+    <p>공학·약학·의학 계열 진학을 희망하는 학생 5명으로 구성되어 있다. 영양 기준이라는 의학적 지식을 알고리즘으로 옮기고 실제 동작하는 앱으로 만드는 과정이 세 분야를 모두 요구한다는 점에서 이 주제를 선택했다.</p>
+    <table>
+    <tr><th>영역</th><th>담당 내용</th></tr>
+    <tr><td>시스템 설계·구현</td><td>판정 로직 분리, AI 연동, 폴백 설계, 배포</td></tr>
+    <tr><td>영양 기준 조사</td><td>소아 영양섭취기준 해석, 급원 식품 정리, 당류 비율 환산</td></tr>
+    <tr><td>안전·윤리 검토</td><td>의료 표현 범위 제한, 개인정보 처리, 보상 장치 수위 조정</td></tr>
+    <tr><td>사용자 경험</td><td>아동 대상 문구, 화면 구성, 행동 유도 장치</td></tr>
+    </table>
+    <p>역할을 완전히 나누지 않고 서로 검토하는 방식으로 진행했다. 성인 기준 오류처럼 한 영역의 지식만으로는 발견하기 어려운 문제가 있었기 때문이다.</p>
+    <h2>9. 요약 재무</h2>
+    <p>매출이 없고 투입 비용도 없는 상태이므로, 통상적인 손익 추정 대신 사용자 규모별 예상 운영비를 제시한다.</p>
+    <table>
+    <tr><th>구분</th><th>현재</th><th>소규모 (학교 1곳)</th><th>확대 (학교 10곳)</th></tr>
+    <tr><td>매출</td><td>0원</td><td>0원 (기관 부담)</td><td>0원 (기관 부담)</td></tr>
+    <tr><td>호스팅·서버</td><td>0원</td><td>0원</td><td>0원</td></tr>
+    <tr><td>AI 판독 비용</td><td>무료 등급 내</td><td>기관 부담 또는 무료 등급</td><td>기관 부담 필요</td></tr>
+    <tr><td>인건비</td><td>0원</td><td>0원</td><td>유지 인력 필요 가능</td></tr>
+    </table>
+    <p>즉 이 사업의 재무적 질문은 '얼마를 벌 것인가'가 아니라 '변동비를 누가 부담하는가'다. 개인에게 과금하지 않기로 한 선택의 결과이며, 그 대가로 기관 협력이 필수 조건이 되었다.</p>
+    <p>정확한 단가는 사용 패턴에 따라 달라지므로 이 문서에 추정치를 적지 않았다. 협력 기관과 논의할 때 실제 사용량 측정치를 근거로 제시할 계획이다.</p>
+    <h2>10. 요청 사항</h2>
+    <ul>
+    <li>시연 기회 — 실제로 동작하는 제품이므로 자료 심사보다 시연이 판단에 유리하다.</li>
+    <li>협력 학교 또는 보건소 연결 — 기관 부담 모델의 실현 가능성을 확인할 최소 단위 1곳.</li>
+    <li>영양 전문가 검토 — 적용한 소아 기준값과 급원 식품 안내에 대한 전문가 확인.</li>
+    <li>AI 사용량 지원 — 확대 시 유일한 변동비다.</li>
+    </ul>
+    <h2>부록. 제품 정보</h2>
+    <table>
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>체험 주소</td><td>https://mldld3276-wq.github.io/foodcare-lens/</td></tr>
+    <tr><td>버전</td><td>v4.2</td></tr>
+    <tr><td>형태</td><td>설치형 웹 앱(PWA) + 안드로이드 설치 파일</td></tr>
+    <tr><td>서버</td><td>없음. 기록은 이용자 기기에만 저장</td></tr>
+    <tr><td>개인정보</td><td>수집하지 않음 (회원가입·이름·연락처 없음)</td></tr>
+    <tr><td>구성</td><td>자바스크립트 모듈 10개, 검사 파일 8개</td></tr>
+    <tr><td>근거 기준</td><td>「2020 한국인 영양소 섭취기준」, WHO 당류 섭취 지침(2015)</td></tr>
+    </table>
+    <p>개발 과정과 검증 내용은 별도 탐구보고서에 상세히 정리되어 있다.</p>
+    <aside class="notice">
+      <strong>이용 안내</strong>
+      이 문서는 교육 목적의 학생 프로젝트 산출물입니다. 사업성 추정, 건강·의료 관련 서술은 학생이 학습 과정에서 조사·작성한 내용이며 전문적인 조언이나 검증된 사실을 대신하지 않습니다.
+    </aside>
+  </article>
+</main>
+<footer><div class="wrap"><strong>대륜고 사용 설명서</strong><br>대륜고등학교 · AI 기반 생명공학 문제해결활동</div></footer>
+<script src="/biotech/feedback.js" data-fb-slug="foodcare" data-fb-title="푸드케어 렌즈"></script>
+</body>
+</html>
