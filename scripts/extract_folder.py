@@ -80,9 +80,24 @@ def normalize(text):
 
 DISPATCH = {".pdf": extract_pdf, ".pptx": extract_pptx, ".hwpx": extract_hwpx}
 
+# 여기서 뽑지 않는 파일 — 글자가 이미지·도형이라 추출하면 0자가 나오고,
+# 대신 쪽을 판독한 문면을 data/sources/*.json에 두어 build_law_extras.py가 덧붙인다.
+# 이 목록에 없으면 빈 문서 자리표시자 청크가 검색 인덱스에 섞인다.
+SKIP = {
+    "(붙임2) 선생님을 위한 교육활동 보호 가이드 리플렛.pdf":
+        "data/sources/dge_teacher_protection_guide.json",
+}
+
+
 def main(folder, out_path, title):
+    import unicodedata
+
+    def skipped(name):
+        n = unicodedata.normalize("NFC", name)   # OneDrive NFD 파일명 대응
+        return any(unicodedata.normalize("NFC", k) == n for k in SKIP)
+
     files = sorted(f for f in os.listdir(folder)
-                   if os.path.splitext(f)[1].lower() in DISPATCH)
+                   if os.path.splitext(f)[1].lower() in DISPATCH and not skipped(f))
     chunks = [f"# {title}\n",
               f"> 검색용 raw 데이터 — 원본 폴더: `{folder}`",
               f"> 총 {len(files)}개 문서\n",

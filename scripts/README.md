@@ -25,6 +25,10 @@ python scripts/extract_folder.py "input/teacher/법령지침" "data/법령지침
 python scripts/extract_folder.py "input/teacher/교육과정" "data/교육과정_raw.md" "교육과정 검색 데이터"
 ```
 
+⚠️ **글자가 이미지·도형뿐인 인쇄물**(리플렛 등)은 여기서 0자가 나와 "추출하지 못했습니다" 자리표시자 청크가 만들어진다.
+그런 파일은 `extract_folder.py` 맨 위 `SKIP`에 등록해 건너뛰고, 쪽을 판독한 문면을 `data/sources/*.json`에 두어
+`build_law_extras.py`가 덧붙이게 한다(현재 등록: 교육활동 보호 가이드 리플렛).
+
 ### 2) raw md → 검색 인덱스 JSON
 조문(`제N조`) 단위 또는 페이지/길이 기준으로 청크를 만들어 검색용 JSON을 생성합니다.
 
@@ -52,6 +56,19 @@ python scripts/build_law_struct.py     # 조문 결정 주입 사전 재생성
   ※ 원본 PDF는 `input/teacher/법령지침/`에 있으나 **글자가 전부 이미지·도형이라 extract_folder.py가 0자를 뽑는다.**
   쪽을 판독해 옮긴 문면을 이 JSON에 보관한다. 같은 사정의 인쇄물이 또 생기면 같은 형식(`sections`)으로 추가하고
   `build_law_extras.py`의 `extras` 목록 **맨 뒤에** 등록한다(뒤에 붙어야 앞 청크 순서가 보존돼 임베딩 이어받기가 유효).
+
+### 2-3) 임베딩 — 문서가 목록 가운데로 들어왔을 때
+`build_embeddings.py`의 이어받기는 청크가 **뒤에만** 붙을 때만 유효하다. 파일명 정렬상 앞쪽에 새 문서가
+들어오면 그 뒤 청크가 전부 밀려 이어받기를 못 쓰는데, 전부 다시 만들면 멀쩡한 벡터 수천 개를 버리게 된다.
+이때는 **본문이 같으면 벡터도 같다**는 성질을 이용해 옛 짝에서 재사용한다.
+
+```bash
+cp output/web/data/law_search.json /tmp/prev.json   # 재빌드 전에 옛 짝을 반드시 보관
+cp output/web/data/law_emb.bin     /tmp/prev.bin
+#  (1)~(2-2) 재실행 후
+python scripts/build_embeddings_reuse.py output/web/data/law_search.json output/web/data/law_emb.bin \n       --prev /tmp/prev.json /tmp/prev.bin --endpoint https://daeryun.life/.netlify/functions/embed
+```
+실제 사례: 개인정보 길잡이 1건 추가로 청크가 2,149→2,262가 됐지만 재사용 2,149 · 신규 113개만 생성.
 
 ### 3) 커밋 대상
 - **반드시 커밋**: `output/web/data/law_search.json`, `output/web/data/curr_search.json`
