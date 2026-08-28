@@ -389,10 +389,111 @@ const SEED_EVENTS_YG = [
   { title: '성취기준·최소 성취수준 보장지도 참고 사이트', note: '국가교육과정정보센터 ncic.re.kr(교육과정 자료실), 대구 고교학점제 톡톡 sites.google.com/dge.go.kr/hakjeomje' }
 ];
 
+// 2026-08-28 부서별 전달사항 사진 5장 — 9~10월 후속 일정
+// 같은 부서의 기존 v1~v3 시드는 이미 라이브에 기록될 수 있으므로 새 그룹으로만 추가한다.
+const SEED_EVENTS_KM2 = [
+  { date: '2026-08-31', title: '3학년 수시 대입전형자료 출결 마감', note: '나이스 출결부 제출 및 학교생활기록부 항목별 조회' },
+  { date: '2026-08-31', title: '모의수능·학력평가·영어듣기 대비 방송 1차 점검', time: '7교시 후' },
+  { date: '2026-09-01', end: '2026-10-24', title: '2027학년도 검인정 교과용 도서 전시 및 선정', note: '선정 교과목 확정 → 전시본 검토 → 도서 선정 → 학교운영위원회 → 학교장' },
+  { date: '2026-09-01', title: '모의수능·학력평가·영어듣기 대비 방송 2차 점검', time: '7교시 후' },
+  { date: '2026-09-07', title: '모의수능·학력평가·영어듣기 대비 방송 3차 점검', time: '7교시 후' },
+  { date: '2026-09-14', title: '105주년 개교기념식(다목적 강당)', time: '7교시', note: '전체 학생 및 교직원 참석' },
+  { date: '2026-09-15', title: '개교기념일 재량휴업' },
+  { date: '2026-09-23', title: '월간 명상의 시간(강당)', time: '6교시' },
+  { date: '2026-09-23', title: '직원회의', time: '7교시', note: '3학년 순환수업 미배정' },
+  { date: '2026-10-15', title: '2학기 학교생활기록부 기재 관리 연수', time: '정기시험 후 예정' },
+  { title: '2학기 담임 장학사 변경', note: '기획조정과 구소영 장학사' }
+];
+
+const SEED_EVENTS_YG2 = [
+  { date: '2026-09-01', title: '2학기 중간(기말)시험 출제 안내' },
+  { date: '2026-09-07', end: '2026-09-11', title: '2학기 중간(기말)시험 원안 제출', note: '3학년은 수시모집 원서 접수 기간과 중복되어 9월 17일까지 제출. 나이스 성적 기능 개선 기간을 고려해 가급적 9월 11일 제출' },
+  { date: '2026-09-07', title: '영어듣기평가 학사 유의사항 방송 안내', time: '아침조회', note: '학년부장에게 일정 공유 요청' },
+  { date: '2026-09-08', title: '1학년 영어듣기평가', time: '5교시' },
+  { date: '2026-09-09', title: '2학년 영어듣기평가', time: '5교시' },
+  { date: '2026-09-10', title: '3학년 영어듣기평가', time: '5교시', note: '분리고사실 운영. 전염병 관련 환자 발생 시 2학년 분리고사실도 별도 운영 예정' },
+  { date: '2026-09-11', title: '수업연구(2학년 3반, PBL실)', time: '6교시' },
+  { date: '2026-09-11', title: '수업연구 협의회(2층 회의실)', time: '7교시' },
+  { date: '2026-09-22', title: '예체능 수업연구(1학년 7반, 음악실)', time: '5교시' },
+  { date: '2026-09-22', title: '수업연구 협의회(2층 회의실)', time: '6교시' },
+  { date: '2026-09-23', title: '중간(기말)시험 감독교사 유의사항 안내(통합교육실)', time: '7교시' },
+  { date: '2026-09-30', title: '중간(기말)시험 학생 유의사항 방송 안내', time: '6교시' },
+  { date: '2026-10-01', end: '2026-10-07', title: '2학기 중간(기말)시험', note: '3학년은 시험 교과목이 3개이므로 10월 1일 1교시 정상수업 후 귀가' }
+];
+
+const SEED_EVENTS_SAFE = [
+  { date: '2026-09-01', title: '2026 학생생활규정 제·개정 공포' },
+  { title: '학교폭력 사안 처리 진행 중', note: '1·2학년 각 1건. 개인 식별정보는 게시하지 않음' },
+  { title: '교복 관련 업무 진행', note: '정장형 동복·하복·생활복 관련' }
+];
+
+const SEED_EVENTS_ADMISSION = [
+  { date: '2026-08-24', end: '2026-09-04', title: '대학수학능력시험 원서 접수', time: '마감일 17:00까지' },
+  { date: '2026-08-28', title: '2027학년도 학교장추천전형 대상자 선정위원회(회의실)', time: '15:30~' },
+  { date: '2026-08-31', end: '2026-09-11', title: '2027학년도 대입 수시전형 상담(진학지도실)' },
+  { date: '2026-09-02', title: '2027학년도 수능 9월 모의평가(3학년)·2026학년도 9월 전국연합학력평가(1·2학년)', note: '졸업생 24명 시험 장소: 5층 진로활동실' },
+  { date: '2026-09-07', end: '2026-09-11', title: '2027학년도 대입 수시전형 원서 접수' },
+  { date: '2026-09-19', title: '2027학년도 수시모집 면접 프로그램(1차)', time: '오전', note: '세부 모집은 추후 안내' }
+];
+
+const SEED_EVENTS_INFO = [
+  { date: '2026-08-24', end: '2026-09-04', title: '수시모집 대입전형자료 생성 및 온라인 제공', note: '최신 학적 자료로 생성 후 교무·진로·창체 부서 확인 및 담임 완료 회신' },
+  { date: '2026-08-24', end: '2026-09-15', title: '3학년 온라인 원서 관련 자료 입력' },
+  { date: '2026-09-18', title: '개인정보 내부 관리계획 제출' }
+];
+
+const SEED_EVENTS_CREATIVE2 = [
+  { title: '1·2학년 창체 동아리 조직 보충 안내', note: '9월 9일 5-6교시, 29개 동아리 개설(학생 주도 20개·교사 주도 9개). 일정은 기존 창의인성부 안내에 반영됨' },
+  { date: '2026-09-14', end: '2026-09-18', title: '(조)부모와 함께하는 가족체험 역사기행 참가 가족 모집', note: '1학년 가족 최대 40명 예정' },
+  { date: '2026-09-23', title: '가족체험 역사기행 참가 가족 확정 및 안내', note: '조부모와 함께 참여하는 가족 우선 선발' },
+  { date: '2026-10-12', end: '2026-10-16', title: '가족체험 역사기행 사전 과제', time: '온라인' },
+  { date: '2026-10-17', title: '(조)부모와 함께하는 가족체험 역사기행', time: '08:00~18:00', note: '인솔 교사 4~5명 필요. 창의인성부 외 희망 교사 모집 예정' },
+  { title: '11월 동아리 외부 체험활동의 날 폐지', note: '간부워크숍 결정사항' }
+];
+
+const SEED_EVENTS_ARTS = [
+  { date: '2026-09-05', title: '교육감배 학교스포츠클럽 축구 출전(성광중학교 운동장)', time: '09:00' },
+  { date: '2026-09-05', title: '교육감배 학교스포츠클럽 배드민턴 출전(경상중학교 체육관)', time: '09:00' },
+  { date: '2026-09-07', title: '전국 고등 축구 스플릿 리그 대구·경북 경기(진보생활체육공원)', time: '14:00' },
+  { date: '2026-09-09', end: '2026-10-30', title: '2학기 교내 학급 스포츠클럽 리그', note: '농구·탁구' },
+  { date: '2026-09-12', title: '교육감배 학교스포츠클럽 육상 출전(대구스타디움)', time: '10:00' },
+  { date: '2026-09-16', title: '전국 고등 축구 스플릿 리그 대구·경북 경기(강변축구장)', time: '16:00', note: '대구공고전' },
+  { date: '2026-09-21', title: '전국 고등 축구 스플릿 리그 대구·경북 경기(진보생활체육공원)', time: '12:15' }
+];
+
+const SEED_EVENTS_SUPPORT = [
+  { date: '2026-09-09', title: '2026학년도 대륜동창 장학금 전달식(회의실 예정)', time: '15:30', note: '전달식 참여 인원 약 12명' },
+  { title: '학교발전기금 장학금 수여(10월 예정)', note: '학교발전기금 장학금 약 1,200만원. 학년별 4명에게 각 100만원 지급 예정' }
+];
+
+const SEED_EVENTS_CAREER = [
+  { date: '2026-10-15', title: '학생부 기반 면접 및 학교생활기록부 디자인 캠프', note: '2학년 희망자 40명, 외부 강사 초빙' },
+  { date: '2026-10-16', title: '학생부 기반 면접 및 학교생활기록부 디자인 캠프', note: '2학년 희망자 40명, 외부 강사 초빙' },
+  { date: '2026-10-17', title: '학생부 기반 면접 및 학교생활기록부 디자인 캠프', note: '2학년 희망자 40명, 외부 강사 초빙' },
+  { date: '2026-10-19', title: '학생부 기반 면접 및 학교생활기록부 디자인 캠프', note: '2학년 희망자 40명, 외부 강사 초빙' }
+];
+
+const SEED_EVENTS_ADMIN = [
+  { date: '2026-08-31', end: '2026-09-02', title: '안현조 선생님 출장' },
+  { date: '2026-09-02', title: '정수기·온수기 정기 수질검사' },
+  { date: '2026-09-15', title: '재량휴업일 근무', note: '이희용 시설부장' },
+  { title: '개교기념 물품 구매', note: '스텐컵·4포트 허브' }
+];
+
 const SEEDS = [
   { marker: 'seed/v1.json', group: '20260814000000_seedcr', department: '창의인성부', regSlot: '2026-08', events: SEED_EVENTS },
   { marker: 'seed/v2.json', group: '20260814000001_seedkm', department: '교무부', regSlot: '2026-08', events: SEED_EVENTS_KM },
-  { marker: 'seed/v3.json', group: '20260814000002_seedyg', department: '연구부', regSlot: '2026-08', events: SEED_EVENTS_YG }
+  { marker: 'seed/v3.json', group: '20260814000002_seedyg', department: '연구부', regSlot: '2026-08', events: SEED_EVENTS_YG },
+  { marker: 'seed/v4.json', group: '20260828000000_seedkm2', department: '교무부', regSlot: '2026-09', events: SEED_EVENTS_KM2 },
+  { marker: 'seed/v5.json', group: '20260828000001_seedyg2', department: '연구부', regSlot: '2026-09', events: SEED_EVENTS_YG2 },
+  { marker: 'seed/v6.json', group: '20260828000002_seedsafe', department: '학생안전부', regSlot: '2026-09', events: SEED_EVENTS_SAFE },
+  { marker: 'seed/v7.json', group: '20260828000003_seedadm', department: '진학부', regSlot: '2026-09', events: SEED_EVENTS_ADMISSION },
+  { marker: 'seed/v8.json', group: '20260828000004_seedinfo', department: '정보과학부', regSlot: '2026-09', events: SEED_EVENTS_INFO },
+  { marker: 'seed/v9.json', group: '20260828000005_seedcr2', department: '창의인성부', regSlot: '2026-09', events: SEED_EVENTS_CREATIVE2 },
+  { marker: 'seed/v10.json', group: '20260828000006_seedarts', department: '예체능부', regSlot: '2026-09', events: SEED_EVENTS_ARTS },
+  { marker: 'seed/v11.json', group: '20260828000007_seedsupp', department: '학부모·학술지원부', regSlot: '2026-09', events: SEED_EVENTS_SUPPORT },
+  { marker: 'seed/v12.json', group: '20260828000008_seedcareer', department: '진로상담부', regSlot: '2026-10', events: SEED_EVENTS_CAREER },
+  { marker: 'seed/v13.json', group: '20260828000009_seedadmin', department: '행정실', regSlot: '2026-09', events: SEED_EVENTS_ADMIN }
 ];
 
 async function ensureSeed(SUPABASE_URL, svcHeaders) {
