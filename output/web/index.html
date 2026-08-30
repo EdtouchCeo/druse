@@ -11998,6 +11998,7 @@ function switchSpTab(id,btn){
         <button id="ai-sub-btn-3" onclick="switchAiSub(3)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 교육일정 작성 AI</button>
         <button id="ai-sub-btn-5" onclick="switchAiSub(5)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
         <button id="ai-sub-btn-6" onclick="switchAiSub(6)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
+        <button id="ai-sub-btn-10" onclick="switchAiSub(10)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📦 PDF 용량 줄이기</button>
       </div>
 
       <!-- 0: 법령·지침 AI (RAG 챗봇) -->
@@ -12152,6 +12153,27 @@ function switchSpTab(id,btn){
             <a href="/evalplan/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#2a5298;color:#fff;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(42,82,152,0.28);">🧭 운영 계획 만들기 →</a>
           </div>
           <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 전체 화면으로 열립니다. AI는 <strong>EdTouch가 제공</strong>하므로 <strong>무료이고 API 키도, 로그인도 필요 없이</strong> 바로 쓰실 수 있습니다(원하시면 화면의 'AI 설정'에서 개인 Gemini 키·Ollama로 바꿔 쓸 수 있습니다). 보낸 내용은 답변 생성에만 쓰이고 서버에 저장되지 않으며, 작성 중인 계획은 이 브라우저에만 남습니다. 생성 결과는 <strong>AI 초안</strong>이므로 학교 학업성적관리규정과 맞는지 반드시 검토하세요.</p>
+        </div>
+      </div>
+      <!-- 10: PDF 용량 줄이기 -->
+      <div id="ai-sub-10" style="display:none;">
+        <style>
+          .pdf-compress-card{max-width:760px;margin:0 auto;padding:clamp(18px,4vw,30px);border:1px solid #dbe3ef;border-radius:18px;background:#fff;box-shadow:0 4px 20px rgba(30,58,107,.08)}
+          .pdf-dropzone{display:flex;min-height:190px;padding:24px;border:2px dashed #9fb1ce;border-radius:16px;background:#f8fafc;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:.18s ease}.pdf-dropzone:hover,.pdf-dropzone.is-dragging{border-color:var(--primary);background:#eef4ff}.pdf-dropzone:focus-visible{outline:3px solid rgba(42,82,152,.28);outline-offset:3px}
+          .pdf-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.pdf-target{min-height:62px;padding:10px 12px;border:2px solid #d1d5db;border-radius:12px;background:#fff;color:#334155;font:600 .9rem inherit;cursor:pointer}.pdf-target[aria-pressed="true"]{border-color:var(--primary);background:#eef4ff;color:var(--primary)}
+          .pdf-actions{display:flex;gap:10px;flex-wrap:wrap}.pdf-primary,.pdf-secondary{min-height:44px;padding:10px 18px;border-radius:10px;font:700 .9rem inherit;cursor:pointer}.pdf-primary{border:0;background:var(--primary);color:#fff}.pdf-secondary{border:1px solid #cbd5e1;background:#fff;color:#334155}.pdf-primary:disabled,.pdf-secondary:disabled{opacity:.52;cursor:not-allowed}
+          .pdf-status{display:none;margin-top:18px;padding:14px 16px;border-radius:12px;background:#f8fafc;color:#334155;line-height:1.65;font-size:.88rem}.pdf-status.visible{display:block}.pdf-status.success{background:#ecfdf5;color:#166534}.pdf-status.error{background:#fef2f2;color:#991b1b}.pdf-status.warning{background:#fff7ed;color:#9a3412}
+          @media(max-width:480px){.pdf-targets{grid-template-columns:1fr}.pdf-actions>*{width:100%}.pdf-dropzone{min-height:165px;padding:18px 12px}}
+        </style>
+        <div class="pdf-compress-card">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:8px;"><span aria-hidden="true" style="font-size:1.7rem;">📦</span><h3 style="margin:0;font-size:1.2rem;color:#1e3a6b;">PDF 용량 줄이기</h3></div>
+          <p style="margin:0 0 18px;color:#475569;font-size:.9rem;line-height:1.65;">공문 첨부에 맞게 PDF를 <strong>5MB 미만</strong> 또는 <strong>10MB 미만</strong>으로 줄입니다. 입력 PDF는 최대 30MB입니다.</p>
+          <input id="pdf-compress-file" type="file" accept="application/pdf,.pdf" hidden>
+          <div id="pdf-compress-drop" class="pdf-dropzone" role="button" tabindex="0" aria-describedby="pdf-compress-help"><div><div aria-hidden="true" style="font-size:2.1rem;margin-bottom:8px;">📄</div><strong id="pdf-compress-file-label" style="color:#1e3a6b;">PDF를 선택하거나 여기에 놓으세요</strong><div id="pdf-compress-help" style="margin-top:7px;color:#64748b;font-size:.82rem;">PDF 1개 · 최대 30MB</div></div></div>
+          <div class="pdf-targets" aria-label="압축 목표 용량"><button type="button" class="pdf-target" data-pdf-target="5" aria-pressed="false">5MB 미만으로 줄이기</button><button type="button" class="pdf-target" data-pdf-target="10" aria-pressed="true">10MB 미만 · 공문 첨부용</button></div>
+          <div class="pdf-actions"><button id="pdf-compress-submit" type="button" class="pdf-primary" disabled>PDF 용량 줄이기</button><button id="pdf-compress-cancel" type="button" class="pdf-secondary" disabled>처리 취소</button><button id="pdf-compress-reset" type="button" class="pdf-secondary" style="display:none;">다른 PDF 줄이기</button></div>
+          <div id="pdf-compress-status" class="pdf-status" role="status" aria-live="polite"></div>
+          <p style="margin:18px 0 0;padding-top:16px;border-top:1px solid #e5e7eb;color:#64748b;font-size:.78rem;line-height:1.65;">🔒 PDF는 AI 모델로 전송되지 않습니다. EdTouch 압축 서버에서 임시 처리되며 처리 후 저장되지 않습니다.</p>
         </div>
       </div>
     </div>
@@ -13860,7 +13882,7 @@ function switchSpTab(id,btn){
   };
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 11; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;
@@ -13879,6 +13901,46 @@ function switchSpTab(id,btn){
       }
     }
   }
+  // ===== 샛별AI PDF 용량 줄이기 =====
+  (function () {
+    var API='https://service-63986215827.us-west1.run.app/api/pdf/compress', MAX=30000000;
+    var file=null,targetMb=10,controller=null,downloadUrl=null,busy=false;
+    function el(id){return document.getElementById(id);}
+    function safe(v){var d=document.createElement('div');d.textContent=String(v||'');return d.innerHTML;}
+    function size(n){n=Number(n)||0;if(n<1024)return n.toLocaleString('ko-KR')+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB ('+n.toLocaleString('ko-KR')+' B)';return(n/1048576).toFixed(2)+' MB ('+n.toLocaleString('ko-KR')+' B)';}
+    function revoke(){if(downloadUrl){URL.revokeObjectURL(downloadUrl);downloadUrl=null;}}
+    function status(msg,kind){var n=el('pdf-compress-status');if(n){n.className='pdf-status visible'+(kind?' '+kind:'');n.innerHTML=msg;}}
+    function setBusy(on){busy=on;el('pdf-compress-submit').disabled=on||!file;el('pdf-compress-cancel').disabled=!on;el('pdf-compress-file').disabled=on;document.querySelectorAll('[data-pdf-target]').forEach(function(b){b.disabled=on;});}
+    function choose(next){
+      if(busy||!next)return;revoke();el('pdf-compress-reset').style.display='none';
+      if(next.type!=='application/pdf'&&!/\\.pdf$/i.test(next.name)){file=null;el('pdf-compress-submit').disabled=true;status('PDF 파일만 선택할 수 있습니다.','error');return;}
+      if(!next.size){file=null;el('pdf-compress-submit').disabled=true;status('비어 있는 파일은 처리할 수 없습니다.','error');return;}
+      if(next.size>MAX){file=null;el('pdf-compress-submit').disabled=true;status('파일이 30MB를 넘습니다. 더 작은 PDF를 선택해 주세요.','error');return;}
+      file=next;el('pdf-compress-file-label').textContent=next.name;el('pdf-compress-help').textContent='원본 크기: '+size(next.size);el('pdf-compress-submit').disabled=false;status('목표 용량을 확인한 뒤 “PDF 용량 줄이기”를 눌러 주세요.','');
+    }
+    async function call(token,retried){
+      var r=await fetch(API+'?targetMb='+targetMb,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/pdf'},body:file,signal:controller.signal});
+      if(r.status===401&&!retried&&typeof window.refreshSession==='function'){var ns=await window.refreshSession();if(ns&&ns.token)return call(ns.token,true);}return r;
+    }
+    async function submit(){
+      if(busy||!file)return;revoke();controller=new AbortController();setBusy(true);status('<strong>PDF를 업로드하고 압축하고 있습니다.</strong><br>파일 크기와 페이지 수에 따라 잠시 걸릴 수 있습니다.','');
+      try{
+        var token=typeof window.ensureToken==='function'?await window.ensureToken():(getSess()||{}).token;if(!token)throw new Error('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+        var r=await call(token,false);if(!r.ok){var msg='PDF를 줄이지 못했습니다.';try{var data=await r.json();if(data&&data.error)msg=data.error;}catch(ignore){}throw new Error(msg);}
+        var blob=await r.blob();if(!blob.size)throw new Error('서버가 빈 파일을 반환했습니다.');
+        var original=Number(r.headers.get('X-Pdf-Original-Bytes'))||file.size,result=Number(r.headers.get('X-Pdf-Result-Bytes'))||blob.size,target=Number(r.headers.get('X-Pdf-Target-Bytes'))||(targetMb===5?4900000:9800000),achieved=String(r.headers.get('X-Pdf-Target-Achieved')).toLowerCase()==='true'||result<target;
+        downloadUrl=URL.createObjectURL(blob);var base=file.name.replace(/\\.pdf$/i,'').replace(/[\\\\/:*?"<>|]+/g,'_');
+        status('<strong>'+(achieved?'목표 용량으로 줄였습니다.':'목표 용량 달성 여부를 확인해 주세요.')+'</strong><br>원본 '+size(original)+' → 결과 '+size(result)+' · '+Math.max(0,Math.round((1-result/original)*100))+'% 감소<br><a href="'+downloadUrl+'" download="'+safe(base)+'_'+targetMb+'MB미만.pdf" style="display:inline-flex;margin-top:10px;padding:9px 15px;border-radius:9px;background:#1e3a6b;color:#fff;text-decoration:none;font-weight:700;">압축 PDF 다운로드</a>',achieved?'success':'warning');el('pdf-compress-reset').style.display='';
+      }catch(e){status(e&&e.name==='AbortError'?'처리를 취소했습니다. 원본 PDF는 변경되지 않았습니다.':safe(e&&e.message?e.message:'네트워크 오류가 발생했습니다.'),e&&e.name==='AbortError'?'warning':'error');}finally{controller=null;setBusy(false);}
+    }
+    document.addEventListener('DOMContentLoaded',function(){
+      var input=el('pdf-compress-file'),drop=el('pdf-compress-drop');if(!input||!drop)return;
+      drop.addEventListener('click',function(){if(!busy)input.click();});drop.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&!busy){e.preventDefault();input.click();}});input.addEventListener('change',function(){choose(input.files&&input.files[0]);});
+      ['dragenter','dragover'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();if(!busy)drop.classList.add('is-dragging');});});['dragleave','drop'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.remove('is-dragging');});});drop.addEventListener('drop',function(e){if(!busy)choose(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]);});
+      document.querySelectorAll('[data-pdf-target]').forEach(function(btn){btn.addEventListener('click',function(){targetMb=Number(btn.getAttribute('data-pdf-target'));document.querySelectorAll('[data-pdf-target]').forEach(function(b){b.setAttribute('aria-pressed',String(b===btn));});});});
+      el('pdf-compress-submit').addEventListener('click',submit);el('pdf-compress-cancel').addEventListener('click',function(){if(controller)controller.abort();});el('pdf-compress-reset').addEventListener('click',function(){revoke();file=null;input.value='';el('pdf-compress-file-label').textContent='PDF를 선택하거나 여기에 놓으세요';el('pdf-compress-help').textContent='PDF 1개 · 최대 30MB';el('pdf-compress-submit').disabled=true;el('pdf-compress-reset').style.display='none';el('pdf-compress-status').className='pdf-status';input.click();});window.addEventListener('beforeunload',revoke);
+    });
+  })();
 
   // ===== 학사일정 캘린더 =====
   (function() {
