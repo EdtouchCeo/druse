@@ -61,9 +61,43 @@ SUMMARY_SECTIONS = ('정의', '개요', '목적')
 
 def _unquote(s):
     s = (s or '').strip()
-    if len(s) >= 2 and s[0] == s[-1] and s[0] in '"\'':
-        return s[1:-1]
+    if len(s) >= 2 and s[0] == s[-1] == '"':
+        # publicReplace 문장은 본문 인용부호를 \"로 이스케이프한다. 단순히
+        # 바깥 따옴표만 벗기면 역슬래시가 남아 실제 본문과 절대 매칭되지 않는다.
+        try:
+            return json.loads(s)
+        except json.JSONDecodeError:
+            return s[1:-1].replace('\\"', '"').replace('\\\\', '\\')
+    if len(s) >= 2 and s[0] == s[-1] == "'":
+        return s[1:-1].replace("''", "'")
     return s
+
+
+def _split_sub_mapping(line):
+    """들여쓴 YAML 맵 한 줄을 인용부호 밖 첫 `:`에서 나눈다.
+
+    publicReplace 키는 자연어 문장이라 `근거 자료:`처럼 콜론을 포함한다.
+    정규식의 첫 콜론 분리는 키를 잘라 게시용 치환을 조용히 무효화하므로,
+    따옴표와 이스케이프를 인식해 실제 키/값 경계만 찾는다.
+    """
+    text = line.lstrip()
+    quote = None
+    escaped = False
+    for i, ch in enumerate(text):
+        if escaped:
+            escaped = False
+            continue
+        if quote:
+            if ch == '\\' and quote == '"':
+                escaped = True
+            elif ch == quote:
+                quote = None
+            continue
+        if ch in '"\'':
+            quote = ch
+        elif ch == ':':
+            return text[:i].rstrip(), text[i + 1:].strip()
+    return None
 
 
 def _parse_flow_list(s):
@@ -127,9 +161,9 @@ def parse_frontmatter(raw):
             # 들여쓴 하위 맵(publicBody) 수집
             sub, j = {}, i + 1
             while j < len(block) and (block[j][:1] in (' ', '\t') or not block[j].strip()):
-                sm = re.match(r'^\s+(.+?)\s*:\s*(.*)$', block[j])
+                sm = _split_sub_mapping(block[j])
                 if sm:
-                    sub[_unquote(sm.group(1))] = _unquote(sm.group(2))
+                    sub[_unquote(sm[0])] = _unquote(sm[1])
                 j += 1
             meta[key] = sub if sub else ''
             i = j
