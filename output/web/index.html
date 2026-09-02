@@ -988,8 +988,7 @@
 <!-- 창체&특색활동 -->
 <div class="sub-nav-group" id="cat-activity">
   <div class="sub-nav">
-    <button class="sub-nav-btn" onclick="switchSub('sub-club', this)">🎯 동아리 개설</button>
-    <button class="sub-nav-btn" onclick="switchSub('sub-club-stats', this)">📊 2학기 동아리 현황</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-club', this)">🎯 동아리 업무 매뉴얼</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-culture', this)">🎭 문화예술공연관람</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-leesh', this)">🌸 이상화 추모·백일장</button>
   </div>
@@ -1972,261 +1971,6 @@
     </tbody>
   </table>
 
-</div>
-
-<!-- ===== 2026학년도 2학기 동아리 구성 현황 ===== -->
-<div class="sub-panel" id="sub-club-stats">
-  <style>
-    #sub-club-stats .drcs-lead { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:18px; }
-    #sub-club-stats .drcs-phase { display:inline-flex; align-items:center; min-height:32px; padding:0 12px; border-radius:999px; background:#eef3ff; color:#1a3a6b; font-size:0.88rem; font-weight:700; }
-    #sub-club-stats .drcs-meta { margin-top:8px; color:#64748b; font-size:0.88rem; }
-    #sub-club-stats .drcs-actions { display:flex; flex-wrap:wrap; gap:8px; }
-    #sub-club-stats .drcs-button { min-height:44px; padding:8px 14px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; color:#1e293b; font:600 0.9rem inherit; cursor:pointer; }
-    #sub-club-stats .drcs-button:hover { border-color:var(--primary); color:var(--primary); background:#f8faff; }
-    #sub-club-stats .drcs-summary { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:18px 0 28px; }
-    #sub-club-stats .drcs-stat { min-width:0; padding:18px 14px; text-align:center; background:#fff; border:1px solid #e2e8f0; border-top:3px solid var(--primary); border-radius:12px; }
-    #sub-club-stats .drcs-stat strong { display:block; color:var(--primary); font-size:1.6rem; line-height:1.2; }
-    #sub-club-stats .drcs-stat span { display:block; margin-top:6px; color:#64748b; font-size:0.82rem; }
-    #sub-club-stats .drcs-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:14px 0 28px; }
-    #sub-club-stats .drcs-card { padding:18px; border:1px solid #e2e8f0; border-radius:14px; background:#fff; }
-    #sub-club-stats .drcs-card h3 { margin:0 0 14px; color:#1a3a6b; font-size:1rem; }
-    #sub-club-stats .drcs-owner-row { margin-top:13px; }
-    #sub-club-stats .drcs-owner-label { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; color:#334155; font-size:0.87rem; }
-    #sub-club-stats .drcs-bar { height:10px; overflow:hidden; border-radius:999px; background:#e2e8f0; }
-    #sub-club-stats .drcs-bar > span { display:block; height:100%; border-radius:inherit; background:var(--primary); }
-    #sub-club-stats .drcs-grade { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-    #sub-club-stats .drcs-grade-item { padding:14px; border-radius:10px; background:#f8fafc; }
-    #sub-club-stats .drcs-grade-item strong { color:#1a3a6b; }
-    #sub-club-stats .drcs-grade-item dl { display:grid; grid-template-columns:1fr auto; gap:5px 12px; margin:10px 0 0; font-size:0.84rem; }
-    #sub-club-stats .drcs-grade-item dt { color:#64748b; }
-    #sub-club-stats .drcs-grade-item dd { margin:0; font-weight:700; }
-    #sub-club-stats .drcs-stage { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:28px; }
-    #sub-club-stats .drcs-stage-card { padding:18px; border-radius:14px; border:1px solid #dbe4f0; background:#f8faff; }
-    #sub-club-stats .drcs-stage-card strong { display:block; color:#1a3a6b; font-size:1rem; }
-    #sub-club-stats .drcs-stage-card b { display:block; margin-top:8px; font-size:1.4rem; color:#1e293b; }
-    #sub-club-stats .drcs-controls { display:grid; grid-template-columns:minmax(180px,1fr) repeat(3,minmax(150px,auto)); gap:10px; margin:14px 0 8px; }
-    #sub-club-stats .drcs-control { width:100%; min-height:44px; box-sizing:border-box; padding:8px 12px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; color:#1e293b; font:16px inherit; }
-    #sub-club-stats .drcs-result-count { min-height:22px; margin-bottom:8px; color:#64748b; font-size:0.86rem; }
-    #sub-club-stats .drcs-table-wrap { max-width:100%; overflow-x:auto; border:1px solid #dbe4f0; border-radius:12px; }
-    #sub-club-stats .drcs-table { width:100%; min-width:980px; margin:0; border-collapse:collapse; font-size:0.86rem; }
-    #sub-club-stats .drcs-table th, #sub-club-stats .drcs-table td { padding:11px 10px; border-bottom:1px solid #e2e8f0; text-align:center; white-space:nowrap; }
-    #sub-club-stats .drcs-table th { background:#f1f5f9; color:#1a3a6b; }
-    #sub-club-stats .drcs-table th:first-child, #sub-club-stats .drcs-table td:first-child { position:sticky; left:0; z-index:1; text-align:left; background:#fff; font-weight:700; }
-    #sub-club-stats .drcs-table th:first-child { z-index:2; background:#f1f5f9; }
-    #sub-club-stats .drcs-status { display:inline-block; padding:4px 8px; border:1px solid #cbd5e1; border-radius:999px; font-size:0.78rem; font-weight:700; }
-    #sub-club-stats .drcs-status-selection_required { color:#9a3412; background:#fff7ed; border-color:#fed7aa; }
-    #sub-club-stats .drcs-status-recruiting_available { color:#166534; background:#f0fdf4; border-color:#bbf7d0; }
-    #sub-club-stats .drcs-empty { padding:28px 18px; text-align:center; color:#64748b; }
-    #sub-club-stats .drcs-error { display:none; padding:20px; border:1px solid #fecaca; border-radius:12px; background:#fef2f2; color:#991b1b; line-height:1.7; }
-    #sub-club-stats .drcs-note { margin-top:22px; padding:16px 18px; border-left:4px solid #94a3b8; border-radius:8px; background:#f8fafc; color:#475569; font-size:0.87rem; line-height:1.75; }
-    @media (max-width:900px) {
-      #sub-club-stats .drcs-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
-      #sub-club-stats .drcs-controls { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    }
-    @media (max-width:640px) {
-      #sub-club-stats .drcs-lead { display:block; }
-      #sub-club-stats .drcs-actions { margin-top:14px; }
-      #sub-club-stats .drcs-summary, #sub-club-stats .drcs-grid, #sub-club-stats .drcs-stage, #sub-club-stats .drcs-grade, #sub-club-stats .drcs-controls { grid-template-columns:1fr; }
-      #sub-club-stats .drcs-stat { text-align:left; }
-    }
-    @media print {
-      #sub-club-stats .drcs-no-print, #sub-club-stats .drcs-actions { display:none !important; }
-      #sub-club-stats .drcs-table-wrap { overflow:visible; border:none; }
-      #sub-club-stats .drcs-table { min-width:0; font-size:8pt; }
-      #sub-club-stats .drcs-table th, #sub-club-stats .drcs-table td { padding:5px 3px; white-space:normal; }
-      #sub-club-stats .drcs-table th:first-child, #sub-club-stats .drcs-table td:first-child { position:static; }
-    }
-  </style>
-
-  <div id="drcs-error" class="drcs-error" role="alert">
-    <strong>자료를 불러오지 못했습니다.</strong><br>
-    공개 통계 기준 파일을 다시 생성한 뒤 페이지를 새로고침해 주세요.
-  </div>
-  <div id="drcs-content" hidden>
-    <div class="drcs-lead">
-      <div>
-        <h2 class="section-title" style="margin-top:0;">2026학년도 2학기 동아리 구성 현황</h2>
-        <div id="drcs-phase" class="drcs-phase"></div>
-        <p id="drcs-snapshot" class="drcs-meta"></p>
-        <p id="drcs-privacy" class="drcs-meta"></p>
-      </div>
-      <div class="drcs-actions drcs-no-print">
-        <button type="button" class="drcs-button" id="drcs-csv">통계 CSV 내려받기</button>
-        <button type="button" class="drcs-button" id="drcs-print">인쇄</button>
-      </div>
-    </div>
-
-    <div id="drcs-summary" class="drcs-summary" aria-label="주요 통계"></div>
-    <div class="drcs-grid">
-      <section class="drcs-card" aria-labelledby="drcs-owner-title">
-        <h3 id="drcs-owner-title">개설 주체별 구성</h3>
-        <div id="drcs-owner"></div>
-      </section>
-      <section class="drcs-card" aria-labelledby="drcs-grade-title">
-        <h3 id="drcs-grade-title">1·2학년 구성 현황</h3>
-        <div id="drcs-grade" class="drcs-grade"></div>
-      </section>
-    </div>
-    <section aria-labelledby="drcs-stage-title">
-      <h2 id="drcs-stage-title" class="section-title">지원 단계별 현황</h2>
-      <div class="drcs-stage">
-        <div class="drcs-stage-card"><strong>1차 지원</strong><b id="drcs-round1"></b><span>일반모집 대상 기준 · 접수 마감</span></div>
-        <div class="drcs-stage-card"><strong>2차 지원</strong><b>접수 전</b><span>9월 3일 시작 예정 · 현재 숫자로 집계하지 않음</span></div>
-      </div>
-    </section>
-
-    <section aria-labelledby="drcs-table-title">
-      <h2 id="drcs-table-title" class="section-title">동아리별 현황</h2>
-      <div class="drcs-controls drcs-no-print">
-        <input id="drcs-search" class="drcs-control" type="search" placeholder="동아리명 검색" aria-label="동아리명 검색">
-        <select id="drcs-group-filter" class="drcs-control" aria-label="개설 구분 필터">
-          <option value="">전체 구분</option><option value="student">학생 주도</option><option value="teacher">교사 주도</option><option value="preorganized">기조직</option>
-        </select>
-        <select id="drcs-status-filter" class="drcs-control" aria-label="상태 필터">
-          <option value="">전체 상태</option><option value="selection_required">선발·학년 조정 필요</option><option value="recruiting_available">충원 가능</option><option value="preorganized">기조직</option>
-        </select>
-        <select id="drcs-sort" class="drcs-control" aria-label="정렬 기준">
-          <option value="source">기본 순서</option><option value="name">동아리명순</option><option value="applicants">1차 지원 많은 순</option><option value="rate">정원 대비율 높은 순</option>
-        </select>
-      </div>
-      <div id="drcs-result-count" class="drcs-result-count" aria-live="polite"></div>
-      <div class="drcs-table-wrap" tabindex="0" aria-label="동아리별 현황 표, 가로로 스크롤할 수 있습니다">
-        <table class="data-table drcs-table">
-          <thead><tr><th>동아리명</th><th>구분</th><th>정원</th><th>1학년 구성 기준</th><th>2학년 구성 기준</th><th>1차 신규 지원</th><th>2차 지원</th><th>상태</th></tr></thead>
-          <tbody id="drcs-tbody"></tbody>
-        </table>
-      </div>
-    </section>
-    <div class="drcs-note">
-      <strong>집계 기준</strong><br>
-      학년별 구성 기준 인원은 <strong>신규 1차 지원 + 기확정</strong>입니다. 1차 신규 지원은 기확정자의 중복 신청을 제외했으며, 지원률은 일반모집 대상 537명 중 신규 지원 506명을 기준으로 계산했습니다. 2차 지원은 아직 접수 전이므로 0명으로 해석하지 않습니다.<br>
-      응답 정제: 중복 제출 35건, 재적 대조 불일치 7건, 기확정자 중복 신청 6건 제외.
-    </div>
-  </div>
-  <script src="data/club_stats_2026_2.js" onerror="window.DR_CLUB_STATS_LOAD_FAILED=true"></script>
-  <script>
-  (function () {
-    'use strict';
-    var DATA = null;
-    var currentRows = [];
-    var columnLabels = ['동아리명','구분','정원','1학년 구성 기준','2학년 구성 기준','1차 신규 지원','2차 지원','상태'];
-    function byId(id) { return document.getElementById(id); }
-    function add(parent, tag, text, className) {
-      var node = document.createElement(tag);
-      if (className) node.className = className;
-      if (text !== undefined) node.textContent = text;
-      parent.appendChild(node);
-      return node;
-    }
-    function formatSnapshot(value) {
-      var match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value || '');
-      return match ? match[1] + '.' + match[2] + '.' + match[3] + '. ' + match[4] + ':' + match[5] : value;
-    }
-    function isValid(data) {
-      return data && data.schemaVersion === 1 && data.phase === 'round1-complete-round2-not-open' &&
-        data.totals && data.totals.round2 && data.totals.round2.status === 'not_open' && data.totals.round2.applicants === null &&
-        Array.isArray(data.clubs) && data.clubs.length === 29 && data.clubs.every(function (club) {
-          return club.round2 && club.round2.status === 'not_open' && club.round2.applicants === null;
-        });
-    }
-    function renderSummary() {
-      var target = byId('drcs-summary');
-      target.textContent = '';
-      [
-        [DATA.totals.clubs + '개', '전체 개설'],
-        [DATA.totals.recruitingClubs + '개', '일반모집'],
-        [DATA.totals.recruitmentEligible + '명', '일반모집 대상'],
-        [(DATA.totals.round1.rate * 100).toFixed(1) + '%', '1차 지원률'],
-        [DATA.totals.unrecorded + '명', '미기록 인원']
-      ].forEach(function (item) {
-        var card = add(target, 'div', undefined, 'drcs-stat');
-        add(card, 'strong', item[0]); add(card, 'span', item[1]);
-      });
-    }
-    function renderOwners() {
-      var target = byId('drcs-owner'); target.textContent = '';
-      DATA.ownerSummary.forEach(function (row) {
-        var item = add(target, 'div', undefined, 'drcs-owner-row');
-        var label = add(item, 'div', undefined, 'drcs-owner-label');
-        add(label, 'span', row.label);
-        add(label, 'strong', row.clubs + '개' + (row.capacity ? ' · ' + row.capacity + '명' : ''));
-        var bar = add(item, 'div', undefined, 'drcs-bar');
-        var fill = add(bar, 'span', ''); fill.style.width = (row.clubs / DATA.totals.clubs * 100).toFixed(1) + '%';
-      });
-    }
-    function renderGrades() {
-      var target = byId('drcs-grade'); target.textContent = '';
-      DATA.gradeSummary.forEach(function (row) {
-        var card = add(target, 'div', undefined, 'drcs-grade-item');
-        add(card, 'strong', row.grade + '학년');
-        var list = add(card, 'dl');
-        [['재적',row.roster],['모집 대상',row.recruitmentEligible],['신규 지원',row.round1NewApplicants],['기확정',row.preconfirmed],['구성 기준',row.covered],['미기록',row.unrecorded]].forEach(function (item) {
-          add(list, 'dt', item[0]); add(list, 'dd', item[1] + '명');
-        });
-      });
-    }
-    function rowValues(club) {
-      return [club.name, club.groupLabel, club.capacity + '명', club.grade1Covered + '명', club.grade2Covered + '명', club.round1NewApplicants + '명', '접수 전', club.status.label];
-    }
-    function filterRows() {
-      var query = byId('drcs-search').value.trim().toLocaleLowerCase('ko-KR');
-      var group = byId('drcs-group-filter').value;
-      var status = byId('drcs-status-filter').value;
-      var sort = byId('drcs-sort').value;
-      currentRows = DATA.clubs.filter(function (club) {
-        return (!query || club.name.toLocaleLowerCase('ko-KR').indexOf(query) !== -1) && (!group || club.group === group) && (!status || club.status.code === status);
-      });
-      if (sort === 'name') currentRows.sort(function (a,b) { return a.name.localeCompare(b.name, 'ko'); });
-      if (sort === 'applicants') currentRows.sort(function (a,b) { return b.round1NewApplicants - a.round1NewApplicants || a.id - b.id; });
-      if (sort === 'rate') currentRows.sort(function (a,b) { return ((b.grade1Covered+b.grade2Covered)/b.capacity) - ((a.grade1Covered+a.grade2Covered)/a.capacity) || a.id-b.id; });
-      renderTable();
-    }
-    function renderTable() {
-      var body = byId('drcs-tbody'); body.textContent = '';
-      currentRows.forEach(function (club) {
-        var tr = add(body, 'tr');
-        rowValues(club).forEach(function (value, index) {
-          var td = add(tr, 'td');
-          if (index === 7) add(td, 'span', value, 'drcs-status drcs-status-' + club.status.code);
-          else td.textContent = value;
-        });
-      });
-      if (!currentRows.length) {
-        var tr = add(body, 'tr'); var td = add(tr, 'td', '조건에 맞는 동아리가 없습니다.', 'drcs-empty'); td.colSpan = 8;
-      }
-      byId('drcs-result-count').textContent = '전체 ' + DATA.clubs.length + '개 중 ' + currentRows.length + '개 표시';
-    }
-    function csvEscape(value) { return '"' + String(value).replace(/"/g, '""') + '"'; }
-    window.drClubStatsBuildCsv = function () {
-      var lines = [columnLabels].concat(currentRows.map(rowValues));
-      return '\uFEFF' + lines.map(function (row) { return row.map(csvEscape).join(','); }).join('\r\n');
-    };
-    function downloadCsv() {
-      var blob = new Blob([window.drClubStatsBuildCsv()], {type:'text/csv;charset=utf-8'});
-      var url = URL.createObjectURL(blob); var anchor = document.createElement('a');
-      anchor.href = url; anchor.download = '2026-2학기-동아리-통계.csv'; document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
-    }
-    window.drClubStatsInit = function (fixture) {
-      DATA = fixture || window.DR_CLUB_STATS_2026_2;
-      var valid = !window.DR_CLUB_STATS_LOAD_FAILED && isValid(DATA);
-      byId('drcs-error').style.display = valid ? 'none' : 'block';
-      byId('drcs-content').hidden = !valid;
-      if (!valid) return false;
-      byId('drcs-phase').textContent = '현재 단계: ' + DATA.phaseLabel;
-      byId('drcs-snapshot').textContent = '기준 시각: ' + formatSnapshot(DATA.snapshotAt);
-      byId('drcs-privacy').textContent = DATA.privacyNotice;
-      byId('drcs-round1').textContent = DATA.totals.round1.newApplicants + '명 · ' + (DATA.totals.round1.rate * 100).toFixed(1) + '%';
-      renderSummary(); renderOwners(); renderGrades(); filterRows();
-      return true;
-    };
-    ['drcs-search','drcs-group-filter','drcs-status-filter','drcs-sort'].forEach(function (id) {
-      byId(id).addEventListener(id === 'drcs-search' ? 'input' : 'change', filterRows);
-    });
-    byId('drcs-csv').addEventListener('click', downloadCsv);
-    byId('drcs-print').addEventListener('click', function () { window.print(); });
-    window.drClubStatsInit();
-  })();
-  </script>
 </div>
 
 <!-- ===== 3. 학생부 교차점검 ===== -->
@@ -5548,6 +5292,262 @@
   <button class="sub-nav-btn" onclick="switchSub('sub-univ', this)">🎓 진학 정보</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-special', this)">✨ 특색활동</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-counsel', this)">💬 상담 방법</button>
+  <button class="sub-nav-btn" onclick="switchSub('sub-club-stats', this)">📊 2학기 동아리 조직 현황</button>
+</div>
+
+<!-- ===== 2026학년도 2학기 동아리 구성 현황 ===== -->
+<div class="sub-panel" id="sub-club-stats">
+  <style>
+    #sub-club-stats .drcs-lead { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:18px; }
+    #sub-club-stats .drcs-phase { display:inline-flex; align-items:center; min-height:32px; padding:0 12px; border-radius:999px; background:#eef3ff; color:#1a3a6b; font-size:0.88rem; font-weight:700; }
+    #sub-club-stats .drcs-meta { margin-top:8px; color:#64748b; font-size:0.88rem; }
+    #sub-club-stats .drcs-actions { display:flex; flex-wrap:wrap; gap:8px; }
+    #sub-club-stats .drcs-button { min-height:44px; padding:8px 14px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; color:#1e293b; font:600 0.9rem inherit; cursor:pointer; }
+    #sub-club-stats .drcs-button:hover { border-color:var(--primary); color:var(--primary); background:#f8faff; }
+    #sub-club-stats .drcs-summary { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:18px 0 28px; }
+    #sub-club-stats .drcs-stat { min-width:0; padding:18px 14px; text-align:center; background:#fff; border:1px solid #e2e8f0; border-top:3px solid var(--primary); border-radius:12px; }
+    #sub-club-stats .drcs-stat strong { display:block; color:var(--primary); font-size:1.6rem; line-height:1.2; }
+    #sub-club-stats .drcs-stat span { display:block; margin-top:6px; color:#64748b; font-size:0.82rem; }
+    #sub-club-stats .drcs-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:14px 0 28px; }
+    #sub-club-stats .drcs-card { padding:18px; border:1px solid #e2e8f0; border-radius:14px; background:#fff; }
+    #sub-club-stats .drcs-card h3 { margin:0 0 14px; color:#1a3a6b; font-size:1rem; }
+    #sub-club-stats .drcs-owner-row { margin-top:13px; }
+    #sub-club-stats .drcs-owner-label { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; color:#334155; font-size:0.87rem; }
+    #sub-club-stats .drcs-bar { height:10px; overflow:hidden; border-radius:999px; background:#e2e8f0; }
+    #sub-club-stats .drcs-bar > span { display:block; height:100%; border-radius:inherit; background:var(--primary); }
+    #sub-club-stats .drcs-grade { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    #sub-club-stats .drcs-grade-item { padding:14px; border-radius:10px; background:#f8fafc; }
+    #sub-club-stats .drcs-grade-item strong { color:#1a3a6b; }
+    #sub-club-stats .drcs-grade-item dl { display:grid; grid-template-columns:1fr auto; gap:5px 12px; margin:10px 0 0; font-size:0.84rem; }
+    #sub-club-stats .drcs-grade-item dt { color:#64748b; }
+    #sub-club-stats .drcs-grade-item dd { margin:0; font-weight:700; }
+    #sub-club-stats .drcs-stage { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:28px; }
+    #sub-club-stats .drcs-stage-card { padding:18px; border-radius:14px; border:1px solid #dbe4f0; background:#f8faff; }
+    #sub-club-stats .drcs-stage-card strong { display:block; color:#1a3a6b; font-size:1rem; }
+    #sub-club-stats .drcs-stage-card b { display:block; margin-top:8px; font-size:1.4rem; color:#1e293b; }
+    #sub-club-stats .drcs-controls { display:grid; grid-template-columns:minmax(180px,1fr) repeat(3,minmax(150px,auto)); gap:10px; margin:14px 0 8px; }
+    #sub-club-stats .drcs-control { width:100%; min-height:44px; box-sizing:border-box; padding:8px 12px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; color:#1e293b; font:16px inherit; }
+    #sub-club-stats .drcs-result-count { min-height:22px; margin-bottom:8px; color:#64748b; font-size:0.86rem; }
+    #sub-club-stats .drcs-table-wrap { max-width:100%; overflow-x:auto; border:1px solid #dbe4f0; border-radius:12px; }
+    #sub-club-stats .drcs-table { width:100%; min-width:980px; margin:0; border-collapse:collapse; font-size:0.86rem; }
+    #sub-club-stats .drcs-table th, #sub-club-stats .drcs-table td { padding:11px 10px; border-bottom:1px solid #e2e8f0; text-align:center; white-space:nowrap; }
+    #sub-club-stats .drcs-table th { background:#f1f5f9; color:#1a3a6b; }
+    #sub-club-stats .drcs-table th:first-child, #sub-club-stats .drcs-table td:first-child { position:sticky; left:0; z-index:1; text-align:left; background:#fff; font-weight:700; }
+    #sub-club-stats .drcs-table th:first-child { z-index:2; background:#f1f5f9; }
+    #sub-club-stats .drcs-status { display:inline-block; padding:4px 8px; border:1px solid #cbd5e1; border-radius:999px; font-size:0.78rem; font-weight:700; }
+    #sub-club-stats .drcs-status-selection_required { color:#9a3412; background:#fff7ed; border-color:#fed7aa; }
+    #sub-club-stats .drcs-status-recruiting_available { color:#166534; background:#f0fdf4; border-color:#bbf7d0; }
+    #sub-club-stats .drcs-empty { padding:28px 18px; text-align:center; color:#64748b; }
+    #sub-club-stats .drcs-error { display:none; padding:20px; border:1px solid #fecaca; border-radius:12px; background:#fef2f2; color:#991b1b; line-height:1.7; }
+    #sub-club-stats .drcs-note { margin-top:22px; padding:16px 18px; border-left:4px solid #94a3b8; border-radius:8px; background:#f8fafc; color:#475569; font-size:0.87rem; line-height:1.75; }
+    @media (max-width:900px) {
+      #sub-club-stats .drcs-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      #sub-club-stats .drcs-controls { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:640px) {
+      #sub-club-stats .drcs-lead { display:block; }
+      #sub-club-stats .drcs-actions { margin-top:14px; }
+      #sub-club-stats .drcs-summary, #sub-club-stats .drcs-grid, #sub-club-stats .drcs-stage, #sub-club-stats .drcs-grade, #sub-club-stats .drcs-controls { grid-template-columns:1fr; }
+      #sub-club-stats .drcs-stat { text-align:left; }
+    }
+    @media print {
+      #sub-club-stats .drcs-no-print, #sub-club-stats .drcs-actions { display:none !important; }
+      #sub-club-stats .drcs-table-wrap { overflow:visible; border:none; }
+      #sub-club-stats .drcs-table { min-width:0; font-size:8pt; }
+      #sub-club-stats .drcs-table th, #sub-club-stats .drcs-table td { padding:5px 3px; white-space:normal; }
+      #sub-club-stats .drcs-table th:first-child, #sub-club-stats .drcs-table td:first-child { position:static; }
+    }
+  </style>
+
+  <div id="drcs-error" class="drcs-error" role="alert">
+    <strong>자료를 불러오지 못했습니다.</strong><br>
+    공개 통계 기준 파일을 다시 생성한 뒤 페이지를 새로고침해 주세요.
+  </div>
+  <div id="drcs-content" hidden>
+    <div class="drcs-lead">
+      <div>
+        <h2 class="section-title" style="margin-top:0;">2026학년도 2학기 동아리 구성 현황</h2>
+        <div id="drcs-phase" class="drcs-phase"></div>
+        <p id="drcs-snapshot" class="drcs-meta"></p>
+        <p id="drcs-privacy" class="drcs-meta"></p>
+      </div>
+      <div class="drcs-actions drcs-no-print">
+        <button type="button" class="drcs-button" id="drcs-csv">통계 CSV 내려받기</button>
+        <button type="button" class="drcs-button" id="drcs-print">인쇄</button>
+      </div>
+    </div>
+
+    <div id="drcs-summary" class="drcs-summary" aria-label="주요 통계"></div>
+    <div class="drcs-grid">
+      <section class="drcs-card" aria-labelledby="drcs-owner-title">
+        <h3 id="drcs-owner-title">개설 주체별 구성</h3>
+        <div id="drcs-owner"></div>
+      </section>
+      <section class="drcs-card" aria-labelledby="drcs-grade-title">
+        <h3 id="drcs-grade-title">1·2학년 구성 현황</h3>
+        <div id="drcs-grade" class="drcs-grade"></div>
+      </section>
+    </div>
+    <section aria-labelledby="drcs-stage-title">
+      <h2 id="drcs-stage-title" class="section-title">지원 단계별 현황</h2>
+      <div class="drcs-stage">
+        <div class="drcs-stage-card"><strong>1차 지원</strong><b id="drcs-round1"></b><span>일반모집 대상 기준 · 접수 마감</span></div>
+        <div class="drcs-stage-card"><strong>2차 지원</strong><b>접수 전</b><span>9월 3일 시작 예정 · 현재 숫자로 집계하지 않음</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="drcs-table-title">
+      <h2 id="drcs-table-title" class="section-title">동아리별 현황</h2>
+      <div class="drcs-controls drcs-no-print">
+        <input id="drcs-search" class="drcs-control" type="search" placeholder="동아리명 검색" aria-label="동아리명 검색">
+        <select id="drcs-group-filter" class="drcs-control" aria-label="개설 구분 필터">
+          <option value="">전체 구분</option><option value="student">학생 주도</option><option value="teacher">교사 주도</option><option value="preorganized">기조직</option>
+        </select>
+        <select id="drcs-status-filter" class="drcs-control" aria-label="상태 필터">
+          <option value="">전체 상태</option><option value="selection_required">선발·학년 조정 필요</option><option value="recruiting_available">충원 가능</option><option value="preorganized">기조직</option>
+        </select>
+        <select id="drcs-sort" class="drcs-control" aria-label="정렬 기준">
+          <option value="source">기본 순서</option><option value="name">동아리명순</option><option value="applicants">1차 지원 많은 순</option><option value="rate">정원 대비율 높은 순</option>
+        </select>
+      </div>
+      <div id="drcs-result-count" class="drcs-result-count" aria-live="polite"></div>
+      <div class="drcs-table-wrap" tabindex="0" aria-label="동아리별 현황 표, 가로로 스크롤할 수 있습니다">
+        <table class="data-table drcs-table">
+          <thead><tr><th>동아리명</th><th>구분</th><th>정원</th><th>1학년 구성 기준</th><th>2학년 구성 기준</th><th>1차 신규 지원</th><th>2차 지원</th><th>상태</th></tr></thead>
+          <tbody id="drcs-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+    <div class="drcs-note">
+      <strong>집계 기준</strong><br>
+      학년별 구성 기준 인원은 <strong>신규 1차 지원 + 기확정</strong>입니다. 1차 신규 지원은 기확정자의 중복 신청을 제외했으며, 지원률은 일반모집 대상 537명 중 신규 지원 506명을 기준으로 계산했습니다. 2차 지원은 아직 접수 전이므로 0명으로 해석하지 않습니다.<br>
+      응답 정제: 중복 제출 35건, 재적 대조 불일치 7건, 기확정자 중복 신청 6건 제외.
+    </div>
+  </div>
+  <script src="data/club_stats_2026_2.js" onerror="window.DR_CLUB_STATS_LOAD_FAILED=true"></script>
+  <script>
+  (function () {
+    'use strict';
+    var DATA = null;
+    var currentRows = [];
+    var columnLabels = ['동아리명','구분','정원','1학년 구성 기준','2학년 구성 기준','1차 신규 지원','2차 지원','상태'];
+    function byId(id) { return document.getElementById(id); }
+    function add(parent, tag, text, className) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      parent.appendChild(node);
+      return node;
+    }
+    function formatSnapshot(value) {
+      var match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value || '');
+      return match ? match[1] + '.' + match[2] + '.' + match[3] + '. ' + match[4] + ':' + match[5] : value;
+    }
+    function isValid(data) {
+      return data && data.schemaVersion === 1 && data.phase === 'round1-complete-round2-not-open' &&
+        data.totals && data.totals.round2 && data.totals.round2.status === 'not_open' && data.totals.round2.applicants === null &&
+        Array.isArray(data.clubs) && data.clubs.length === 29 && data.clubs.every(function (club) {
+          return club.round2 && club.round2.status === 'not_open' && club.round2.applicants === null;
+        });
+    }
+    function renderSummary() {
+      var target = byId('drcs-summary');
+      target.textContent = '';
+      [
+        [DATA.totals.clubs + '개', '전체 개설'],
+        [DATA.totals.recruitingClubs + '개', '일반모집'],
+        [DATA.totals.recruitmentEligible + '명', '일반모집 대상'],
+        [(DATA.totals.round1.rate * 100).toFixed(1) + '%', '1차 지원률'],
+        [DATA.totals.unrecorded + '명', '미기록 인원']
+      ].forEach(function (item) {
+        var card = add(target, 'div', undefined, 'drcs-stat');
+        add(card, 'strong', item[0]); add(card, 'span', item[1]);
+      });
+    }
+    function renderOwners() {
+      var target = byId('drcs-owner'); target.textContent = '';
+      DATA.ownerSummary.forEach(function (row) {
+        var item = add(target, 'div', undefined, 'drcs-owner-row');
+        var label = add(item, 'div', undefined, 'drcs-owner-label');
+        add(label, 'span', row.label);
+        add(label, 'strong', row.clubs + '개' + (row.capacity ? ' · ' + row.capacity + '명' : ''));
+        var bar = add(item, 'div', undefined, 'drcs-bar');
+        var fill = add(bar, 'span', ''); fill.style.width = (row.clubs / DATA.totals.clubs * 100).toFixed(1) + '%';
+      });
+    }
+    function renderGrades() {
+      var target = byId('drcs-grade'); target.textContent = '';
+      DATA.gradeSummary.forEach(function (row) {
+        var card = add(target, 'div', undefined, 'drcs-grade-item');
+        add(card, 'strong', row.grade + '학년');
+        var list = add(card, 'dl');
+        [['재적',row.roster],['모집 대상',row.recruitmentEligible],['신규 지원',row.round1NewApplicants],['기확정',row.preconfirmed],['구성 기준',row.covered],['미기록',row.unrecorded]].forEach(function (item) {
+          add(list, 'dt', item[0]); add(list, 'dd', item[1] + '명');
+        });
+      });
+    }
+    function rowValues(club) {
+      return [club.name, club.groupLabel, club.capacity + '명', club.grade1Covered + '명', club.grade2Covered + '명', club.round1NewApplicants + '명', '접수 전', club.status.label];
+    }
+    function filterRows() {
+      var query = byId('drcs-search').value.trim().toLocaleLowerCase('ko-KR');
+      var group = byId('drcs-group-filter').value;
+      var status = byId('drcs-status-filter').value;
+      var sort = byId('drcs-sort').value;
+      currentRows = DATA.clubs.filter(function (club) {
+        return (!query || club.name.toLocaleLowerCase('ko-KR').indexOf(query) !== -1) && (!group || club.group === group) && (!status || club.status.code === status);
+      });
+      if (sort === 'name') currentRows.sort(function (a,b) { return a.name.localeCompare(b.name, 'ko'); });
+      if (sort === 'applicants') currentRows.sort(function (a,b) { return b.round1NewApplicants - a.round1NewApplicants || a.id - b.id; });
+      if (sort === 'rate') currentRows.sort(function (a,b) { return ((b.grade1Covered+b.grade2Covered)/b.capacity) - ((a.grade1Covered+a.grade2Covered)/a.capacity) || a.id-b.id; });
+      renderTable();
+    }
+    function renderTable() {
+      var body = byId('drcs-tbody'); body.textContent = '';
+      currentRows.forEach(function (club) {
+        var tr = add(body, 'tr');
+        rowValues(club).forEach(function (value, index) {
+          var td = add(tr, 'td');
+          if (index === 7) add(td, 'span', value, 'drcs-status drcs-status-' + club.status.code);
+          else td.textContent = value;
+        });
+      });
+      if (!currentRows.length) {
+        var tr = add(body, 'tr'); var td = add(tr, 'td', '조건에 맞는 동아리가 없습니다.', 'drcs-empty'); td.colSpan = 8;
+      }
+      byId('drcs-result-count').textContent = '전체 ' + DATA.clubs.length + '개 중 ' + currentRows.length + '개 표시';
+    }
+    function csvEscape(value) { return '"' + String(value).replace(/"/g, '""') + '"'; }
+    window.drClubStatsBuildCsv = function () {
+      var lines = [columnLabels].concat(currentRows.map(rowValues));
+      return '\uFEFF' + lines.map(function (row) { return row.map(csvEscape).join(','); }).join('\r\n');
+    };
+    function downloadCsv() {
+      var blob = new Blob([window.drClubStatsBuildCsv()], {type:'text/csv;charset=utf-8'});
+      var url = URL.createObjectURL(blob); var anchor = document.createElement('a');
+      anchor.href = url; anchor.download = '2026-2학기-동아리-통계.csv'; document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
+    }
+    window.drClubStatsInit = function (fixture) {
+      DATA = fixture || window.DR_CLUB_STATS_2026_2;
+      var valid = !window.DR_CLUB_STATS_LOAD_FAILED && isValid(DATA);
+      byId('drcs-error').style.display = valid ? 'none' : 'block';
+      byId('drcs-content').hidden = !valid;
+      if (!valid) return false;
+      byId('drcs-phase').textContent = '현재 단계: ' + DATA.phaseLabel;
+      byId('drcs-snapshot').textContent = '기준 시각: ' + formatSnapshot(DATA.snapshotAt);
+      byId('drcs-privacy').textContent = DATA.privacyNotice;
+      byId('drcs-round1').textContent = DATA.totals.round1.newApplicants + '명 · ' + (DATA.totals.round1.rate * 100).toFixed(1) + '%';
+      renderSummary(); renderOwners(); renderGrades(); filterRows();
+      return true;
+    };
+    ['drcs-search','drcs-group-filter','drcs-status-filter','drcs-sort'].forEach(function (id) {
+      byId(id).addEventListener(id === 'drcs-search' ? 'input' : 'change', filterRows);
+    });
+    byId('drcs-csv').addEventListener('click', downloadCsv);
+    byId('drcs-print').addEventListener('click', function () { window.print(); });
+    window.drClubStatsInit();
+  })();
+  </script>
 </div>
 
 <!-- 1. 규정·기준 -->
@@ -14572,7 +14572,7 @@ function switchSpTab(id,btn){
   // 탭별 sub URL slug ↔ sub-panel id 매핑
   var SUB_MAP = {
     teacher: {
-      records:'sub-records', club:'sub-club', 'club-stats':'sub-club-stats', check:'sub-check',
+      records:'sub-records', club:'sub-club', check:'sub-check',
       transfer:'sub-transfer', culture:'sub-culture', leesh:'sub-leesh',
       grade:'sub-grade', exam:'sub-exam',
       grading:'sub-grading', required:'sub-required', vac41:'sub-vac41', leave:'sub-leave',
@@ -14580,7 +14580,7 @@ function switchSpTab(id,btn){
     },
     student: {
       rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',
-      univ:'sub-univ', special:'sub-special', counsel:'sub-counsel'
+      univ:'sub-univ', special:'sub-special', counsel:'sub-counsel', 'club-stats':'sub-club-stats'
     }
   };
 

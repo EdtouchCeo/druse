@@ -6,7 +6,7 @@ import { pathToFileURL, fileURLToPath } from "node:url";
 import net from "node:net";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const PAGE_URL = `${pathToFileURL(join(ROOT, "output", "web", "index.html")).href}#/teacher/club-stats`;
+const PAGE_URL = `${pathToFileURL(join(ROOT, "output", "web", "index.html")).href}#/student/club-stats`;
 const EDGE = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
 
 function getFreePort() {
@@ -107,13 +107,8 @@ async function main() {
       return result.result.value;
     }
     await evaluate(`(() => {
-      window.__drcsRouteApplied = document.querySelector('#sub-club-stats').classList.contains('active');
-      document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
-      document.querySelector('#tab-teacher').classList.add('active');
-      document.querySelector('#teacher-login-required').style.display = 'none';
-      document.querySelector('#teacher-content').style.display = 'block';
-      document.querySelectorAll('#tab-teacher .sub-panel').forEach(el => el.classList.remove('active'));
-      document.querySelector('#sub-club-stats').classList.add('active');
+      window.__drcsRouteApplied = document.querySelector('#tab-student').classList.contains('active') &&
+        document.querySelector('#tab-student #sub-club-stats').classList.contains('active');
       return window.drClubStatsInit();
     })()`);
 
@@ -122,13 +117,28 @@ async function main() {
       const value = await evaluate(expression);
       checks.push({ label, ok: Boolean(value), value });
     }
-    await check("hash route targets club stats", "location.hash === '#/teacher/club-stats' && window.__drcsRouteApplied && document.querySelector('#sub-club-stats').classList.contains('active')");
+    await check("student hash route targets club stats", "location.hash === '#/student/club-stats' && window.__drcsRouteApplied && document.querySelector('#tab-student #sub-club-stats').classList.contains('active')");
+    await check("stats moved out of teacher content", "!document.querySelector('#tab-teacher #sub-club-stats') && document.querySelectorAll('#tab-student #sub-club-stats').length === 1");
+    await check("student navigation label is exact", "[...document.querySelectorAll('#tab-student > .sub-nav .sub-nav-btn')].some(b => b.textContent.trim() === '📊 2학기 동아리 조직 현황')");
     await check("public snapshot loaded", "window.DR_CLUB_STATS_2026_2?.clubs.length === 29 && !document.querySelector('#drcs-content').hidden");
+    await check("public stats visible without login", "getComputedStyle(document.querySelector('#tab-student')).display !== 'none' && getComputedStyle(document.querySelector('#sub-club-stats')).display !== 'none' && !getSess()");
     await check("headline metadata rendered", "document.querySelector('#drcs-phase').textContent.includes('1차 집계 완료 · 2차 접수 전') && document.querySelector('#drcs-snapshot').textContent.includes('2026.08.30. 23:58')");
     await check("summary values rendered", "['29개','28개','537명','94.2%','31명'].every(v => document.querySelector('#drcs-summary').textContent.includes(v)) && document.querySelector('#drcs-round1').textContent.includes('506명')");
     await check("round two is semantic not-open", "document.querySelector('#sub-club-stats').textContent.includes('접수 전') && !document.querySelector('#sub-club-stats').textContent.includes('2차 지원 0명')");
     await check("owner summary is 20/8/1 and 439/168", "(() => { const t=document.querySelector('#drcs-owner').textContent; return ['20개 · 439명','8개 · 168명','1개'].every(v=>t.includes(v)); })()");
     await check("default table has 29 rows and 8 columns", "document.querySelectorAll('#drcs-tbody tr').length === 29 && document.querySelectorAll('#drcs-tbody tr:first-child td').length === 8");
+
+    await evaluate(`(() => {
+      const teacherButton = [...document.querySelectorAll('.tab-btn')].find(button => (button.getAttribute('onclick') || '').includes("'teacher'"));
+      switchTab('teacher', teacherButton);
+    })()`);
+    await check("teacher manual stays behind auth gate", "getComputedStyle(document.querySelector('#teacher-login-required')).display !== 'none' && getComputedStyle(document.querySelector('#teacher-content')).display === 'none' && [...document.querySelectorAll('#cat-activity .sub-nav-btn')].some(b => b.textContent.trim() === '🎯 동아리 업무 매뉴얼')");
+    await evaluate("location.hash='#student/club-stats'");
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    await check("hash without leading slash is supported", "document.querySelector('#tab-student').classList.contains('active') && document.querySelector('#tab-student #sub-club-stats').classList.contains('active')");
+    await evaluate("location.hash='#/student/club-stats'");
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    await check("hash with leading slash is supported", "document.querySelector('#tab-student').classList.contains('active') && document.querySelector('#tab-student #sub-club-stats').classList.contains('active')");
 
     async function select(id, value) {
       await evaluate(`(() => { const el=document.querySelector(${JSON.stringify(id)}); el.value=${JSON.stringify(value)}; el.dispatchEvent(new Event('change',{bubbles:true})); })()`);
