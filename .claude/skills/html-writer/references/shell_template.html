@@ -3098,7 +3098,7 @@
   // 탭별 sub URL slug ↔ sub-panel id 매핑
   var SUB_MAP = {
     teacher: {
-      records:'sub-records', club:'sub-club', check:'sub-check',
+      records:'sub-records', club:'sub-club', 'club-stats':'sub-club-stats', check:'sub-check',
       transfer:'sub-transfer', culture:'sub-culture', leesh:'sub-leesh',
       grade:'sub-grade', exam:'sub-exam',
       grading:'sub-grading', required:'sub-required', vac41:'sub-vac41', leave:'sub-leave',
@@ -3169,7 +3169,7 @@
   }
 
   function applyHash() {
-    var raw = window.location.hash.replace(/^#/, '');
+    var raw = window.location.hash.replace(/^#\/?/, '');
     if (!raw) return;
     // OAuth 콜백 등 특수 해시는 무시 (=, & 포함 시)
     if (raw.indexOf('=') !== -1 || raw.indexOf('&') !== -1) return;
