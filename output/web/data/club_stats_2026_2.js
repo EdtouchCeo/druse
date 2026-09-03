@@ -1,716 +1,363 @@
 window.DR_CLUB_STATS_2026_2 = {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "term": "2026학년도 2학기",
-  "snapshotAt": "2026-08-30T23:58:00+09:00",
-  "generatedOn": "2026-08-31",
-  "phase": "round1-complete-round2-not-open",
-  "phaseLabel": "1차 집계 완료 · 2차 접수 전",
-  "privacyNotice": "학생 개인정보 없이 집계 자료만 제공합니다.",
+  "phase": "round2-recruitment-guide",
+  "phaseLabel": "2차 지원 가능 인원 안내",
+  "basisDate": "2026-09-01",
   "totals": {
-    "clubs": 29,
-    "recruitingClubs": 28,
-    "preorganizedClubs": 1,
-    "totalCapacity": 628,
-    "recruitingCapacity": 607,
-    "studentRoster": 606,
-    "recruitmentEligible": 537,
-    "preconfirmed": 69,
-    "covered": 575,
-    "unrecorded": 31,
-    "round1": {
-      "status": "closed",
-      "newApplicants": 506,
-      "rate": 0.9422718808193669
+    "clubs": 18,
+    "groups": {
+      "student": 12,
+      "teacher": 6
     },
-    "round2": {
-      "status": "not_open",
-      "applicants": null
-    }
+    "grade1": {
+      "clubs": 17,
+      "available": 94
+    },
+    "grade2": {
+      "clubs": 13,
+      "available": 80
+    },
+    "available": 174
   },
-  "ownerSummary": [
-    {
-      "code": "student",
-      "label": "학생 주도 일반모집",
-      "clubs": 20,
-      "capacity": 439
+  "rules": {
+    "student": {
+      "capacity": 22,
+      "grade1Target": 11,
+      "grade2Target": 11
     },
-    {
-      "code": "teacher",
-      "label": "교사 주도 일반모집",
-      "clubs": 8,
-      "capacity": 168
+    "teacher": {
+      "capacity": 21,
+      "largerGradeTarget": 11,
+      "otherGradeTarget": 10,
+      "tieGets11": 1
     },
-    {
-      "code": "preorganized",
-      "label": "기조직",
-      "clubs": 1
-    }
-  ],
-  "gradeSummary": [
-    {
-      "grade": 1,
-      "roster": 312,
-      "recruitmentEligible": 290,
-      "round1NewApplicants": 273,
-      "preconfirmed": 22,
-      "covered": 295,
-      "unrecorded": 17
-    },
-    {
-      "grade": 2,
-      "roster": 294,
-      "recruitmentEligible": 247,
-      "round1NewApplicants": 233,
-      "preconfirmed": 47,
-      "covered": 280,
-      "unrecorded": 14
-    }
-  ],
-  "dataQuality": {
-    "responseRows": 554,
-    "uniqueResponses": 519,
-    "duplicatesExcluded": 35,
-    "rosterMismatchesExcluded": 7,
-    "preconfirmedDuplicatesExcluded": 6
+    "formula": "max(target-current,0)"
   },
   "clubs": [
     {
-      "id": 1,
-      "name": "화학과 인류",
-      "group": "teacher",
-      "groupLabel": "교사 주도",
-      "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 15,
-      "grade2Covered": 14,
-      "round1NewApplicants": 29,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 0,
-      "selectionPending": 29,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 2,
+      "order": 1,
       "name": "아트 마인드",
       "group": "teacher",
       "groupLabel": "교사 주도",
       "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 4,
-      "grade2Covered": 3,
-      "round1NewApplicants": 7,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 4,
+        "target": 11,
+        "available": 7
       },
-      "confirmed": 7,
-      "selectionPending": 0,
-      "remaining": 14,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 3,
+        "target": 10,
+        "available": 7
+      },
+      "totalAvailable": 14
     },
     {
-      "id": 3,
+      "order": 2,
       "name": "수학적 시선",
       "group": "teacher",
       "groupLabel": "교사 주도",
       "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 5,
-      "grade2Covered": 17,
-      "round1NewApplicants": 22,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 5,
+        "target": 10,
+        "available": 5
       },
-      "confirmed": 0,
-      "selectionPending": 22,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
+      "grade2": {
+        "current": 17,
+        "target": 11,
+        "available": 0
+      },
+      "totalAvailable": 5
     },
     {
-      "id": 4,
+      "order": 3,
       "name": "AI 실무 탐구단",
       "group": "teacher",
       "groupLabel": "교사 주도",
       "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 3,
-      "grade2Covered": 3,
-      "round1NewApplicants": 6,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 4,
+        "target": 11,
+        "available": 7
       },
-      "confirmed": 6,
-      "selectionPending": 0,
-      "remaining": 15,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 3,
+        "target": 10,
+        "available": 7
+      },
+      "totalAvailable": 14
     },
     {
-      "id": 5,
-      "name": "축구반",
-      "group": "preorganized",
-      "groupLabel": "기조직",
-      "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 18,
-      "grade2Covered": 12,
-      "round1NewApplicants": 0,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 30,
-      "selectionPending": 0,
-      "remaining": 0,
-      "status": {
-        "code": "preorganized",
-        "label": "기조직"
-      }
-    },
-    {
-      "id": 6,
+      "order": 4,
       "name": "공대",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 20,
-      "grade2Covered": 10,
-      "round1NewApplicants": 28,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 20,
+        "target": 11,
+        "available": 0
       },
-      "confirmed": 2,
-      "selectionPending": 28,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
+      "grade2": {
+        "current": 10,
+        "target": 11,
+        "available": 1
+      },
+      "totalAvailable": 1
     },
     {
-      "id": 7,
-      "name": "공학개발",
-      "group": "student",
-      "groupLabel": "학생 주도",
-      "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 14,
-      "grade2Covered": 13,
-      "round1NewApplicants": 25,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 2,
-      "selectionPending": 25,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 8,
-      "name": "리더스온",
-      "group": "student",
-      "groupLabel": "학생 주도",
-      "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 22,
-      "grade2Covered": 14,
-      "round1NewApplicants": 34,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 2,
-      "selectionPending": 34,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 9,
+      "order": 5,
       "name": "에듀랩",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 4,
-      "grade2Covered": 5,
-      "round1NewApplicants": 7,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 4,
+        "target": 11,
+        "available": 7
       },
-      "confirmed": 9,
-      "selectionPending": 0,
-      "remaining": 13,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 5,
+        "target": 11,
+        "available": 6
+      },
+      "totalAvailable": 13
     },
     {
-      "id": 10,
+      "order": 6,
       "name": "크리컬쳐",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 6,
-      "grade2Covered": 12,
-      "round1NewApplicants": 16,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 6,
+        "target": 11,
+        "available": 5
       },
-      "confirmed": 2,
-      "selectionPending": 16,
-      "remaining": 4,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
+      "grade2": {
+        "current": 12,
+        "target": 11,
+        "available": 0
+      },
+      "totalAvailable": 5
     },
     {
-      "id": 11,
-      "name": "코드아틀리에",
-      "group": "student",
-      "groupLabel": "학생 주도",
-      "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 12,
-      "grade2Covered": 12,
-      "round1NewApplicants": 22,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 2,
-      "selectionPending": 22,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 12,
-      "name": "생물EX",
-      "group": "student",
-      "groupLabel": "학생 주도",
-      "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 15,
-      "grade2Covered": 14,
-      "round1NewApplicants": 27,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 2,
-      "selectionPending": 27,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 13,
+      "order": 7,
       "name": "이코노랩",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 6,
-      "grade2Covered": 7,
-      "round1NewApplicants": 11,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 6,
+        "target": 11,
+        "available": 5
       },
-      "confirmed": 13,
-      "selectionPending": 0,
-      "remaining": 9,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 7,
+        "target": 11,
+        "available": 4
+      },
+      "totalAvailable": 9
     },
     {
-      "id": 14,
-      "name": "AI바이오딥러닝",
-      "group": "student",
-      "groupLabel": "학생 주도",
-      "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 15,
-      "grade2Covered": 14,
-      "round1NewApplicants": 27,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 2,
-      "selectionPending": 27,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 15,
-      "name": "바이오앤케미",
-      "group": "student",
-      "groupLabel": "학생 주도",
-      "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 28,
-      "grade2Covered": 12,
-      "round1NewApplicants": 38,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 2,
-      "selectionPending": 38,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 16,
+      "order": 8,
       "name": "코드포지",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 8,
-      "grade2Covered": 10,
-      "round1NewApplicants": 16,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 8,
+        "target": 11,
+        "available": 3
       },
-      "confirmed": 18,
-      "selectionPending": 0,
-      "remaining": 4,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 10,
+        "target": 11,
+        "available": 1
+      },
+      "totalAvailable": 4
     },
     {
-      "id": 17,
+      "order": 9,
       "name": "웹소설 작가",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 1,
-      "grade2Covered": 1,
-      "round1NewApplicants": 1,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 1,
+        "target": 11,
+        "available": 10
       },
-      "confirmed": 2,
-      "selectionPending": 0,
-      "remaining": 20,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 1,
+        "target": 11,
+        "available": 10
+      },
+      "totalAvailable": 20
     },
     {
-      "id": 18,
+      "order": 10,
       "name": "퓨전공학탐구",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 2,
-      "grade2Covered": 13,
-      "round1NewApplicants": 13,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 2,
+        "target": 11,
+        "available": 9
       },
-      "confirmed": 2,
-      "selectionPending": 13,
-      "remaining": 7,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
+      "grade2": {
+        "current": 13,
+        "target": 11,
+        "available": 0
+      },
+      "totalAvailable": 9
     },
     {
-      "id": 19,
-      "name": "배드민턴반",
-      "group": "student",
-      "groupLabel": "학생 주도",
-      "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 12,
-      "grade2Covered": 13,
-      "round1NewApplicants": 23,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 2,
-      "selectionPending": 23,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 20,
+      "order": 11,
       "name": "이코노바",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 9,
-      "grade2Covered": 8,
-      "round1NewApplicants": 15,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 9,
+        "target": 11,
+        "available": 2
       },
-      "confirmed": 17,
-      "selectionPending": 0,
-      "remaining": 5,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 8,
+        "target": 11,
+        "available": 3
+      },
+      "totalAvailable": 5
     },
     {
-      "id": 21,
+      "order": 12,
       "name": "의학 탐구",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 5,
-      "grade2Covered": 0,
-      "round1NewApplicants": 3,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 5,
+        "target": 11,
+        "available": 6
       },
-      "confirmed": 5,
-      "selectionPending": 0,
-      "remaining": 17,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 0,
+        "target": 11,
+        "available": 11
+      },
+      "totalAvailable": 17
     },
     {
-      "id": 22,
+      "order": 13,
       "name": "메디체인저",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 10,
-      "grade2Covered": 8,
-      "round1NewApplicants": 16,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 10,
+        "target": 11,
+        "available": 1
       },
-      "confirmed": 18,
-      "selectionPending": 0,
-      "remaining": 4,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 8,
+        "target": 11,
+        "available": 3
+      },
+      "totalAvailable": 4
     },
     {
-      "id": 23,
+      "order": 14,
       "name": "데이터생물학과",
       "group": "student",
       "groupLabel": "학생 주도",
       "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 4,
-      "grade2Covered": 15,
-      "round1NewApplicants": 17,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 4,
+        "target": 11,
+        "available": 7
       },
-      "confirmed": 2,
-      "selectionPending": 17,
-      "remaining": 3,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
+      "grade2": {
+        "current": 15,
+        "target": 11,
+        "available": 0
+      },
+      "totalAvailable": 7
     },
     {
-      "id": 24,
-      "name": "공학에 물리다",
-      "group": "student",
-      "groupLabel": "학생 주도",
-      "capacity": 22,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 14,
-      "grade2Covered": 21,
-      "round1NewApplicants": 33,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 2,
-      "selectionPending": 33,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 25,
+      "order": 15,
       "name": "스크린 뮤직랩",
       "group": "teacher",
       "groupLabel": "교사 주도",
       "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 8,
-      "grade2Covered": 0,
-      "round1NewApplicants": 8,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 7,
+        "target": 11,
+        "available": 4
       },
-      "confirmed": 8,
-      "selectionPending": 0,
-      "remaining": 13,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 0,
+        "target": 10,
+        "available": 10
+      },
+      "totalAvailable": 14
     },
     {
-      "id": 26,
-      "name": "호모루덴스",
-      "group": "teacher",
-      "groupLabel": "교사 주도",
-      "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 17,
-      "grade2Covered": 15,
-      "round1NewApplicants": 32,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
-      },
-      "confirmed": 0,
-      "selectionPending": 32,
-      "remaining": 0,
-      "status": {
-        "code": "selection_required",
-        "label": "선발·학년 조정 필요"
-      }
-    },
-    {
-      "id": 27,
+      "order": 16,
       "name": "원더풀사이언스",
       "group": "teacher",
       "groupLabel": "교사 주도",
       "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 5,
-      "grade2Covered": 2,
-      "round1NewApplicants": 7,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 5,
+        "target": 11,
+        "available": 6
       },
-      "confirmed": 7,
-      "selectionPending": 0,
-      "remaining": 14,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 2,
+        "target": 10,
+        "available": 8
+      },
+      "totalAvailable": 14
     },
     {
-      "id": 28,
+      "order": 17,
       "name": "수학 탐구토론반",
       "group": "teacher",
       "groupLabel": "교사 주도",
       "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 4,
-      "grade2Covered": 1,
-      "round1NewApplicants": 5,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "grade1": {
+        "current": 3,
+        "target": 11,
+        "available": 8
       },
-      "confirmed": 5,
-      "selectionPending": 0,
-      "remaining": 16,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 1,
+        "target": 10,
+        "available": 9
+      },
+      "totalAvailable": 17
     },
     {
-      "id": 29,
+      "order": 18,
       "name": "AI유스프러너",
       "group": "student",
       "groupLabel": "학생 주도",
-      "capacity": 21,
-      "gradeCapacityLimit": 11,
-      "grade1Covered": 9,
-      "grade2Covered": 11,
-      "round1NewApplicants": 18,
-      "round2": {
-        "status": "not_open",
-        "applicants": null
+      "capacity": 22,
+      "grade1": {
+        "current": 9,
+        "target": 11,
+        "available": 2
       },
-      "confirmed": 20,
-      "selectionPending": 0,
-      "remaining": 1,
-      "status": {
-        "code": "recruiting_available",
-        "label": "충원 가능"
-      }
+      "grade2": {
+        "current": 11,
+        "target": 11,
+        "available": 0
+      },
+      "totalAvailable": 2
     }
   ]
 };
