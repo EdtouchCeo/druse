@@ -18,7 +18,8 @@ export function importBackup(text:string):Project {
   return imported
 }
 export function documentSections(project:Project,kind:DocumentKind):{title:string;text:string}[] {
-  const sections=(kind==='social'?SOCIAL_GUIDES:CANVAS_GUIDES).map(g=>({title:g.label,text:kind==='social'?(g.key==='ideas'?getIdeaText(project):project.social[g.key as keyof Project['social']]):project.canvas[g.key as keyof Project['canvas']]}))
+  const sections=(kind==='social'?SOCIAL_GUIDES:CANVAS_GUIDES).map(g=>({title:kind==='social'&&g.key==='situation'?'문제 상황':g.label,text:kind==='social'?(g.key==='ideas'?getIdeaText(project):project.social[g.key as keyof Project['social']]):project.canvas[g.key as keyof Project['canvas']]}))
+  if(kind==='social'&&project.variation.trim())sections[0]!.text += `\n\n이번 연습에서 바뀐 조건\n${project.variation}`
   if(kind==='social'&&project.choiceReason.trim())sections.find(s=>s.title===SOCIAL_GUIDES.find(g=>g.key==='ideas')?.label)!.text=`선택한 이유\n${project.choiceReason}\n\n${getIdeaText(project)}`
   if(project.sources.trim())sections.push({title:'참고한 자료',text:project.sources})
   return sections

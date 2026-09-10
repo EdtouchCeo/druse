@@ -6474,25 +6474,49 @@ function switchRulesTab(id,btn){
 </div>
 <!-- 2. 학교생활 -->
 <div class="sub-panel" id="sub-life">
-  <section id="assessment-preparation" aria-labelledby="assessment-preparation-title" style="margin-bottom:24px;padding:24px;border:1px solid #dbe3f4;border-radius:16px;background:#f5f7ff;">
-    <h2 id="assessment-preparation-title" style="margin:0 0 8px;font-size:1.25rem;color:#1e3a6b;">내 생각으로 준비하는 수행평가</h2>
-    <p style="margin:0 0 18px;color:#475569;line-height:1.7;">문제에서 해결 아이디어를 찾고, 같은 계획으로 비즈니스 모델을 만들어 보세요. 질문과 예시를 살펴보며 쓰고, 내 글을 점검해 다시 다듬을 수 있습니다.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;">
-      <a href="/assessment/social-plan/" style="display:block;padding:20px;border:1px solid #cdd8f4;border-radius:12px;background:#fff;text-decoration:none;color:#1e3a6b;min-height:44px;">
-        <span style="display:block;font-size:1.05rem;font-weight:700;margin-bottom:8px;">사회 문제 해결 계획서</span>
-        <span style="display:block;color:#475569;font-size:0.95rem;line-height:1.7;">네 가지 AI 기법의 예제를 읽고, 새로운 상황에 맞는 해결 계획을 단계별로 작성하세요.</span>
+  <style>
+    #assessment-preparation,#career-plan-download{font-size:16px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere;}
+    #assessment-preparation{margin-bottom:28px;padding:28px;border:1px solid #dbe3f4;border-radius:16px;background:#f5f7ff;color:#243451;}
+    #assessment-preparation h2,#career-plan-download h2{margin:0 0 12px;font-size:24px;line-height:1.5;color:#1e3a6b;}
+    #assessment-preparation .prep-intro{margin:0 0 22px;max-width:70ch;color:#475569;font-size:17px;}
+    #assessment-preparation .prep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:18px;}
+    #assessment-preparation .prep-card{display:flex;flex-direction:column;gap:12px;padding:24px;border:1px solid #cdd8f4;border-radius:12px;background:#fff;text-decoration:none;color:#1e3a6b;}
+    #assessment-preparation .prep-card:hover{border-color:#1d4ed8;background:#fafbff;}
+    #assessment-preparation a:focus-visible,#career-plan-download a:focus-visible{outline:3px solid #1d4ed8;outline-offset:4px;}
+    #assessment-preparation .prep-label{font-size:14px;font-weight:600;color:#475569;}
+    #assessment-preparation .prep-title{font-size:22px;font-weight:700;line-height:1.5;}
+    #assessment-preparation .prep-description{color:#475569;font-size:16px;line-height:1.8;}
+    #assessment-preparation .prep-action{margin-top:auto;padding-top:8px;font-size:16px;font-weight:700;color:#1d4ed8;}
+    #assessment-preparation .prep-footer{display:flex;gap:8px 24px;flex-wrap:wrap;align-items:center;margin:20px 0 0;font-size:15px;color:#475569;}
+    #assessment-preparation .prep-footer a{display:inline-flex;align-items:center;min-height:44px;color:#1d4ed8;font-size:16px;font-weight:600;}
+    #career-plan-download{margin-bottom:28px;padding:24px;}
+    #career-plan-download p{margin:0 0 18px;font-size:16px;}
+    #career-plan-download .download-plan{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;box-sizing:border-box;border-radius:8px;background:#1d4ed8;color:#fff;text-decoration:none;font-size:16px;font-weight:600;line-height:1.6;}
+    @media(max-width:600px){#assessment-preparation{padding:20px 16px;}#assessment-preparation h2,#career-plan-download h2{font-size:22px;}#assessment-preparation .prep-card{padding:20px;}#assessment-preparation .prep-title{font-size:20px;}#career-plan-download{padding:20px;}#career-plan-download .download-plan{width:100%;}}
+  </style>
+  <section id="assessment-preparation" aria-labelledby="assessment-preparation-title">
+    <h2 id="assessment-preparation-title">내 생각으로 준비하는 수행평가</h2>
+    <p class="prep-intro">주어진 문제 상황을 읽고 해결 계획을 세워 보세요. 단계별 질문과 예시를 참고해 쓴 뒤, 내 글을 점검하며 다듬을 수 있습니다.</p>
+    <div class="prep-grid">
+      <a class="prep-card" href="/assessment/social-plan/">
+        <span class="prep-label">문제 상황 선택 · 5단계 작성</span>
+        <span class="prep-title">사회 문제 해결 계획서</span>
+        <span class="prep-description">네 가지 연습 상황 중 하나를 고르세요. 공감부터 평가까지, 상황에 맞는 해결 방법을 내 말로 정리합니다.</span>
+        <span class="prep-action">문제 상황 고르고 시작하기 →</span>
       </a>
-      <a href="/assessment/business-model/" style="display:block;padding:20px;border:1px solid #cdd8f4;border-radius:12px;background:#fff;text-decoration:none;color:#1e3a6b;min-height:44px;">
-        <span style="display:block;font-size:1.05rem;font-weight:700;margin-bottom:8px;">비즈니스 모델 수립하기</span>
-        <span style="display:block;color:#475569;font-size:0.95rem;line-height:1.7;">해결 계획을 이어받아 문제, 고객, 가치와 운영 방법을 린 캔버스 9항목으로 정리하세요.</span>
+      <a class="prep-card" href="/assessment/business-model/">
+        <span class="prep-label">해결 계획 연결 · 린 캔버스 9항목</span>
+        <span class="prep-title">비즈니스 모델 수립하기</span>
+        <span class="prep-description">해결 계획을 바탕으로 누구에게 어떤 가치를 줄지 생각해 보세요. 고객, 제공할 서비스와 운영 방법을 하나씩 정리합니다.</span>
+        <span class="prep-action">비즈니스 모델 작성하기 →</span>
       </a>
     </div>
-    <p style="margin:14px 0 0;font-size:0.9rem;color:#475569;line-height:1.7;">로그인 없이 이용합니다. 작성한 내용은 이 기기에 저장됩니다. <a href="/assessment/" style="display:inline-flex;align-items:center;min-height:44px;color:#1d4ed8;font-weight:600;">내 계획 이어쓰기</a></p>
+    <div class="prep-footer"><span>로그인 없이 이용하며, 작성한 내용은 이 기기에 저장됩니다.</span><a href="/assessment/">내 계획 이어쓰기</a></div>
   </section>
-  <div class="card" id="career-plan-download" style="margin-bottom:24px;">
-    <h2 style="margin:0 0 10px;font-size:1.15rem;">2학기 진로활동 계획서</h2>
-    <p style="margin:0 0 14px;line-height:1.7;">진로활동 계획서 양식을 내려받아 작성하세요. 로그인 없이 누구나 이용할 수 있습니다.</p>
-    <a href="/downloads/career-activity-plan-2026-semester2.docx" download="2학기_진로활동_계획서_양식.docx" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;box-sizing:border-box;border-radius:8px;background:#1d4ed8;color:#fff;text-decoration:none;font-weight:600;line-height:1.5;">진로활동 계획서 다운로드 (Word)</a>
+  <div class="card" id="career-plan-download">
+    <h2>2학기 진로활동 계획서</h2>
+    <p>진로활동 계획서 양식을 내려받아 작성하세요. 로그인 없이 누구나 이용할 수 있습니다.</p>
+    <a class="download-plan" href="/downloads/career-activity-plan-2026-semester2.docx" download="2학기_진로활동_계획서_양식.docx">진로활동 계획서 다운로드 (Word)</a>
   </div>
 
 <style>

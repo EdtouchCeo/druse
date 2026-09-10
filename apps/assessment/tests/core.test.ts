@@ -40,6 +40,34 @@ test('four techniques provide eight complete example documents and four attribut
   assert.doesNotMatch(JSON.stringify([EXAMPLES,PRACTICES,TECHNIQUES]),/스캐폴딩|피드백/)
 })
 
+test('provided practice situations contain readable paragraphs and survive backup and social output intact',()=>{
+  for(const practice of PRACTICES){
+    const paragraphs=practice.situation.split(/\n\s*\n/).filter(t=>t.trim())
+    assert.ok(paragraphs.length>=3,`${practice.technique}: paragraphs=${paragraphs.length}`)
+    const p=createProject(practice.technique);p.practiceId=practice.id;p.source=practice.source;p.social.situation=practice.situation
+    const restored=importBackup(backup(p))
+    assert.equal(restored.social.situation,practice.situation)
+    assert.ok(documentText(restored,'social').includes(practice.situation))
+    assert.equal(documentSections(restored,'social').length,6)
+  }
+})
+
+test('existing custom situation is retained as source material while subsequent writing changes',()=>{
+  const p=createProject();p.social.situation='이전에 직접 저장한 고유한 문제 상황.\n\n기존 제한 조건을 보존한다.'
+  const original=p.social.situation
+  for(const key of SOCIAL_KEYS.filter(k=>k!=='situation'))setField(p,`social:${key}`,`다음 작성 단계 ${key}`)
+  const restored=validateProject(JSON.parse(JSON.stringify(p)))
+  assert.equal(restored.social.situation,original);assert.ok(documentText(restored,'social').includes(original))
+})
+
+test('social output includes the provided changed condition without altering the source situation',()=>{
+  const p=createProject();p.social.situation=PRACTICES[0].situation;p.variation=PRACTICES[0].change
+  const before=copy(p)
+  const sections=documentSections(p,'social'),text=documentText(p,'social')
+  assert.equal(sections.length,6);assert.ok(sections[0].text.includes(p.social.situation));assert.ok(sections[0].text.includes(p.variation));assert.ok(text.includes('이번 연습에서 바뀐 조건'))
+  assert.deepEqual(p,before);assert.ok(!documentText(p,'business').includes(p.variation))
+})
+
 test('backup roundtrip retains every student artifact while importing as a separate project',()=>{
   const original=filledProject(), imported=importBackup(backup(original))
   assert.notEqual(imported.id,original.id)

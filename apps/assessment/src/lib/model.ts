@@ -9,7 +9,7 @@ export const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T
 export function createProject(technique: Technique = 'path'): Project {
   const now = new Date().toISOString()
   return { schemaVersion:1, id:crypto.randomUUID(), revision:0, socialRevision:0, title:'나의 문제 해결 계획', createdAt:now, updatedAt:now,
-    technique, mode:'guided', source:'직접 작성', practiceId:'', same:'', different:'', choiceReason:'', social:record(SOCIAL_KEYS),
+    technique, mode:'guided', source:'문제 상황 선택 전', practiceId:'', same:'', different:'', choiceReason:'', social:record(SOCIAL_KEYS),
     answers:{path:{},local:{},game:{},expert:{}}, canvas:record(CANVAS_KEYS), sources:'', author:'', reviews:{}, linkedPlan:null, sketch:'', variation:'' }
 }
 export function cloneProject(project: Project, title = `${project.title} — 새 연습`): Project {
