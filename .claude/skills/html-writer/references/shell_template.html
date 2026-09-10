@@ -682,7 +682,7 @@
   <div id="auth-bar-inner" style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px;flex-wrap:wrap;">
     <!-- 시간표 검색 위젯 -->
     <div id="tt-search-wrap" style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-      <span style="font-size:0.8rem;font-weight:700;color:#1a3a6b;white-space:nowrap;">🗓 시간표</span>
+      <span style="font-size:0.8rem;font-weight:700;color:#1a3a6b;white-space:nowrap;">🗓 시간표<span style="margin-left:4px;font-size:0.65rem;font-weight:700;color:#1d4ed8;background:#e0edff;border-radius:8px;padding:1px 5px;vertical-align:middle;">2학기</span></span>
       <select id="tt-type" onchange="ttTypeChange()" style="height:30px;border:1px solid #d1d5db;border-radius:20px;font-size:0.75rem;padding:0 10px;cursor:pointer;background:#fff;color:#374151;font-family:inherit;outline:none;">
         <option value="teacher">교사별</option>
         <option value="class">학급별</option>
@@ -797,7 +797,7 @@
 <!-- ===== 교육활동 사진 ===== -->
 <div id="photos-content">
   <style>
-    .drp-form-grid { display:grid; grid-template-columns: 1fr 180px; gap:12px; }
+    .drp-form-grid { display:grid; grid-template-columns: 1fr 150px 150px; gap:12px; }
     @media (max-width: 640px) { .drp-form-grid { grid-template-columns: 1fr; } }
     .drp-input, .drp-textarea {
       width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px;
@@ -821,16 +821,46 @@
     .drp-btn-ghost { background:#fff; color:#374151; border:1px solid #d1d5db; }
     .drp-msg { font-size:0.84rem; margin-top:10px; }
     .drp-msg.err { color:#dc2626; } .drp-msg.ok { color:#16a34a; }
-    .drp-entry { margin-top:16px; }
-    .drp-entry-head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
-    .drp-entry-title { font-size:1.02rem; font-weight:800; color:#111827; }
-    .drp-entry-date { font-size:0.8rem; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 10px; border-radius:999px; }
-    .drp-entry-meta { font-size:0.78rem; color:#9ca3af; margin-left:auto; display:flex; align-items:center; gap:8px; }
-    .drp-del { border:none; background:none; color:#dc2626; font-size:0.78rem; cursor:pointer; padding:2px 4px; font-family:inherit; }
-    .drp-desc { font-size:0.88rem; color:#4b5563; line-height:1.7; margin:8px 0 0; white-space:pre-wrap; }
-    .drp-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:8px; margin-top:12px; }
-    .drp-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:10px; border:1px solid #e5e7eb; cursor:zoom-in; display:block; background:#f3f4f6; }
+    /* 균일 크기 카드 그리드 */
+    #drp-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px; margin-top:16px; }
+    #drp-list .drp-empty { grid-column:1 / -1; }
+    .drp-entry { display:flex; flex-direction:column; margin:0; }
+    .drp-entry-title {
+      font-size:1rem; font-weight:800; color:#111827;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+    }
+    .drp-entry-title:hover { color:var(--primary, #1d4ed8); text-decoration:underline; }
+    .drp-entry-sub { display:flex; align-items:center; gap:8px; margin-top:5px; min-height:22px; min-width:0; }
+    .drp-entry-date {
+      font-size:0.76rem; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 9px; border-radius:999px;
+      white-space:nowrap; flex-shrink:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
+    }
+    .drp-entry-meta { font-size:0.76rem; color:#9ca3af; margin-left:auto; display:flex; align-items:center; gap:2px; white-space:nowrap; flex-shrink:0; }
+    .drp-entry-author { max-width:76px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:2px; }
+    .drp-del { border:none; background:none; color:#dc2626; font-size:0.85rem; cursor:pointer; padding:2px 3px; font-family:inherit; line-height:1; }
+    .drp-edit { border:none; background:none; color:#2563eb; font-size:0.85rem; cursor:pointer; padding:2px 3px; font-family:inherit; line-height:1; }
+    .drp-desc {
+      font-size:0.85rem; color:#4b5563; line-height:1.65; margin:8px 0 0;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+      height:calc(2 * 1.65em); cursor:pointer;
+    }
+    .drp-hero { position:relative; margin-top:12px; border-radius:12px; overflow:hidden; background:#f3f4f6; }
+    .drp-hero-img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; cursor:zoom-in; }
+    .drp-hero-nav {
+      position:absolute; top:50%; transform:translateY(-50%); width:36px; height:36px; border:none; border-radius:50%;
+      background:rgba(17,24,39,0.45); color:#fff; font-size:20px; line-height:1; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; padding:0 0 2px;
+    }
+    .drp-hero-nav:hover { background:rgba(17,24,39,0.72); }
+    .drp-hero-prev { left:10px; } .drp-hero-next { right:10px; }
+    .drp-hero-count { position:absolute; left:12px; bottom:10px; background:rgba(17,24,39,0.55); color:#fff; font-size:0.74rem; font-weight:700; padding:3px 10px; border-radius:999px; }
+    .drp-hero-dl { position:absolute; right:10px; bottom:8px; width:34px; height:34px; border:none; border-radius:50%; background:rgba(17,24,39,0.45); color:#fff; font-size:15px; cursor:pointer; }
+    .drp-hero-dl:hover { background:rgba(17,24,39,0.72); }
     .drp-empty { text-align:center; color:#9ca3af; padding:36px 0; font-size:0.9rem; }
+    #drp-form-modal, #drp-detail-modal {
+      display:none; position:fixed; inset:0; z-index:9998; background:rgba(15,23,42,0.55);
+      align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 16px; box-sizing:border-box;
+    }
     #drp-lightbox {
       display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.92);
       align-items:center; justify-content:center; flex-direction:column; gap:12px; padding:20px; box-sizing:border-box;
@@ -840,42 +870,69 @@
     #drp-lightbox .drp-lb-bar button { background:rgba(255,255,255,0.12); border:none; color:#fff; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:0.9rem; font-family:inherit; }
   </style>
 
-  <h2 class="section-title">📸 교육활동 사진</h2>
-
-  <div class="card">
-    <strong>📷 활동 사진 등록</strong>
-    <p style="margin:6px 0 14px; color:#6b7280; font-size:0.85rem;">행사명·일자·주요 내용을 입력하고 사진을 여러 장 첨부할 수 있습니다. 사진은 자동으로 용량이 압축되어 저장됩니다.</p>
-    <div class="drp-form-grid">
-      <div>
-        <label class="drp-label" for="drp-title">행사명 <span style="color:#dc2626;">*</span></label>
-        <input class="drp-input" id="drp-title" type="text" maxlength="120" placeholder="예: 2026 이상화 시인 추모 백일장">
-      </div>
-      <div>
-        <label class="drp-label" for="drp-date">일자 <span style="color:#dc2626;">*</span></label>
-        <input class="drp-input" id="drp-date" type="date">
-      </div>
-    </div>
-    <div style="margin-top:12px;">
-      <label class="drp-label" for="drp-desc">주요 내용</label>
-      <textarea class="drp-textarea" id="drp-desc" maxlength="2000" placeholder="행사 개요, 참여 대상, 주요 활동 내용 등을 적어 주세요."></textarea>
-    </div>
-    <div style="margin-top:12px;">
-      <label class="drp-label">사진 <span style="color:#dc2626;">*</span> <span style="font-weight:400; color:#9ca3af;">(여러 장 선택 가능, 최대 30장)</span></label>
-      <input type="file" id="drp-files" accept="image/*" multiple style="display:none;">
-      <button type="button" class="drp-btn drp-btn-ghost" onclick="document.getElementById('drp-files').click();">🖼️ 사진 선택</button>
-      <div class="drp-thumbs" id="drp-thumbs"></div>
-    </div>
-    <div style="margin-top:16px; display:flex; align-items:center; gap:12px;">
-      <button type="button" class="drp-btn" id="drp-submit">✅ 등록하기</button>
-      <span class="drp-msg" id="drp-form-msg"></span>
-    </div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <h2 class="section-title" style="margin:0;">📸 교육활동 사진</h2>
+    <button type="button" class="drp-btn drp-btn-ghost" style="height:30px; padding:0 12px; font-size:0.8rem; margin-left:auto;" onclick="if (window.drPhotosReload) drPhotosReload();">🔄 새로고침</button>
   </div>
+  <p style="margin:6px 0 0; color:#6b7280; font-size:0.85rem;">우리 학교 교육활동의 순간들을 기록하고 나누는 공간입니다. 사진을 클릭하면 크게 볼 수 있습니다.</p>
 
-  <div style="display:flex; align-items:center; gap:10px; margin-top:32px;">
-    <h2 class="section-title" style="margin:0;">🗂️ 등록된 활동</h2>
-    <button type="button" class="drp-btn drp-btn-ghost" style="height:30px; padding:0 12px; font-size:0.8rem;" onclick="if (window.drPhotosReload) drPhotosReload();">🔄 새로고침</button>
-  </div>
   <div id="drp-list"><div class="drp-empty">불러오는 중…</div></div>
+
+  <div style="text-align:center; margin-top:30px;">
+    <button type="button" class="drp-btn" style="height:46px; padding:0 30px; font-size:0.95rem; border-radius:23px;" onclick="drpOpenForm();">➕ 활동 사진 등록</button>
+  </div>
+
+  <!-- 등록 창 (모달) -->
+  <div id="drp-form-modal" onclick="if (event.target === this) this.style.display='none';">
+    <div class="card" style="max-width:660px; width:100%; margin:0; max-height:calc(100vh - 80px); overflow-y:auto;">
+      <div style="display:flex; align-items:center;">
+        <strong id="drp-form-heading" style="font-size:1.02rem;">📷 활동 사진 등록</strong>
+        <button type="button" onclick="document.getElementById('drp-form-modal').style.display='none';" style="margin-left:auto; border:none; background:none; font-size:1.05rem; cursor:pointer; color:#6b7280; padding:4px 6px;" title="닫기">✕</button>
+      </div>
+      <p style="margin:6px 0 14px; color:#6b7280; font-size:0.85rem;">행사명·일자·주요 내용을 입력하고 사진을 여러 장 첨부할 수 있습니다. 사진은 자동으로 용량이 압축되어 저장됩니다.</p>
+      <div class="drp-form-grid">
+        <div>
+          <label class="drp-label" for="drp-title">행사명 <span style="color:#dc2626;">*</span></label>
+          <input class="drp-input" id="drp-title" type="text" maxlength="120" placeholder="예: 2026 이상화 시인 추모 백일장">
+        </div>
+        <div>
+          <label class="drp-label" for="drp-date">시작 일자 <span style="color:#dc2626;">*</span></label>
+          <input class="drp-input" id="drp-date" type="date">
+        </div>
+        <div>
+          <label class="drp-label" for="drp-date-end">종료 일자 <span style="font-weight:400; color:#9ca3af;">(선택)</span></label>
+          <input class="drp-input" id="drp-date-end" type="date">
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label class="drp-label" for="drp-desc">주요 내용</label>
+        <textarea class="drp-textarea" id="drp-desc" maxlength="2000" placeholder="행사 개요, 참여 대상, 주요 활동 내용 등을 적어 주세요."></textarea>
+      </div>
+      <div style="margin-top:12px;" id="drp-photos-block">
+        <label class="drp-label">사진 <span style="color:#dc2626;">*</span> <span style="font-weight:400; color:#9ca3af;">(여러 장 선택 가능, 최대 30장)</span></label>
+        <input type="file" id="drp-files" accept="image/*" multiple style="display:none;">
+        <button type="button" class="drp-btn drp-btn-ghost" onclick="document.getElementById('drp-files').click();">🖼️ 사진 선택</button>
+        <div class="drp-thumbs" id="drp-thumbs"></div>
+      </div>
+      <div style="margin-top:16px; display:flex; align-items:center; gap:12px;">
+        <button type="button" class="drp-btn" id="drp-submit">✅ 등록하기</button>
+        <span class="drp-msg" id="drp-form-msg"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상세 보기 창 -->
+  <div id="drp-detail-modal" onclick="if (event.target === this) this.style.display='none';">
+    <div class="card" style="max-width:640px; width:100%; margin:0; max-height:calc(100vh - 80px); overflow-y:auto;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <strong id="drp-dt-title" style="font-size:1.08rem; line-height:1.5;"></strong>
+        <button type="button" onclick="document.getElementById('drp-detail-modal').style.display='none';" style="margin-left:auto; border:none; background:none; font-size:1.05rem; cursor:pointer; color:#6b7280; padding:4px 6px; flex-shrink:0;" title="닫기">✕</button>
+      </div>
+      <div id="drp-dt-date" style="margin-top:8px; font-size:0.82rem; font-weight:700; color:#2563eb;"></div>
+      <div id="drp-dt-photos"></div>
+      <p id="drp-dt-desc" style="margin:14px 0 0; font-size:0.9rem; color:#374151; line-height:1.8; white-space:pre-wrap;"></p>
+    </div>
+  </div>
 
   <div id="drp-lightbox" onclick="if (event.target === this) this.style.display='none';">
     <img id="drp-lb-img" alt="활동 사진">
@@ -883,6 +940,7 @@
       <button type="button" onclick="drpLbMove(-1); event.stopPropagation();">◀ 이전</button>
       <span id="drp-lb-count"></span>
       <button type="button" onclick="drpLbMove(1); event.stopPropagation();">다음 ▶</button>
+      <button type="button" onclick="drpLbDownload(); event.stopPropagation();">⬇ 다운로드</button>
       <button type="button" onclick="document.getElementById('drp-lightbox').style.display='none';">✕ 닫기</button>
     </div>
   </div>
@@ -896,7 +954,8 @@
   var _pending = [];      // { blob, url(objectURL) }
   var _loaded = false;
   var _busy = false;
-  var _lbUrls = [], _lbIdx = 0;
+  var _lbUrls = [], _lbIdx = 0, _lbTitle = '';
+  var _editId = null;    // null=신규 등록, 값 있으면 해당 게시물 수정 모드
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -910,13 +969,32 @@
       return Promise.resolve(s && s.token ? s.token : null);
     } catch (e) { return Promise.resolve(null); }
   }
-  function api(payload) {
+  // 세션 복구 불가 — 저장된 세션 정리 후 재로그인 링크 안내
+  function sessionDead() {
+    if (typeof window.clearSession === 'function') window.clearSession();
+    var el = document.getElementById('drp-form-msg');
+    if (el) {
+      el.className = 'drp-msg err';
+      el.innerHTML = '로그인 유효기간이 지났습니다. <a href="#" onclick="startLogin();return false;" style="color:#2563eb;font-weight:700;text-decoration:underline;">여기를 눌러 다시 로그인</a>한 뒤 등록해 주세요.';
+    }
+    var e = new Error('로그인 유효기간이 지났습니다. 다시 로그인해 주세요.');
+    e.handled = true;
+    return e;
+  }
+  function api(payload, _retried) {
     return getToken().then(function (token) {
-      if (!token) throw new Error('로그인이 필요합니다.');
+      if (!token) throw sessionDead();
       payload.token = token;
       return fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (d) {
+        // 액세스 토큰 만료(401) 시 refresh 토큰으로 1회 갱신 후 재시도
+        if (r.status === 401 && !_retried && typeof window.refreshSession === 'function') {
+          return window.refreshSession().then(function (ns) {
+            if (ns && ns.token) return api(payload, true);
+            throw sessionDead();
+          });
+        }
         if (!r.ok) throw new Error(d && d.error ? d.error : '요청에 실패했습니다. (' + r.status + ')');
         return d;
       });
@@ -935,6 +1013,13 @@
     var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
     var w = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
     return p[0] + '.' + p[1] + '.' + p[2] + ' (' + w + ')';
+  }
+  // 시작~종료 병기 (같은 해면 종료일의 연도 생략)
+  function fmtRange(s, e) {
+    if (!e || e === s) return fmtDate(s);
+    var fe = fmtDate(e);
+    if (String(s).slice(0, 4) === String(e).slice(0, 4)) fe = fe.slice(5);
+    return fmtDate(s) + ' ~ ' + fe;
   }
 
   // ----- 이미지 압축 (긴 변 1600px, JPEG) -----
@@ -1020,14 +1105,33 @@
     if (_busy) return;
     var title = (document.getElementById('drp-title').value || '').trim();
     var date = document.getElementById('drp-date').value || '';
+    var dateEnd = document.getElementById('drp-date-end').value || '';
     var desc = (document.getElementById('drp-desc').value || '').trim();
     if (!title) { setMsg('행사명을 입력해 주세요.', 'err'); return; }
-    if (!date) { setMsg('일자를 선택해 주세요.', 'err'); return; }
-    if (!_pending.length) { setMsg('사진을 1장 이상 첨부해 주세요.', 'err'); return; }
+    if (!date) { setMsg('시작 일자를 선택해 주세요.', 'err'); return; }
+    if (dateEnd && dateEnd < date) { setMsg('종료 일자가 시작 일자보다 빠릅니다.', 'err'); return; }
+    if (!_editId && !_pending.length) { setMsg('사진을 1장 이상 첨부해 주세요.', 'err'); return; }
 
     _busy = true;
     var btn = document.getElementById('drp-submit');
     btn.disabled = true;
+
+    // ----- 수정 모드: 텍스트·일자만 저장 -----
+    if (_editId) {
+      setMsg('수정 저장 중…');
+      api({ action: 'update', id: _editId, title: title, event_date: date, event_end: dateEnd, description: desc })
+        .then(function () {
+          setMsg('수정되었습니다. ✅', 'ok');
+          load();
+          var modal = document.getElementById('drp-form-modal');
+          if (modal) setTimeout(function () { modal.style.display = 'none'; setMsg(''); }, 900);
+        }).catch(function (e) {
+          if (!(e && e.handled)) setMsg(String(e.message || e), 'err');
+        }).then(function () {
+          _busy = false; btn.disabled = false;
+        });
+      return;
+    }
     var paths = [];
     var chain = Promise.resolve();
     _pending.forEach(function (p, i) {
@@ -1040,18 +1144,21 @@
     });
     chain.then(function () {
       setMsg('게시물 등록 중…');
-      return api({ action: 'create', title: title, event_date: date, description: desc, photos: paths });
+      return api({ action: 'create', title: title, event_date: date, event_end: dateEnd, description: desc, photos: paths });
     }).then(function () {
       setMsg('등록되었습니다. ✅', 'ok');
       document.getElementById('drp-title').value = '';
       document.getElementById('drp-date').value = '';
+      document.getElementById('drp-date-end').value = '';
       document.getElementById('drp-desc').value = '';
       _pending.forEach(function (p) { URL.revokeObjectURL(p.url); });
       _pending = [];
       renderThumbs();
       load();
+      var modal = document.getElementById('drp-form-modal');
+      if (modal) setTimeout(function () { modal.style.display = 'none'; setMsg(''); }, 900);
     }).catch(function (e) {
-      setMsg(String(e.message || e), 'err');
+      if (!(e && e.handled)) setMsg(String(e.message || e), 'err');
     }).then(function () {
       _busy = false; btn.disabled = false;
     });
@@ -1064,6 +1171,11 @@
     box.innerHTML = '<div class="drp-empty">불러오는 중…</div>';
     api({ action: 'list' }).then(function (d) {
       var items = d.items || [];
+      // 행사 일자 최신순 (같은 날짜면 등록 최신순)
+      items.sort(function (a, b) {
+        var dd = String(b.event_date || '').localeCompare(String(a.event_date || ''));
+        return dd !== 0 ? dd : String(b.created_at || '').localeCompare(String(a.created_at || ''));
+      });
       if (!items.length) {
         box.innerHTML = '<div class="drp-empty">아직 등록된 활동 사진이 없습니다.<br>첫 번째 활동을 등록해 보세요! 📷</div>';
         return;
@@ -1072,27 +1184,21 @@
       items.forEach(function (it) {
         var card = document.createElement('div');
         card.className = 'card drp-entry';
-        var head = '<div class="drp-entry-head">'
-          + '<span class="drp-entry-title">' + esc(it.title) + '</span>'
-          + '<span class="drp-entry-date">📅 ' + esc(fmtDate(it.event_date)) + '</span>'
-          + '<span class="drp-entry-meta">' + esc(it.created_by_name || '')
-          + (it.mine ? ' <button type="button" class="drp-del" data-id="' + esc(it.id) + '">🗑 삭제</button>' : '')
+        var head = '<div class="drp-entry-title" title="' + esc(it.title) + '">' + esc(it.title) + '</div>'
+          + '<div class="drp-entry-sub">'
+          + '<span class="drp-entry-date">📅 ' + esc(fmtRange(it.event_date, it.event_end)) + '</span>'
+          + '<span class="drp-entry-meta">'
+          + (it.created_by_name ? '<span class="drp-entry-author" title="' + esc(it.created_by_name) + '">' + esc(it.created_by_name) + '</span>' : '')
+          + (it.mine ? '<button type="button" class="drp-edit" title="수정">✏️</button><button type="button" class="drp-del" data-id="' + esc(it.id) + '" title="삭제">🗑</button>' : '')
           + '</span></div>';
-        var descHtml = it.description ? '<p class="drp-desc">' + esc(it.description) + '</p>' : '';
-        card.innerHTML = head + descHtml + '<div class="drp-grid"></div>';
-        var grid = card.querySelector('.drp-grid');
-        var urls = [];
-        (it.photos || []).forEach(function (ph) {
-          if (!ph.url) return;
-          urls.push(ph.url);
-          var idx = urls.length - 1;
-          var im = document.createElement('img');
-          im.loading = 'lazy';
-          im.src = ph.url;
-          im.alt = it.title;
-          im.onclick = function () { openLb(urls, idx); };
-          grid.appendChild(im);
-        });
+        var descHtml = '<p class="drp-desc" title="클릭하면 전체 내용을 볼 수 있습니다">' + esc(it.description || '') + '</p>';
+        card.innerHTML = head + descHtml;
+        card.querySelector('.drp-entry-title').onclick = function () { openDetail(it); };
+        card.querySelector('.drp-desc').onclick = function () { openDetail(it); };
+        var ed = card.querySelector('.drp-edit');
+        if (ed) ed.onclick = function () { openEdit(it); };
+        var urls = (it.photos || []).filter(function (p) { return p.url; }).map(function (p) { return p.url; });
+        if (urls.length) card.appendChild(makeHero(urls, it.title));
         var del = card.querySelector('.drp-del');
         if (del) del.onclick = function () {
           if (!confirm('이 게시물과 사진을 삭제할까요?')) return;
@@ -1107,9 +1213,31 @@
     });
   }
 
+  // ----- 다운로드 (파일명: 행사명(N).jpg — 기존 게시물 포함 동일 적용) -----
+  function photoName(title, idx) {
+    var t = String(title || '활동사진').replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 60) || '활동사진';
+    return t + '(' + (idx + 1) + ').jpg';
+  }
+  function drpDownload(url, name) {
+    fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('다운로드 실패');
+      return r.blob();
+    }).then(function (b) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = name || '활동사진.jpg';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    }).catch(function () { window.open(url, '_blank'); });
+  }
+  window.drpLbDownload = function () {
+    if (_lbUrls.length) drpDownload(_lbUrls[_lbIdx], photoName(_lbTitle, _lbIdx));
+  };
+
   // ----- 라이트박스 -----
-  function openLb(urls, idx) {
-    _lbUrls = urls; _lbIdx = idx;
+  function openLb(urls, idx, title) {
+    _lbUrls = urls; _lbIdx = idx; _lbTitle = title || '';
     var lb = document.getElementById('drp-lightbox');
     lb.style.display = 'flex';
     updateLb();
@@ -1124,12 +1252,92 @@
     updateLb();
   };
   document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var dm = document.getElementById('drp-detail-modal');
+      if (dm && dm.style.display === 'flex') { dm.style.display = 'none'; return; }
+      var m = document.getElementById('drp-form-modal');
+      if (m && m.style.display === 'flex') { m.style.display = 'none'; return; }
+    }
     var lb = document.getElementById('drp-lightbox');
     if (!lb || lb.style.display !== 'flex') return;
     if (e.key === 'Escape') lb.style.display = 'none';
     if (e.key === 'ArrowLeft') window.drpLbMove(-1);
     if (e.key === 'ArrowRight') window.drpLbMove(1);
   });
+
+  // ----- 사진 캐러셀 생성 (카드·상세 창 공용: 좌우 이동 + 번호 + 다운로드 + 클릭 확대) -----
+  function makeHero(urls, title) {
+    var hero = document.createElement('div');
+    hero.className = 'drp-hero';
+    hero.innerHTML = '<img class="drp-hero-img" loading="lazy" alt="' + esc(title) + '">'
+      + (urls.length > 1
+        ? '<button type="button" class="drp-hero-nav drp-hero-prev" title="이전 사진">‹</button>'
+          + '<button type="button" class="drp-hero-nav drp-hero-next" title="다음 사진">›</button>'
+        : '')
+      + '<span class="drp-hero-count"></span>'
+      + '<button type="button" class="drp-hero-dl" title="이 사진 다운로드">⬇</button>';
+    var cur = 0;
+    var img = hero.querySelector('.drp-hero-img');
+    var cnt = hero.querySelector('.drp-hero-count');
+    var show = function (i) {
+      cur = (i + urls.length) % urls.length;
+      img.src = urls[cur];
+      cnt.textContent = (cur + 1) + ' / ' + urls.length;
+    };
+    show(0);
+    img.onclick = function () { openLb(urls, cur, title); };
+    var pv = hero.querySelector('.drp-hero-prev'), nx = hero.querySelector('.drp-hero-next');
+    if (pv) pv.onclick = function () { show(cur - 1); };
+    if (nx) nx.onclick = function () { show(cur + 1); };
+    hero.querySelector('.drp-hero-dl').onclick = function () { drpDownload(urls[cur], photoName(title, cur)); };
+    return hero;
+  }
+
+  // ----- 상세 보기 -----
+  function openDetail(it) {
+    document.getElementById('drp-dt-title').textContent = it.title || '';
+    document.getElementById('drp-dt-date').textContent = '📅 ' + fmtRange(it.event_date, it.event_end) + (it.created_by_name ? '  ·  ' + it.created_by_name : '');
+    var ph = document.getElementById('drp-dt-photos');
+    ph.innerHTML = '';
+    var urls = (it.photos || []).filter(function (p) { return p.url; }).map(function (p) { return p.url; });
+    if (urls.length) ph.appendChild(makeHero(urls, it.title));
+    document.getElementById('drp-dt-desc').textContent = it.description || '(작성된 내용이 없습니다)';
+    document.getElementById('drp-detail-modal').style.display = 'flex';
+  }
+
+  // ----- 수정 창 열기 (사진 제외 텍스트·일자만) -----
+  function openEdit(it) {
+    _editId = it.id;
+    document.getElementById('drp-title').value = it.title || '';
+    document.getElementById('drp-date').value = it.event_date || '';
+    document.getElementById('drp-date-end').value = it.event_end || '';
+    document.getElementById('drp-desc').value = it.description || '';
+    document.getElementById('drp-photos-block').style.display = 'none';
+    document.getElementById('drp-form-heading').textContent = '✏️ 게시물 수정';
+    document.getElementById('drp-submit').textContent = '💾 수정 저장';
+    document.getElementById('drp-form-modal').style.display = 'flex';
+    setMsg('사진은 여기서 바꿀 수 없습니다. 사진 변경이 필요하면 삭제 후 다시 등록해 주세요.');
+  }
+
+  // ----- 등록 창 열기 -----
+  window.drpOpenForm = function () {
+    var m = document.getElementById('drp-form-modal');
+    if (!m) return;
+    if (_editId !== null) {  // 직전이 수정 모드였으면 입력값 초기화
+      document.getElementById('drp-title').value = '';
+      document.getElementById('drp-date').value = '';
+      document.getElementById('drp-date-end').value = '';
+      document.getElementById('drp-desc').value = '';
+    }
+    _editId = null;
+    document.getElementById('drp-photos-block').style.display = '';
+    document.getElementById('drp-form-heading').textContent = '📷 활동 사진 등록';
+    document.getElementById('drp-submit').textContent = '✅ 등록하기';
+    m.style.display = 'flex';
+    setMsg('');
+    var t = document.getElementById('drp-title');
+    if (t) setTimeout(function () { t.focus(); }, 60);
+  };
 
   // ----- 초기화 -----
   window.drPhotosReload = load;
@@ -1255,10 +1463,10 @@
         <div style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10);border:1px solid #e5e7eb;background:#fff;display:flex;flex-direction:column;height:640px;max-height:calc(100vh - 220px);">
           <div style="background:linear-gradient(135deg,#1e3a6b,#2a5298);color:#fff;padding:15px 22px;flex-shrink:0;">
             <div style="font-weight:700;font-size:1rem;">🖥️ 나이스 AI</div>
-            <div style="font-size:0.82rem;opacity:0.92;line-height:1.6;margin-top:3px;">나이스(NEIS) 교무업무 사용자 설명서를 바탕으로 <strong>학적·성적·학교생활기록부·교육과정 처리 방법</strong>을 답해 드립니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.</div>
+            <div style="font-size:0.82rem;opacity:0.92;line-height:1.6;margin-top:3px;">나이스(NEIS) 교무업무 사용자 설명서와 <strong>현장지원단 역량강화 연수 FAQ</strong>를 바탕으로 <strong>학적·성적·학교생활기록부·교육과정 처리 방법</strong>을 답해 드립니다. 근거가 없으면 일반 지식으로 안내하며 주의 문구를 표시합니다.<br><span style="opacity:0.85;">수록 자료 9종 · 최신 반영 <strong>2026. 8.</strong>(하반기 연수 FAQ, 위탁교육기관 자료 등록 방법)</span></div>
           </div>
           <div id="neis-ai-log" class="chat-log" style="flex:1;min-height:0;max-height:none;margin:0;padding:16px;background:var(--bg);">
-            <div class="chat-msg bot">안녕하세요! 나이스 교무업무 사용법을 바탕으로 답해 드립니다. 무엇이든 물어보세요.<br><span style="color:var(--text-secondary);font-size:0.84rem;">예) <code>학적 전출 처리 방법</code> · <code>성적 마감 절차</code> · <code>학교생활기록부 정정 방법</code></span></div>
+            <div class="chat-msg bot">안녕하세요! 나이스 교무업무 사용법을 바탕으로 답해 드립니다. 무엇이든 물어보세요.<br><span style="color:var(--text-secondary);font-size:0.84rem;">예) <code>학적 전출 처리 방법</code> · <code>성적 마감 절차</code> · <code>학교생활기록부 정정 방법</code><br>최신 FAQ) <code>위탁학생 수상자료 등록 방법</code> · <code>소인수과목 석차등급 표기 기준</code> · <code>공동교육과정 수강포기 학생 삭제</code> · <code>위탁교육기관에서 송부한 봉사활동실적 등록</code></span></div>
           </div>
           <div class="chat-input-bar" style="margin:0;padding:12px 14px;border-top:1px solid var(--border);background:#fff;flex-shrink:0;">
             <textarea id="neis-ai-input" class="chat-input" rows="1" placeholder="질문을 입력하고 Enter (줄바꿈은 Shift+Enter)"></textarea>
@@ -1371,9 +1579,23 @@
       <!-- 10: PDF 용량 줄이기 -->
       <div id="ai-sub-10" style="display:none;">
         <style>
-          .pdf-compress-card{max-width:760px;margin:0 auto;padding:clamp(18px,4vw,30px);border:1px solid #dbe3ef;border-radius:18px;background:#fff;box-shadow:0 4px 20px rgba(30,58,107,.08)}.pdf-dropzone{display:flex;min-height:190px;padding:24px;border:2px dashed #9fb1ce;border-radius:16px;background:#f8fafc;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:.18s ease}.pdf-dropzone:hover,.pdf-dropzone.is-dragging{border-color:var(--primary);background:#eef4ff}.pdf-dropzone:focus-visible{outline:3px solid rgba(42,82,152,.28);outline-offset:3px}.pdf-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.pdf-target{min-height:62px;padding:10px 12px;border:2px solid #d1d5db;border-radius:12px;background:#fff;color:#334155;font:600 .9rem inherit;cursor:pointer}.pdf-target[aria-pressed="true"]{border-color:var(--primary);background:#eef4ff;color:var(--primary)}.pdf-actions{display:flex;gap:10px;flex-wrap:wrap}.pdf-primary,.pdf-secondary{min-height:44px;padding:10px 18px;border-radius:10px;font:700 .9rem inherit;cursor:pointer}.pdf-primary{border:0;background:var(--primary);color:#fff}.pdf-secondary{border:1px solid #cbd5e1;background:#fff;color:#334155}.pdf-primary:disabled,.pdf-secondary:disabled{opacity:.52;cursor:not-allowed}.pdf-status{display:none;margin-top:18px;padding:14px 16px;border-radius:12px;background:#f8fafc;color:#334155;line-height:1.65;font-size:.88rem}.pdf-status.visible{display:block}.pdf-status.success{background:#ecfdf5;color:#166534}.pdf-status.error{background:#fef2f2;color:#991b1b}.pdf-status.warning{background:#fff7ed;color:#9a3412}@media(max-width:480px){.pdf-targets{grid-template-columns:1fr}.pdf-actions>*{width:100%}.pdf-dropzone{min-height:165px;padding:18px 12px}}
+          .pdf-compress-card{max-width:760px;margin:0 auto;padding:clamp(18px,4vw,30px);border:1px solid #dbe3ef;border-radius:18px;background:#fff;box-shadow:0 4px 20px rgba(30,58,107,.08)}
+          .pdf-dropzone{display:flex;min-height:190px;padding:24px;border:2px dashed #9fb1ce;border-radius:16px;background:#f8fafc;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:.18s ease}.pdf-dropzone:hover,.pdf-dropzone.is-dragging{border-color:var(--primary);background:#eef4ff}.pdf-dropzone:focus-visible{outline:3px solid rgba(42,82,152,.28);outline-offset:3px}
+          .pdf-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.pdf-target{min-height:62px;padding:10px 12px;border:2px solid #d1d5db;border-radius:12px;background:#fff;color:#334155;font:600 .9rem inherit;cursor:pointer}.pdf-target[aria-pressed="true"]{border-color:var(--primary);background:#eef4ff;color:var(--primary)}
+          .pdf-actions{display:flex;gap:10px;flex-wrap:wrap}.pdf-primary,.pdf-secondary{min-height:44px;padding:10px 18px;border-radius:10px;font:700 .9rem inherit;cursor:pointer}.pdf-primary{border:0;background:var(--primary);color:#fff}.pdf-secondary{border:1px solid #cbd5e1;background:#fff;color:#334155}.pdf-primary:disabled,.pdf-secondary:disabled{opacity:.52;cursor:not-allowed}
+          .pdf-status{display:none;margin-top:18px;padding:14px 16px;border-radius:12px;background:#f8fafc;color:#334155;line-height:1.65;font-size:.88rem}.pdf-status.visible{display:block}.pdf-status.success{background:#ecfdf5;color:#166534}.pdf-status.error{background:#fef2f2;color:#991b1b}.pdf-status.warning{background:#fff7ed;color:#9a3412}
+          @media(max-width:480px){.pdf-targets{grid-template-columns:1fr}.pdf-actions>*{width:100%}.pdf-dropzone{min-height:165px;padding:18px 12px}}
         </style>
-        <div class="pdf-compress-card"><div style="display:flex;align-items:center;gap:11px;margin-bottom:8px;"><span aria-hidden="true" style="font-size:1.7rem;">📦</span><h3 style="margin:0;font-size:1.2rem;color:#1e3a6b;">PDF 용량 줄이기</h3></div><p style="margin:0 0 18px;color:#475569;font-size:.9rem;line-height:1.65;">공문 첨부에 맞게 PDF를 <strong>5MB 미만</strong> 또는 <strong>10MB 미만</strong>으로 줄입니다. 입력 PDF는 최대 30MB입니다.</p><input id="pdf-compress-file" type="file" accept="application/pdf,.pdf" hidden><div id="pdf-compress-drop" class="pdf-dropzone" role="button" tabindex="0" aria-describedby="pdf-compress-help"><div><div aria-hidden="true" style="font-size:2.1rem;margin-bottom:8px;">📄</div><strong id="pdf-compress-file-label" style="color:#1e3a6b;">PDF를 선택하거나 여기에 놓으세요</strong><div id="pdf-compress-help" style="margin-top:7px;color:#64748b;font-size:.82rem;">PDF 1개 · 최대 30MB</div></div></div><div class="pdf-targets" aria-label="압축 목표 용량"><button type="button" class="pdf-target" data-pdf-target="5" aria-pressed="false">5MB 미만으로 줄이기</button><button type="button" class="pdf-target" data-pdf-target="10" aria-pressed="true">10MB 미만 · 공문 첨부용</button></div><div class="pdf-actions"><button id="pdf-compress-submit" type="button" class="pdf-primary" disabled>PDF 용량 줄이기</button><button id="pdf-compress-cancel" type="button" class="pdf-secondary" disabled>처리 취소</button><button id="pdf-compress-reset" type="button" class="pdf-secondary" style="display:none;">다른 PDF 줄이기</button></div><div id="pdf-compress-status" class="pdf-status" role="status" aria-live="polite"></div><p style="margin:18px 0 0;padding-top:16px;border-top:1px solid #e5e7eb;color:#64748b;font-size:.78rem;line-height:1.65;">🔒 PDF는 AI 모델로 전송되지 않습니다. EdTouch 압축 서버에서 임시 처리되며 처리 후 저장되지 않습니다.</p></div>
+        <div class="pdf-compress-card">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:8px;"><span aria-hidden="true" style="font-size:1.7rem;">📦</span><h3 style="margin:0;font-size:1.2rem;color:#1e3a6b;">PDF 용량 줄이기</h3></div>
+          <p style="margin:0 0 18px;color:#475569;font-size:.9rem;line-height:1.65;">공문 첨부에 맞게 PDF를 <strong>5MB 미만</strong> 또는 <strong>10MB 미만</strong>으로 줄입니다. 입력 PDF는 최대 30MB입니다.</p>
+          <input id="pdf-compress-file" type="file" accept="application/pdf,.pdf" hidden>
+          <div id="pdf-compress-drop" class="pdf-dropzone" role="button" tabindex="0" aria-describedby="pdf-compress-help"><div><div aria-hidden="true" style="font-size:2.1rem;margin-bottom:8px;">📄</div><strong id="pdf-compress-file-label" style="color:#1e3a6b;">PDF를 선택하거나 여기에 놓으세요</strong><div id="pdf-compress-help" style="margin-top:7px;color:#64748b;font-size:.82rem;">PDF 1개 · 최대 30MB</div></div></div>
+          <div class="pdf-targets" aria-label="압축 목표 용량"><button type="button" class="pdf-target" data-pdf-target="5" aria-pressed="false">5MB 미만으로 줄이기</button><button type="button" class="pdf-target" data-pdf-target="10" aria-pressed="true">10MB 미만 · 공문 첨부용</button></div>
+          <div class="pdf-actions"><button id="pdf-compress-submit" type="button" class="pdf-primary" disabled>PDF 용량 줄이기</button><button id="pdf-compress-cancel" type="button" class="pdf-secondary" disabled>처리 취소</button><button id="pdf-compress-reset" type="button" class="pdf-secondary" style="display:none;">다른 PDF 줄이기</button></div>
+          <div id="pdf-compress-status" class="pdf-status" role="status" aria-live="polite"></div>
+          <p style="margin:18px 0 0;padding-top:16px;border-top:1px solid #e5e7eb;color:#64748b;font-size:.78rem;line-height:1.65;">🔒 PDF는 AI 모델로 전송되지 않습니다. EdTouch 압축 서버에서 임시 처리되며 처리 후 저장되지 않습니다.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -1385,62 +1607,489 @@
       <p style="font-size:0.85rem;color:#6b7280;margin:0;">진로·미래 사회 변화·교육정책에 대해 함께 생각하고 질문을 나누는 공간입니다.</p>
     </div>
 
-    <style>
-    .lounge-sub-nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
-    .lounge-sub-btn{padding:9px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:8px;font-size:0.88rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-    .lounge-sub-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;}
-    .lounge-sub-panel{display:none;}
-    .lounge-sub-panel.active{display:block;}
-    </style>
-    <script>
-    function switchLoungeSub(id,btn){
-      document.querySelectorAll('.lounge-sub-panel').forEach(p=>p.classList.remove('active'));
-      document.querySelectorAll('.lounge-sub-btn').forEach(b=>b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      btn.classList.add('active');
-    }
-    </script>
-
-    <div class="lounge-sub-nav">
-      <button class="lounge-sub-btn active" onclick="switchLoungeSub('lounge-jobs',this)">💼 우리 시대 직업</button>
-      <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-skills',this)">🌱 미래 역량</button>
-      <button class="lounge-sub-btn" onclick="switchLoungeSub('lounge-ax',this)">🔄 AX 대전환</button>
+    <div class="cat-nav">
+      <button class="cat-nav-btn active" onclick="switchCat('lounge-cat-insung', this)">💗 인성역량</button>
+      <button class="cat-nav-btn" onclick="switchCat('lounge-cat-jobs', this)">💼 우리 시대 직업</button>
+      <button class="cat-nav-btn" onclick="switchCat('lounge-cat-skills', this)">🌱 미래 역량</button>
+      <button class="cat-nav-btn" onclick="switchCat('lounge-cat-ax', this)">🔄 AX 대전환</button>
+      <button class="cat-nav-btn" onclick="switchCat('lounge-cat-jinro', this)">🎯 이슈 리포트</button>
     </div>
 
-    <!-- 우리 시대 직업 -->
-    <div class="lounge-sub-panel active" id="lounge-jobs">
-
-      <h2 class="section-title" style="margin-top:0;">💼 우리 시대 직업 — 흔들리는 안정, 떠오르는 기회</h2>
-
-      <div class="card" style="border-left-color:#7c3aed;">
-        <strong>📌 이 코너에 대하여</strong>
-        <p style="margin-top:8px;line-height:1.8;">의사·변호사·회계사 같은 '안정적' 직업이 흔들리고, 새 기회가 떠오르는 중입니다. 고등학생인 여러분이 진로를 그릴 때 꼭 알아야 할 큰 흐름을 <strong>3가지 주제</strong>로 정리했습니다. 부모님 세대의 경험은 더 이상 정답이 아닐 수 있습니다.</p>
+    <div class="sub-nav-group active" id="lounge-cat-insung">
+      <div class="sub-nav">
+        <button class="sub-nav-btn active" onclick="switchSub('insung-spec', this)">🎓 인성이 스펙이 되는 이유</button>
+        <button class="sub-nav-btn" onclick="switchSub('insung-cases', this)">🎭 사례극장</button>
+        <button class="sub-nav-btn" onclick="switchSub('insung-real', this)">📰 진짜 이야기</button>
+        <button class="sub-nav-btn" onclick="switchSub('insung-check', this)">✅ 나의 인성 체크</button>
       </div>
+    </div>
+    <div class="sub-nav-group" id="lounge-cat-jobs">
+      <div class="sub-nav">
+        <button class="sub-nav-btn" onclick="switchSub('jobs-major', this)">🎓 의대보다 더 뜨는 학과</button>
+        <button class="sub-nav-btn" onclick="switchSub('jobs-doctor', this)">🩺 연봉 3억 의사 불가능?</button>
+        <button class="sub-nav-btn" onclick="switchSub('jobs-economy', this)">🚀 AI 시대 1인 창업</button>
+      </div>
+    </div>
+    <div class="sub-nav-group" id="lounge-cat-skills">
+      <div class="sub-nav">
+        <button class="sub-nav-btn" onclick="switchSub('skills-core', this)">🎯 AI 시대 역량</button>
+        <button class="sub-nav-btn" onclick="switchSub('skills-smart', this)">🤖 AI로 똑똑해지는 사람</button>
+      </div>
+    </div>
+    <div class="sub-nav-group" id="lounge-cat-ax">
+      <div class="sub-nav">
+        <button class="sub-nav-btn" onclick="switchSub('ax-edu', this)">🎓 교육 분야</button>
+      </div>
+    </div>
+    <div class="sub-nav-group" id="lounge-cat-jinro">
+      <div class="sub-nav">
+        <button class="sub-nav-btn" onclick="switchSub('lounge-jinro', this)">🗺️ 3대 메가프로젝트</button>
+      </div>
+    </div>
+
+    <!-- 인성역량 -->
+    <div id="lounge-insung">
 
       <style>
-      .jobs-tab-nav{display:flex;gap:8px;margin:24px 0;flex-wrap:wrap;}
-      .jobs-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-      .jobs-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
-      .jobs-tab-panel{display:none;}
-      .jobs-tab-panel.active{display:block;}
+      .insung-dlm{border:1px solid #fbcfe8;border-radius:14px;padding:20px;margin-bottom:18px;background:#fff;}
+      .insung-dlm-tag{display:inline-block;font-size:0.72rem;font-weight:700;color:#be185d;background:#fdf2f8;border-radius:20px;padding:3px 10px;margin-bottom:10px;margin-right:6px;}
+      .insung-dlm-choices{display:flex;flex-direction:column;gap:8px;margin:12px 0 0;}
+      .insung-choice-btn{text-align:left;padding:10px 14px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-family:inherit;cursor:pointer;transition:all .15s;color:#374151;line-height:1.5;}
+      .insung-choice-btn:hover{border-color:#f9a8d4;}
+      .insung-choice-btn.selected{border-color:#db2777;background:#fdf2f8;font-weight:600;}
+      .insung-reveal{display:none;margin-top:10px;padding:14px 16px;background:#fdf2f8;border-left:4px solid #db2777;border-radius:0 10px 10px 0;font-size:0.86rem;line-height:1.8;}
+      .insung-reveal.show{display:block;}
+      .insung-think{display:none;margin-top:10px;font-size:0.84rem;color:#6b7280;background:#f9fafb;border-radius:10px;padding:12px 14px;line-height:1.7;}
+      .insung-think.show{display:block;}
+      .insung-check-item{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;font-size:0.88rem;line-height:1.6;cursor:pointer;background:#fff;}
+      .insung-check-item input{margin-top:3px;accent-color:#db2777;flex-shrink:0;}
       </style>
       <script>
-      function switchJobsTab(id,btn){
-        document.querySelectorAll('.jobs-tab-panel').forEach(p=>p.classList.remove('active'));
-        document.querySelectorAll('.jobs-tab-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
+      function insungChoice(btn,cardId,idx){
+        var card=document.getElementById(cardId);
+        card.querySelectorAll('.insung-choice-btn').forEach(b=>b.classList.remove('selected'));
+        btn.classList.add('selected');
+        card.querySelectorAll('.insung-reveal').forEach(r=>r.classList.remove('show'));
+        var target=card.querySelector('.insung-reveal[data-idx="'+idx+'"]');
+        if(target)target.classList.add('show');
+        var think=card.querySelector('.insung-think');
+        if(think)think.classList.add('show');
+      }
+      function insungScore(){
+        var n=document.querySelectorAll('#insung-check-list input:checked').length;
+        var msg,color;
+        if(n>=9){msg='<strong>🌟 이미 단단한 사람 ('+n+'/10)</strong><br>지난 한 달, 말이 아니라 행동으로 인성을 보여줬습니다. 이런 태도가 쌓이면 친구·선생님이 기억하는 \'믿을 수 있는 사람\'이 됩니다. 지금의 기준을 지켜 가세요.';color='#059669';}
+        else if(n>=6){msg='<strong>🌱 좋은 방향으로 가는 중 ('+n+'/10)</strong><br>기본기는 충분합니다. 체크하지 못한 항목을 하나만 골라 이번 주에 의식적으로 실천해 보세요. 인성은 타고나는 게 아니라 반복으로 만들어지는 근육입니다.';color='#2563eb';}
+        else if(n>=3){msg='<strong>🤔 솔직한 게 시작 ('+n+'/10)</strong><br>낮은 점수보다 중요한 건 솔직하게 체크했다는 사실입니다. 자기 모습을 있는 그대로 본 사람만 달라질 수 있습니다. 아래 \'오늘의 실천 미션\'부터 하나 해 보세요.';color='#d97706';}
+        else{msg='<strong>💪 출발선에 선 것 ('+n+'/10)</strong><br>지금까지가 아니라 지금부터가 중요합니다. 열 가지를 한 번에 바꿀 필요 없이, 가장 쉬워 보이는 한 가지만 일주일 동안 지켜 보세요. 그게 두 번째, 세 번째로 이어집니다.';color='#dc2626';}
+        var box=document.getElementById('insung-score-result');
+        box.style.display='block';box.style.borderLeftColor=color;box.innerHTML=msg;
+      }
+      var insungMissions=[
+        '오늘 고마웠던 사람 한 명에게 그 자리에서(또는 메시지로) 구체적으로 고맙다고 말하기',
+        '단톡방에서 누군가 놀림감이 되면, 화제를 다른 데로 돌리는 한마디 하기',
+        '조별 활동에서 아무도 안 맡으려는 역할에 먼저 손들기',
+        '오늘 하루, 뒷담화가 하고 싶어질 때 당사자에게 직접 말할 수 있는 내용인지 스스로 검사하기',
+        '급식·매점·복도에서 딱 한 번, 급해도 순서 지키기',
+        '나와 의견이 다른 친구의 말을 중간에 끊지 않고 끝까지 듣기',
+        '내가 잘못한 일 하나를 변명 없이 "미안해, 내가 잘못했어"로 인정하기',
+        '혼자 앉아 있는 친구나 후배에게 먼저 말 걸기',
+        'SNS에 올리기 전 3초 멈추고 "당사자가 보면 어떤 기분일까?" 묻기',
+        '오늘 만나는 선생님·급식실·청소 노동자분께 눈 보고 인사하기'
+      ];
+      var insungMissionIdx=-1;
+      function insungMission(){
+        var i;
+        do{i=Math.floor(Math.random()*insungMissions.length);}while(i===insungMissionIdx&&insungMissions.length>1);
+        insungMissionIdx=i;
+        var box=document.getElementById('insung-mission-box');
+        box.style.display='block';
+        box.innerHTML='<strong>🎯 오늘의 실천 미션</strong><p style="margin-top:8px;line-height:1.8;">'+insungMissions[i]+'</p>';
       }
       </script>
 
-      <div class="jobs-tab-nav">
-        <button class="jobs-tab-btn active" onclick="switchJobsTab('jobs-major',this)">🎓 의대보다 더 뜨는 학과</button>
-        <button class="jobs-tab-btn" onclick="switchJobsTab('jobs-doctor',this)">🩺 연봉 3억 의사 불가능?</button>
-        <button class="jobs-tab-btn" onclick="switchJobsTab('jobs-economy',this)">🚀 AI 시대 1인 창업</button>
+      <!-- 사례극장 -->
+      <div class="sub-panel" id="insung-cases">
+
+        <h2 class="section-title" style="margin-top:0;">🎭 사례극장 — 나라면 어떻게 할까?</h2>
+
+        <div class="card" style="border-left-color:#db2777;">
+          <strong>💭 이 코너를 읽는 법</strong>
+          <p style="margin-top:8px;line-height:1.85;">정답을 맞히는 퀴즈가 아닙니다. 모두 <strong>실제 학교에서 일어나는 상황</strong>입니다. 선택지를 눌러 보면 그 선택이 만드는 결과와 다른 관점이 열립니다. 중요한 건 "나는 왜 그 버튼을 눌렀는가"를 한 번 생각해 보는 것입니다. <strong>인성은 시험이 아니라 이런 순간의 선택으로 드러납니다.</strong></p>
+        </div>
+
+        <h3 style="font-size:1.05rem;font-weight:700;margin-top:28px;margin-bottom:14px;color:#1f2937;">교실과 일상에서</h3>
+
+        <div class="insung-dlm" id="dlm1">
+          <span class="insung-dlm-tag">사례 1</span><span class="insung-dlm-tag" style="background:#f3f4f6;color:#6b7280;">배려 · 소통</span>
+          <p style="margin:6px 0 0;line-height:1.8;"><strong>단톡방에서 뒷담화가 시작됐다.</strong> 반 단톡방에서 한 친구의 외모와 말투를 흉내 내는 대화가 이어진다. 웃는 이모티콘이 줄줄이 달리고, 분위기상 나도 뭔가 반응해야 할 것 같다.</p>
+          <div class="insung-dlm-choices">
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm1',0)">😅 A. 분위기 맞춰서 나도 "ㅋㅋㅋ" 정도는 친다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm1',1)">🤐 B. 아무 반응 안 하고 조용히 있는다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm1',2)">🙋 C. "야 그만하자" 하고 화제를 돌린다</button>
+          </div>
+          <div class="insung-reveal" data-idx="0">"ㅋㅋㅋ" 세 글자도 <strong>기록으로 남는 동조</strong>입니다. 나중에 이 대화가 캡처돼 문제가 되면 "나는 웃기만 했는데"는 변명이 되지 않습니다 — 사이버폭력 사안에서 동조자도 함께 조사 대상이 됩니다. 그리고 당사자가 이 방을 언젠가 보게 된다면, 그 친구 눈에 나는 '같이 웃은 사람'입니다.</div>
+          <div class="insung-reveal" data-idx="1">침묵은 가장 흔한 선택이고, 동조보다는 낫습니다. 하지만 뒷담화는 <strong>구경꾼이 많을수록 커집니다.</strong> 아무도 제지하지 않는 방에서 놀림은 점점 수위가 올라갑니다. 침묵을 골랐다면 최소한 하나는 해 보세요 — 당사자에게 따로 연락해 주는 것. 그 한 통이 그 친구에겐 전부일 수 있습니다.</div>
+          <div class="insung-reveal" data-idx="2">가장 어렵고, 가장 힘이 센 선택입니다. 연구로도 확인된 사실 — <strong>또래 한 명의 제지만으로 괴롭힘 상황의 절반 이상이 10초 안에 멈춥니다.</strong> "그만하자" 한마디가 부담스러우면 전혀 다른 화제를 툭 던지는 것만으로도 충분히 흐름이 끊깁니다. 분위기를 깨는 게 아니라, 분위기를 바꾸는 겁니다.</div>
+          <div class="insung-think">💭 <strong>생각해볼 질문:</strong> 만약 단톡방의 주인공이 나라면, 나는 그 방의 누가 어떻게 해 주길 바랄까?</div>
+        </div>
+
+        <div class="insung-dlm" id="dlm2">
+          <span class="insung-dlm-tag">사례 2</span><span class="insung-dlm-tag" style="background:#f3f4f6;color:#6b7280;">협업 · 책임</span>
+          <p style="margin:6px 0 0;line-height:1.8;"><strong>조별과제 무임승차.</strong> 발표가 이틀 남았는데 한 조원이 자기 파트를 하나도 안 했다. 연락하면 "미안, 할게"라고만 하고 감감무소식. 내 성적도 같이 걸려 있다.</p>
+          <div class="insung-dlm-choices">
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm2',0)">😤 A. 속 터지니까 그냥 내가 다 해버린다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm2',1)">🏫 B. 선생님께 바로 말씀드린다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm2',2)">💬 C. 그 친구를 직접 만나서 상황을 묻고 역할을 다시 짠다</button>
+          </div>
+          <div class="insung-reveal" data-idx="0">이번 발표는 살릴 수 있습니다. 하지만 <strong>그 친구는 '버텨도 누군가 해 준다'는 걸 학습</strong>하고, 나는 억울함을 쌓습니다. 대학·직장에서도 무임승차자는 계속 만납니다 — 혼자 다 떠안는 습관은 협업 능력이 아니라 협업 회피입니다. 최소한 조원들과 기여도를 기록으로 남기세요.</div>
+          <div class="insung-reveal" data-idx="1">규칙 위반을 알리는 건 고자질이 아니라 정당한 절차입니다. 다만 <strong>순서가 있습니다.</strong> 당사자에게 한 번도 직접 묻지 않고 바로 위로 가면, 그 친구가 말 못 할 사정(가정 상황, 건강)이 있었을 때 관계는 회복 불가가 됩니다. "직접 대화 → 그래도 안 되면 공식 절차"가 사회에서도 통하는 순서입니다.</div>
+          <div class="insung-reveal" data-idx="2">가장 성숙한 첫수입니다. 핵심은 추궁("왜 안 했어?")이 아니라 <strong>상황 질문("무슨 일 있어? 어디까지 가능해?")</strong>으로 시작하는 것. 사정이 있으면 역할을 줄여 재분배하고, 사정이 없는데도 안 하면 그때 선생님께 알리면 됩니다. 이 순서를 지킨 사람은 어떤 결과가 나와도 떳떳합니다.</div>
+          <div class="insung-think">💭 <strong>생각해볼 질문:</strong> 화가 난 진짜 이유는 '일이 늘어서'일까, '내 노력이 무시당해서'일까? 이유가 다르면 해법도 달라진다.</div>
+        </div>
+
+        <div class="insung-dlm" id="dlm3">
+          <span class="insung-dlm-tag">사례 3</span><span class="insung-dlm-tag" style="background:#f3f4f6;color:#6b7280;">정직</span>
+          <p style="margin:6px 0 0;line-height:1.8;"><strong>시험 중, 친한 친구의 부정행위를 봤다.</strong> 나만 본 것 같다. 말하면 친구는 큰 징계를 받고, 나는 '고자질쟁이'가 될지도 모른다. 말하지 않으면 정직하게 시험 본 나머지 전부가 손해를 본다.</p>
+          <div class="insung-dlm-choices">
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm3',0)">🙈 A. 못 본 걸로 한다. 친구니까</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm3',1)">🗣️ B. 시험 끝나고 친구에게 직접 말한다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm3',2)">📢 C. 선생님께 알린다</button>
+          </div>
+          <div class="insung-reveal" data-idx="0">'친구니까 덮는다'는 우정처럼 보이지만, 사실은 <strong>친구가 계속 위험한 길을 가도록 두는 것</strong>입니다. 부정행위는 반복되고, 언젠가 더 큰 무대(수능·대학·자격시험)에서 걸리면 대가는 비교할 수 없이 큽니다. 그리고 하나 더 — 그 시험에서 밀려난 다른 누군가의 정직함은 누가 지켜 주나요?</div>
+          <div class="insung-reveal" data-idx="1">용기 있는 중간 지점입니다. "나 봤어. 다시는 하지 마. 다음엔 나도 못 넘어가"라고 말하는 건 <strong>친구를 잃을 각오를 한 진짜 우정</strong>입니다. 친구가 스스로 멈추면 최선이고, 그럼에도 반복되면 그때는 알릴 명분과 근거가 생깁니다.</div>
+          <div class="insung-reveal" data-idx="2">가장 부담이 크지만, 원칙적으로 옳은 선택입니다. 평가의 공정성은 한 명의 침묵으로 무너집니다. 다만 <strong>확실히 본 것만, 사실만</strong> 전달하세요. 추측을 섞으면 정의가 아니라 폭로가 됩니다. 익명 제보 절차가 있다면 활용해도 됩니다.</div>
+          <div class="insung-think">💭 <strong>생각해볼 질문:</strong> '의리'와 '정직'이 부딪힐 때 나는 무엇을 먼저 두는 사람인가? 그 기준을 지금 정해 두지 않으면, 순간마다 흔들린다.</div>
+        </div>
+
+        <h3 style="font-size:1.05rem;font-weight:700;margin-top:32px;margin-bottom:14px;color:#1f2937;">디지털 세상에서</h3>
+
+        <div class="insung-dlm" id="dlm4">
+          <span class="insung-dlm-tag">사례 4</span><span class="insung-dlm-tag" style="background:#f3f4f6;color:#6b7280;">정직 · AI 윤리</span>
+          <p style="margin:6px 0 0;line-height:1.8;"><strong>AI로 통째로 써낸 수행평가가 나보다 점수가 높다.</strong> 나는 며칠을 고민해서 썼는데, 옆 친구는 AI에게 시켜서 30분 만에 냈고 점수도 더 잘 받았다. 허탈하다.</p>
+          <div class="insung-dlm-choices">
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm4',0)">🤖 A. 나도 다음부턴 AI로 낸다. 손해 볼 순 없지</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm4',1)">😶 B. 씁쓸하지만 내 방식을 유지한다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm4',2)">✋ C. 선생님께 평가 방식에 대한 고민을 말씀드린다</button>
+          </div>
+          <div class="insung-reveal" data-idx="0">단기적으론 점수를 얻을지 모르지만, <strong>잃는 건 실력 그 자체</strong>입니다. 수행평가는 점수 이전에 '내가 생각하는 훈련'이고, AI에게 통째로 맡기는 순간 훈련은 0이 됩니다. 게다가 AI 표절 탐지와 구술 확인(자기 글 설명하기)은 계속 정교해지고 있습니다 — 걸리는 순간 그동안의 점수 전부가 의심받습니다.</div>
+          <div class="insung-reveal" data-idx="1">억울함을 견디는 건 쉽지 않지만, 방향은 옳습니다. 한 가지만 더 — AI를 <strong>안 쓰는 것과 못 쓰는 건 다릅니다.</strong> 자료 조사, 반론 점검, 초안 비평처럼 '내 생각을 벼리는 도구'로 AI를 쓰는 법을 익히세요. 통째로 맡긴 친구와의 격차는 3년 뒤 면접장에서 드러납니다.</div>
+          <div class="insung-reveal" data-idx="2">고자질이 아니라 <strong>공정성에 대한 정당한 문제 제기</strong>입니다. 특정 친구를 지목하기보다 "AI 사용 기준을 명확히 해 주시면 좋겠다"고 방식에 대해 묻는 게 세련된 접근입니다. 실제로 많은 학교가 학생 의견을 계기로 AI 활용 규칙을 정비하고 있습니다.</div>
+          <div class="insung-think">💭 <strong>생각해볼 질문:</strong> AI 시대의 정직은 'AI를 안 쓰는 것'이 아니라 '어디까지 썼는지 밝힐 수 있는 것'이다. 나는 내 과제의 AI 사용을 떳떳하게 설명할 수 있나?</div>
+        </div>
+
+        <div class="insung-dlm" id="dlm5">
+          <span class="insung-dlm-tag">사례 5</span><span class="insung-dlm-tag" style="background:#f3f4f6;color:#6b7280;">존중 · 디지털 시민성</span>
+          <p style="margin:6px 0 0;line-height:1.8;"><strong>딥페이크 합성 사진이 돌고 있다.</strong> 우리 학교 학생 얼굴을 합성한 사진이 SNS에서 돈다는 걸 알게 됐다. 링크가 내게도 왔다.</p>
+          <div class="insung-dlm-choices">
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm5',0)">📲 A. 궁금하니까 일단 열어 보고, 친한 애들한테도 보낸다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm5',1)">🚫 B. 안 열어 보고 무시한다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm5',2)">🛡️ C. 열지 않고, 링크를 받은 사실을 선생님이나 부모님께 알린다</button>
+          </div>
+          <div class="insung-reveal" data-idx="0">멈추세요. 이건 인성 문제이기 전에 <strong>범죄입니다.</strong> 성폭력처벌법 개정으로 딥페이크 성착취물은 제작·유포뿐 아니라 <strong>소지·시청만으로도 처벌</strong>됩니다(3년 이하 징역 또는 3천만 원 이하 벌금). '전달' 버튼 한 번이 유포 가담입니다. 그리고 피해자는 매일 마주치는 우리 학교 누군가입니다.</div>
+          <div class="insung-reveal" data-idx="1">열어 보지 않은 판단은 옳습니다. 하지만 무시만 하면 <strong>사진은 계속 돕니다.</strong> 피해자는 지금도 누가 봤는지 모른 채 고통받고 있습니다. 한 걸음만 더 — 신고까지 가면 유포를 실제로 멈출 수 있습니다.</div>
+          <div class="insung-reveal" data-idx="2">정확한 대응입니다. <strong>열지 않고(시청도 처벌 대상), 캡처가 아닌 '링크를 받았다는 사실'을 어른에게 알리는 것</strong>이 피해자를 지키는 가장 빠른 길입니다. 학교·경찰(112)·디지털성범죄피해자지원센터가 삭제 지원까지 연결해 줍니다. 이런 신고는 고자질이 아니라 구조 요청입니다.</div>
+          <div class="insung-think">💭 <strong>생각해볼 질문:</strong> '나는 만들지 않았으니까 괜찮다'는 논리는 어디서부터 무너질까?</div>
+        </div>
+
+        <div class="insung-dlm" id="dlm6">
+          <span class="insung-dlm-tag">사례 6</span><span class="insung-dlm-tag" style="background:#f3f4f6;color:#6b7280;">존중 · 공감</span>
+          <p style="margin:6px 0 0;line-height:1.8;"><strong>"장난인데 왜 그래?"</strong> 친구의 표정이 웃기게 나온 사진을 스토리에 올렸다. 다들 웃겼는데, 정작 그 친구가 "지워 줘"라고 진지하게 말한다.</p>
+          <div class="insung-dlm-choices">
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm6',0)">😜 A. "장난인데 뭘 그래~" 하고 놔둔다. 어차피 24시간이면 사라진다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm6',1)">🙏 B. 바로 지우고 사과한다</button>
+          </div>
+          <div class="insung-reveal" data-idx="0">장난의 기준을 정하는 사람은 <strong>웃는 쪽이 아니라 웃음거리가 된 쪽</strong>입니다. 당사자가 "지워 줘"라고 말한 순간부터 그건 장난이 아니라 괴롭힘의 시작입니다. 그리고 '24시간이면 사라진다'는 착각 — 누군가 캡처하는 순간 영원히 남습니다. 본인 동의 없는 사진 게시는 초상권 침해로 법적 문제도 될 수 있습니다.</div>
+          <div class="insung-reveal" data-idx="1">유일하게 옳은 선택이고, 빠를수록 좋습니다. 핵심은 사과의 말입니다 — <strong>"기분 나빴다면 미안"(조건부)이 아니라 "네 동의 없이 올려서 미안"(내 행동 인정)</strong>. 이 차이를 아는 사람이 관계를 지킵니다. 지운 뒤 "다음부턴 올리기 전에 물어볼게"까지 가면 완벽합니다.</div>
+          <div class="insung-think">💭 <strong>생각해볼 질문:</strong> 내가 최근에 한 '장난' 중, 상대방 표정이 살짝 굳었던 순간은 없었나?</div>
+        </div>
+
+        <h3 style="font-size:1.05rem;font-weight:700;margin-top:32px;margin-bottom:14px;color:#1f2937;">공동체 속에서</h3>
+
+        <div class="insung-dlm" id="dlm7">
+          <span class="insung-dlm-tag">사례 7</span><span class="insung-dlm-tag" style="background:#f3f4f6;color:#6b7280;">존중 · 리더십</span>
+          <p style="margin:6px 0 0;line-height:1.8;"><strong>'전통'이라는 이름의 심부름.</strong> 동아리에서 후배가 선배 매점 심부름을 하는 게 '전통'이다. 작년엔 내가 했고, 올해는 내가 시킬 차례가 됐다.</p>
+          <div class="insung-dlm-choices">
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm7',0)">🔁 A. 나도 당했으니까 시킨다. 그게 전통이지</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm7',1)">✂️ B. 내 대에서 끊는다</button>
+          </div>
+          <div class="insung-reveal" data-idx="0">'나도 당했으니까'는 <strong>대물림의 논리이지 전통의 논리가 아닙니다.</strong> 군대·직장의 악습도 전부 이 문장으로 유지돼 왔습니다. 그리고 현실적인 경고 — 강요된 심부름은 지위를 이용한 괴롭힘으로, 학교폭력 사안으로 접수될 수 있는 행위입니다. '작년엔 괜찮았는데'는 면책이 되지 않습니다.</div>
+          <div class="insung-reveal" data-idx="1">악습은 누군가 한 명이 "여기까지"라고 말할 때만 끊깁니다. 그 한 명이 되는 건 손해가 아니라 <strong>리더십의 증명</strong>입니다 — 후배들은 '심부름 안 시킨 선배'를 졸업 후에도 기억합니다. 동기들 반발이 있다면 "우리가 당해서 싫었던 걸 왜 물려주냐"는 한 문장이면 충분합니다.</div>
+          <div class="insung-think">💭 <strong>생각해볼 질문:</strong> 내가 속한 곳의 '원래 그런 것' 중에, 사실은 아무도 좋아하지 않는 것은 무엇인가?</div>
+        </div>
+
+        <div class="insung-dlm" id="dlm8">
+          <span class="insung-dlm-tag">사례 8</span><span class="insung-dlm-tag" style="background:#f3f4f6;color:#6b7280;">배려 · 협업</span>
+          <p style="margin:6px 0 0;line-height:1.8;"><strong>체육대회 계주, 우리 조에 다리가 불편한 친구가 배정됐다.</strong> 몇몇이 "쟤 때문에 우리 조 진다"고 대놓고 말한다. 그 친구도 들은 것 같다.</p>
+          <div class="insung-dlm-choices">
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm8',0)">😒 A. 솔직히 나도 같은 생각이라 조 변경을 요구한다</button>
+            <button class="insung-choice-btn" onclick="insungChoice(this,'dlm8',1)">🧩 B. 그 친구를 포함해서 전략을 다시 짠다</button>
+          </div>
+          <div class="insung-reveal" data-idx="0">이기고 싶은 마음 자체는 잘못이 아닙니다. 하지만 이 선택이 남기는 메시지를 보세요 — <strong>"너는 짐이다."</strong> 그 친구는 체육대회가 아니라 그 말을 평생 기억합니다. 그리고 반대 상황을 상상해 보세요. 언젠가 내가 팀의 '약한 고리'가 되는 날(누구에게나 옵니다), 나는 어떤 팀을 만나고 싶은가요?</div>
+          <div class="insung-reveal" data-idx="1">이게 진짜 협업 능력입니다. 잘하는 사람만 모으는 건 아무나 하지만, <strong>주어진 팀에서 각자의 자리를 찾아내는 건 아무나 못 합니다.</strong> 구간 배치를 조정하고, 그 친구가 상대적으로 잘할 수 있는 역할(출발 순서, 응원 지휘, 작전)을 함께 정하세요. 대학과 기업이 '공동체역량'이라는 이름으로 찾는 게 정확히 이 장면입니다.</div>
+          <div class="insung-think">💭 <strong>생각해볼 질문:</strong> '공정한 팀'은 모두가 똑같이 잘하는 팀일까, 모두가 자기 몫을 가진 팀일까?</div>
+        </div>
+
+        <div class="card" style="margin-top:28px;border-left-color:#0891b2;background:linear-gradient(135deg,#ecfeff,#e0f2fe);">
+          <strong>🆘 사례가 아니라 지금 내 얘기라면</strong>
+          <p style="margin-top:8px;line-height:1.85;">위 상황들이 지금 겪고 있는 현실이라면 혼자 판단하지 말고 어른과 연결되세요. <strong>교내 위(Wee)클래스 상담실</strong>, 학교폭력 신고 <strong>117</strong>(전화·문자), 청소년 상담 <strong>1388</strong>은 비밀이 보장됩니다. 도움을 요청하는 것도 용기이자 인성입니다.</p>
+        </div>
+
+      </div>
+      <!-- /insung-cases -->
+
+      <!-- 진짜 이야기 -->
+      <div class="sub-panel" id="insung-real">
+
+        <h2 class="section-title" style="margin-top:0;">📰 진짜 이야기 — 인성이 인생을 바꾼 실제 장면들</h2>
+
+        <div class="card" style="border-left-color:#db2777;">
+          <p style="margin:0;line-height:1.85;">지어낸 미담이 아니라 <strong>실제로 있었던 일</strong>들입니다. 어떤 사람은 한순간의 선택으로 세계의 존경을 얻었고, 어떤 사람은 과거의 행동 때문에 눈앞의 미래를 잃었습니다. 공통점은 하나 — <strong>실력이 아니라 인성이 결정적 순간을 갈랐다</strong>는 것.</p>
+        </div>
+
+        <div class="card" style="margin-top:20px;border-left-color:#059669;">
+          <strong>🏃 결승선 앞에서 멈춘 1위, 그를 밀어준 2위</strong>
+          <p style="margin-top:8px;line-height:1.85;">2012년 스페인의 한 크로스컨트리 대회. 선두로 달리던 케냐 선수 아벨 무타이가 결승선을 몇 미터 앞두고 <strong>이미 들어온 줄 착각하고 멈춰 섰습니다.</strong> 바로 뒤에 있던 스페인 선수 이반 페르난데스에게는 그냥 지나쳐 우승할 기회였습니다. 그는 추월하는 대신 무타이의 등을 밀어 결승선을 통과시키고 자신은 2위로 들어왔습니다. "그가 이긴 경기였다. 그렇게 얻은 1위가 무슨 의미가 있나"라는 그의 말은 지금까지도 전 세계에서 회자됩니다.</p>
+          <p style="margin-top:10px;padding:10px 14px;background:#ecfdf5;border-radius:8px;font-size:0.86rem;line-height:1.7;"><strong>📌 이 사례가 말해주는 것</strong> — 그날의 우승자 이름은 잊혔지만 2위의 이름은 10년 넘게 기억됩니다. 순간의 선택이 그 사람의 '브랜드'가 됩니다.</p>
+        </div>
+
+        <div class="card" style="margin-top:16px;border-left-color:#dc2626;">
+          <strong>💬 단톡방 때문에 취소된 하버드 합격</strong>
+          <p style="margin-top:8px;line-height:1.85;">2017년, 하버드대학교는 신입생 단톡방에서 <strong>혐오·조롱 밈을 주고받은 합격생 10명의 입학을 취소</strong>했습니다. 그들은 이미 합격 통지를 받은, 전 세계에서 모인 최상위권 학생들이었습니다. '우리끼리 웃자고 한 것'이라는 해명은 통하지 않았습니다. 사적인 대화방이라도 기록은 남고, 기록은 그 사람의 판단력과 인성의 증거로 읽힙니다.</p>
+          <p style="margin-top:10px;padding:10px 14px;background:#fef2f2;border-radius:8px;font-size:0.86rem;line-height:1.7;"><strong>📌 이 사례가 말해주는 것</strong> — 실력으로 뚫은 문이 인성으로 닫혔습니다. '아무도 안 보는 곳에서의 나'까지가 진짜 나입니다.</p>
+        </div>
+
+        <div class="card" style="margin-top:16px;border-left-color:#d97706;">
+          <strong>🏐 코트에 서지 못한 유망주들</strong>
+          <p style="margin-top:8px;line-height:1.85;">국가대표까지 오른 프로 선수들이 <strong>학창 시절 학교폭력 폭로</strong>로 무기한 출전 정지, 계약 해지, 대표 자격 박탈을 당한 사례가 국내 프로 스포츠에서 잇따랐습니다. 폭로 시점은 데뷔 후 전성기 — 즉, 10대 때의 행동이 <strong>10년 뒤 커리어의 정점에서</strong> 청구서로 돌아온 것입니다. 실력은 최고였지만 그것으로 덮이지 않았고, 오히려 유명해질수록 과거는 더 크게 드러났습니다.</p>
+          <p style="margin-top:10px;padding:10px 14px;background:#fffbeb;border-radius:8px;font-size:0.86rem;line-height:1.7;"><strong>📌 이 사례가 말해주는 것</strong> — 과거는 사라지지 않고 유예될 뿐입니다. 지금의 행동이 미래의 나에게 보내는 이력서입니다.</p>
+        </div>
+
+        <div class="card" style="margin-top:16px;border-left-color:#2563eb;">
+          <strong>🚇 전동차를 밀어낸 승강장의 시민들</strong>
+          <p style="margin-top:8px;line-height:1.85;">지하철 승강장에서 승객이 열차와 스크린도어 사이에 끼이는 사고가 났을 때, <strong>승강장에 있던 시민 수십 명이 달려들어 수십 톤의 전동차를 함께 밀어</strong> 사람을 구해낸 일이 국내에서 여러 차례 있었습니다. 누가 시키지도, 서로 아는 사이도 아니었습니다. 한 사람이 "밀어야 해요!"라고 외치자 출근길의 평범한 사람들이 가방을 내려놓고 열차에 손을 댔습니다.</p>
+          <p style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-radius:8px;font-size:0.86rem;line-height:1.7;"><strong>📌 이 사례가 말해주는 것</strong> — 공동체의 힘은 영웅 한 명이 아니라 '먼저 움직인 한 사람 + 따라 움직인 보통 사람들'에게서 나옵니다. 그 '먼저 움직이는 한 사람'은 훈련으로 만들어집니다.</p>
+        </div>
+
+        <div class="card" style="margin-top:16px;border-left-color:#7c3aed;">
+          <strong>📋 최종 합격을 뒤집는 마지막 관문, 평판</strong>
+          <p style="margin-top:8px;line-height:1.85;">기업 채용에는 서류·필기·면접 뒤에 잘 알려지지 않은 관문이 있습니다. <strong>평판 조회(레퍼런스 체크)</strong> — 함께 일했던 사람들에게 지원자가 실제로 어떤 사람이었는지 묻는 절차입니다. 국내 채용 플랫폼 조사에서 기업 인사담당자 상당수가 "평판 조회 결과로 채용을 취소한 적이 있다"고 답했고, 취소 사유 상위는 실력 부족이 아니라 <strong>동료와의 갈등, 책임 회피, 거짓말</strong> 같은 인성 항목이었습니다.</p>
+          <p style="margin-top:10px;padding:10px 14px;background:#faf5ff;border-radius:8px;font-size:0.86rem;line-height:1.7;"><strong>📌 이 사례가 말해주는 것</strong> — 시험은 하루지만 평판은 매일 쌓입니다. 지금 교실에서 나와 함께 지내는 사람들이, 미래의 내 평판의 첫 증인들입니다.</p>
+        </div>
+
+        <div class="card" style="margin-top:24px;border-left-color:#db2777;background:linear-gradient(135deg,#fdf2f8,#fce7f3);">
+          <strong>💡 한 줄 정리</strong>
+          <p style="margin-top:8px;line-height:1.85;">다섯 이야기의 공통 구조 — <strong>결정적 순간에 사람을 통과시키거나 탈락시킨 것은 성적표가 아니라 행동의 기록</strong>이었습니다. 인성은 추상적 덕목이 아니라, 이렇게 구체적으로 작동하는 실력입니다.</p>
+        </div>
+
+        <h2 class="section-title" style="margin-top:36px;">📚 출처</h2>
+        <div class="card" style="font-size:0.84rem;color:#4b5563;line-height:1.85;">
+          <p style="margin:0;"><strong>출처:</strong> 2012 스페인 부를라다 크로스컨트리 대회 보도(이반 페르난데스·아벨 무타이), 하버드대 신입생 입학 취소 사건 보도(The Harvard Crimson, 2017), 국내 프로 스포츠 학교폭력 사안 관련 보도(2021~, 개인 특정을 피하기 위해 익명 처리), 지하철 승강장 시민 구조 사례 보도(2014 서울 등), 국내 채용 플랫폼 평판조회 설문 보도 종합. ※ 학생 교육용으로 재구성한 자료입니다.</p>
+        </div>
+
+      </div>
+      <!-- /insung-real -->
+
+      <!-- 인성이 스펙이 되는 이유 -->
+      <div class="sub-panel active" id="insung-spec">
+
+        <h2 class="section-title" style="margin-top:0;">🎓 인성이 스펙이 되는 이유 — 평가는 이미 시작됐다</h2>
+
+        <div class="card" style="border-left-color:#db2777;">
+          <strong>💭 오해부터 풀기</strong>
+          <p style="margin-top:8px;line-height:1.85;">"착하게 살라"는 도덕 시간 이야기가 아닙니다. <strong>대입과 취업의 평가 구조 안에 인성이 공식 항목으로 들어와 있다</strong>는 사실 이야기입니다. 아래는 전부 실제 평가 기준입니다.</p>
+        </div>
+
+        <h3 style="font-size:1.05rem;font-weight:700;margin-top:32px;margin-bottom:14px;color:#1f2937;">① 대입 — 학생부종합전형의 3대 평가요소 중 하나</h3>
+
+        <p style="line-height:1.85;margin-bottom:14px;">건국대·경희대·연세대·중앙대·한국외대 5개 대학 공동연구(2022)로 정립된 학종 공통 평가요소는 <strong>학업역량 · 진로역량 · 공동체역량</strong> 세 가지입니다. 세 기둥 중 하나가 통째로 인성 영역입니다.</p>
+
+        <table class="data-table">
+          <thead><tr><th>공동체역량 세부 항목</th><th>대학이 학생부에서 찾는 장면</th></tr></thead>
+          <tbody>
+            <tr><td><strong>협업과 소통능력</strong></td><td>조별 탐구·동아리·학급 활동에서 갈등을 조율하고 함께 결과를 만든 기록</td></tr>
+            <tr><td><strong>나눔과 배려</strong></td><td>멘토링, 또래 학습 도우미, 자기 것을 나눈 구체적 일화</td></tr>
+            <tr><td><strong>성실성과 규칙준수</strong></td><td>출결, 맡은 역할의 꾸준함, 약속을 지킨 기록 (미인정 지각·결석은 그대로 남음)</td></tr>
+            <tr><td><strong>리더십</strong></td><td>직책 유무가 아니라, 공동 목표를 위해 사람들을 움직인 장면</td></tr>
+          </tbody>
+        </table>
+
+        <div class="card" style="margin-top:16px;border-left-color:#2563eb;">
+          <strong>📝 특히 '행동특성 및 종합의견'</strong>
+          <p style="margin-top:8px;line-height:1.85;">담임 선생님이 1년간 관찰한 학생의 인성·태도를 서술하는 항목으로, 교사추천서가 폐지된 지금 <strong>사실상 담임이 쓰는 추천서</strong> 역할을 합니다. 여기 적히는 건 시험 점수가 아니라 <strong>평소의 장면들</strong>입니다 — 사례극장에서 본 바로 그런 순간들이, 교실에서 누군가에게 관찰되고 있습니다.</p>
+        </div>
+
+        <h3 style="font-size:1.05rem;font-weight:700;margin-top:36px;margin-bottom:14px;color:#1f2937;">② 취업 — 기업은 인성을 세 번 검사한다</h3>
+
+        <div class="card-grid">
+          <div class="grid-card" style="border-top:4px solid #dc2626;">
+            <div class="label" style="font-weight:700;color:#991b1b;margin-bottom:8px;">1차 · 인성검사</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">대기업 인적성시험의 절반이 인성검사. 성실성·협동성·윤리의식을 수백 문항으로 교차 검증하며, <strong>불합격 사유가 돼도 이유는 알려주지 않음.</strong></p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #d97706;">
+            <div class="label" style="font-weight:700;color:#92400e;margin-bottom:8px;">2차 · 면접</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">"갈등을 겪고 해결한 경험은?" — 직무 면접보다 <strong>조직적합성(팀에서 어떤 사람인가)</strong> 질문이 당락을 가르는 경우가 많음.</p>
+          </div>
+          <div class="grid-card" style="border-top:4px solid #7c3aed;">
+            <div class="label" style="font-weight:700;color:#5b21b6;margin-bottom:8px;">3차 · 평판조회</div>
+            <p style="font-size:0.88rem;line-height:1.7;margin:0;">최종합격 후에도 함께 일한 사람들에게 지원자의 실제 모습을 확인. <strong>인성 사유로 합격이 뒤집히는 마지막 관문.</strong></p>
+          </div>
+        </div>
+
+        <h3 style="font-size:1.05rem;font-weight:700;margin-top:36px;margin-bottom:14px;color:#1f2937;">③ AI 시대 — 마지막까지 인간에게 남는 자산</h3>
+
+        <div class="card" style="border-left-color:#059669;">
+          <p style="margin:0;line-height:1.85;">지식과 기술은 AI가 점점 더 잘합니다. 그래서 세계경제포럼(WEF) 미래직업보고서가 꼽는 미래 핵심 역량 상위권에는 <strong>공감, 협업, 리더십, 사회적 영향력 같은 사회정서 역량</strong>이 매년 올라 있습니다. 이유는 단순합니다 — <strong>신뢰는 다운로드가 안 됩니다.</strong> AI가 답을 만들 수는 있어도, '이 사람과 함께 일하고 싶다'는 마음은 사람만이 얻어낼 수 있습니다.</p>
+        </div>
+
+        <h3 style="font-size:1.05rem;font-weight:700;margin-top:36px;margin-bottom:14px;color:#1f2937;">④ 우리나라가 법으로 정한 8가지 마음의 근육</h3>
+
+        <p style="line-height:1.85;margin-bottom:14px;">한국은 2015년 세계 최초로 <strong>인성교육진흥법</strong>을 만들어 인성교육을 의무화한 나라입니다. 법이 정한 8대 핵심 가치·덕목:</p>
+
+        <div class="card-grid">
+          <div class="grid-card" style="text-align:center;"><div style="font-size:1.4rem;">🙇</div><div class="label" style="font-weight:700;margin-top:4px;">예(禮)</div><p style="font-size:0.82rem;color:#6b7280;margin:4px 0 0;">상대를 존중하는 형식과 태도</p></div>
+          <div class="grid-card" style="text-align:center;"><div style="font-size:1.4rem;">👨‍👩‍👧</div><div class="label" style="font-weight:700;margin-top:4px;">효(孝)</div><p style="font-size:0.82rem;color:#6b7280;margin:4px 0 0;">가장 가까운 사람부터 소중히</p></div>
+          <div class="grid-card" style="text-align:center;"><div style="font-size:1.4rem;">🪞</div><div class="label" style="font-weight:700;margin-top:4px;">정직</div><p style="font-size:0.82rem;color:#6b7280;margin:4px 0 0;">보는 사람이 없어도 같은 나</p></div>
+          <div class="grid-card" style="text-align:center;"><div style="font-size:1.4rem;">⚓</div><div class="label" style="font-weight:700;margin-top:4px;">책임</div><p style="font-size:0.82rem;color:#6b7280;margin:4px 0 0;">내 선택의 결과를 감당하는 힘</p></div>
+          <div class="grid-card" style="text-align:center;"><div style="font-size:1.4rem;">🤝</div><div class="label" style="font-weight:700;margin-top:4px;">존중</div><p style="font-size:0.82rem;color:#6b7280;margin:4px 0 0;">다름을 틀림으로 읽지 않기</p></div>
+          <div class="grid-card" style="text-align:center;"><div style="font-size:1.4rem;">💗</div><div class="label" style="font-weight:700;margin-top:4px;">배려</div><p style="font-size:0.82rem;color:#6b7280;margin:4px 0 0;">상대의 자리에서 한 번 더 생각</p></div>
+          <div class="grid-card" style="text-align:center;"><div style="font-size:1.4rem;">🗣️</div><div class="label" style="font-weight:700;margin-top:4px;">소통</div><p style="font-size:0.82rem;color:#6b7280;margin:4px 0 0;">말하기보다 듣기가 먼저</p></div>
+          <div class="grid-card" style="text-align:center;"><div style="font-size:1.4rem;">🧩</div><div class="label" style="font-weight:700;margin-top:4px;">협동</div><p style="font-size:0.82rem;color:#6b7280;margin:4px 0 0;">혼자의 100보다 함께의 120</p></div>
+        </div>
+
+        <div class="card" style="margin-top:24px;border-left-color:#db2777;background:linear-gradient(135deg,#fdf2f8,#fce7f3);">
+          <strong>💡 한 줄 정리</strong>
+          <p style="margin-top:8px;line-height:1.85;">인성은 성적과 경쟁하는 항목이 아니라 <strong>성적이 통과시킨 문 앞에서 마지막 검문을 하는 항목</strong>입니다. 그리고 시험과 달리 벼락치기가 불가능합니다 — 지금부터 쌓는 수밖에 없습니다.</p>
+        </div>
+
+        <h2 class="section-title" style="margin-top:36px;">📚 출처</h2>
+        <div class="card" style="font-size:0.84rem;color:#4b5563;line-height:1.85;">
+          <p style="margin:0;"><strong>출처:</strong> 「NEW 학생부종합전형 공통 평가요소 및 평가항목」(건국대·경희대·연세대·중앙대·한국외대 공동연구, 2022), 인성교육진흥법(2015), 세계경제포럼(WEF) 미래직업보고서, 국내 기업 채용 절차 관련 보도 종합. ※ 학생 교육용 참고 자료입니다.</p>
+        </div>
+
+      </div>
+      <!-- /insung-spec -->
+
+      <!-- 나의 인성 체크 -->
+      <div class="sub-panel" id="insung-check">
+
+        <h2 class="section-title" style="margin-top:0;">✅ 나의 인성 체크 — 지난 한 달의 나</h2>
+
+        <div class="card" style="border-left-color:#db2777;">
+          <p style="margin:0;line-height:1.85;">'나는 착한 편인가?' 같은 막연한 질문 대신 <strong>행동으로 확인</strong>해 봅시다. 지난 한 달을 떠올리며, 실제로 그랬던 항목에만 체크하세요. <strong>솔직할수록 의미 있는 결과</strong>가 나옵니다. (심리검사가 아닌 자기 성찰용이며, 결과는 어디에도 저장되지 않습니다.)</p>
+        </div>
+
+        <div id="insung-check-list" style="margin-top:20px;">
+          <label class="insung-check-item"><input type="checkbox"><span>단톡방·SNS에서 누군가를 조롱하는 분위기에 <strong>동조하지 않았다</strong> (ㅋㅋㅋ 포함)</span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>조별 활동·청소·당번 등 <strong>내 몫을 끝까지</strong> 해냈다</span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>과제·시험·수행평가에서 <strong>정직하지 않은 방법을 쓰지 않았다</strong></span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>나와 생각이 다른 의견을 <strong>중간에 끊지 않고 끝까지</strong> 들어본 적이 있다</span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>고맙다·미안하다를 <strong>그 자리에서 직접</strong> 말한 적이 있다</span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>뒤에서 험담하는 대신 <strong>당사자에게 직접</strong> 말하거나, 아예 말을 아꼈다</span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>급식·매점·복도 등에서 <strong>순서와 규칙</strong>을 지켰다</span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>혼자 있거나 힘들어 보이는 친구에게 <strong>먼저 말을 건</strong> 적이 있다</span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>사진·영상을 올리기 전에 <strong>당사자 동의</strong>를 생각해 본 적이 있다</span></label>
+          <label class="insung-check-item"><input type="checkbox"><span>내 잘못을 <strong>변명 없이 인정</strong>한 적이 있다</span></label>
+        </div>
+
+        <button onclick="insungScore()" style="margin-top:16px;padding:12px 28px;background:#db2777;color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;">결과 보기</button>
+
+        <div id="insung-score-result" class="card" style="display:none;margin-top:16px;border-left-color:#db2777;line-height:1.85;"></div>
+
+        <h3 style="font-size:1.05rem;font-weight:700;margin-top:36px;margin-bottom:14px;color:#1f2937;">🎯 오늘의 실천 미션</h3>
+
+        <div class="card" style="border-left-color:#059669;">
+          <p style="margin:0;line-height:1.85;">인성은 결심이 아니라 <strong>반복</strong>으로 만들어집니다. 버튼을 눌러 오늘 실천할 미션 하나를 뽑아 보세요. 하루 한 가지면 충분합니다.</p>
+          <button onclick="insungMission()" style="margin-top:14px;padding:11px 24px;background:#059669;color:#fff;border:none;border-radius:10px;font-size:0.92rem;font-weight:700;cursor:pointer;font-family:inherit;">미션 뽑기 🎲</button>
+          <div id="insung-mission-box" style="display:none;margin-top:14px;padding:16px 18px;background:#ecfdf5;border-radius:10px;line-height:1.8;"></div>
+        </div>
+
+        <div class="card" style="margin-top:24px;border-left-color:#db2777;background:linear-gradient(135deg,#fdf2f8,#fce7f3);">
+          <strong>💡 한 줄 정리</strong>
+          <p style="margin-top:8px;line-height:1.85;">인성역량은 타고나는 성격이 아니라 <strong>연습으로 늘어나는 실력</strong>입니다. 오늘 체크하지 못한 항목이 바로 나의 다음 성장 포인트입니다.</p>
+        </div>
+
+      </div>
+      <!-- /insung-check -->
+
+    </div>
+    <!-- /lounge-insung -->
+
+    <!-- 진로진학 -->
+    <div class="sub-panel" id="lounge-jinro">
+
+      <h2 class="section-title" style="margin-top:0;">🗺️ 3대 메가프로젝트 — 지방에서 열리는 첨단산업 진로 지도</h2>
+
+      <div class="card" style="border-left-color:#d97706;">
+        <strong>💭 질문</strong>
+        <p style="margin-top:8px;line-height:1.8;">"첨단산업 일자리는 결국 다 수도권에 있는 것 아닌가요?" — 2026년 여름, 이 통념을 흔드는 발표가 이어졌습니다. 정부와 기업이 호남·충청·영남 <strong>세 권역에 총 1,500조 원대 첨단산업 투자</strong>를 배치했고, 교육부는 그 인재를 지방대에서 <strong>정원 외로</strong> 뽑는 제도까지 내놓았습니다. 우리의 진학 지도는 어떻게 달라질까요?</p>
       </div>
 
+      <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">① 3대 메가프로젝트 — 권역별로 보기</h4>
+
+      <table class="data-table">
+        <thead><tr><th>권역</th><th>무엇이 들어서나</th><th>규모</th></tr></thead>
+        <tbody>
+          <tr><td><strong>호남권</strong></td><td>반도체 팹(전공정) 4기 — 삼성전자·SK하이닉스</td><td>각 400조 원, 총 800조 원</td></tr>
+          <tr><td><strong>충청권</strong></td><td>반도체 패키징(후공정) 거점</td><td>392조 원</td></tr>
+          <tr><td><strong>영남권</strong></td><td>부산 전력반도체 · <strong>구미 소부장/방산 반도체</strong> · 울산 1GW급 AI 데이터센터 · 창원 SMR · 남해안 우주항공 벨트 · <strong>구미–포항–대구–창원 첨단로봇 벨트</strong></td><td>6개 기업 312조 원</td></tr>
+        </tbody>
+      </table>
+
+      <div class="card" style="border-left-color:#d97706;background:#fffbeb;">
+        <strong>📍 대구는 어디에?</strong>
+        <p style="margin-top:8px;line-height:1.8;">영남권 구상에서 <strong>대구는 구미–포항–창원과 함께 첨단로봇 벨트</strong>에 들어 있습니다. 바로 옆 구미에는 소부장·방산 특화 반도체 거점이 계획되어 있고요. '첨단산업 진로 = 수도권행'이라는 공식이 적어도 지도 위에서는 달라지고 있습니다.</p>
+      </div>
+
+      <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">② '반도체가 유망하다'가 아니라, 직무 지도를 읽자</h4>
+      <div class="card">
+        <p style="line-height:1.8;margin:0;">같은 첨단산업이라도 권역마다 필요한 사람이 다릅니다. 호남은 반도체 <strong>전공정</strong>(소자·공정·재료 — 물리·화학), 충청은 <strong>패키징</strong>(설계·테스트·장비 — 전자·기계), 영남은 <strong>전력반도체·SMR·로봇·데이터센터 인프라</strong>(전기·기계·에너지·SW)입니다. 순서는 이렇게 잡아 보세요.</p>
+        <ul style="padding-left:20px;line-height:1.95;margin:10px 0 0;">
+          <li><strong>1단계</strong> — 내가 좋아하는 과목이 물리인가, 화학인가, 정보(SW)인가, 기계 만지는 쪽인가</li>
+          <li><strong>2단계</strong> — 그 흥미와 연결되는 직무를 위 표에서 찾기</li>
+          <li><strong>3단계</strong> — 그 직무가 배치된 권역의 대학·학과를 후보 목록에 넣기</li>
+        </ul>
+      </div>
+
+      <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">③ 입시 통로가 넓어진다 — 정원 '외' 모집과 2년 트랙</h4>
+      <div class="card">
+        <ul style="padding-left:20px;line-height:1.95;margin:0;">
+          <li><strong>지역협약정원제</strong>(가칭) — 지방대가 기업과 협약을 맺고, 기업이 필요한 만큼 <strong>정원 외로 학생을 모집</strong></li>
+          <li><strong>인재양성 신속트랙제</strong>(가칭) — 전과·정원 외 편입을 활용해 <strong>2년 안에</strong> 산업계 인재 양성</li>
+          <li>첨단분야 정원은 2021학년도부터 이미 <strong>7,100여 명 증원</strong>, 계약학과 재학생은 반도체 3,650명·AI 2,158명 (2026년 6월 대학정보공시)</li>
+        </ul>
+        <p style="margin-top:12px;line-height:1.8;color:#6b7280;">기존 수시·정시 바깥에 새 통로가 생기는 셈입니다. 취업 연계 조건·의무 복무 같은 세부 설계는 확정안을 확인해야 합니다.</p>
+      </div>
+
+      <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">④ 2028 대입과 연결하면 — 준비는 교실에서</h4>
+      <div class="card">
+        <p style="line-height:1.8;margin:0;">2028학년도 대입부터 수능 선택과목이 폐지(통합사회·통합과학)되고 내신은 5등급제가 됩니다. 수능 유불리로 과목을 고르던 시대가 끝나는 만큼, <strong>학생부에 남는 과목 이수 경로</strong>가 전공 적합성의 핵심 증거가 됩니다. 첨단산업 진로라면 물리학·화학·정보·기하 등 관련 과목 이수와, 절대평가인 융합선택 과목을 활용한 심화 탐구가 실질적인 전략입니다.</p>
+      </div>
+
+      <div class="card" style="border-left-color:#dc2626;">
+        <strong>⚠️ 함께 기억할 것 — '계획'과 '확정'은 다르다</strong>
+        <p style="margin-top:8px;line-height:1.8;">3대 메가프로젝트 상당수는 아직 투자 계획·협약 단계입니다. "무늬만 지방 이전이 될 수 있다"는 지적(경향신문)도 있습니다. 착공 소식, 정원·전형 반영 같은 <strong>확정 발표를 기준으로</strong> 판단을 갱신하세요. 진학 결정 전에는 반드시 교육부·각 대학 입학처의 최신 공지와 대조해야 합니다.</p>
+      </div>
+
+      <h4 style="font-size:1rem;font-weight:700;margin-top:32px;margin-bottom:12px;color:#1f2937;">📎 원문으로 확인하기</h4>
+      <div class="card">
+        <ul style="padding-left:20px;line-height:1.95;margin:0;">
+          <li><a href="https://www.ajunews.com/view/20260709131959684" target="_blank" rel="noopener">아주경제 — 교육부, '3대 메가프로젝트' 첨단분야 정원 유연화 추진 (2026-07-09)</a></li>
+          <li><a href="https://imnews.imbc.com/replay/2026/nwdesk/article/6834878_37004.html" target="_blank" rel="noopener">MBC — 영남까지 첨단산업 구상, 3대 메가프로젝트 (2026-07-03)</a></li>
+          <li><a href="https://www.fnnews.com/news/202607050830196102" target="_blank" rel="noopener">파이낸셜뉴스 — 3대 메가, 지역균형발전 신호탄? (2026-07-05)</a></li>
+          <li><a href="https://www.khan.co.kr/article/202607021309001/" target="_blank" rel="noopener">경향신문 — "무늬만 지방 이전 막으려면" (2026-07-02)</a></li>
+          <li><a href="https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=97551&lev=0&searchType=null&statusYN=W&page=1&s=moe&m=020402&opType=N" target="_blank" rel="noopener">교육부 — 2028 대입: 통합형 수능 확정</a></li>
+          <li><a href="https://edtouch.ai/aiedu-report/special/jinro-megaproject/" target="_blank" rel="noopener">EdTouch AI Edu 리포트 — 진로진학 특집 원문</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- 우리 시대 직업 -->
+    <div id="lounge-jobs">
+
       <!-- 의사 -->
-      <div class="jobs-tab-panel" id="jobs-doctor">
+      <div class="sub-panel" id="jobs-doctor">
 
         <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🩺 AI 시대, 연봉 3억 의사 불가능 — 임상 의사의 몰락과 의과학자의 부상</h3>
 
@@ -1529,7 +2178,14 @@
       <!-- /jobs-doctor -->
 
       <!-- 학과 (기본 활성) -->
-      <div class="jobs-tab-panel active" id="jobs-major">
+      <div class="sub-panel" id="jobs-major">
+
+        <h2 class="section-title" style="margin-top:0;">💼 우리 시대 직업 — 흔들리는 안정, 떠오르는 기회</h2>
+
+        <div class="card" style="border-left-color:#7c3aed;margin-bottom:24px;">
+          <strong>📌 이 코너에 대하여</strong>
+          <p style="margin-top:8px;line-height:1.8;">의사·변호사·회계사 같은 '안정적' 직업이 흔들리고, 새 기회가 떠오르는 중입니다. 고등학생인 여러분이 진로를 그릴 때 꼭 알아야 할 큰 흐름을 <strong>3가지 주제</strong>로 정리했습니다. 부모님 세대의 경험은 더 이상 정답이 아닐 수 있습니다.</p>
+        </div>
 
         <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🎓 AI 시대, 의대보다 더 뜨는 학과 — 핵심 역량과 미래 유망 산업</h3>
 
@@ -1613,7 +2269,7 @@
       <!-- /jobs-major -->
 
       <!-- ③ 경제 -->
-      <div class="jobs-tab-panel" id="jobs-economy">
+      <div class="sub-panel" id="jobs-economy">
 
         <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🚀 AI 시대 1인 창업 — 무자본·무경험으로 시작하는 비즈니스</h3>
 
@@ -1730,31 +2386,10 @@
     </div>
 
     <!-- 미래 역량 -->
-    <div class="lounge-sub-panel" id="lounge-skills">
+    <div id="lounge-skills">
 
-      <style>
-      .skills-tab-nav{display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;}
-      .skills-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-      .skills-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
-      .skills-tab-panel{display:none;}
-      .skills-tab-panel.active{display:block;}
-      </style>
-      <script>
-      function switchSkillsTab(id,btn){
-        document.querySelectorAll('.skills-tab-panel').forEach(p=>p.classList.remove('active'));
-        document.querySelectorAll('.skills-tab-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-      }
-      </script>
-
-      <div class="skills-tab-nav">
-        <button class="skills-tab-btn active" onclick="switchSkillsTab('skills-core',this)">🎯 AI 시대 역량</button>
-        <button class="skills-tab-btn" onclick="switchSkillsTab('skills-smart',this)">🤖 AI로 똑똑해지는 사람</button>
-      </div>
-
-      <!-- AI 시대 역량 (기본 활성) -->
-      <div class="skills-tab-panel active" id="skills-core">
+      <!-- AI 시대 역량 -->
+      <div class="sub-panel" id="skills-core">
 
         <h2 class="section-title" style="margin-top:0;">🎯 AI 대전환 시대, 고등학생 핵심 역량과 실천 방안</h2>
 
@@ -1847,7 +2482,7 @@
       <!-- /skills-core -->
 
       <!-- AI로 똑똑해지는 사람 -->
-      <div class="skills-tab-panel" id="skills-smart">
+      <div class="sub-panel" id="skills-smart">
 
       <h2 class="section-title" style="margin-top:0;">🤖 AI를 쓸수록 똑똑해지는 사람, 멍청해지는 사람</h2>
 
@@ -1993,37 +2628,17 @@
     </div>
 
     <!-- AX 대전환 -->
-    <div class="lounge-sub-panel" id="lounge-ax">
-
-      <h2 class="section-title" style="margin-top:0;">🔄 AX 대전환 — AI Transformation</h2>
-
-      <div class="card" style="border-left-color:#7c3aed;">
-        <strong>📌 AX(AI Transformation)란?</strong>
-        <p style="margin-top:8px;line-height:1.8;">DX(디지털 전환)를 넘어, AI가 산업·사회·교육의 작동 방식 자체를 근본적으로 바꾸는 흐름을 <strong>AX(AI 대전환)</strong>라고 합니다. 이 코너는 분야별로 그 변화를 데이터와 함께 정리합니다.</p>
-      </div>
-
-      <style>
-      .ax-tab-nav{display:flex;gap:8px;margin:24px 0;flex-wrap:wrap;}
-      .ax-tab-btn{padding:10px 18px;border:2px solid #e5e7eb;background:#fff;border-radius:10px;font-size:0.87rem;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;font-family:inherit;}
-      .ax-tab-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
-      .ax-tab-panel{display:none;}
-      .ax-tab-panel.active{display:block;}
-      </style>
-      <script>
-      function switchAxTab(id,btn){
-        document.querySelectorAll('.ax-tab-panel').forEach(p=>p.classList.remove('active'));
-        document.querySelectorAll('.ax-tab-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-      }
-      </script>
-
-      <div class="ax-tab-nav">
-        <button class="ax-tab-btn active" onclick="switchAxTab('ax-edu',this)">🎓 교육 분야</button>
-      </div>
+    <div id="lounge-ax">
 
       <!-- 교육 분야 -->
-      <div class="ax-tab-panel active" id="ax-edu">
+      <div class="sub-panel" id="ax-edu">
+
+        <h2 class="section-title" style="margin-top:0;">🔄 AX 대전환 — AI Transformation</h2>
+
+        <div class="card" style="border-left-color:#7c3aed;margin-bottom:24px;">
+          <strong>📌 AX(AI Transformation)란?</strong>
+          <p style="margin-top:8px;line-height:1.8;">DX(디지털 전환)를 넘어, AI가 산업·사회·교육의 작동 방식 자체를 근본적으로 바꾸는 흐름을 <strong>AX(AI 대전환)</strong>라고 합니다. 이 코너는 분야별로 그 변화를 데이터와 함께 정리합니다.</p>
+        </div>
 
         <h3 style="font-size:1.15rem;font-weight:700;color:var(--primary);margin:0 0 14px;">🎓 교육 분야의 AI 대전환 — 현황과 미래 전망</h3>
 
@@ -2717,12 +3332,36 @@
     function revoke(){if(downloadUrl){URL.revokeObjectURL(downloadUrl);downloadUrl=null;}}
     function status(msg,kind){var n=el('pdf-compress-status');if(n){n.className='pdf-status visible'+(kind?' '+kind:'');n.innerHTML=msg;}}
     function setBusy(on){busy=on;el('pdf-compress-submit').disabled=on||!file;el('pdf-compress-cancel').disabled=!on;el('pdf-compress-file').disabled=on;document.querySelectorAll('[data-pdf-target]').forEach(function(b){b.disabled=on;});}
-    function choose(next){if(busy||!next)return;revoke();el('pdf-compress-reset').style.display='none';if(next.type!=='application/pdf'&&!/\\.pdf$/i.test(next.name)){file=null;el('pdf-compress-submit').disabled=true;status('PDF 파일만 선택할 수 있습니다.','error');return;}if(!next.size){file=null;el('pdf-compress-submit').disabled=true;status('비어 있는 파일은 처리할 수 없습니다.','error');return;}if(next.size>MAX){file=null;el('pdf-compress-submit').disabled=true;status('파일이 30MB를 넘습니다. 더 작은 PDF를 선택해 주세요.','error');return;}file=next;el('pdf-compress-file-label').textContent=next.name;el('pdf-compress-help').textContent='원본 크기: '+size(next.size);el('pdf-compress-submit').disabled=false;status('목표 용량을 확인한 뒤 “PDF 용량 줄이기”를 눌러 주세요.','');}
-    async function call(token,retried){var r=await fetch(API+'?targetMb='+targetMb,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/pdf'},body:file,signal:controller.signal});if(r.status===401&&!retried&&typeof window.refreshSession==='function'){var ns=await window.refreshSession();if(ns&&ns.token)return call(ns.token,true);}return r;}
-    async function submit(){if(busy||!file)return;revoke();controller=new AbortController();setBusy(true);status('<strong>PDF를 업로드하고 압축하고 있습니다.</strong><br>파일 크기와 페이지 수에 따라 잠시 걸릴 수 있습니다.','');try{var token=typeof window.ensureToken==='function'?await window.ensureToken():(getSess()||{}).token;if(!token)throw new Error('로그인이 만료되었습니다. 다시 로그인해 주세요.');var r=await call(token,false);if(!r.ok){var msg='PDF를 줄이지 못했습니다.';try{var data=await r.json();if(data&&data.error)msg=data.error;}catch(ignore){}throw new Error(msg);}var blob=await r.blob();if(!blob.size)throw new Error('서버가 빈 파일을 반환했습니다.');var original=Number(r.headers.get('X-Pdf-Original-Bytes'))||file.size,result=Number(r.headers.get('X-Pdf-Result-Bytes'))||blob.size,target=Number(r.headers.get('X-Pdf-Target-Bytes'))||(targetMb===5?4900000:9800000),achieved=String(r.headers.get('X-Pdf-Target-Achieved')).toLowerCase()==='true'||result<target;downloadUrl=URL.createObjectURL(blob);var base=file.name.replace(/\\.pdf$/i,'').replace(/[\\\\/:*?"<>|]+/g,'_');status('<strong>'+(achieved?'목표 용량으로 줄였습니다.':'목표 용량 달성 여부를 확인해 주세요.')+'</strong><br>원본 '+size(original)+' → 결과 '+size(result)+' · '+Math.max(0,Math.round((1-result/original)*100))+'% 감소<br><a href="'+downloadUrl+'" download="'+safe(base)+'_'+targetMb+'MB미만.pdf" style="display:inline-flex;margin-top:10px;padding:9px 15px;border-radius:9px;background:#1e3a6b;color:#fff;text-decoration:none;font-weight:700;">압축 PDF 다운로드</a>',achieved?'success':'warning');el('pdf-compress-reset').style.display='';}catch(e){status(e&&e.name==='AbortError'?'처리를 취소했습니다. 원본 PDF는 변경되지 않았습니다.':safe(e&&e.message?e.message:'네트워크 오류가 발생했습니다.'),e&&e.name==='AbortError'?'warning':'error');}finally{controller=null;setBusy(false);}}
-    document.addEventListener('DOMContentLoaded',function(){var input=el('pdf-compress-file'),drop=el('pdf-compress-drop');if(!input||!drop)return;drop.addEventListener('click',function(){if(!busy)input.click();});drop.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&!busy){e.preventDefault();input.click();}});input.addEventListener('change',function(){choose(input.files&&input.files[0]);});['dragenter','dragover'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();if(!busy)drop.classList.add('is-dragging');});});['dragleave','drop'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.remove('is-dragging');});});drop.addEventListener('drop',function(e){if(!busy)choose(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]);});document.querySelectorAll('[data-pdf-target]').forEach(function(btn){btn.addEventListener('click',function(){targetMb=Number(btn.getAttribute('data-pdf-target'));document.querySelectorAll('[data-pdf-target]').forEach(function(b){b.setAttribute('aria-pressed',String(b===btn));});});});el('pdf-compress-submit').addEventListener('click',submit);el('pdf-compress-cancel').addEventListener('click',function(){if(controller)controller.abort();});el('pdf-compress-reset').addEventListener('click',function(){revoke();file=null;input.value='';el('pdf-compress-file-label').textContent='PDF를 선택하거나 여기에 놓으세요';el('pdf-compress-help').textContent='PDF 1개 · 최대 30MB';el('pdf-compress-submit').disabled=true;el('pdf-compress-reset').style.display='none';el('pdf-compress-status').className='pdf-status';input.click();});window.addEventListener('beforeunload',revoke);});
+    function choose(next){
+      if(busy||!next)return;revoke();el('pdf-compress-reset').style.display='none';
+      if(next.type!=='application/pdf'&&!/\\.pdf$/i.test(next.name)){file=null;el('pdf-compress-submit').disabled=true;status('PDF 파일만 선택할 수 있습니다.','error');return;}
+      if(!next.size){file=null;el('pdf-compress-submit').disabled=true;status('비어 있는 파일은 처리할 수 없습니다.','error');return;}
+      if(next.size>MAX){file=null;el('pdf-compress-submit').disabled=true;status('파일이 30MB를 넘습니다. 더 작은 PDF를 선택해 주세요.','error');return;}
+      file=next;el('pdf-compress-file-label').textContent=next.name;el('pdf-compress-help').textContent='원본 크기: '+size(next.size);el('pdf-compress-submit').disabled=false;status('목표 용량을 확인한 뒤 “PDF 용량 줄이기”를 눌러 주세요.','');
+    }
+    async function call(token,retried){
+      var r=await fetch(API+'?targetMb='+targetMb,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/pdf'},body:file,signal:controller.signal});
+      if(r.status===401&&!retried&&typeof window.refreshSession==='function'){var ns=await window.refreshSession();if(ns&&ns.token)return call(ns.token,true);}return r;
+    }
+    async function submit(){
+      if(busy||!file)return;revoke();controller=new AbortController();setBusy(true);status('<strong>PDF를 업로드하고 압축하고 있습니다.</strong><br>파일 크기와 페이지 수에 따라 잠시 걸릴 수 있습니다.','');
+      try{
+        var token=typeof window.ensureToken==='function'?await window.ensureToken():(getSess()||{}).token;if(!token)throw new Error('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+        var r=await call(token,false);if(!r.ok){var msg='PDF를 줄이지 못했습니다.';try{var data=await r.json();if(data&&data.error)msg=data.error;}catch(ignore){}throw new Error(msg);}
+        var blob=await r.blob();if(!blob.size)throw new Error('서버가 빈 파일을 반환했습니다.');
+        var original=Number(r.headers.get('X-Pdf-Original-Bytes'))||file.size,result=Number(r.headers.get('X-Pdf-Result-Bytes'))||blob.size,target=Number(r.headers.get('X-Pdf-Target-Bytes'))||(targetMb===5?4900000:9800000),achieved=String(r.headers.get('X-Pdf-Target-Achieved')).toLowerCase()==='true'||result<target;
+        downloadUrl=URL.createObjectURL(blob);var base=file.name.replace(/\\.pdf$/i,'').replace(/[\\\\/:*?"<>|]+/g,'_');
+        status('<strong>'+(achieved?'목표 용량으로 줄였습니다.':'목표 용량 달성 여부를 확인해 주세요.')+'</strong><br>원본 '+size(original)+' → 결과 '+size(result)+' · '+Math.max(0,Math.round((1-result/original)*100))+'% 감소<br><a href="'+downloadUrl+'" download="'+safe(base)+'_'+targetMb+'MB미만.pdf" style="display:inline-flex;margin-top:10px;padding:9px 15px;border-radius:9px;background:#1e3a6b;color:#fff;text-decoration:none;font-weight:700;">압축 PDF 다운로드</a>',achieved?'success':'warning');el('pdf-compress-reset').style.display='';
+      }catch(e){status(e&&e.name==='AbortError'?'처리를 취소했습니다. 원본 PDF는 변경되지 않았습니다.':safe(e&&e.message?e.message:'네트워크 오류가 발생했습니다.'),e&&e.name==='AbortError'?'warning':'error');}finally{controller=null;setBusy(false);}
+    }
+    document.addEventListener('DOMContentLoaded',function(){
+      var input=el('pdf-compress-file'),drop=el('pdf-compress-drop');if(!input||!drop)return;
+      drop.addEventListener('click',function(){if(!busy)input.click();});drop.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&!busy){e.preventDefault();input.click();}});input.addEventListener('change',function(){choose(input.files&&input.files[0]);});
+      ['dragenter','dragover'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();if(!busy)drop.classList.add('is-dragging');});});['dragleave','drop'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.remove('is-dragging');});});drop.addEventListener('drop',function(e){if(!busy)choose(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]);});
+      document.querySelectorAll('[data-pdf-target]').forEach(function(btn){btn.addEventListener('click',function(){targetMb=Number(btn.getAttribute('data-pdf-target'));document.querySelectorAll('[data-pdf-target]').forEach(function(b){b.setAttribute('aria-pressed',String(b===btn));});});});
+      el('pdf-compress-submit').addEventListener('click',submit);el('pdf-compress-cancel').addEventListener('click',function(){if(controller)controller.abort();});el('pdf-compress-reset').addEventListener('click',function(){revoke();file=null;input.value='';el('pdf-compress-file-label').textContent='PDF를 선택하거나 여기에 놓으세요';el('pdf-compress-help').textContent='PDF 1개 · 최대 30MB';el('pdf-compress-submit').disabled=true;el('pdf-compress-reset').style.display='none';el('pdf-compress-status').className='pdf-status';input.click();});window.addEventListener('beforeunload',revoke);
+    });
   })();
-
 
   // ===== 학사일정 캘린더 =====
   (function() {
@@ -2912,6 +3551,31 @@
       renderCal(curYear, curMonth);
     });
   })();
+
+  function switchAssessmentTab(panelId, btn) {
+    var parent = document.getElementById('sub-assessment-help');
+    if (!parent || !parent.querySelector('#' + panelId)) return;
+    parent.querySelectorAll('.assessment-help-pane').forEach(function(panel) {
+      panel.hidden = panel.id !== panelId;
+    });
+    parent.querySelectorAll('.assessment-help-tab').forEach(function(tab) {
+      var selected = tab === btn;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
+  }
+  document.querySelectorAll('.assessment-help-tab').forEach(function(tab, index, tabs) {
+    tab.addEventListener('keydown', function(event) {
+      var next = index;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = tabs.length - 1;
+      else return;
+      event.preventDefault(); tabs[next].focus(); tabs[next].click();
+    });
+  });
 
   function switchSub(panelId, btn) {
     var parent = btn.closest('.tab-panel');
@@ -3105,13 +3769,17 @@
       weekly:'sub-weekly'
     },
     student: {
-      rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',
+      rules:'sub-rules', curriculum:'sub-subject', life:'sub-life', 'assessment-help':'sub-assessment-help',
       univ:'sub-univ', special:'sub-special', counsel:'sub-counsel', 'club-stats':'sub-club-stats'
     }
   };
 
   // sub-sub URL slug ↔ panel id + 호출 함수
   var SUB2_MAP = {
+    'student/assessment-help': {
+      subject: {id:'assessment-help-subject', fn:'switchAssessmentTab'},
+      activity: {id:'assessment-help-activity', fn:'switchAssessmentTab'}
+    },
     'student/curriculum': {
       national: {id:'curr-national', fn:'switchCurrTab'},
       school:   {id:'curr-school',   fn:'switchCurrTab'},
@@ -3164,7 +3832,11 @@
     if (_suppress) return;
     var h = buildHash(_state);
     if (window.location.hash !== h) {
-      history.replaceState(null, '', h);
+      if (h.indexOf('#student/assessment-help') === 0 || window.location.hash.indexOf('#student/assessment-help') === 0) {
+        history.pushState(null, '', h);
+      } else {
+        history.replaceState(null, '', h);
+      }
     }
   }
 
@@ -3229,6 +3901,10 @@
     if (panel) {
       var activeSub = panel.querySelector('.sub-panel.active');
       if (activeSub) _state.sub = panelToSlug(tabId, activeSub.id);
+      if (_state.sub === 'assessment-help') {
+        var activeHelp = panel.querySelector('.assessment-help-tab.active');
+        if (activeHelp) _state.sub2 = sub2ToSlug(tabId, _state.sub, activeHelp.getAttribute('aria-controls'));
+      }
     }
     updateHash();
   });
@@ -3236,10 +3912,18 @@
   wrap('switchSub', function(panelId) {
     _state.sub = panelToSlug(_state.tab, panelId);
     _state.sub2 = null;
+    if (panelId === 'sub-assessment-help') {
+      var helpButton = document.getElementById('assessment-help-tab-subject');
+      var wasSuppressed = _suppress;
+      _suppress = true;
+      try { window.switchAssessmentTab('assessment-help-subject', helpButton); }
+      finally { _suppress = wasSuppressed; }
+      _state.sub2 = 'subject';
+    }
     updateHash();
   });
 
-  ['switchCurrTab','switchUnivTab','switchSpTab','switchLifeTab'].forEach(function(fn) {
+  ['switchCurrTab','switchUnivTab','switchSpTab','switchLifeTab','switchAssessmentTab'].forEach(function(fn) {
     wrap(fn, function(id) {
       _state.sub2 = sub2ToSlug(_state.tab, _state.sub, id);
       updateHash();
@@ -3552,8 +4236,8 @@
 <script>
 (function(){
   'use strict';
-  const TT={"t":{"김기철A":{"월":["|","국어1|1-4","국어3|1-2","|","국어3|1-1","국어1|1-3","|"],"화":["국어3|1-1","국어1|1-5","|","국어3|1-4","국어1|1-2","|","|"],"수":["국어1|1-1","|","국어3|1-3","|","|","자율|1-3","|"],"목":["국어3|1-2","|","|","|","국어3|1-3","|","국어3|1-4"],"금":["|","국어3|1-2","|","국어3|1-3","|","국어3|1-1","국어3|1-4"]},"구자용":{"월":["심수Ⅰ|3-6","|","|","심수Ⅰ|3-8","심수Ⅰ|3-7","|","수학3|1-1"],"화":["|","|","수학3|1-2","|","심수Ⅰ|3-8","심수Ⅰ|3-7","|"],"수":["심수Ⅰ|3-8","|","수학3|1-1","|","심수Ⅰ|3-6","|","|"],"목":["심수Ⅰ|3-7","|","수학3|1-2","|","심수Ⅰ|3-6","심수Ⅰ|3-8","|"],"금":["|","심수Ⅰ|3-6","|","수학3|1-1","|","수학3|1-2","심수Ⅰ|3-7"]},"김대도":{"월":["영어Ⅰ|2-11","|","영어Ⅰ|2-2","|","영어Ⅰ|2-3","|","|"],"화":["|","영어Ⅰ|2-4","|","영어Ⅰ|2-2","|","|","영어Ⅰ|2-11"],"수":["영어Ⅰ|2-4","영어Ⅰ|2-3","|","|","동아|2-4","자율|2-4","|"],"목":["|","영어Ⅰ|2-2","영어Ⅰ|2-3","|","영어Ⅰ|2-4","영어Ⅰ|2-11","|"],"금":["영어Ⅰ|2-4","|","|","영어Ⅰ|2-11","영어Ⅰ|2-2","|","영어Ⅰ|2-3"]},"전희규":{"월":["|","물리|2-4","|","물리|2-2","|","물리|2-1","|"],"화":["물리|2-1","진로|2-1","|","|","물리|2-4","|","물리|2-3"],"수":["|","|","물리|2-2","|","동아|2-1","자율|2-1","|"],"목":["물리|2-1","|","|","물리|2-2","|","물리|2-3","|"],"금":["물리|2-3","|","|","물리|2-4","|","|","진로|2-4"]},"강상호":{"월":["|","사문|2-10","|","사문|2-12","|","사문|2-11","|"],"화":["|","|","사회B|1-4","사회B|1-3","|","|","사문|2-10"],"수":["|","사회B|1-5","사문|2-12","|","동아|1-8","|","|"],"목":["|","사문|2-10","사문|2-11","|","사문|2-12","|","|"],"금":["사문|2-11","|","사회B|1-6","|","사회B|1-2","|","사회B|1-1"]},"김경환":{"월":["|","|","체육B|1-10","|","체육B|1-12","운동|3-12","|"],"화":["|","|","|","체육B|1-11","|","체육A|1-10","|"],"수":["체육B|1-8","|","|","체육A|1-11","|","|","|"],"목":["|","체육A|1-9","운동|3-12","|","체육A|1-8","|","|"],"금":["|","|","|","|","체육B|1-9","체육A|1-12","|"]},"김민채":{"월":["국어3|1-9","국어3|1-7","|","|","국어3|1-6","|","국어3|1-5"],"화":["국어3|1-7","국어3|1-8","|","국어3|1-9","|","국어3|1-6","|"],"수":["|","국어1|1-7","국어1|1-8","|","|","자율|1-8","|"],"목":["국어3|1-8","|","국어3|1-5","|","국어3|1-7","|","국어1|1-6"],"금":["|","국어3|1-5","국어3|1-9","|","국어3|1-8","|","국어3|1-6"]},"최정현":{"월":["기하|3-7","|","미적Ⅰ|2-6","|","미적Ⅰ|2-7","미적Ⅰ|2-8","|"],"화":["미적Ⅰ|2-8","미적Ⅰ|2-6","|","미적Ⅰ|2-7","|","|","|"],"수":["|","미적Ⅰ|2-8","|","|","기하|3-7","자율|2-8","|"],"목":["|","미적Ⅰ|2-7","기하|3-7","|","미적Ⅰ|2-8","|","미적Ⅰ|2-6"],"금":["기하|3-7","|","미적Ⅰ|2-6","|","동아|3-3","|","미적Ⅰ|2-7"]},"손동인":{"월":["영어Ⅰ|2-12","|","영어Ⅰ|2-7","영어Ⅰ|2-8","|","|","영어Ⅰ|2-6"],"화":["|","영어Ⅰ|2-7","|","영어Ⅰ|2-6","|","영어Ⅰ|2-8","영어Ⅰ|2-12"],"수":["|","|","영어Ⅰ|2-8","|","동아|2-7","자율|2-7","|"],"목":["영어Ⅰ|2-7","|","|","영어Ⅰ|2-6","|","|","영어Ⅰ|2-12"],"금":["영어Ⅰ|2-12","|","영어Ⅰ|2-7","영어Ⅰ|2-6","|","영어Ⅰ|2-8","|"]},"안홍엽":{"월":["과학A|1-8","진로|2-6","|","과학A|1-10","|","진로|2-5","|"],"화":["|","과학A|1-12","|","|","과학A|1-5","|","과학A|1-2"],"수":["|","과학A|1-4","|","|","동아|1-1","자율|1-1","|"],"목":["|","|","과학A|1-9","과학A|1-1","|","과학A|1-7","|"],"금":["과학A|1-3","|","|","과학A|1-6","동아|물리실","|","과학A|1-11"]},"최병권":{"월":["|","사·문|3-12","사·문|3-10","|","사·문|3-11","사·문|3-9","|"],"화":["사·문|3-10","사문탐|3-2","|","사·문|3-11","|","|","사·문|3-12"],"수":["|","|","사·문|3-12","사·문|3-9","|","자율|2-10","|"],"목":["사·문|3-12","|","사·문|3-11","|","사·문|3-10","|","사·문|3-9"],"금":["사·문|3-9","사·문|3-10","|","사·문|3-11","|","|","사문탐|3-2"]},"전상식":{"월":["|","|","운동|3-5","운동|3-1","|","|","|"],"화":["|","운동|3-3","운동|3-2","운동|3-4","|","|","|"],"수":["|","체육A|1-1","운동|3-3","|","동아|체육관","|","|"],"목":["|","체육A|1-2","운동|3-1","운동|3-4","|","|","|"],"금":["|","운동|3-2","|","운동|3-5","동아|체육관","|","|"]},"박성근":{"월":["문학1|2-3","|","국어3|1-11","|","국어1|1-10","|","문학1|2-4"],"화":["국어1|1-12","|","문학1|2-1","|","국어3|1-10","문학1|2-2","|"],"수":["국어3|1-12","국어3|1-11","|","국어1|1-9","|","|","|"],"목":["|","|","국어3|1-10","|","국어3|1-12","국어1|1-11","|"],"금":["|","국어3|1-12","국어3|1-11","|","국어3|1-10","|","문학1|2-5"]},"윤신영":{"월":["심수Ⅰ|3-11","|","|","수탐|3-12","|","|","심수Ⅰ|3-9"],"화":["심수Ⅰ|3-9","|","심수Ⅰ|3-12","|","심수Ⅰ|3-11","수탐|3-12","|"],"수":["|","수탐|3-12","|","심수Ⅰ|3-12","|","자율|3-12","|"],"목":["|","심수Ⅰ|3-12","|","심수Ⅰ|3-9","|","수탐|3-12","심수Ⅰ|3-11"],"금":["|","심수Ⅰ|3-11","심수Ⅰ|3-9","|","|","봉사|3-12","심수Ⅰ|3-12"]},"최영은":{"월":["영어Ⅰ|2-1","|","영어Ⅰ|2-10","영어Ⅰ|2-9","|","|","영어Ⅰ|2-5"],"화":["영어Ⅰ|2-10","|","영어Ⅰ|2-9","|","영어Ⅰ|2-1","|","영어Ⅰ|2-5"],"수":["|","영어Ⅰ|2-1","|","영어Ⅰ|2-5","동아|2-12","|","|"],"목":["|","|","영어Ⅰ|2-1","영어Ⅰ|2-10","|","영어Ⅰ|2-5","영어Ⅰ|2-9"],"금":["|","|","영어Ⅰ|2-9","|","동아|3-4","영어Ⅰ|2-10","|"]},"양해준":{"월":["|","|","|","융과탐|3-3","과과연|3-2","|","과과연|3-1"],"화":["융과탐|3-3","|","|","과과연|3-2","|","|","과과연|3-1"],"수":["융과탐|3-3","|","|","|","동아|물리실","자율|3-1","|"],"목":["|","과과연|3-2","|","|","|","과과연|3-1","융과탐|3-3"],"금":["과과연|3-1","|","과과연|3-2","|","동아|3-1","봉사|3-1","|"]},"장하영":{"월":["|","사문탐|3-2","|","법사|2-11","|","법사|2-10","|"],"화":["법사|2-12","|","사회B|1-12","|","사회B|1-9","|","사회B|1-11"],"수":["사회B|1-7","|","법사|2-11","법사|2-12","|","|","|"],"목":["사회B|1-10","|","사회B|1-8","|","사문탐|3-2","법사|2-10","|"],"금":["|","법사|2-10","|","법사|2-12","|","|","법사|2-11"]},"이병을":{"월":["운동|3-9","운동|3-11","|","체실|3-9","체육|2-1","|","|"],"화":["|","운동|3-7","운동|3-6","|","운동|3-10","체실|3-9","|"],"수":["|","체실|3-9","운동|3-9","|","운동|3-8","자율|3-9","|"],"목":["운동|3-8","운동|3-10","|","운동|3-7","운동|3-11","체실|3-9","|"],"금":["운동|3-6","체육|2-3","|","체육|2-2","|","봉사|3-9","|"]},"홍원의":{"월":["|","문학3|2-11","|","문학3|2-10","|","탐독2|2-6","탐독2|2-7"],"화":["|","문학3|2-10","문학3|2-11","|","탐독2|2-6","|","|"],"수":["탐독2|2-8","문학3|2-12","|","탐독2|2-9","|","자율|2-12","|"],"목":["문학3|2-12","|","|","문학3|2-11","|","|","탐독2|2-7"],"금":["탐독2|2-9","|","문학3|2-12","|","탐독2|2-8","|","문학3|2-10"]},"김영진":{"월":["|","|","기하|3-2","|","|","기하|3-4","기하|3-6"],"화":["|","기하|3-6","|","|","기하|3-2","|","|"],"수":["기하|3-2","|","|","|","기하|3-4","|","|"],"목":["기하|3-4","기하|3-6","|","기하|3-2","|","|","|"],"금":["|","|","기하|3-4","|","|","|","기하|3-6"]},"신화룡":{"월":["영어|1-1","|","영어|1-3","|","영어|1-2","|","영어|1-4"],"화":["|","영어|1-1","영어|1-3","|","영어|1-4","|","|"],"수":["|","영어|1-2","|","|","동아|1-2","자율|1-2","|"],"목":["영어|1-1","영어|1-3","|","영어|1-4","|","영어|1-2","|"],"금":["영어|1-1","|","|","영어|1-4","영어|1-3","|","영어|1-2"]},"이영권":{"월":["|","물리|2-8","물리|2-5","|","물리|2-9","|","|"],"화":["물리|2-7","|","물리|2-6","|","물리|2-9","|","물리|2-8"],"수":["|","|","물리|2-6","|","동아|2-6","자율|2-6","|"],"목":["|","물리|2-8","|","물리|2-5","|","물리|2-7","|"],"금":["물리|2-5","물리|2-9","|","물리|2-7","|","물리|2-6","|"]},"전성환":{"월":["심리|3-10","|","사회A|1-4","|","사문탐|3-8","사회A|1-5","|"],"화":["|","|","심리|3-10","|","사문탐|3-6","사회A|1-2","|"],"수":["|","|","사회A|1-2","사회A|1-1","|","자율|3-10","|"],"목":["사회A|1-3","|","사회A|1-4","|","사회A|1-5","|","사회A|1-1"],"금":["|","사회A|1-3","|","사문탐|3-6","|","봉사|3-10","심리|3-10"]},"임재우":{"월":["체육|2-4","체육A|1-6","|","체육|2-5","|","체육A|1-7","|"],"화":["체육B|1-6","체육B|1-4","|","체육|2-9","체육|2-8","체육|2-10","|"],"수":["체육A|1-4","|","체육A|1-5","체육A|1-3","|","|","|"],"목":["체육B|1-5","체육|2-12","체육B|1-3","|","체육|2-6","체육B|1-1","|"],"금":["|","체육|2-7","체육B|1-2","|","체육B|1-7","체육|2-11","|"]},"이희순":{"월":["문학3|2-6","|","탐독2|2-3","|","문학3|2-5","|","탐독2|2-10"],"화":["|","탐독2|2-5","탐독2|2-2","|","문학3|2-5","탐독2|2-4","|"],"수":["|","|","탐독2|2-1","탐독2|2-4","|","자율|2-5","|"],"목":["탐독2|2-2","|","문학3|2-6","|","문학3|2-5","|","탐독2|2-3"],"금":["문학3|2-6","탐독2|2-5","|","|","탐독2|2-10","|","탐독2|2-1"]},"김해영":{"월":["|","|","수탐|3-1","수탐|3-10","|","수탐|3-3","수탐|3-5"],"화":["|","수탐|3-5","|","|","수탐|3-1","수탐|3-10","|"],"수":["수탐|3-1","수탐|3-10","|","|","수탐|3-3","|","|"],"목":["수탐|3-3","수탐|3-5","|","수탐|3-1","|","수탐|3-10","|"],"금":["수학1|1-12","|","수탐|3-3","수학1|1-11","|","|","수탐|3-5"]},"손세욱":{"월":["영어|1-5","|","영어|1-6","|","영어|1-7","|","영어|1-8"],"화":["|","영어|1-6","|","영어|1-7","|","영어|1-5","영어|1-8"],"수":["|","영어|1-6","|","|","동아|1-7","자율|1-7","|"],"목":["|","영어|1-8","|","영어|1-7","|","영어|1-5","|"],"금":["영어|1-6","|","영어|1-8","|","영어|1-5","|","영어|1-7"]},"김종목":{"월":["|","화학|2-7","|","화학|2-6","|","|","화학|2-8"],"화":["화학|2-6","|","화학|2-7","과학B|1-10","|","|","화학|2-9"],"수":["|","|","화학|2-7","|","동아|2-9","자율|2-9","|"],"목":["화학|2-9","|","|","화학|2-8","|","과학B|1-12","과학B|1-11"],"금":["화학|2-8","|","|","화학|2-9","화학|2-6","|","|"]},"고덕민":{"월":["사회A|1-6","|","|","사회A|1-11","|","사회A|1-12","사회A|1-9"],"화":["|","|","사회A|1-8","|","|","사문탐|3-8","사회A|1-10"],"수":["사회A|1-6","사회A|1-12","|","사회A|1-10","|","자율|1-9","|"],"목":["사회A|1-7","|","사문탐|3-8","|","사회A|1-11","|","|"],"금":["|","|","사문탐|3-8","사회A|1-8","|","사회A|1-7","사회A|1-9"]},"손예진":{"월":["|","음악|1-2","음악|1-1","|","음악|1-5","음감|3-1","|"],"화":["|","음악|1-3","|","음감|3-3","|","음악|1-1","음감|3-2"],"수":["음악|1-2","|","|","음악|1-4","음감|3-2","|","|"],"목":["|","음감|3-1","|","음감|3-3","|","음악|1-6","|"],"금":["음악|1-5","|","음악|1-3","|","음악|1-6","음악|1-4","|"]},"이강산":{"월":["|","문학3|2-1","탐독1|2-12","|","문학3|2-2","|","|"],"화":["|","문학3|2-3","문학3|2-4","|","탐독2|2-12","탐독2|2-11","|"],"수":["|","탐독1|2-11","문학3|2-3","문학3|2-1","|","|","|"],"목":["|","문학3|2-3","|","탐독2|2-12","|","문학3|2-4","문학3|2-2"],"금":["|","문학3|2-4","문학3|2-2","|","탐독2|2-11","문학3|2-1","|"]},"송준원":{"월":["대수|2-2","미적Ⅰ|2-5","|","|","미적Ⅰ|2-4","|","대수|2-3"],"화":["미적Ⅰ|2-4","|","대수|2-3","대수|2-1","|","미적Ⅰ|2-5","|"],"수":["대수|2-3","|","|","대수|2-2","|","자율|2-3","|"],"목":["|","미적Ⅰ|2-5","미적Ⅰ|2-4","|","대수|2-2","|","대수|2-1"],"금":["|","|","미적Ⅰ|2-5","대수|2-1","|","미적Ⅰ|2-4","|"]},"한상우":{"월":["영어|1-10","영어|1-9","|","영어|1-12","|","영어|1-11","|"],"화":["|","영어|1-11","영어|1-10","|","영어|1-12","|","영어|1-9"],"수":["|","영어|1-9","|","영어|1-12","|","자율|1-12","|"],"목":["영어|1-11","|","|","영어|1-10","|","|","영어|1-9"],"금":["|","영어|1-10","영어|1-12","|","영어|1-11","|","|"]},"장성원":{"월":["|","과과연|3-5","|","화학|2-1","|","|","화학|2-2"],"화":["화학|2-2","|","|","과과연|3-5","|","화학|2-3","|"],"수":["|","화학|2-2","|","|","동아|2-8","자율|3-5","|"],"목":["화학|2-3","|","|","화학|2-1","|","과과연|3-5","|"],"금":["과과연|3-5","|","화학|2-3","|","화학|2-1","봉사|3-5","|"]},"허진":{"월":["국사|1-12","국사|1-8","|","|","|","사문탐|3-6","국사|1-11"],"화":["|","국사|1-10","|","국사|1-8","|","|","국사|1-12"],"수":["국사|1-9","|","국사|1-11","사문탐|3-6","|","|","|"],"목":["|","국사|1-11","|","국사|1-9","|","국사|1-10","국사|1-12"],"금":["|","국사|1-8","국사|1-10","|","동아|3-10","국사|1-9","|"]},"손선미":{"월":["음감|3-5","음감|3-6","|","음감|3-7","|","|","음감|3-4"],"화":["음감|3-11","|","음감|3-9","|","음감|3-12","|","음감|3-10"],"수":["|","음감|3-8","음감|3-4","|","동아|음악실","|","|"],"목":["음감|3-10","|","음감|3-5","|","음감|3-7","|","음감|3-6"],"금":["음감|3-8","음감|3-9","|","음감|3-12","|","|","음감|3-11"]},"이경인":{"월":["문학3|2-8","문학3|2-9","|","문학3|2-7","|","|","탐독1|2-1"],"화":["|","|","문학3|2-8","|","문학3|2-7","문학1|2-9","|"],"수":["문학1|2-6","탐독1|2-5","|","문학1|2-7","동아|2-10","|","|"],"목":["|","탐독1|2-4","문학3|2-9","|","문학3|2-7","문학1|2-8","|"],"금":["탐독1|2-2","문학3|2-8","|","|","탐독1|2-3","|","문학3|2-9"]},"노광수":{"월":["|","|","수학1|1-7","|","심수Ⅰ|3-10","|","기하|3-8"],"화":["|","기하|3-8","심수Ⅰ|3-4","|","심수Ⅰ|3-5","|","수학1|1-6"],"수":["|","심수Ⅰ|3-4","|","심수Ⅰ|3-10","심수Ⅰ|3-5","|","|"],"목":["심수Ⅰ|3-5","기하|3-8","|","심수Ⅰ|3-10","|","심수Ⅰ|3-4","|"],"금":["심수Ⅰ|3-4","심수Ⅰ|3-5","|","심수Ⅰ|3-10","|","|","기하|3-8"]},"문형선":{"월":["영독3|3-4","심리|3-4","|","심리|3-2","|","영독3|3-5","|"],"화":["|","영독3|3-4","영독3|3-5","|","심리|3-4","심리|3-5","|"],"수":["|","|","심리|3-5","심리|3-2","|","자율|3-4","|"],"목":["|","영독3|3-4","|","영독3|3-5","|","|","심리|3-2"],"금":["|","|","심리|3-5","심리|3-4","|","봉사|3-4","|"]},"최승호":{"월":["|","과학B|1-1","|","과학B|1-6","|","|","과학B|1-7"],"화":["화학|2-5","|","|","화학|2-4","|","과학B|1-9","|"],"수":["|","화학|2-4","|","|","동아|1-4","자율|1-4","|"],"목":["화학|2-4","|","화학|2-5","과학B|1-8","|","|","과학B|1-3"],"금":["과학B|1-2","|","과학B|1-5","|","과학B|1-4","화학|2-5","|"]},"김재익":{"월":["|","|","국사|1-5","사문탐|3-4","|","국사|1-4","|"],"화":["사문탐|3-4","|","|","국사|1-6","국사|1-7","|","국사|1-5"],"수":["사문탐|3-4","|","|","|","동아|1-5","자율|1-5","|"],"목":["|","국사|1-4","국사|1-7","|","국사|1-6","|","사문탐|3-4"],"금":["국사|1-7","|","국사|1-4","국사|1-5","|","국사|1-6","|"]},"구교원":{"월":["|","|","|","미술|1-7","|","|","미술|1-12"],"화":["미술|1-10","|","|","미술|1-12","|","미술|1-7","|"],"수":["|","미술|1-8","미술|1-9","|","동아|미술실","|","|"],"목":["|","|","미술|1-11","|","미술|1-10","|","|"],"금":["|","|","|","미술|1-9","|","미술|1-11","미술|1-8"]},"박주생":{"월":["언매|3-2","|","|","|","언매|3-4","|","언매|3-12"],"화":["|","언매|3-12","|","문학1|2-12","|","언매|3-2","언매|3-4"],"수":["언매|3-12","언매|3-2","|","언매|3-4","|","자율|3-2","|"],"목":["언매|3-2","|","문학1|2-10","|","언매|3-4","|","|"],"금":["|","문학1|2-11","언매|3-12","|","동아|3-2","봉사|3-2","|"]},"오상승":{"월":["미적Ⅰ|2-10","|","미적Ⅰ|2-9","|","미적Ⅰ|2-12","|","미적Ⅰ|2-11"],"화":["|","미적Ⅰ|2-11","|","미적Ⅰ|2-10","|","미적Ⅰ|2-12","대수|2-6"],"수":["미적Ⅰ|2-10","미적Ⅰ|2-9","|","대수|2-6","|","|","|"],"목":["미적Ⅰ|2-11","|","미적Ⅰ|2-12","|","미적Ⅰ|2-10","미적Ⅰ|2-9","|"],"금":["|","미적Ⅰ|2-12","미적Ⅰ|2-11","|","미적Ⅰ|2-9","|","대수|2-6"]},"하도균":{"월":["|","영독3|3-3","|","|","영독3|3-1","영독3|3-2","|"],"화":["영독3|3-2","|","영독3|3-1","|","|","영독3|3-3","영독1|3-7"],"수":["영독1|3-6","영독1|3-5","|","영독1|3-1","|","|","|"],"목":["영독3|3-1","|","영독1|3-3","|","영독1|3-8","영독1|3-2","|"],"금":["영독3|3-3","영독1|3-4","|","영독3|3-2","|","|","|"]},"이종환":{"월":["생명|2-7","생Ⅱ|3-7","|","|","생명|2-6","|","|"],"화":["|","생명|2-8","|","생Ⅱ|3-7","|","|","진로|2-2"],"수":["생명|2-7","|","생Ⅱ|3-7","|","동아|생물실","|","|"],"목":["생명|2-8","|","|","생명|2-7","|","생명|2-6","생Ⅱ|3-7"],"금":["|","생명|2-6","생명|2-8","|","동아|3-5","|","|"]},"김지혜":{"월":["심리|3-12","|","|","국사|1-3","|","국사|1-1","|"],"화":["|","국사|1-2","국사|1-1","|","심리|3-9","|","국사|1-3"],"수":["심리|3-9","|","심리|3-11","|","심리|3-12","|","|"],"목":["|","심리|3-11","|","심리|3-12","심리|3-9","|","국사|1-2"],"금":["심리|3-11","|","국사|1-1","국사|1-2","|","국사|1-3","|"]},"김기철B":{"월":["정보A|1-3","│|▽","|","정보B|1-4","|","|","정보B|1-6"],"화":["|","|","정보A|1-5","│|▽","|","정보A|1-4","│|▽"],"수":["정보B|1-5","|","|","정보B|1-7","동아|2-3","|","|"],"목":["정보A|1-6","│|▽","|","|","|","정보B|1-3","|"],"금":["|","정보A|1-7","│|▽","|","동아|정보2실","|","|"]},"정민석":{"월":["|","|","언매|3-8","언매|3-6","|","탐독1|2-9","언매|3-11"],"화":["언매|3-8","언매|3-11","|","|","탐독1|2-10","|","언매|3-6"],"수":["언매|3-11","|","언매|3-6","언매|3-8","|","자율|3-6","|"],"목":["|","탐독1|2-6","|","언매|3-6","|","|","탐독1|2-8"],"금":["|","언매|3-8","언매|3-11","|","탐독1|2-7","봉사|3-6","|"]},"서혜리":{"월":["수학3|1-4","|","수학1|1-8","|","수학3|1-3","수학3|1-6","|"],"화":["수학3|1-5","|","수학1|1-9","|","수학3|1-3","|","수학3|1-7"],"수":["|","|","수학3|1-6","수학3|1-5","|","자율|1-6","|"],"목":["|","수학3|1-7","|","수학3|1-3","|","수학3|1-4","수학1|1-10"],"금":["수학3|1-4","수학3|1-6","|","수학3|1-7","|","수학3|1-5","|"]},"이상범":{"월":["|","영독3|3-9","영독1|3-11","|","영독3|3-12","영독3|3-10","|"],"화":["영독1|3-12","|","영독3|3-11","영독3|3-10","|","|","영독3|3-9"],"수":["|","|","영독1|3-10","|","영독3|3-11","자율|3-11","|"],"목":["영독3|3-9","|","영독3|3-10","영독3|3-11","|","|","영독3|3-12"],"금":["영독3|3-12","|","|","|","동아|3-11","봉사|3-11","|"]},"김정우":{"월":["|","과과연|3-8","|","진로|2-3","과과연|3-6","|","|"],"화":["|","생명|2-9","|","과과연|3-8","|","과과연|3-6","|"],"수":["생명|2-9","|","과과연|3-8","|","동아|1-3","자율|3-8","|"],"목":["|","|","과과연|3-6","|","생명|2-9","|","과과연|3-8"],"금":["|","|","과과연|3-6","|","동아|3-8","봉사|3-8","|"]},"김유성":{"월":["|","생윤|3-10","생윤|3-12","|","생윤|3-9","생윤|3-11","|"],"화":["|","생윤|3-9","|","생윤|3-12","|","|","생윤|3-11"],"수":["사회C|1-11","|","|","생윤|3-11","생윤|3-10","|","|"],"목":["생윤|3-11","|","생윤|3-9","|","생윤|3-12","|","생윤|3-10"],"금":["생윤|3-10","생윤|3-12","|","|","사회C|1-12","|","생윤|3-9"]},"정지원":{"월":["|","정보B|1-10","정보B|1-9","|","정보A|1-8","│|▽","|"],"화":["정보A|1-9","│|▽","|","|","정보B|1-11","|","|"],"수":["|","정보A|1-10","│|▽","|","동아|2-11","|","|"],"목":["|","|","정보A|1-12","│|▽","|","|","정보B|1-8"],"금":["정보A|1-11","│|▽","|","|","동아|3-12","|","정보B|1-12"]},"석은동":{"월":["|","|","언매|3-7","|","언매|3-3","|","|"],"화":["|","|","언매|3-7","언매|3-1","|","|","언매|3-3"],"수":["|","언매|3-1","|","언매|3-3","|","|","|"],"목":["|","언매|3-7","|","|","언매|3-3","|","언매|3-1"],"금":["|","|","언매|3-7","언매|3-1","|","|","|"]},"정호재":{"월":["심수Ⅰ|3-1","|","심수Ⅰ|3-3","수탐|3-11","|","|","심수Ⅰ|3-2"],"화":["심수Ⅰ|3-1","|","|","|","심수Ⅰ|3-3","수탐|3-11","|"],"수":["|","수탐|3-11","심수Ⅰ|3-2","|","심수Ⅰ|3-1","자율|3-3","|"],"목":["|","심수Ⅰ|3-3","심수Ⅰ|3-2","|","수학1|1-1","수탐|3-11","|"],"금":["심수Ⅰ|3-2","심수Ⅰ|3-1","|","심수Ⅰ|3-3","|","봉사|3-3","|"]},"박혜영":{"월":["심리|3-8","|","영독3|3-6","|","|","영독3|3-8","영독3|3-7"],"화":["심리|3-7","|","영독3|3-8","영독3|3-6","|","|","심리|3-8"],"수":["영독3|3-7","심리|3-7","|","|","영독1|3-9","자율|3-7","|"],"목":["영독3|3-6","|","|","심리|3-8","|","심리|3-7","|"],"금":["|","영독3|3-7","|","영독3|3-8","|","봉사|3-7","|"]},"전혜진":{"월":["|","생명|2-2","|","생명|2-4","|","생명|2-3","|"],"화":["생명|2-3","|","|","생명|2-5","|","|","생명|2-1"],"수":["생명|2-2","|","생명|2-4","|","동아|2-2","자율|2-2","|"],"목":["생명|2-5","|","|","생명|2-3","생명|2-1","|","|"],"금":["|","생명|2-1","생명|2-4","|","생명|2-5","생명|2-2","|"]},"남상훈":{"월":["사회C|1-2","|","|","사회C|1-8","|","사윤|2-12","사회C|1-3"],"화":["|","사윤|2-12","사회C|1-7","|","사윤|2-11","|","사회C|1-1"],"수":["사윤|2-11","|","사회C|1-4","사윤|2-10","|","|","|"],"목":["사윤|2-10","|","|","사회C|1-6","|","사회C|1-9","사윤|2-11"],"금":["사회C|1-10","|","사윤|2-10","|","사윤|2-12","|","사회C|1-5"]},"홍대화":{"월":["데과|3-3","|","|","|","|","정보A|1-2","│|▽"],"화":["데과|3-6","|","데과|3-3","정보B|1-1","|","데과|3-1","|"],"수":["|","데과|3-6","데과|3-1","|","동아|2-5","|","|"],"목":["|","정보A|1-1","│|▽","|","정보B|1-2","데과|3-6","|"],"금":["|","|","데과|3-1","|","동아|정보1실","|","데과|3-3"]},"김대연":{"월":["|","|","언매|3-9","|","화작|3-5","|","화작|3-10"],"화":["|","화작|3-10","|","언매|3-9","|","|","화작|3-5"],"수":["화작|3-10","|","|","화작|3-5","|","|","|"],"목":["|","언매|3-9","|","|","화작|3-5","|","|"],"금":["|","|","화작|3-10","언매|3-9","|","|","|"]},"홍예설":{"월":["대수|2-5","|","대수|2-4","수학1|1-5","|","미적Ⅰ|2-2","|"],"화":["|","미적Ⅰ|2-2","|","미적Ⅰ|2-3","|","미적Ⅰ|2-1","대수|2-4"],"수":["미적Ⅰ|2-1","|","대수|2-5","미적Ⅰ|2-3","|","|","|"],"목":["|","미적Ⅰ|2-1","미적Ⅰ|2-2","|","미적Ⅰ|2-3","|","대수|2-4"],"금":["미적Ⅰ|2-1","|","|","대수|2-5","|","미적Ⅰ|2-3","미적Ⅰ|2-2"]},"최유리B":{"월":["|","과학C|1-12","|","과학C|1-2","과학C|1-11","|","|"],"화":["과학C|1-8","|","실험|1-6","|","과학C|1-6","실험|1-8","|"],"수":["|","과학C|1-3","과학C|1-7","|","동아|1-12","|","|"],"목":["과학C|1-4","|","|","과학C|1-5","|","|","실험|1-7"],"금":["과학C|1-9","과학C|1-1","|","|","동아|3-6","과학C|1-10","|"]},"박선영":{"월":["|","일어|2-3","일어|2-1","|","일어|2-11","일어|2-7","|"],"화":["일어|2-9","|","일어|2-5","|","일어|2-3","|","|"],"수":["일어|2-5","일어|2-7","|","일어|2-11","|","자율|2-11","|"],"목":["|","일어|2-11","|","일어|2-9","|","일어|2-1","일어|2-5"],"금":["일어|2-7","|","일어|2-1","일어|2-3","|","일어|2-9","|"]},"신동철":{"월":["|","수학3|1-11","수학3|1-12","|","수학3|1-9","|","수학3|1-10"],"화":["수학1|1-4","|","수학3|1-11","|","수학3|1-8","수학3|1-12","|"],"수":["수학3|1-10","|","|","수학1|1-2","|","자율|1-11","|"],"목":["수학3|1-9","수학3|1-12","|","수학3|1-11","|","수학3|1-8","|"],"금":["|","수학3|1-9","|","수학3|1-10","|","수학3|1-8","수학1|1-3"]},"정용석":{"월":["|","융과탐|3-1","|","지Ⅱ|3-5","|","지Ⅱ|3-7","진로|2-9"],"화":["지Ⅱ|3-5","융과탐|3-1","|","|","지Ⅱ|3-7","진로|2-7","|"],"수":["지Ⅱ|3-5","|","|","지Ⅱ|3-7","동아|1-9","|","|"],"목":["|","|","진로|2-8","|","융과탐|3-1","|","지Ⅱ|3-5"],"금":["|","|","|","지Ⅱ|3-7","동아|3-7","|","융과탐|3-1"]},"홍성수":{"월":["|","한문|2-12","한문|2-8","|","한문|2-10","한문|2-4","|"],"화":["|","|","한문|2-12","|","한문|2-2","한문|2-6","|"],"수":["한문|2-12","한문|2-6","|","한문|2-8","|","|","|"],"목":["한문|2-6","|","|","한문|2-4","|","한문|2-2","한문|2-10"],"금":["|","한문|2-2","|","한문|2-10","한문|2-4","|","한문|2-8"]},"배승현":{"월":["대수|2-9","|","대수|2-11","|","대수|2-8","|","대수|2-12"],"화":["대수|2-11","|","대수|2-10","대수|2-8","|","|","대수|2-7"],"수":["|","대수|2-10","대수|2-9","|","동아|1-6","|","|"],"목":["|","대수|2-9","대수|2-7","|","대수|2-11","대수|2-12","|"],"금":["대수|2-10","|","|","대수|2-8","|","대수|2-7","대수|2-12"]},"이재균":{"월":["|","과학D|1-5","과과연|3-4","|","과학D|1-4","|","과과연|3-3"],"화":["과학D|1-3","|","|","|","과학D|1-1","과과연|3-4","|"],"수":["|","과과연|3-3","|","과학D|1-6","동아|1-11","|","|"],"목":["실험|1-12","|","과과연|3-4","과학D|1-2","|","과과연|3-3","|"],"금":["|","과과연|3-3","|","|","동아|3-9","|","과과연|3-4"]},"장진환":{"월":["진로|1-7","|","|","진로|1-1","|","진로|1-10","|"],"화":["진로|1-2","|","|","진로|2-11","|","진로|1-11","|"],"수":["진로|1-3","|","진로|2-10","진로|1-8","|","|","|"],"목":["|","진로|1-5","진로|1-6","|","진로|1-9","|","|"],"금":["|","진로|1-4","|","진로|1-12","|","진로|2-12","|"]},"김태수":{"월":["실험|1-11","|","|","과학D|1-9","|","실험|1-9","|"],"화":["과학D|1-11","과학D|1-7","|","실험|1-2","|","실험|1-3","|"],"수":["|","|","과학D|1-12","|","동아|1-10","자율|1-10","|"],"목":["|","과학D|1-10","|","|","실험|1-4","|","실험|1-5"],"금":["과학D|1-8","|","|","|","실험|1-1","|","실험|1-10"]}},"c":{"1-1":{"h":"안홍엽","s":{"월":["영어|신화룡","과학B|최승호","음악|손예진","진로|장진환","국어3|김기A","국사|김지혜","수학3|구자용"],"화":["국어3|김기A","영어|신화룡","국사|김지혜","정보B|홍대화","과학D|이재균","음악|손예진","사회C|남상훈"],"수":["국어1|김기A","체육A|전상식","수학3|구자용","사회A|전성환","동아|안홍엽","자율|안홍엽","|"],"목":["영어|신화룡","정보A|홍대화","│|▽","과학A|안홍엽","수학1|정호재","체육B|임재우","사회A|전성환"],"금":["영어|신화룡","과학C|최유B","국사|김지혜","수학3|구자용","실험|김태수","국어3|김기A","사회B|강상호"]}},"2-1":{"h":"전희규","s":{"월":["영어Ⅰ|최영은","문학3|이강산","일어|박선영","화학|장성원","체육|이병을","물리|전희규","탐독1|이경인"],"화":["물리|전희규","진로|전희규","문학1|박성근","대수|송준원","영어Ⅰ|최영은","미적Ⅰ|홍예설","생명|전혜진"],"수":["미적Ⅰ|홍예설","영어Ⅰ|최영은","탐독2|이희순","문학3|이강산","동아|전희규","자율|전희규","|"],"목":["물리|전희규","미적Ⅰ|홍예설","영어Ⅰ|최영은","화학|장성원","생명|전혜진","일어|박선영","대수|송준원"],"금":["미적Ⅰ|홍예설","생명|전혜진","일어|박선영","대수|송준원","화학|장성원","문학3|이강산","탐독2|이희순"]}},"3-1":{"h":"양해준","s":{"월":["심수Ⅰ|정호재","융과탐|정용석","수탐|김해영","운동|전상식","영독3|하도균","음감|손예진","과과연|양해준"],"화":["심수Ⅰ|정호재","융과탐|정용석","영독3|하도균","언매|석은동","수탐|김해영","데과|홍대화","과과연|양해준"],"수":["수탐|김해영","언매|석은동","데과|홍대화","영독1|하도균","심수Ⅰ|정호재","자율|양해준","|"],"목":["영독3|하도균","음감|손예진","운동|전상식","수탐|김해영","융과탐|정용석","과과연|양해준","언매|석은동"],"금":["과과연|양해준","심수Ⅰ|정호재","데과|홍대화","언매|석은동","동아|양해준","봉사|양해준","융과탐|정용석"]}},"1-2":{"h":"신화룡","s":{"월":["사회C|남상훈","음악|손예진","국어3|김기A","과학C|최유B","영어|신화룡","정보A|홍대화","│|▽"],"화":["진로|장진환","국사|김지혜","수학3|구자용","실험|김태수","국어1|김기A","사회A|전성환","과학A|안홍엽"],"수":["음악|손예진","영어|신화룡","사회A|전성환","수학1|신동철","동아|신화룡","자율|신화룡","|"],"목":["국어3|김기A","체육A|전상식","수학3|구자용","과학D|이재균","정보B|홍대화","영어|신화룡","국사|김지혜"],"금":["과학B|최승호","국어3|김기A","체육B|임재우","국사|김지혜","사회B|강상호","수학3|구자용","영어|신화룡"]}},"2-2":{"h":"전혜진","s":{"월":["대수|송준원","생명|전혜진","영어Ⅰ|김대도","물리|전희규","문학3|이강산","미적Ⅰ|홍예설","화학|장성원"],"화":["화학|장성원","미적Ⅰ|홍예설","탐독2|이희순","영어Ⅰ|김대도","한문|홍성수","문학1|박성근","진로|이종환"],"수":["생명|전혜진","화학|장성원","물리|전희규","대수|송준원","동아|전혜진","자율|전혜진","|"],"목":["탐독2|이희순","영어Ⅰ|김대도","미적Ⅰ|홍예설","물리|전희규","대수|송준원","한문|홍성수","문학3|이강산"],"금":["탐독1|이경인","한문|홍성수","문학3|이강산","체육|이병을","영어Ⅰ|김대도","생명|전혜진","미적Ⅰ|홍예설"]}},"3-2":{"h":"박주생","s":{"월":["언매|박주생","사문탐|장하영","기하|김영진","심리|문형선","과과연|양해준","영독3|하도균","심수Ⅰ|정호재"],"화":["영독3|하도균","사문탐|최병권","운동|전상식","과과연|양해준","기하|김영진","언매|박주생","음감|손예진"],"수":["기하|김영진","언매|박주생","심수Ⅰ|정호재","심리|문형선","음감|손예진","자율|박주생","|"],"목":["언매|박주생","과과연|양해준","심수Ⅰ|정호재","기하|김영진","사문탐|장하영","영독1|하도균","심리|문형선"],"금":["심수Ⅰ|정호재","운동|전상식","과과연|양해준","영독3|하도균","동아|박주생","봉사|박주생","사문탐|최병권"]}},"1-3":{"h":"김기철A","s":{"월":["정보A|김기B","│|▽","영어|신화룡","국사|김지혜","수학3|서혜리","국어1|김기A","사회C|남상훈"],"화":["과학D|이재균","음악|손예진","영어|신화룡","사회B|강상호","수학3|서혜리","실험|김태수","국사|김지혜"],"수":["진로|장진환","과학C|최유B","국어3|김기A","체육A|임재우","동아|김정우","자율|김기A","|"],"목":["사회A|전성환","영어|신화룡","체육B|임재우","수학3|서혜리","국어3|김기A","정보B|김기B","과학B|최승호"],"금":["과학A|안홍엽","사회A|전성환","음악|손예진","국어3|김기A","영어|신화룡","국사|김지혜","수학1|신동철"]}},"2-3":{"h":"송준원","s":{"월":["문학1|박성근","일어|박선영","탐독2|이희순","진로|김정우","영어Ⅰ|김대도","생명|전혜진","대수|송준원"],"화":["생명|전혜진","문학3|이강산","대수|송준원","미적Ⅰ|홍예설","일어|박선영","화학|장성원","물리|전희규"],"수":["대수|송준원","영어Ⅰ|김대도","문학3|이강산","미적Ⅰ|홍예설","동아|김기B","자율|송준원","|"],"목":["화학|장성원","문학3|이강산","영어Ⅰ|김대도","생명|전혜진","미적Ⅰ|홍예설","물리|전희규","탐독2|이희순"],"금":["물리|전희규","체육|이병을","화학|장성원","일어|박선영","탐독1|이경인","미적Ⅰ|홍예설","영어Ⅰ|김대도"]}},"3-3":{"h":"정호재","s":{"월":["데과|홍대화","영독3|하도균","심수Ⅰ|정호재","융과탐|양해준","언매|석은동","수탐|김해영","과과연|이재균"],"화":["융과탐|양해준","운동|전상식","데과|홍대화","음감|손예진","심수Ⅰ|정호재","영독3|하도균","언매|석은동"],"수":["융과탐|양해준","과과연|이재균","운동|전상식","언매|석은동","수탐|김해영","자율|정호재","|"],"목":["수탐|김해영","심수Ⅰ|정호재","영독1|하도균","음감|손예진","언매|석은동","과과연|이재균","융과탐|양해준"],"금":["영독3|하도균","과과연|이재균","수탐|김해영","심수Ⅰ|정호재","동아|최정현","봉사|정호재","데과|홍대화"]}},"1-4":{"h":"최승호","s":{"월":["수학3|서혜리","국어1|김기A","사회A|전성환","정보B|김기B","과학D|이재균","국사|김재익","영어|신화룡"],"화":["수학1|신동철","체육B|임재우","사회B|강상호","국어3|김기A","영어|신화룡","정보A|김기B","│|▽"],"수":["체육A|임재우","과학A|안홍엽","사회C|남상훈","음악|손예진","동아|최승호","자율|최승호","|"],"목":["과학C|최유B","국사|김재익","사회A|전성환","영어|신화룡","실험|김태수","수학3|서혜리","국어3|김기A"],"금":["수학3|서혜리","진로|장진환","국사|김재익","영어|신화룡","과학B|최승호","음악|손예진","국어3|김기A"]}},"2-4":{"h":"김대도","s":{"월":["체육|임재우","물리|전희규","대수|홍예설","생명|전혜진","미적Ⅰ|송준원","한문|홍성수","문학1|박성근"],"화":["미적Ⅰ|송준원","영어Ⅰ|김대도","문학3|이강산","화학|최승호","물리|전희규","탐독2|이희순","대수|홍예설"],"수":["영어Ⅰ|김대도","화학|최승호","생명|전혜진","탐독2|이희순","동아|김대도","자율|김대도","|"],"목":["화학|최승호","탐독1|이경인","미적Ⅰ|송준원","한문|홍성수","영어Ⅰ|김대도","문학3|이강산","대수|홍예설"],"금":["영어Ⅰ|김대도","문학3|이강산","생명|전혜진","물리|전희규","한문|홍성수","미적Ⅰ|송준원","진로|전희규"]}},"3-4":{"h":"문형선","s":{"월":["영독3|문형선","심리|문형선","과과연|이재균","사문탐|김재익","언매|박주생","기하|김영진","음감|손선미"],"화":["사문탐|김재익","영독3|문형선","심수Ⅰ|노광수","운동|전상식","심리|문형선","과과연|이재균","언매|박주생"],"수":["사문탐|김재익","심수Ⅰ|노광수","음감|손선미","언매|박주생","기하|김영진","자율|문형선","|"],"목":["기하|김영진","영독3|문형선","과과연|이재균","운동|전상식","언매|박주생","심수Ⅰ|노광수","사문탐|김재익"],"금":["심수Ⅰ|노광수","영독1|하도균","기하|김영진","심리|문형선","동아|최영은","봉사|문형선","과과연|이재균"]}},"1-5":{"h":"김재익","s":{"월":["영어|손세욱","과학D|이재균","국사|김재익","수학1|홍예설","음악|손예진","사회A|전성환","국어3|김민채"],"화":["수학3|서혜리","국어1|김기A","정보A|김기B","│|▽","과학A|안홍엽","영어|손세욱","국사|김재익"],"수":["정보B|김기B","사회B|강상호","체육A|임재우","수학3|서혜리","동아|김재익","자율|김재익","|"],"목":["체육B|임재우","진로|장진환","국어3|김민채","과학C|최유B","사회A|전성환","영어|손세욱","실험|김태수"],"금":["음악|손예진","국어3|김민채","과학B|최승호","국사|김재익","영어|손세욱","수학3|서혜리","사회C|남상훈"]}},"2-5":{"h":"이희순","s":{"월":["대수|홍예설","미적Ⅰ|송준원","물리|이영권","체육|임재우","문학3|이희순","진로|안홍엽","영어Ⅰ|최영은"],"화":["화학|최승호","탐독2|이희순","일어|박선영","생명|전혜진","문학3|이희순","미적Ⅰ|송준원","영어Ⅰ|최영은"],"수":["일어|박선영","탐독1|이경인","대수|홍예설","영어Ⅰ|최영은","동아|홍대화","자율|이희순","|"],"목":["생명|전혜진","미적Ⅰ|송준원","화학|최승호","물리|이영권","문학3|이희순","영어Ⅰ|최영은","일어|박선영"],"금":["물리|이영권","탐독2|이희순","미적Ⅰ|송준원","대수|홍예설","생명|전혜진","화학|최승호","문학1|박성근"]}},"3-5":{"h":"장성원","s":{"월":["음감|손선미","과과연|장성원","운동|전상식","지Ⅱ|정용석","화작|김대연","영독3|문형선","수탐|김해영"],"화":["지Ⅱ|정용석","수탐|김해영","영독3|문형선","과과연|장성원","심수Ⅰ|노광수","심리|문형선","화작|김대연"],"수":["지Ⅱ|정용석","영독1|하도균","심리|문형선","화작|김대연","심수Ⅰ|노광수","자율|장성원","|"],"목":["심수Ⅰ|노광수","수탐|김해영","음감|손선미","영독3|문형선","화작|김대연","과과연|장성원","지Ⅱ|정용석"],"금":["과과연|장성원","심수Ⅰ|노광수","심리|문형선","운동|전상식","동아|이종환","봉사|장성원","수탐|김해영"]}},"1-6":{"h":"서혜리","s":{"월":["사회A|고덕민","체육A|임재우","영어|손세욱","과학B|최승호","국어3|김민채","수학3|서혜리","정보B|김기B"],"화":["체육B|임재우","영어|손세욱","실험|최유B","국사|김재익","과학C|최유B","국어3|김민채","수학1|노광수"],"수":["사회A|고덕민","영어|손세욱","수학3|서혜리","과학D|이재균","동아|배승현","자율|서혜리","|"],"목":["정보A|김기B","│|▽","진로|장진환","사회C|남상훈","국사|김재익","음악|손예진","국어1|김민채"],"금":["영어|손세욱","수학3|서혜리","사회B|강상호","과학A|안홍엽","음악|손예진","국사|김재익","국어3|김민채"]}},"2-6":{"h":"이영권","s":{"월":["문학3|이희순","진로|안홍엽","미적Ⅰ|최정현","화학|김종목","생명|이종환","탐독2|홍원의","영어Ⅰ|손동인"],"화":["화학|김종목","미적Ⅰ|최정현","물리|이영권","영어Ⅰ|손동인","탐독2|홍원의","한문|홍성수","대수|오상승"],"수":["문학1|이경인","한문|홍성수","물리|이영권","대수|오상승","동아|이영권","자율|이영권","|"],"목":["한문|홍성수","탐독1|정민석","문학3|이희순","영어Ⅰ|손동인","체육|임재우","생명|이종환","미적Ⅰ|최정현"],"금":["문학3|이희순","생명|이종환","미적Ⅰ|최정현","영어Ⅰ|손동인","화학|김종목","물리|이영권","대수|오상승"]}},"3-6":{"h":"정민석","s":{"월":["심수Ⅰ|구자용","음감|손선미","영독3|박혜영","언매|정민석","과과연|김정우","사문탐|허진","기하|김영진"],"화":["데과|홍대화","기하|김영진","운동|이병을","영독3|박혜영","사문탐|전성환","과과연|김정우","언매|정민석"],"수":["영독1|하도균","데과|홍대화","언매|정민석","사문탐|허진","심수Ⅰ|구자용","자율|정민석","|"],"목":["영독3|박혜영","기하|김영진","과과연|김정우","언매|정민석","심수Ⅰ|구자용","데과|홍대화","음감|손선미"],"금":["운동|이병을","심수Ⅰ|구자용","과과연|김정우","사문탐|전성환","동아|최유B","봉사|정민석","기하|김영진"]}},"1-7":{"h":"손세욱","s":{"월":["진로|장진환","국어3|김민채","수학1|노광수","미술|구교원","영어|손세욱","체육A|임재우","과학B|최승호"],"화":["국어3|김민채","과학D|김태수","사회C|남상훈","영어|손세욱","국사|김재익","미술|구교원","수학3|서혜리"],"수":["사회B|장하영","국어1|김민채","과학C|최유B","정보B|김기B","동아|손세욱","자율|손세욱","|"],"목":["사회A|고덕민","수학3|서혜리","국사|김재익","영어|손세욱","국어3|김민채","과학A|안홍엽","실험|최유B"],"금":["국사|김재익","정보A|김기B","│|▽","수학3|서혜리","체육B|임재우","사회A|고덕민","영어|손세욱"]}},"2-7":{"h":"손동인","s":{"월":["생명|이종환","화학|김종목","영어Ⅰ|손동인","문학3|이경인","미적Ⅰ|최정현","일어|박선영","탐독2|홍원의"],"화":["물리|이영권","영어Ⅰ|손동인","화학|김종목","미적Ⅰ|최정현","문학3|이경인","진로|정용석","대수|배승현"],"수":["생명|이종환","일어|박선영","화학|김종목","문학1|이경인","동아|손동인","자율|손동인","|"],"목":["영어Ⅰ|손동인","미적Ⅰ|최정현","대수|배승현","생명|이종환","문학3|이경인","물리|이영권","탐독2|홍원의"],"금":["일어|박선영","체육|임재우","영어Ⅰ|손동인","물리|이영권","탐독1|정민석","대수|배승현","미적Ⅰ|최정현"]}},"3-7":{"h":"박혜영","s":{"월":["기하|최정현","생Ⅱ|이종환","언매|석은동","음감|손선미","심수Ⅰ|구자용","지Ⅱ|정용석","영독3|박혜영"],"화":["심리|박혜영","운동|이병을","언매|석은동","생Ⅱ|이종환","지Ⅱ|정용석","심수Ⅰ|구자용","영독1|하도균"],"수":["영독3|박혜영","심리|박혜영","생Ⅱ|이종환","지Ⅱ|정용석","기하|최정현","자율|박혜영","|"],"목":["심수Ⅰ|구자용","언매|석은동","기하|최정현","운동|이병을","음감|손선미","심리|박혜영","생Ⅱ|이종환"],"금":["기하|최정현","영독3|박혜영","언매|석은동","지Ⅱ|정용석","동아|정용석","봉사|박혜영","심수Ⅰ|구자용"]}},"1-8":{"h":"김민채","s":{"월":["과학A|안홍엽","국사|허진","수학1|서혜리","사회C|남상훈","정보A|정지원","│|▽","영어|손세욱"],"화":["과학C|최유B","국어3|김민채","사회A|고덕민","국사|허진","수학3|신동철","실험|최유B","영어|손세욱"],"수":["체육B|김경환","미술|구교원","국어1|김민채","진로|장진환","동아|강상호","자율|김민채","|"],"목":["국어3|김민채","영어|손세욱","사회B|장하영","과학B|최승호","체육A|김경환","수학3|신동철","정보B|정지원"],"금":["과학D|김태수","국사|허진","영어|손세욱","사회A|고덕민","국어3|김민채","수학3|신동철","미술|구교원"]}},"2-8":{"h":"최정현","s":{"월":["문학3|이경인","물리|이영권","한문|홍성수","영어Ⅰ|손동인","대수|배승현","미적Ⅰ|최정현","화학|김종목"],"화":["미적Ⅰ|최정현","생명|이종환","문학3|이경인","대수|배승현","체육|임재우","영어Ⅰ|손동인","물리|이영권"],"수":["탐독2|홍원의","미적Ⅰ|최정현","영어Ⅰ|손동인","한문|홍성수","동아|장성원","자율|최정현","|"],"목":["생명|이종환","물리|이영권","진로|정용석","화학|김종목","미적Ⅰ|최정현","문학1|이경인","탐독1|정민석"],"금":["화학|김종목","문학3|이경인","생명|이종환","대수|배승현","탐독2|홍원의","영어Ⅰ|손동인","한문|홍성수"]}},"3-8":{"h":"김정우","s":{"월":["심리|박혜영","과과연|김정우","언매|정민석","심수Ⅰ|구자용","사문탐|전성환","영독3|박혜영","기하|노광수"],"화":["언매|정민석","기하|노광수","영독3|박혜영","과과연|김정우","심수Ⅰ|구자용","사문탐|고덕민","심리|박혜영"],"수":["심수Ⅰ|구자용","음감|손선미","과과연|김정우","언매|정민석","운동|이병을","자율|김정우","|"],"목":["운동|이병을","기하|노광수","사문탐|고덕민","심리|박혜영","영독1|하도균","심수Ⅰ|구자용","과과연|김정우"],"금":["음감|손선미","언매|정민석","사문탐|고덕민","영독3|박혜영","동아|김정우","봉사|김정우","기하|노광수"]}},"1-9":{"h":"고덕민","s":{"월":["국어3|김민채","영어|한상우","정보B|정지원","과학D|김태수","수학3|신동철","실험|김태수","사회A|고덕민"],"화":["정보A|정지원","│|▽","수학1|서혜리","국어3|김민채","사회B|장하영","과학B|최승호","영어|한상우"],"수":["국사|허진","영어|한상우","미술|구교원","국어1|박성근","동아|정용석","자율|고덕민","|"],"목":["수학3|신동철","체육A|김경환","과학A|안홍엽","국사|허진","진로|장진환","사회C|남상훈","영어|한상우"],"금":["과학C|최유B","수학3|신동철","국어3|김민채","미술|구교원","체육B|김경환","국사|허진","사회A|고덕민"]}},"2-9":{"h":"김종목","s":{"월":["대수|배승현","문학3|이경인","미적Ⅰ|오상승","영어Ⅰ|최영은","물리|이영권","탐독1|정민석","진로|정용석"],"화":["일어|박선영","생명|김정우","영어Ⅰ|최영은","체육|임재우","물리|이영권","문학1|이경인","화학|김종목"],"수":["생명|김정우","미적Ⅰ|오상승","대수|배승현","탐독2|홍원의","동아|김종목","자율|김종목","|"],"목":["화학|김종목","대수|배승현","문학3|이경인","일어|박선영","생명|김정우","미적Ⅰ|오상승","영어Ⅰ|최영은"],"금":["탐독2|홍원의","물리|이영권","영어Ⅰ|최영은","화학|김종목","미적Ⅰ|오상승","일어|박선영","문학3|이경인"]}},"3-9":{"h":"이병을","s":{"월":["운동|이병을","영독3|이상범","언매|김대연","체실|이병을","생윤|김유성","사·문|최병권","심수Ⅰ|윤신영"],"화":["심수Ⅰ|윤신영","생윤|김유성","음감|손선미","언매|김대연","심리|김지혜","체실|이병을","영독3|이상범"],"수":["심리|김지혜","체실|이병을","운동|이병을","사·문|최병권","영독1|박혜영","자율|이병을","|"],"목":["영독3|이상범","언매|김대연","생윤|김유성","심수Ⅰ|윤신영","심리|김지혜","체실|이병을","사·문|최병권"],"금":["사·문|최병권","음감|손선미","심수Ⅰ|윤신영","언매|김대연","동아|이재균","봉사|이병을","생윤|김유성"]}},"1-10":{"h":"김태수","s":{"월":["영어|한상우","정보B|정지원","체육B|김경환","과학A|안홍엽","국어1|박성근","진로|장진환","수학3|신동철"],"화":["미술|구교원","국사|허진","영어|한상우","과학B|김종목","국어3|박성근","체육A|김경환","사회A|고덕민"],"수":["수학3|신동철","정보A|정지원","│|▽","사회A|고덕민","동아|김태수","자율|김태수","|"],"목":["사회B|장하영","과학D|김태수","국어3|박성근","영어|한상우","미술|구교원","국사|허진","수학1|서혜리"],"금":["사회C|남상훈","영어|한상우","국사|허진","수학3|신동철","국어3|박성근","과학C|최유B","실험|김태수"]}},"2-10":{"h":"최병권","s":{"월":["미적Ⅰ|오상승","사문|강상호","영어Ⅰ|최영은","문학3|홍원의","한문|홍성수","법사|장하영","탐독2|이희순"],"화":["영어Ⅰ|최영은","문학3|홍원의","대수|배승현","미적Ⅰ|오상승","탐독1|정민석","체육|임재우","사문|강상호"],"수":["미적Ⅰ|오상승","대수|배승현","진로|장진환","사윤|남상훈","동아|이경인","자율|최병권","|"],"목":["사윤|남상훈","사문|강상호","문학1|박주생","영어Ⅰ|최영은","미적Ⅰ|오상승","법사|장하영","한문|홍성수"],"금":["대수|배승현","법사|장하영","사윤|남상훈","한문|홍성수","탐독2|이희순","영어Ⅰ|최영은","문학3|홍원의"]}},"3-10":{"h":"전성환","s":{"월":["심리|전성환","생윤|김유성","사·문|최병권","수탐|김해영","심수Ⅰ|노광수","영독3|이상범","화작|김대연"],"화":["사·문|최병권","화작|김대연","심리|전성환","영독3|이상범","운동|이병을","수탐|김해영","음감|손선미"],"수":["화작|김대연","수탐|김해영","영독1|이상범","심수Ⅰ|노광수","생윤|김유성","자율|전성환","|"],"목":["음감|손선미","운동|이병을","영독3|이상범","심수Ⅰ|노광수","사·문|최병권","수탐|김해영","생윤|김유성"],"금":["생윤|김유성","사·문|최병권","화작|김대연","심수Ⅰ|노광수","동아|허진","봉사|전성환","심리|전성환"]}},"1-11":{"h":"신동철","s":{"월":["실험|김태수","수학3|신동철","국어3|박성근","사회A|고덕민","과학C|최유B","영어|한상우","국사|허진"],"화":["과학D|김태수","영어|한상우","수학3|신동철","체육B|김경환","정보B|정지원","진로|장진환","사회B|장하영"],"수":["사회C|김유성","국어3|박성근","국사|허진","체육A|김경환","동아|이재균","자율|신동철","|"],"목":["영어|한상우","국사|허진","미술|구교원","수학3|신동철","사회A|고덕민","국어1|박성근","과학B|김종목"],"금":["정보A|정지원","│|▽","국어3|박성근","수학1|김해영","영어|한상우","미술|구교원","과학A|안홍엽"]}},"2-11":{"h":"박선영","s":{"월":["영어Ⅰ|김대도","문학3|홍원의","대수|배승현","법사|장하영","일어|박선영","사문|강상호","미적Ⅰ|오상승"],"화":["대수|배승현","미적Ⅰ|오상승","문학3|홍원의","진로|장진환","사윤|남상훈","탐독2|이강산","영어Ⅰ|김대도"],"수":["사윤|남상훈","탐독1|이강산","법사|장하영","일어|박선영","동아|정지원","자율|박선영","|"],"목":["미적Ⅰ|오상승","일어|박선영","사문|강상호","문학3|홍원의","대수|배승현","영어Ⅰ|김대도","사윤|남상훈"],"금":["사문|강상호","문학1|박주생","미적Ⅰ|오상승","영어Ⅰ|김대도","탐독2|이강산","체육|임재우","법사|장하영"]}},"3-11":{"h":"이상범","s":{"월":["심수Ⅰ|윤신영","운동|이병을","영독1|이상범","수탐|정호재","사·문|최병권","생윤|김유성","언매|정민석"],"화":["음감|손선미","언매|정민석","영독3|이상범","사·문|최병권","심수Ⅰ|윤신영","수탐|정호재","생윤|김유성"],"수":["언매|정민석","수탐|정호재","심리|김지혜","생윤|김유성","영독3|이상범","자율|이상범","|"],"목":["생윤|김유성","심리|김지혜","사·문|최병권","영독3|이상범","운동|이병을","수탐|정호재","심수Ⅰ|윤신영"],"금":["심리|김지혜","심수Ⅰ|윤신영","언매|정민석","사·문|최병권","동아|이상범","봉사|이상범","음감|손선미"]}},"1-12":{"h":"한상우","s":{"월":["국사|허진","과학C|최유B","수학3|신동철","영어|한상우","체육B|김경환","사회A|고덕민","미술|구교원"],"화":["국어1|박성근","과학A|안홍엽","사회B|장하영","미술|구교원","영어|한상우","수학3|신동철","국사|허진"],"수":["국어3|박성근","사회A|고덕민","과학D|김태수","영어|한상우","동아|최유B","자율|한상우","|"],"목":["실험|이재균","수학3|신동철","정보A|정지원","│|▽","국어3|박성근","과학B|김종목","국사|허진"],"금":["수학1|김해영","국어3|박성근","영어|한상우","진로|장진환","사회C|김유성","체육A|김경환","정보B|정지원"]}},"2-12":{"h":"홍원의","s":{"월":["영어Ⅰ|손동인","한문|홍성수","탐독1|이강산","사문|강상호","미적Ⅰ|오상승","사윤|남상훈","대수|배승현"],"화":["법사|장하영","사윤|남상훈","한문|홍성수","문학1|박주생","탐독2|이강산","미적Ⅰ|오상승","영어Ⅰ|손동인"],"수":["한문|홍성수","문학3|홍원의","사문|강상호","법사|장하영","동아|최영은","자율|홍원의","|"],"목":["문학3|홍원의","체육|임재우","미적Ⅰ|오상승","탐독2|이강산","사문|강상호","대수|배승현","영어Ⅰ|손동인"],"금":["영어Ⅰ|손동인","미적Ⅰ|오상승","문학3|홍원의","법사|장하영","사윤|남상훈","진로|장진환","대수|배승현"]}},"3-12":{"h":"윤신영","s":{"월":["심리|김지혜","사·문|최병권","생윤|김유성","수탐|윤신영","영독3|이상범","운동|김경환","언매|박주생"],"화":["영독1|이상범","언매|박주생","심수Ⅰ|윤신영","생윤|김유성","음감|손선미","수탐|윤신영","사·문|최병권"],"수":["언매|박주생","수탐|윤신영","사·문|최병권","심수Ⅰ|윤신영","심리|김지혜","자율|윤신영","|"],"목":["사·문|최병권","심수Ⅰ|윤신영","운동|김경환","심리|김지혜","생윤|김유성","수탐|윤신영","영독3|이상범"],"금":["영독3|이상범","생윤|김유성","언매|박주생","음감|손선미","동아|정지원","봉사|윤신영","심수Ⅰ|윤신영"]}}}};
-  const ALI={"김기A":"김기철A","김기B":"김기철B","최유B":"최유리B"};
+  const TT={"t":{"김기철A":{"월":["국어3|1-1","국어3|1-3","|","|","국어3|1-2","|","국어3|1-4"],"화":["국어3|1-1","|","|","국어1|1-3","|","국어1|1-4","|"],"수":["|","국어3|1-2","|","국어3|1-3","|","자율|1-3","|"],"목":["|","|","국어1|1-1","|","국어3|1-2","|","국어3|1-4"],"금":["국어3|1-4","국어1|1-2","|","국어3|1-1","국어3|1-3","|","|"]},"구자용":{"월":["|","|","통수Ⅰ|3-8","통수Ⅰ|3-6","|","|","수학3|1-2"],"화":["|","통수Ⅰ|3-8","|","수학3|1-1","|","통수Ⅰ|3-6","|"],"수":["통수Ⅰ|3-8","통수Ⅰ|3-6","|","|","동아|1-2","|","|"],"목":["수학3|1-2","|","|","수학3|1-1","|","통수Ⅰ|3-8","|"],"금":["수학3|1-1","|","|","통수Ⅰ|3-6","|","수학3|1-2","|"]},"김대도":{"월":["영어Ⅱ3|2-9","|","영어Ⅱ|2-10","|","|","발표2|2-3","|"],"화":["영어Ⅱ3|2-4","|","영어Ⅱ1|2-9","영어Ⅱ|2-10","|","발표1|2-3","|"],"수":["발표|2-7","영어Ⅱ3|2-4","|","영어Ⅱ|2-10","|","자율|2-4","|"],"목":["|","영어Ⅱ3|2-9","|","|","발표2|2-3","발표1|2-7","|"],"금":["영어Ⅱ3|2-9","발표2|2-7","|","영어Ⅱ3|2-4","|","|","영어Ⅱ|2-10"]},"전희규":{"월":["역학|2-4","|","|","|","역학|2-2","|","역학|2-1"],"화":["|","과학사|3-6","역학|2-2","|","역학|2-4","|","|"],"수":["역학|2-3","|","과학사|3-6","|","동아|물리실","자율|2-1","|"],"목":["|","역학|2-4","과학사|3-6","|","|","역학|2-3","역학|2-1"],"금":["역학|2-3","과학사|3-6","|","역학|2-1","|","역학|2-2","|"]},"강상호":{"월":["국경3|3-10","사회B|1-2","|","국경3|3-11","|","국경3|3-12","|"],"화":["|","사회B|1-6","|","국경3|3-12","국경3|3-9","|","|"],"수":["국경3|3-9","사회B|1-4","|","사회B|1-5","국경3|3-12","|","|"],"목":["|","|","국경3|3-11","|","국경3|3-10","|","사회B|1-1"],"금":["국경3|3-10","|","국경3|3-9","|","국경3|3-11","|","사회B|1-3"]},"김경환":{"월":["|","체육A|1-10","|","|","체육B|1-12","|","|"],"화":["|","|","체육A|1-11","체육A|1-8","|","|","|"],"수":["체육B|1-10","|","체육A|1-12","운동|3-12","|","|","|"],"목":["|","|","체육A|1-9","체육B|1-11","|","체육B|1-8","|"],"금":["|","|","체육B|1-9","|","운동|3-12","|","|"]},"김민채":{"월":["국어3|1-5","국어3|1-6","|","|","국어1|1-7","|","국어3|1-8"],"화":["국어3|1-8","|","국어3|1-6","|","국어1|1-5","|","|"],"수":["|","|","국어3|1-7","국어3|1-6","|","자율|1-8","|"],"목":["|","국어3|1-5","|","국어1|1-8","|","국어3|1-7","|"],"금":["국어3|1-5","|","국어3|1-7","|","국어3|1-8","국어1|1-6","|"]},"최정현":{"월":["|","|","통수Ⅰ|3-7","미적Ⅱ|2-8","|","|","미적Ⅱ|2-7"],"화":["미적Ⅱ|2-6","미적Ⅱ|2-7","|","|","통수Ⅰ|3-7","|","|"],"수":["미적Ⅱ|2-6","|","|","|","동아|2-8","자율|2-8","|"],"목":["|","미적Ⅱ|2-6","|","미적Ⅱ|2-8","|","통수Ⅰ|3-7","|"],"금":["|","|","통수Ⅰ|3-7","|","미적Ⅱ|2-7","|","미적Ⅱ|2-8"]},"손동인":{"월":["|","발표1|2-11","영어Ⅱ3|2-7","|","영어Ⅱ3|2-8","|","발표2|2-4"],"화":["영어Ⅱ3|2-8","|","|","발표1|2-4","|","영어Ⅱ1|2-7","발표2|2-10"],"수":["|","|","발표2|2-10","발표2|2-11","|","자율|2-7","|"],"목":["|","영어Ⅱ3|2-7","영어Ⅱ1|2-8","|","발표1|2-10","|","|"],"금":["|","|","발표2|2-4","영어Ⅱ3|2-8","|","발표2|2-11","영어Ⅱ3|2-7"]},"안홍엽":{"월":["|","|","과학A|1-3","|","환경|3-3","과학A|1-6","|"],"화":["과학A|1-12","|","|","과학A|1-11","과학A|1-4","|","과학A|1-10"],"수":["|","|","과학A|1-9","|","동아|1-1","자율|1-1","|"],"목":["과학A|1-7","과학A|1-2","|","과학A|1-5","|","환경|3-3","|"],"금":["환경|3-3","|","|","과학A|1-8","|","과학A|1-1","|"]},"최병권":{"월":["|","경제|2-12","경제|2-11","|","실경|3-11","실경|3-5","|"],"화":["실경|3-5","|","실경|3-12","경제|2-11","|","|","경제|2-12"],"수":["경제|2-10","|","실경|3-12","|","|","자율|2-10","|"],"목":["|","경제|2-10","|","경제|2-12","|","실경|3-11","경제|2-11"],"금":["실경|3-11","|","실경|3-5","|","경제|2-10","|","|"]},"전상식":{"월":["|","운동|3-3","체육A|1-2","운동|3-5","|","|","|"],"화":["|","|","체육A|1-1","운동|3-1","|","|","|"],"수":["|","운동|3-5","|","운동|3-1","동아|체육관","|","|"],"목":["|","|","운동|3-4","운동|3-2","|","|","|"],"금":["|","운동|3-4","운동|3-2","|","운동|3-3","|","|"]},"박성근":{"월":["|","국어3|1-12","|","국어3|1-9","|","국어3|1-11","|"],"화":["국어3|1-10","국어3|1-12","|","|","국어1|1-11","국어3|1-9","|"],"수":["국어1|1-12","|","국어3|1-10","국어3|1-9","|","|","|"],"목":["|","|","국어3|1-11","|","국어1|1-9","국어1|1-10","|"],"금":["|","|","국어3|1-10","국어3|1-11","|","|","국어3|1-12"]},"윤신영":{"월":["통수Ⅰ|3-9","통수Ⅰ|3-11","|","통수Ⅰ|3-12","|","|","|"],"화":["|","|","통수Ⅰ|3-9","|","통수Ⅰ|3-12","통수Ⅰ|3-11","|"],"수":["|","통수Ⅰ|3-11","|","|","동아|1-8","자율|3-12","|"],"목":["|","통수Ⅰ|3-12","|","|","통수Ⅰ|3-9","|","|"],"금":["통수Ⅰ|3-12","통수Ⅰ|3-9","|","통수Ⅰ|3-11","|","봉사|3-12","|"]},"최영은":{"월":["영어Ⅱ1|2-5","|","영어Ⅱ1|2-3","영어Ⅱ3|2-1","|","발표2|2-12","|"],"화":["|","영어Ⅱ3|2-1","|","영어Ⅱ3|2-3","영어Ⅱ3|2-5","|","발표2|2-9"],"수":["|","|","발표2|2-9","영어Ⅱ3|2-5","|","|","|"],"목":["영어Ⅱ3|2-3","|","영어Ⅱ1|2-1","|","발표1|2-9","발표1|2-12","|"],"금":["영어Ⅱ3|2-5","발표2|2-12","|","|","영어Ⅱ3|2-1","영어Ⅱ3|2-3","|"]},"양해준":{"월":["|","과학사|3-4","|","과학사|3-2","과학사|3-1","|","|"],"화":["과학사|3-1","|","과학사|3-3","|","|","과학사|3-4","|"],"수":["|","과학사|3-2","과학사|3-4","|","과학사|3-3","자율|3-1","|"],"목":["과학사|3-2","과학사|3-1","|","과학사|3-4","과학사|3-3","|","|"],"금":["과학사|3-1","과학사|3-3","|","|","과학사|3-2","봉사|3-1","|"]},"장하영":{"월":["|","|","사회B|1-9","국경1|3-9","|","정치|2-10","사회B|1-12"],"화":["정치|2-11","|","정치|2-10","정치|2-12","|","사회B|1-10","|"],"수":["국경1|3-10","사회B|1-8","|","|","국경1|3-11","|","|"],"목":["정치|2-11","|","정치|2-12","|","국경1|3-12","|","정치|2-10"],"금":["사회B|1-11","|","정치|2-12","사회B|1-7","|","|","정치|2-11"]},"이병을":{"월":["|","운동|3-8","스포츠|2-4","|","운동|3-10","스포츠|2-1","|"],"화":["운동|3-10","운동|3-11","|","운동|3-7","운동|3-6","|","|"],"수":["|","|","운동|3-9","스포츠|2-3","|","자율|3-9","|"],"목":["|","운동|3-7","운동|3-9","|","운동|3-6","스포츠|2-2","|"],"금":["|","운동|3-11","스포츠|2-5","운동|3-8","|","봉사|3-9","|"]},"홍원의":{"월":["|","|","화법3|2-12","화법3|2-11","|","|","언생2|2-5"],"화":["언생2|2-1","화법3|2-12","|","|","화법3|2-10","|","|"],"수":["화법3|2-12","|","|","언생2|2-2","|","자율|2-12","|"],"목":["|","언생2|2-5","화법3|2-10","|","화법3|2-11","|","언생2|2-2"],"금":["|","화법3|2-11","|","화법3|2-10","|","언생2|2-1","|"]},"김영진":{"월":["통수Ⅰ|3-4","통수Ⅰ|3-10","|","|","통수Ⅰ|3-5","|","|"],"화":["|","통수Ⅰ|3-4","|","통수Ⅰ|3-5","|","|","|"],"수":["|","통수Ⅰ|3-10","|","통수Ⅰ|3-5","|","|","|"],"목":["통수Ⅰ|3-5","|","|","|","통수Ⅰ|3-4","통수Ⅰ|3-10","|"],"금":["|","|","통수Ⅰ|3-10","|","통수Ⅰ|3-4","|","|"]},"신화룡":{"월":["영어|1-3","영어|1-4","|","|","영어|1-1","영어|1-2","|"],"화":["|","영어|1-2","영어|1-3","|","|","|","영어|1-1"],"수":["|","|","영어|1-2","영어|1-4","|","자율|1-2","|"],"목":["|","|","영어|1-3","|","영어|1-1","영어|1-4","|"],"금":["|","|","영어|1-1","영어|1-4","|","영어|1-3","영어|1-2"]},"이영권":{"월":["역학|2-6","|","역학|2-9","|","|","역학|2-5","|"],"화":["|","|","환경|3-1","|","|","역학|2-6","|"],"수":["|","역학|2-7","환경|3-1","|","동아|2-6","자율|2-6","|"],"목":["역학|2-5","|","역학|2-7","환경|3-1","|","|","역학1|2-9"],"금":["역학|2-7","역학|2-5","|","|","역학2|2-9","|","역학|2-6"]},"전성환":{"월":["|","|","사문탐|3-10","|","사회A|1-4","|","사회A|1-3"],"화":["사회A|1-5","|","|","사문탐|3-10","사회A|1-3","|","|"],"수":["|","사회A|1-1","|","|","사문탐|3-10","자율|3-10","|"],"목":["사회A|1-5","사문탐|3-10","|","실경1|3-12","|","|","사회A|1-2"],"금":["사회A|1-2","|","사회A|1-4","|","사회A|1-1","봉사|3-10","|"]},"임재우":{"월":["체육B|1-6","스포츠|2-8","|","체육B|1-4","|","스포츠|2-7","|"],"화":["체육B|1-2","|","체육A|1-7","|","스포츠|2-9","스포츠|2-11","|"],"수":["체육A|1-5","스포츠|2-10","|","스포츠|2-6","|","|","|"],"목":["체육A|1-6","체육B|1-1","|","체육A|1-3","체육B|1-7","|","|"],"금":["|","체육B|1-3","체육B|1-5","|","체육A|1-4","스포츠|2-12","|"]},"이희순":{"월":["언생2|2-12","화법3|2-5","|","|","화법3|2-6","|","|"],"화":["언생1|2-5","|","|","화법3|2-6","|","화법3|2-4","언생2|2-8"],"수":["|","|","언생2|2-8","화법3|2-4","|","자율|2-5","|"],"목":["언생2|2-12","언생1|2-11","|","화법3|2-5","|","|","언생1|2-6"],"금":["|","화법3|2-4","화법3|2-6","|","|","화법3|2-5","|"]},"김해영":{"월":["확통|2-8","|","|","확통|2-7","|","확통|2-9","|"],"화":["|","확통|2-9","|","확통|2-8","|","|","확통|2-7"],"수":["수학1|1-4","확통|2-9","|","|","동아|1-11","|","|"],"목":["확통|2-7","|","|","|","수학1|1-3","확통|2-8","|"],"금":["|","|","확통|2-8","확통|2-7","|","확통|2-9","|"]},"손세욱":{"월":["|","|","영어|1-8","영어|1-5","|","|","영어|1-7"],"화":["|","영어|1-5","|","|","영어|1-6","영어|1-8","|"],"수":["|","|","영어|1-6","영어|1-7","|","자율|1-7","|"],"목":["|","영어|1-7","영어|1-5","|","영어|1-6","|","영어|1-8"],"금":["영어|1-8","|","영어|1-6","영어|1-5","|","|","영어|1-7"]},"김종목":{"월":["|","물질|2-7","|","물질|2-9","|","물질|2-8","과학B|1-11"],"화":["물질|2-7","물질|2-8","|","|","물질|2-6","|","|"],"수":["|","|","물질|2-7","|","동아|2-9","자율|2-9","|"],"목":["물질|2-9","|","과학B|1-12","|","물질|2-6","|","|"],"금":["|","물질|2-8","|","물질|2-6","과학B|1-10","|","물질|2-9"]},"고덕민":{"월":["|","사문탐|3-9","|","사회A|1-10","|","사회A|1-8","|"],"화":["|","|","사회A|1-8","사회A|1-12","|","|","사회A|1-11"],"수":["|","사회A|1-9","|","|","사문탐|3-9","자율|1-9","|"],"목":["|","사회A|1-11","사회A|1-7","|","사회A|1-12","|","사회A|1-6"],"금":["사회A|1-10","사회A|1-9","|","사회A|1-6","|","사회A|1-7","|"]},"손예진":{"월":["음악|1-11","음악|1-7","|","|","음악|1-9","|","|"],"화":["|","음악|1-10","음악|1-12","|","음악|1-7","진로|2-12","|"],"수":["|","음악|1-10","|","진로|3-10","동아|음악실","|","|"],"목":["음악|1-8","|","|","진로|2-11","|","|","음악|1-12"],"금":["|","|","음악|1-8","음악|1-9","|","음악|1-11","|"]},"이강산":{"월":["|","언생2|2-6","화법3|2-1","|","화법1|2-4","|","|"],"화":["|","|","언생1|2-12","화법3|2-1","|","화법3|2-2","|"],"수":["|","화법3|2-3","화법1|2-5","|","동아|2-10","|","|"],"목":["|","화법3|2-3","|","화법3|2-2","|","화법1|2-6","|"],"금":["|","|","화법3|2-3","화법3|2-2","|","언생2|2-6","화법3|2-1"]},"송준원":{"월":["확통|2-3","|","확통|2-2","|","확통|2-1","|","|"],"화":["진로|2-3","|","확통|2-1","|","확통|2-3","|","진로|2-2"],"수":["|","확통|2-2","|","|","동아|2-3","자율|2-3","|"],"목":["|","확통|2-1","확통|2-3","|","확통|2-2","|","|"],"금":["|","확통|2-1","|","확통|2-3","|","|","확통|2-2"]},"한상우(하태희)":{"월":["영어|1-9","|","영어|1-12","|","영어|1-11","|","영어|1-10"],"화":["|","영어|1-9","|","영어|1-10","|","영어|1-12","|"],"수":["영어|1-9","|","|","영어|1-11","|","자율|1-12","|"],"목":["영어|1-11","|","영어|1-10","영어|1-12","|","|","영어|1-9"],"금":["|","영어|1-12","|","|","영어|1-11","영어|1-10","|"]},"장성원":{"월":["물질|2-2","|","융과탐|3-5","물질|2-3","|","|","|"],"화":["|","물질|2-3","융과탐|3-5","|","물질|2-1","|","|"],"수":["물질|2-1","|","물질|2-2","|","|","자율|3-5","|"],"목":["진로|3-4","진로|3-5","|","물질|2-1","|","융과탐|3-5","|"],"금":["|","물질|2-2","|","융과탐|3-5","|","봉사|3-5","물질|2-3"]},"허진":{"월":["국사|1-10","국사|1-11","|","국사|1-12","|","|","국사|1-9"],"화":["사문탐2|3-9","국사|1-11","|","|","국사|1-12","|","|"],"수":["|","|","국사|1-8","국사|1-10","|","|","|"],"목":["|","국사|1-12","국사|1-8","|","|","국사|1-9","국사|1-11"],"금":["국사|1-9","|","|","사문탐2|3-9","|","국사|1-8","국사|1-10"]},"구교원":{"월":["창작|3-2","창작|3-1","|","|","미술|1-6","|","미술|1-1"],"화":["미술|1-3","|","창작|3-2","미술|1-2","|","|","미술|1-5"],"수":["창작|3-1","미술|1-3","|","창작|3-3","|","|","|"],"목":["창작|3-3","|","미술|1-2","|","미술|1-4","|","미술|1-5"],"금":["|","미술|1-1","|","|","|","미술|1-4","미술|1-6"]},"이경인":{"월":["언생2|2-11","|","|","화법1|2-2","화법3|2-7","|","화법3|2-9"],"화":["|","언생2|2-11","화법3|2-7","|","화법3|2-8","|","화법1|2-3"],"수":["화법3|2-8","|","화법1|2-1","화법3|2-9","|","|","|"],"목":["|","화법3|2-8","|","|","언생1|2-8","언생1|2-1","|"],"금":["|","화법3|2-9","화법3|2-7","|","언생1|2-2","|","|"]},"노광수":{"월":["|","미적Ⅱ|2-1","수학1|1-7","|","미적Ⅱ|2-3","미적Ⅱ|2-2","|"],"화":["|","미적Ⅱ|2-2","진로|2-8","|","수학1|1-8","|","|"],"수":["|","미적Ⅱ|2-1","|","|","동아|2-1","|","|"],"목":["|","|","|","미적Ⅱ|2-3","미적Ⅱ|2-1","|","수학1|1-10"],"금":["미적Ⅱ|2-2","미적Ⅱ|2-3","|","진로|3-12","|","|","수학1|1-9"]},"문형선":{"월":["영독Ⅱ|3-3","|","영독Ⅱ|3-1","|","영독Ⅱ|3-4","영독Ⅱ|3-2","|"],"화":["영독Ⅱ|3-3","영독Ⅱ|3-2","|","|","영독Ⅱ|3-4","영독Ⅱ|3-1","|"],"수":["영독Ⅱ|3-4","|","|","|","영독Ⅱ|3-2","자율|3-4","|"],"목":["영독Ⅱ|3-1","영독Ⅱ|3-4","|","영독Ⅱ|3-3","영독Ⅱ|3-2","|","|"],"금":["|","영독Ⅱ|3-1","영독Ⅱ|3-3","|","|","봉사|3-4","|"]},"최승호":{"월":["|","물질|2-4","|","과학B|1-2","|","과학B|1-9","|"],"화":["|","|","과학B|1-5","물질|2-5","|","과학B|1-7","과학B|1-8"],"수":["|","물질|2-5","|","|","동아|1-4","자율|1-4","|"],"목":["과학B|1-1","|","|","물질|2-4","|","과학B|1-3","물질|2-5"],"금":["과학B|1-6","과학B|1-4","|","|","물질|2-4","|","|"]},"김재익":{"월":["|","|","국사|1-5","국사|1-7","|","국사|1-4","|"],"화":["|","국사|1-7","|","국사|1-4","|","사문탐3|3-12","국사|1-6"],"수":["국사|1-6","국사|1-7","|","|","동아|1-5","자율|1-5","|"],"목":["사문탐3|3-12","국사|1-4","|","|","국사|1-5","|","|"],"금":["|","국사|1-5","사문탐3|3-12","|","국사|1-6","|","|"]},"이유라":{"월":["창작|3-6","|","창작|3-12","창작|3-7","|","창작|3-11","|"],"화":["창작|3-8","창작|3-10","|","창작|3-9","창작|3-5","|","|"],"수":["창작|3-5","창작|3-7","|","창작|3-4","동아|미술실","|","|"],"목":["창작|3-11","창작|3-6","|","창작|3-8","|","창작|3-12","|"],"금":["창작|3-4","창작|3-10","|","|","창작|3-9","|","|"]},"박주생":{"월":["|","심국|3-2","|","심국|3-4","심국|3-12","|","|"],"화":["심국|3-12","|","심국|3-4","|","심국|3-2","|","|"],"수":["심국|3-2","심국|3-12","|","|","심국|3-4","자율|3-2","|"],"목":["|","|","심국|3-12","화법1|2-9","|","심국|3-4","화법1|2-7"],"금":["화법1|2-8","|","|","심국|3-2","|","봉사|3-2","|"]},"오상승":{"월":["|","미적Ⅱ|2-10","|","|","미적Ⅱ|2-9","미적Ⅱ|2-4","|"],"화":["|","|","미적Ⅱ|2-5","미적Ⅱ|2-9","|","|","미적Ⅱ|2-4"],"수":["미적Ⅱ|2-5","수학1|1-6","|","|","동아|2-12","|","|"],"목":["미적Ⅱ|2-10","|","미적Ⅱ|2-4","|","미적Ⅱ|2-5","|","|"],"금":["|","|","미적Ⅱ|2-10","미적Ⅱ|2-9","|","|","수학1|1-5"]},"하도균":{"월":["|","|","영어Ⅱ3|2-6","|","영어Ⅱ|2-12","|","영어Ⅱ|2-11"],"화":["영어Ⅱ3|2-2","|","영어Ⅱ|2-11","|","영어Ⅱ|2-12","|","영어Ⅱ3|2-6"],"수":["영어Ⅱ3|2-2","|","영어Ⅱ|2-11","영어Ⅱ|2-12","|","|","|"],"목":["|","영어Ⅱ1|2-2","|","영어Ⅱ3|2-6","|","영어Ⅱ1|2-4","|"],"금":["영어Ⅱ|2-11","|","영어Ⅱ3|2-2","|","영어Ⅱ1|2-6","|","영어Ⅱ|2-12"]},"이종환":{"월":["환경|3-8","|","|","세포|2-4","|","환경|3-6","세포|2-8"],"화":["환경|3-6","진로|3-3","|","환경|3-2","|","세포|2-8","|"],"수":["|","세포|2-8","환경|3-2","|","동아|생물실","|","|"],"목":["세포|2-4","|","환경|3-8","|","진로|3-8","환경|3-2","|"],"금":["|","환경|3-8","환경|3-6","|","|","|","세포|2-4"]},"김지혜":{"월":["국사|1-2","|","사문탐|3-3","국사|1-3","|","사문탐|3-1","|"],"화":["|","|","국사|1-2","사문탐|3-3","|","국사|1-1","|"],"수":["국사|1-1","사문탐|3-3","|","|","사문탐|3-1","|","|"],"목":["|","국사|1-3","사문탐|3-1","|","|","국사|1-2","|"],"금":["국사|1-3","|","|","사문탐|3-3","사문탐|3-1","|","국사|1-1"]},"김기철B":{"월":["|","|","인공B|1-6","|","인공A|1-3","│|▽","|"],"화":["인공A|1-4","│|▽","|","인공B|1-7","|","|","|"],"수":["|","인공A|1-5","│|▽","|","동아|2-4","|","|"],"목":["인공B|1-4","|","인공A|1-6","│|▽","|","|","인공B|1-3"],"금":["인공A|1-7","│|▽","|","|","인공B|1-5","|","진로|2-5"]},"정민석":{"월":["심국|3-11","|","심국|3-6","화법1|2-10","|","심국|3-8","|"],"화":["심국|3-11","|","|","심국|3-8","|","|","화법1|2-11"],"수":["|","심국|3-8","심국|3-11","|","심국|3-6","자율|3-6","|"],"목":["|","심국|3-11","|","심국|3-6","|","|","화법1|2-12"],"금":["심국|3-6","|","|","|","심국|3-8","봉사|3-6","|"]},"서혜리":{"월":["수학3|1-4","|","|","수학3|1-6","수학3|1-5","|","|"],"화":["|","수학3|1-3","|","수학3|1-6","|","수학3|1-5","수학3|1-4"],"수":["수학3|1-7","|","수학3|1-3","|","|","자율|1-6","|"],"목":["|","|","수학3|1-4","수학3|1-7","|","수학3|1-5","|"],"금":["|","수학3|1-6","수학3|1-3","|","수학3|1-7","|","|"]},"이상범":{"월":["영독Ⅱ|3-12","|","영독Ⅱ|3-11","영독Ⅱ|3-10","|","영독Ⅱ|3-9","|"],"화":["|","영독Ⅱ|3-12","영독Ⅱ|3-11","|","영독Ⅱ|3-10","영독Ⅱ|3-9","|"],"수":["영독Ⅱ|3-12","영독Ⅱ|3-9","|","영독Ⅱ|3-11","|","자율|3-11","|"],"목":["영독Ⅱ|3-10","영독Ⅱ|3-9","|","영독Ⅱ|3-11","|","|","|"],"금":["|","영독Ⅱ|3-12","|","|","영독Ⅱ|3-10","봉사|3-11","|"]},"김정우":{"월":["|","융과탐|3-6","|","|","융과탐|3-2","융과탐|3-7","|"],"화":["융과탐|3-7","|","융과탐|3-8","융과탐|3-6","|","융과탐|3-2","|"],"수":["융과탐|3-6","|","|","융과탐|3-2","융과탐|3-8","자율|3-8","|"],"목":["융과탐|3-8","|","|","|","융과탐|3-7","융과탐|3-6","|"],"금":["융과탐|3-2","|","융과탐|3-8","융과탐|3-7","|","봉사|3-8","|"]},"김유성":{"월":["사회C|1-7","|","사회C|1-11","|","사문탐|3-7","|","사회C|1-6"],"화":["|","사문탐|3-5","|","|","사문탐|3-11","사문탐|3-7","|"],"수":["사문탐|3-11","|","사문탐|3-5","사문탐|3-7","|","|","|"],"목":["사회C|1-9","|","사문탐|3-5","|","사회C|1-10","|","|"],"금":["사문탐|3-7","사문탐|3-5","|","|","사회C|1-12","|","사회C|1-8"]},"정지원":{"월":["인공A|1-8","│|▽","|","|","인공B|1-10","|","|"],"화":["|","|","인공A|1-9","│|▽","|","|","인공B|1-12"],"수":["|","인공B|1-11","|","인공B|1-8","동아|2-11","|","|"],"목":["인공A|1-10","│|▽","|","|","인공A|1-11","│|▽","|"],"금":["진로|2-6","|","인공A|1-12","│|▽","|","인공B|1-9","|"]},"석은동":{"월":["|","|","|","심국|3-1","|","심국|3-3","|"],"화":["|","|","심국|3-7","|","심국|3-1","심국|3-3","|"],"수":["|","|","심국|3-3","|","심국|3-7","|","|"],"목":["|","심국|3-3","|","심국|3-7","|","심국|3-1","|"],"금":["|","|","심국|3-1","|","심국|3-7","|","|"]},"정호재":{"월":["통수Ⅰ|3-1","|","통수Ⅰ|3-2","통수Ⅰ|3-3","|","|","|"],"화":["통수Ⅰ|3-2","통수Ⅰ|3-1","|","|","통수Ⅰ|3-3","|","|"],"수":["통수Ⅰ|3-3","|","|","|","동아|1-12","자율|3-3","|"],"목":["|","통수Ⅰ|3-2","통수Ⅰ|3-3","|","통수Ⅰ|3-1","|","|"],"금":["|","통수Ⅰ|3-2","|","통수Ⅰ|3-1","|","봉사|3-3","|"]},"박혜영":{"월":["영독Ⅱ|3-5","영독Ⅱ|3-7","|","영독Ⅱ|3-8","영독Ⅱ|3-6","|","|"],"화":["|","영독Ⅱ|3-7","영독Ⅱ|3-6","|","영독Ⅱ|3-8","영독Ⅱ|3-5","|"],"수":["영독Ⅱ|3-7","|","영독Ⅱ|3-8","영독Ⅱ|3-6","|","자율|3-7","|"],"목":["영독Ⅱ|3-7","영독Ⅱ|3-8","|","|","영독Ⅱ|3-5","|","|"],"금":["영독Ⅱ|3-5","|","|","|","영독Ⅱ|3-6","봉사|3-7","|"]},"전혜진":{"월":["세포|2-1","세포|2-3","|","|","환경|3-9","|","세포|2-2"],"화":["|","|","환경|3-10","세포|2-2","|","|","세포|2-1"],"수":["|","|","환경|3-10","|","동아|2-2","자율|2-2","|"],"목":["세포|2-2","|","|","환경|3-10","|","환경|3-9","세포|2-3"],"금":["환경|3-9","|","세포|2-1","|","세포|2-3","|","|"]},"남상훈":{"월":["|","사문탐|3-12","|","윤사|2-12","|","윤사|2-11","사회C|1-5"],"화":["윤사|2-10","|","사회C|1-4","|","사회C|1-1","|","|"],"수":["사회C|1-3","윤사|2-12","|","사회C|1-2","|","|","|"],"목":["|","|","윤사|2-11","|","사문탐|3-11","윤사|2-10","|"],"금":["윤사|2-12","|","사문탐|3-11","윤사|2-11","|","윤사|2-10","|"]},"홍대화":{"월":["데이터|3-7","|","인공A|1-1","│|▽","|","데이터|3-4","|"],"화":["데이터|3-4","|","|","진로|3-11","|","인공A|1-2","│|▽"],"수":["진로|2-4","|","진로|3-7","|","동아|2-5","|","|"],"목":["|","|","데이터|3-7","진로|3-9","|","인공B|1-1","|"],"금":["|","데이터|3-7","데이터|3-4","|","인공B|1-2","|","|"]},"김대연":{"월":["|","심국|3-5","심국|3-9","|","|","심국|3-10","|"],"화":["|","심국|3-9","|","|","|","심국|3-10","|"],"수":["|","|","|","심국|3-9","심국|3-5","|","|"],"목":["심국|3-9","|","심국|3-10","심국|3-5","|","|","|"],"금":["|","|","|","심국|3-10","심국|3-5","|","|"]},"홍예설":{"월":["|","수학1|1-1","|","확통|2-5","|","|","확통|2-6"],"화":["|","|","확통|2-4","|","수학1|1-2","확통|2-5","|"],"수":["|","확통|2-6","확통|2-4","|","동아|2-7","|","|"],"목":["확통|2-6","|","확통|2-5","|","확통|2-4","|","|"],"금":["|","확통|2-6","|","|","확통|2-5","확통|2-4","|"]},"최유리B":{"월":["|","과학C|1-5","과학C|1-4","|","|","과학C|1-7","|"],"화":["실험|1-6","실험|1-8","|","|","과학C|1-9","|","실험|1-7"],"수":["과학C|1-2","|","과학C|1-1","|","동아|1-3","|","|"],"목":["진로|3-6","과학C|1-8","|","과학C|1-10","|","과학C|1-6","|"],"금":["|","과학C|1-11","|","과학C|1-3","|","과학C|1-12","|"]},"박선영":{"월":["일어|2-10","일어|2-2","|","일어|2-6","|","|","일어|2-12"],"화":["|","일어|2-4","일어|2-6","|","일어|2-2","일어|2-10","|"],"수":["|","|","일어|2-6","일어|2-8","|","자율|2-11","|"],"목":["일어|2-8","|","일어|2-2","|","일어|2-12","|","일어|2-4"],"금":["일어|2-4","일어|2-10","|","일어|2-12","|","일어|2-8","|"]},"신동철":{"월":["|","수학3|1-9","|","|","수학3|1-8","수학3|1-10","|"],"화":["수학3|1-9","|","수학3|1-10","|","|","수학3|1-11","|"],"수":["|","|","수학3|1-11","수학3|1-12","|","자율|1-11","|"],"목":["|","수학3|1-9","|","|","수학3|1-8","수학3|1-12","|"],"금":["수학3|1-12","수학3|1-8","|","수학3|1-10","|","|","수학3|1-11"]},"정용석":{"월":["|","|","지구2|2-8","|","과학사|3-8","지구2|2-6","|"],"화":["|","지구2|2-6","|","지구2|2-7","|","과학사|3-8","지구2|2-5"],"수":["지구2|2-9","진로|3-1","|","과학사|3-8","동아|1-9","|","|"],"목":["|","|","진로|3-2","|","지구2|2-7","지구2|2-9","|"],"금":["과학사|3-8","|","|","지구2|2-5","지구2|2-8","|","|"]},"홍성수":{"월":["|","한문|2-9","한문|2-5","|","한문|2-11","|","한문|2-3"],"화":["|","한문|2-5","한문|2-3","|","한문|2-7","한문|2-9","|"],"수":["한문|2-11","|","한문|2-3","한문|2-1","|","|","|"],"목":["한문|2-1","|","한문|2-9","한문|2-7","|","한문|2-5","|"],"금":["한문|2-1","|","|","|","한문|2-11","한문|2-7","|"]},"배승현":{"월":["수학1|1-12","|","|","수학1|1-11","|","|","확통|2-10"],"화":["확통|2-12","확통|2-10","|","|","확통|2-11","|","|"],"수":["|","확통|2-11","확통|2-12","|","동아|1-6","|","|"],"목":["|","확통|2-12","|","확통|2-10","|","확통|2-11","|"],"금":["확통|2-10","|","확통|2-11","|","확통|2-12","|","|"]},"이재균":{"월":["지구1|2-7","|","융과탐|3-4","|","지구1|2-5","과학D|1-1","|"],"화":["지구1|2-9","|","|","융과탐|3-4","|","과학D|1-6","과학D|1-3"],"수":["|","융과탐|3-4","|","실험|1-1","동아|1-7","|","|"],"목":["|","|","지구1|2-6","과학D|1-4","|","|","지구1|2-8"],"금":["|","|","과학D|1-2","융과탐|3-4","|","과학D|1-5","|"]},"장진환":{"월":["|","|","|","|","진로|2-10","진로|1-5","|"],"화":["진로|1-11","진로|1-1","|","|","진로|1-10","진로|1-3","|"],"수":["진로|1-8","|","진로|1-4","진로|2-7","|","|","|"],"목":["진로|1-12","진로|1-6","|","진로|1-9","|","|","진로|1-7"],"금":["|","|","진로|2-9","진로|1-2","|","|","|"]},"김태수":{"월":["|","|","과학D|1-10","과학D|1-8","|","실험|1-12","|"],"화":["과학D|1-7","|","|","실험|1-5","|","진로|2-1","실험|1-9"],"수":["과학D|1-11","과학D|1-12","|","|","동아|1-10","자율|1-10","|"],"목":["실험|1-3","|","|","실험|1-2","|","|","|"],"금":["|","실험|1-10","실험|1-11","|","과학D|1-9","|","실험|1-4"]}},"c":{"1-1":{"h":"안홍엽","s":{"월":["국어3|김기철A","수학1|홍예설","인공A|홍대화","│|▽","영어|신화룡","과학D|이재균","미술|구교원"],"화":["국어3|김기철A","진로|장진환","체육A|전상식","수학3|구자용","사회C|남상훈","국사|김지혜","영어|신화룡"],"수":["국사|김지혜","사회A|전성환","과학C|최유리B","실험|이재균","동아|안홍엽","자율|안홍엽","|"],"목":["과학B|최승호","체육B|임재우","국어1|김기철A","수학3|구자용","영어|신화룡","인공B|홍대화","사회B|강상호"],"금":["수학3|구자용","미술|구교원","영어|신화룡","국어3|김기철A","사회A|전성환","과학A|안홍엽","국사|김지혜"]}},"2-1":{"h":"전희규","s":{"월":["세포|전혜진","미적Ⅱ|노광수","화법3|이강산","영어Ⅱ3|최영은","확통|송준원","스포츠|이병을","역학|전희규"],"화":["언생2|홍원의","영어Ⅱ3|최영은","확통|송준원","화법3|이강산","물질|장성원","진로|김태수","세포|전혜진"],"수":["물질|장성원","미적Ⅱ|노광수","화법1|이경인","한문|홍성수","동아|노광수","자율|전희규","|"],"목":["한문|홍성수","확통|송준원","영어Ⅱ1|최영은","물질|장성원","미적Ⅱ|노광수","언생1|이경인","역학|전희규"],"금":["한문|홍성수","확통|송준원","세포|전혜진","역학|전희규","영어Ⅱ3|최영은","언생2|홍원의","화법3|이강산"]}},"3-1":{"h":"양해준","s":{"월":["통수Ⅰ|정호재","창작|구교원","영독Ⅱ|문형선","심국|석은동","과학사|양해준","사문탐|김지혜","|"],"화":["과학사|양해준","통수Ⅰ|정호재","환경|이영권","운동|전상식","심국|석은동","영독Ⅱ|문형선","|"],"수":["창작|구교원","진로|정용석","환경|이영권","운동|전상식","사문탐|김지혜","자율|양해준","|"],"목":["영독Ⅱ|문형선","과학사|양해준","사문탐|김지혜","환경|이영권","통수Ⅰ|정호재","심국|석은동","|"],"금":["과학사|양해준","영독Ⅱ|문형선","심국|석은동","통수Ⅰ|정호재","사문탐|김지혜","봉사|양해준","|"]}},"1-2":{"h":"신화룡","s":{"월":["국사|김지혜","사회B|강상호","체육A|전상식","과학B|최승호","국어3|김기철A","영어|신화룡","수학3|구자용"],"화":["체육B|임재우","영어|신화룡","국사|김지혜","미술|구교원","수학1|홍예설","인공A|홍대화","│|▽"],"수":["과학C|최유리B","국어3|김기철A","영어|신화룡","사회C|남상훈","동아|구자용","자율|신화룡","|"],"목":["수학3|구자용","과학A|안홍엽","미술|구교원","실험|김태수","국어3|김기철A","국사|김지혜","사회A|전성환"],"금":["사회A|전성환","국어1|김기철A","과학D|이재균","진로|장진환","인공B|홍대화","수학3|구자용","영어|신화룡"]}},"2-2":{"h":"전혜진","s":{"월":["물질|장성원","일어|박선영","확통|송준원","화법1|이경인","역학|전희규","미적Ⅱ|노광수","세포|전혜진"],"화":["영어Ⅱ3|하도균","미적Ⅱ|노광수","역학|전희규","세포|전혜진","일어|박선영","화법3|이강산","진로|송준원"],"수":["영어Ⅱ3|하도균","확통|송준원","물질|장성원","언생2|홍원의","동아|전혜진","자율|전혜진","|"],"목":["세포|전혜진","영어Ⅱ1|하도균","일어|박선영","화법3|이강산","확통|송준원","스포츠|이병을","언생2|홍원의"],"금":["미적Ⅱ|노광수","물질|장성원","영어Ⅱ3|하도균","화법3|이강산","언생1|이경인","역학|전희규","확통|송준원"]}},"3-2":{"h":"박주생","s":{"월":["창작|구교원","심국|박주생","통수Ⅰ|정호재","과학사|양해준","융과탐|김정우","영독Ⅱ|문형선","|"],"화":["통수Ⅰ|정호재","영독Ⅱ|문형선","창작|구교원","환경|이종환","심국|박주생","융과탐|김정우","|"],"수":["심국|박주생","과학사|양해준","환경|이종환","융과탐|김정우","영독Ⅱ|문형선","자율|박주생","|"],"목":["과학사|양해준","통수Ⅰ|정호재","진로|정용석","운동|전상식","영독Ⅱ|문형선","환경|이종환","|"],"금":["융과탐|김정우","통수Ⅰ|정호재","운동|전상식","심국|박주생","과학사|양해준","봉사|박주생","|"]}},"1-3":{"h":"김기철A","s":{"월":["영어|신화룡","국어3|김기철A","과학A|안홍엽","국사|김지혜","인공A|김기철B","│|▽","사회A|전성환"],"화":["미술|구교원","수학3|서혜리","영어|신화룡","국어1|김기철A","사회A|전성환","진로|장진환","과학D|이재균"],"수":["사회C|남상훈","미술|구교원","수학3|서혜리","국어3|김기철A","동아|최유리B","자율|김기철A","|"],"목":["실험|김태수","국사|김지혜","영어|신화룡","체육A|임재우","수학1|김해영","과학B|최승호","인공B|김기철B"],"금":["국사|김지혜","체육B|임재우","수학3|서혜리","과학C|최유리B","국어3|김기철A","영어|신화룡","사회B|강상호"]}},"2-3":{"h":"송준원","s":{"월":["확통|송준원","세포|전혜진","영어Ⅱ1|최영은","물질|장성원","미적Ⅱ|노광수","발표2|김대도","한문|홍성수"],"화":["진로|송준원","물질|장성원","한문|홍성수","영어Ⅱ3|최영은","확통|송준원","발표1|김대도","화법1|이경인"],"수":["역학|전희규","화법3|이강산","한문|홍성수","스포츠|이병을","동아|송준원","자율|송준원","|"],"목":["영어Ⅱ3|최영은","화법3|이강산","확통|송준원","미적Ⅱ|노광수","발표2|김대도","역학|전희규","세포|전혜진"],"금":["역학|전희규","미적Ⅱ|노광수","화법3|이강산","확통|송준원","세포|전혜진","영어Ⅱ3|최영은","물질|장성원"]}},"3-3":{"h":"정호재","s":{"월":["영독Ⅱ|문형선","운동|전상식","사문탐|김지혜","통수Ⅰ|정호재","환경|안홍엽","심국|석은동","|"],"화":["영독Ⅱ|문형선","진로|이종환","과학사|양해준","사문탐|김지혜","통수Ⅰ|정호재","심국|석은동","|"],"수":["통수Ⅰ|정호재","사문탐|김지혜","심국|석은동","창작|구교원","과학사|양해준","자율|정호재","|"],"목":["창작|구교원","심국|석은동","통수Ⅰ|정호재","영독Ⅱ|문형선","과학사|양해준","환경|안홍엽","|"],"금":["환경|안홍엽","과학사|양해준","영독Ⅱ|문형선","사문탐|김지혜","운동|전상식","봉사|정호재","|"]}},"1-4":{"h":"최승호","s":{"월":["수학3|서혜리","영어|신화룡","과학C|최유리B","체육B|임재우","사회A|전성환","국사|김재익","국어3|김기철A"],"화":["인공A|김기철B","│|▽","사회C|남상훈","국사|김재익","과학A|안홍엽","국어1|김기철A","수학3|서혜리"],"수":["수학1|김해영","사회B|강상호","진로|장진환","영어|신화룡","동아|최승호","자율|최승호","|"],"목":["인공B|김기철B","국사|김재익","수학3|서혜리","과학D|이재균","미술|구교원","영어|신화룡","국어3|김기철A"],"금":["국어3|김기철A","과학B|최승호","사회A|전성환","영어|신화룡","체육A|임재우","미술|구교원","실험|김태수"]}},"2-4":{"h":"김대도","s":{"월":["역학|전희규","물질|최승호","스포츠|이병을","세포|이종환","화법1|이강산","미적Ⅱ|오상승","발표2|손동인"],"화":["영어Ⅱ3|김대도","일어|박선영","확통|홍예설","발표1|손동인","역학|전희규","화법3|이희순","미적Ⅱ|오상승"],"수":["진로|홍대화","영어Ⅱ3|김대도","확통|홍예설","화법3|이희순","동아|김기철B","자율|김대도","|"],"목":["세포|이종환","역학|전희규","미적Ⅱ|오상승","물질|최승호","확통|홍예설","영어Ⅱ1|하도균","일어|박선영"],"금":["일어|박선영","화법3|이희순","발표2|손동인","영어Ⅱ3|김대도","물질|최승호","확통|홍예설","세포|이종환"]}},"3-4":{"h":"문형선","s":{"월":["통수Ⅰ|김영진","과학사|양해준","융과탐|이재균","심국|박주생","영독Ⅱ|문형선","데이터|홍대화","|"],"화":["데이터|홍대화","통수Ⅰ|김영진","심국|박주생","융과탐|이재균","영독Ⅱ|문형선","과학사|양해준","|"],"수":["영독Ⅱ|문형선","융과탐|이재균","과학사|양해준","창작|이유라","심국|박주생","자율|문형선","|"],"목":["진로|장성원","영독Ⅱ|문형선","운동|전상식","과학사|양해준","통수Ⅰ|김영진","심국|박주생","|"],"금":["창작|이유라","운동|전상식","데이터|홍대화","융과탐|이재균","통수Ⅰ|김영진","봉사|문형선","|"]}},"1-5":{"h":"김재익","s":{"월":["국어3|김민채","과학C|최유리B","국사|김재익","영어|손세욱","수학3|서혜리","진로|장진환","사회C|남상훈"],"화":["사회A|전성환","영어|손세욱","과학B|최승호","실험|김태수","국어1|김민채","수학3|서혜리","미술|구교원"],"수":["체육A|임재우","인공A|김기철B","│|▽","사회B|강상호","동아|김재익","자율|김재익","|"],"목":["사회A|전성환","국어3|김민채","영어|손세욱","과학A|안홍엽","국사|김재익","수학3|서혜리","미술|구교원"],"금":["국어3|김민채","국사|김재익","체육B|임재우","영어|손세욱","인공B|김기철B","과학D|이재균","수학1|오상승"]}},"2-5":{"h":"이희순","s":{"월":["영어Ⅱ1|최영은","화법3|이희순","한문|홍성수","확통|홍예설","지구1|이재균","역학|이영권","언생2|홍원의"],"화":["언생1|이희순","한문|홍성수","미적Ⅱ|오상승","물질|최승호","영어Ⅱ3|최영은","확통|홍예설","지구2|정용석"],"수":["미적Ⅱ|오상승","물질|최승호","화법1|이강산","영어Ⅱ3|최영은","동아|홍대화","자율|이희순","|"],"목":["역학|이영권","언생2|홍원의","확통|홍예설","화법3|이희순","미적Ⅱ|오상승","한문|홍성수","물질|최승호"],"금":["영어Ⅱ3|최영은","역학|이영권","스포츠|이병을","지구2|정용석","확통|홍예설","화법3|이희순","진로|김기철B"]}},"3-5":{"h":"장성원","s":{"월":["영독Ⅱ|박혜영","심국|김대연","융과탐|장성원","운동|전상식","통수Ⅰ|김영진","실경|최병권","|"],"화":["실경|최병권","사문탐|김유성","융과탐|장성원","통수Ⅰ|김영진","창작|이유라","영독Ⅱ|박혜영","|"],"수":["창작|이유라","운동|전상식","사문탐|김유성","통수Ⅰ|김영진","심국|김대연","자율|장성원","|"],"목":["통수Ⅰ|김영진","진로|장성원","사문탐|김유성","심국|김대연","영독Ⅱ|박혜영","융과탐|장성원","|"],"금":["영독Ⅱ|박혜영","사문탐|김유성","실경|최병권","융과탐|장성원","심국|김대연","봉사|장성원","|"]}},"1-6":{"h":"서혜리","s":{"월":["체육B|임재우","국어3|김민채","인공B|김기철B","수학3|서혜리","미술|구교원","과학A|안홍엽","사회C|김유성"],"화":["실험|최유리B","사회B|강상호","국어3|김민채","수학3|서혜리","영어|손세욱","과학D|이재균","국사|김재익"],"수":["국사|김재익","수학1|오상승","영어|손세욱","국어3|김민채","동아|배승현","자율|서혜리","|"],"목":["체육A|임재우","진로|장진환","인공A|김기철B","│|▽","영어|손세욱","과학C|최유리B","사회A|고덕민"],"금":["과학B|최승호","수학3|서혜리","영어|손세욱","사회A|고덕민","국사|김재익","국어1|김민채","미술|구교원"]}},"2-6":{"h":"이영권","s":{"월":["역학|이영권","언생2|이강산","영어Ⅱ3|하도균","일어|박선영","화법3|이희순","지구2|정용석","확통|홍예설"],"화":["미적Ⅱ|최정현","지구2|정용석","일어|박선영","화법3|이희순","물질|김종목","역학|이영권","영어Ⅱ3|하도균"],"수":["미적Ⅱ|최정현","확통|홍예설","일어|박선영","스포츠|임재우","동아|이영권","자율|이영권","|"],"목":["확통|홍예설","미적Ⅱ|최정현","지구1|이재균","영어Ⅱ3|하도균","물질|김종목","화법1|이강산","언생1|이희순"],"금":["진로|정지원","확통|홍예설","화법3|이희순","물질|김종목","영어Ⅱ1|하도균","언생2|이강산","역학|이영권"]}},"3-6":{"h":"정민석","s":{"월":["창작|이유라","융과탐|김정우","심국|정민석","통수Ⅰ|구자용","영독Ⅱ|박혜영","환경|이종환","|"],"화":["환경|이종환","과학사|전희규","영독Ⅱ|박혜영","융과탐|김정우","운동|이병을","통수Ⅰ|구자용","|"],"수":["융과탐|김정우","통수Ⅰ|구자용","과학사|전희규","영독Ⅱ|박혜영","심국|정민석","자율|정민석","|"],"목":["진로|최유리B","창작|이유라","과학사|전희규","심국|정민석","운동|이병을","융과탐|김정우","|"],"금":["심국|정민석","과학사|전희규","환경|이종환","통수Ⅰ|구자용","영독Ⅱ|박혜영","봉사|정민석","|"]}},"1-7":{"h":"손세욱","s":{"월":["사회C|김유성","음악|손예진","수학1|노광수","국사|김재익","국어1|김민채","과학C|최유리B","영어|손세욱"],"화":["과학D|김태수","국사|김재익","체육A|임재우","인공B|김기철B","음악|손예진","과학B|최승호","실험|최유리B"],"수":["수학3|서혜리","국사|김재익","국어3|김민채","영어|손세욱","동아|이재균","자율|손세욱","|"],"목":["과학A|안홍엽","영어|손세욱","사회A|고덕민","수학3|서혜리","체육B|임재우","국어3|김민채","진로|장진환"],"금":["인공A|김기철B","│|▽","국어3|김민채","사회B|장하영","수학3|서혜리","사회A|고덕민","영어|손세욱"]}},"2-7":{"h":"손동인","s":{"월":["지구1|이재균","물질|김종목","영어Ⅱ3|손동인","확통|김해영","화법3|이경인","스포츠|임재우","미적Ⅱ|최정현"],"화":["물질|김종목","미적Ⅱ|최정현","화법3|이경인","지구2|정용석","한문|홍성수","영어Ⅱ1|손동인","확통|김해영"],"수":["발표|김대도","역학|이영권","물질|김종목","진로|장진환","동아|홍예설","자율|손동인","|"],"목":["확통|김해영","영어Ⅱ3|손동인","역학|이영권","한문|홍성수","지구2|정용석","발표1|김대도","화법1|박주생"],"금":["역학|이영권","발표2|김대도","화법3|이경인","확통|김해영","미적Ⅱ|최정현","한문|홍성수","영어Ⅱ3|손동인"]}},"3-7":{"h":"박혜영","s":{"월":["데이터|홍대화","영독Ⅱ|박혜영","통수Ⅰ|최정현","창작|이유라","사문탐|김유성","융과탐|김정우","|"],"화":["융과탐|김정우","영독Ⅱ|박혜영","심국|석은동","운동|이병을","통수Ⅰ|최정현","사문탐|김유성","|"],"수":["영독Ⅱ|박혜영","창작|이유라","진로|홍대화","사문탐|김유성","심국|석은동","자율|박혜영","|"],"목":["영독Ⅱ|박혜영","운동|이병을","데이터|홍대화","심국|석은동","융과탐|김정우","통수Ⅰ|최정현","|"],"금":["사문탐|김유성","데이터|홍대화","통수Ⅰ|최정현","융과탐|김정우","심국|석은동","봉사|박혜영","|"]}},"1-8":{"h":"김민채","s":{"월":["인공A|정지원","│|▽","영어|손세욱","과학D|김태수","수학3|신동철","사회A|고덕민","국어3|김민채"],"화":["국어3|김민채","실험|최유리B","사회A|고덕민","체육A|김경환","수학1|노광수","영어|손세욱","과학B|최승호"],"수":["진로|장진환","사회B|장하영","국사|허진","인공B|정지원","동아|윤신영","자율|김민채","|"],"목":["음악|손예진","과학C|최유리B","국사|허진","국어1|김민채","수학3|신동철","체육B|김경환","영어|손세욱"],"금":["영어|손세욱","수학3|신동철","음악|손예진","과학A|안홍엽","국어3|김민채","국사|허진","사회C|김유성"]}},"2-8":{"h":"최정현","s":{"월":["확통|김해영","스포츠|임재우","지구2|정용석","미적Ⅱ|최정현","영어Ⅱ3|손동인","물질|김종목","세포|이종환"],"화":["영어Ⅱ3|손동인","물질|김종목","진로|노광수","확통|김해영","화법3|이경인","세포|이종환","언생2|이희순"],"수":["화법3|이경인","세포|이종환","언생2|이희순","일어|박선영","동아|최정현","자율|최정현","|"],"목":["일어|박선영","화법3|이경인","영어Ⅱ1|손동인","미적Ⅱ|최정현","언생1|이경인","확통|김해영","지구1|이재균"],"금":["화법1|박주생","물질|김종목","확통|김해영","영어Ⅱ3|손동인","지구2|정용석","일어|박선영","미적Ⅱ|최정현"]}},"3-8":{"h":"김정우","s":{"월":["환경|이종환","운동|이병을","통수Ⅰ|구자용","영독Ⅱ|박혜영","과학사|정용석","심국|정민석","|"],"화":["창작|이유라","통수Ⅰ|구자용","융과탐|김정우","심국|정민석","영독Ⅱ|박혜영","과학사|정용석","|"],"수":["통수Ⅰ|구자용","심국|정민석","영독Ⅱ|박혜영","과학사|정용석","융과탐|김정우","자율|김정우","|"],"목":["융과탐|김정우","영독Ⅱ|박혜영","환경|이종환","창작|이유라","진로|이종환","통수Ⅰ|구자용","|"],"금":["과학사|정용석","환경|이종환","융과탐|김정우","운동|이병을","심국|정민석","봉사|김정우","|"]}},"1-9":{"h":"고덕민","s":{"월":["영어|한상우","수학3|신동철","사회B|장하영","국어3|박성근","음악|손예진","과학B|최승호","국사|허진"],"화":["수학3|신동철","영어|한상우","인공A|정지원","│|▽","과학C|최유리B","국어3|박성근","실험|김태수"],"수":["영어|한상우","사회A|고덕민","과학A|안홍엽","국어3|박성근","동아|정용석","자율|고덕민","|"],"목":["사회C|김유성","수학3|신동철","체육A|김경환","진로|장진환","국어1|박성근","국사|허진","영어|한상우"],"금":["국사|허진","사회A|고덕민","체육B|김경환","음악|손예진","과학D|김태수","인공B|정지원","수학1|노광수"]}},"2-9":{"h":"김종목","s":{"월":["영어Ⅱ3|김대도","한문|홍성수","역학|이영권","물질|김종목","미적Ⅱ|오상승","확통|김해영","화법3|이경인"],"화":["지구1|이재균","확통|김해영","영어Ⅱ1|김대도","미적Ⅱ|오상승","스포츠|임재우","한문|홍성수","발표2|최영은"],"수":["지구2|정용석","확통|김해영","발표2|최영은","화법3|이경인","동아|김종목","자율|김종목","|"],"목":["물질|김종목","영어Ⅱ3|김대도","한문|홍성수","화법1|박주생","발표1|최영은","지구2|정용석","역학1|이영권"],"금":["영어Ⅱ3|김대도","화법3|이경인","진로|장진환","미적Ⅱ|오상승","역학2|이영권","확통|김해영","물질|김종목"]}},"3-9":{"h":"이병을","s":{"월":["통수Ⅰ|윤신영","사문탐|고덕민","심국|김대연","국경1|장하영","환경|전혜진","영독Ⅱ|이상범","|"],"화":["사문탐2|허진","심국|김대연","통수Ⅰ|윤신영","창작|이유라","국경3|강상호","영독Ⅱ|이상범","|"],"수":["국경3|강상호","영독Ⅱ|이상범","운동|이병을","심국|김대연","사문탐|고덕민","자율|이병을","|"],"목":["심국|김대연","영독Ⅱ|이상범","운동|이병을","진로|홍대화","통수Ⅰ|윤신영","환경|전혜진","|"],"금":["환경|전혜진","통수Ⅰ|윤신영","국경3|강상호","사문탐2|허진","창작|이유라","봉사|이병을","|"]}},"1-10":{"h":"김태수","s":{"월":["국사|허진","체육A|김경환","과학D|김태수","사회A|고덕민","인공B|정지원","수학3|신동철","영어|한상우"],"화":["국어3|박성근","음악|손예진","수학3|신동철","영어|한상우","진로|장진환","사회B|장하영","과학A|안홍엽"],"수":["체육B|김경환","음악|손예진","국어3|박성근","국사|허진","동아|김태수","자율|김태수","|"],"목":["인공A|정지원","│|▽","영어|한상우","과학C|최유리B","사회C|김유성","국어1|박성근","수학1|노광수"],"금":["사회A|고덕민","실험|김태수","국어3|박성근","수학3|신동철","과학B|김종목","영어|한상우","국사|허진"]}},"2-10":{"h":"최병권","s":{"월":["일어|박선영","미적Ⅱ|오상승","영어Ⅱ|김대도","화법1|정민석","진로|장진환","정치|장하영","확통|배승현"],"화":["윤사|남상훈","확통|배승현","정치|장하영","영어Ⅱ|김대도","화법3|홍원의","일어|박선영","발표2|손동인"],"수":["경제|최병권","스포츠|임재우","발표2|손동인","영어Ⅱ|김대도","동아|이강산","자율|최병권","|"],"목":["미적Ⅱ|오상승","경제|최병권","화법3|홍원의","확통|배승현","발표1|손동인","윤사|남상훈","정치|장하영"],"금":["확통|배승현","일어|박선영","미적Ⅱ|오상승","화법3|홍원의","경제|최병권","윤사|남상훈","영어Ⅱ|김대도"]}},"3-10":{"h":"전성환","s":{"월":["국경3|강상호","통수Ⅰ|김영진","사문탐|전성환","영독Ⅱ|이상범","운동|이병을","심국|김대연","|"],"화":["운동|이병을","창작|이유라","환경|전혜진","사문탐|전성환","영독Ⅱ|이상범","심국|김대연","|"],"수":["국경1|장하영","통수Ⅰ|김영진","환경|전혜진","진로|손예진","사문탐|전성환","자율|전성환","|"],"목":["영독Ⅱ|이상범","사문탐|전성환","심국|김대연","환경|전혜진","국경3|강상호","통수Ⅰ|김영진","|"],"금":["국경3|강상호","창작|이유라","통수Ⅰ|김영진","심국|김대연","영독Ⅱ|이상범","봉사|전성환","|"]}},"1-11":{"h":"신동철","s":{"월":["음악|손예진","국사|허진","사회C|김유성","수학1|배승현","영어|한상우","국어3|박성근","과학B|김종목"],"화":["진로|장진환","국사|허진","체육A|김경환","과학A|안홍엽","국어1|박성근","수학3|신동철","사회A|고덕민"],"수":["과학D|김태수","인공B|정지원","수학3|신동철","영어|한상우","동아|김해영","자율|신동철","|"],"목":["영어|한상우","사회A|고덕민","국어3|박성근","체육B|김경환","인공A|정지원","│|▽","국사|허진"],"금":["사회B|장하영","과학C|최유리B","실험|김태수","국어3|박성근","영어|한상우","음악|손예진","수학3|신동철"]}},"2-11":{"h":"박선영","s":{"월":["언생2|이경인","발표1|손동인","경제|최병권","화법3|홍원의","한문|홍성수","윤사|남상훈","영어Ⅱ|하도균"],"화":["정치|장하영","언생2|이경인","영어Ⅱ|하도균","경제|최병권","확통|배승현","스포츠|임재우","화법1|정민석"],"수":["한문|홍성수","확통|배승현","영어Ⅱ|하도균","발표2|손동인","동아|정지원","자율|박선영","|"],"목":["정치|장하영","언생1|이희순","윤사|남상훈","진로|손예진","화법3|홍원의","확통|배승현","경제|최병권"],"금":["영어Ⅱ|하도균","화법3|홍원의","확통|배승현","윤사|남상훈","한문|홍성수","발표2|손동인","정치|장하영"]}},"3-11":{"h":"이상범","s":{"월":["심국|정민석","통수Ⅰ|윤신영","영독Ⅱ|이상범","국경3|강상호","실경|최병권","창작|이유라","|"],"화":["심국|정민석","운동|이병을","영독Ⅱ|이상범","진로|홍대화","사문탐|김유성","통수Ⅰ|윤신영","|"],"수":["사문탐|김유성","통수Ⅰ|윤신영","심국|정민석","영독Ⅱ|이상범","국경1|장하영","자율|이상범","|"],"목":["창작|이유라","심국|정민석","국경3|강상호","영독Ⅱ|이상범","사문탐|남상훈","실경|최병권","|"],"금":["실경|최병권","운동|이병을","사문탐|남상훈","통수Ⅰ|윤신영","국경3|강상호","봉사|이상범","|"]}},"1-12":{"h":"한상우","s":{"월":["수학1|배승현","국어3|박성근","영어|한상우","국사|허진","체육B|김경환","실험|김태수","사회B|장하영"],"화":["과학A|안홍엽","국어3|박성근","음악|손예진","사회A|고덕민","국사|허진","영어|한상우","인공B|정지원"],"수":["국어1|박성근","과학D|김태수","체육A|김경환","수학3|신동철","동아|정호재","자율|한상우","|"],"목":["진로|장진환","국사|허진","과학B|김종목","영어|한상우","사회A|고덕민","수학3|신동철","음악|손예진"],"금":["수학3|신동철","영어|한상우","인공A|정지원","│|▽","사회C|김유성","과학C|최유리B","국어3|박성근"]}},"2-12":{"h":"홍원의","s":{"월":["언생2|이희순","경제|최병권","화법3|홍원의","윤사|남상훈","영어Ⅱ|하도균","발표2|최영은","일어|박선영"],"화":["확통|배승현","화법3|홍원의","언생1|이강산","정치|장하영","영어Ⅱ|하도균","진로|손예진","경제|최병권"],"수":["화법3|홍원의","윤사|남상훈","확통|배승현","영어Ⅱ|하도균","동아|오상승","자율|홍원의","|"],"목":["언생2|이희순","확통|배승현","정치|장하영","경제|최병권","일어|박선영","발표1|최영은","화법1|정민석"],"금":["윤사|남상훈","발표2|최영은","정치|장하영","일어|박선영","확통|배승현","스포츠|임재우","영어Ⅱ|하도균"]}},"3-12":{"h":"윤신영","s":{"월":["영독Ⅱ|이상범","사문탐|남상훈","창작|이유라","통수Ⅰ|윤신영","심국|박주생","국경3|강상호","|"],"화":["심국|박주생","영독Ⅱ|이상범","실경|최병권","국경3|강상호","통수Ⅰ|윤신영","사문탐3|김재익","|"],"수":["영독Ⅱ|이상범","심국|박주생","실경|최병권","운동|김경환","국경3|강상호","자율|윤신영","|"],"목":["사문탐3|김재익","통수Ⅰ|윤신영","심국|박주생","실경1|전성환","국경1|장하영","창작|이유라","|"],"금":["통수Ⅰ|윤신영","영독Ⅱ|이상범","사문탐3|김재익","진로|노광수","운동|김경환","봉사|윤신영","|"]}}}};
+  const ALI={"한상우":"한상우(하태희)"};
   const DAYS=['월','화','수','목','금'];
   const P=7;
   const NO7=[2]; // 수요일 7교시 없음
@@ -3572,7 +4256,7 @@
   };
 
   /* ── 자동완성 ──────────────────────────── */
-  const TL=["강상호","고덕민","구교원","구자용","김경환","김기철A","김기철B","김대도","김대연","김민채","김영진","김유성","김재익","김정우","김종목","김지혜","김태수","김해영","남상훈","노광수","문형선","박선영","박성근","박주생","박혜영","배승현","서혜리","석은동","손동인","손선미","손세욱","손예진","송준원","신동철","신화룡","안홍엽","양해준","오상승","윤신영","이강산","이경인","이병을","이상범","이영권","이재균","이종환","이희순","임재우","장성원","장진환","장하영","전상식","전성환","전혜진","전희규","정민석","정용석","정지원","정호재","최병권","최승호","최영은","최유리B","최정현","하도균","한상우","허진","홍대화","홍성수","홍예설","홍원의"];
+  const TL=["강상호","고덕민","구교원","구자용","김경환","김기철A","김기철B","김대도","김대연","김민채","김영진","김유성","김재익","김정우","김종목","김지혜","김태수","김해영","남상훈","노광수","문형선","박선영","박성근","박주생","박혜영","배승현","서혜리","석은동","손동인","손세욱","손예진","송준원","신동철","신화룡","안홍엽","양해준","오상승","윤신영","이강산","이경인","이병을","이상범","이영권","이유라","이재균","이종환","이희순","임재우","장성원","장진환","장하영","전상식","전성환","전혜진","전희규","정민석","정용석","정지원","정호재","최병권","최승호","최영은","최유리B","최정현","하도균","한상우(하태희)","허진","홍대화","홍성수","홍예설","홍원의"];
   window.ttSuggest=function(){
     if(!isLoggedIn()){document.getElementById('tt-suggest').style.display='none';return;}
     const q=document.getElementById('tt-input').value.trim().toLowerCase();

@@ -5289,6 +5289,7 @@
   <button class="sub-nav-btn active" onclick="switchSub('sub-rules', this)">📜 규정·기준</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-subject', this)">📚 교육과정</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-life', this)">🏫 학교생활</button>
+  <button class="sub-nav-btn" onclick="switchSub('sub-assessment-help', this)">📝 평가과제 도움 자료</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-univ', this)">🎓 진학 정보</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-special', this)">✨ 특색활동</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-counsel', this)">💬 상담 방법</button>
@@ -6472,8 +6473,21 @@ function switchRulesTab(id,btn){
 
 </div>
 </div>
-<!-- 2. 학교생활 -->
-<div class="sub-panel" id="sub-life">
+<!-- 평가과제 도움 자료 -->
+<div class="sub-panel" id="sub-assessment-help">
+  <h2 class="section-title" style="font-size:26px;line-height:1.5;margin-bottom:18px;">평가과제 도움 자료</h2>
+  <div class="assessment-help-nav" role="tablist" aria-label="평가과제 자료 구분">
+    <button id="assessment-help-tab-subject" class="assessment-help-tab active" role="tab" aria-selected="true" aria-controls="assessment-help-subject" onclick="switchAssessmentTab('assessment-help-subject', this)">교과</button>
+    <button id="assessment-help-tab-activity" class="assessment-help-tab" role="tab" aria-selected="false" aria-controls="assessment-help-activity" tabindex="-1" onclick="switchAssessmentTab('assessment-help-activity', this)">창체</button>
+  </div>
+  <style>
+    .assessment-help-nav{display:flex;gap:10px;margin:0 0 24px;}
+    .assessment-help-tab{min-height:48px;min-width:100px;padding:11px 24px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#334155;font-family:inherit;line-height:1.6;font-size:16px;font-weight:600;cursor:pointer;}
+    .assessment-help-tab.active{background:#1d4ed8;border-color:#1d4ed8;color:#fff;}
+    .assessment-help-tab:focus-visible{outline:3px solid #1d4ed8;outline-offset:3px;}
+    .assessment-help-pane[hidden]{display:none;}
+    @media(max-width:600px){#sub-assessment-help>.section-title{font-size:23px!important;}.assessment-help-tab{flex:1;}}
+  </style>
   <style>
     #assessment-preparation,#career-plan-download{font-size:16px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere;}
     #assessment-preparation{margin-bottom:28px;padding:28px;border:1px solid #dbe3f4;border-radius:16px;background:#f5f7ff;color:#243451;}
@@ -6494,8 +6508,9 @@ function switchRulesTab(id,btn){
     #career-plan-download .download-plan{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;box-sizing:border-box;border-radius:8px;background:#1d4ed8;color:#fff;text-decoration:none;font-size:16px;font-weight:600;line-height:1.6;}
     @media(max-width:600px){#assessment-preparation{padding:20px 16px;}#assessment-preparation h2,#career-plan-download h2{font-size:22px;}#assessment-preparation .prep-card{padding:20px;}#assessment-preparation .prep-title{font-size:20px;}#career-plan-download{padding:20px;}#career-plan-download .download-plan{width:100%;}}
   </style>
+  <div id="assessment-help-subject" class="assessment-help-pane" role="tabpanel" aria-labelledby="assessment-help-tab-subject" tabindex="0">
   <section id="assessment-preparation" aria-labelledby="assessment-preparation-title">
-    <h2 id="assessment-preparation-title">내 생각으로 준비하는 수행평가</h2>
+    <h2 id="assessment-preparation-title">AI 기반 사회 문제 비즈니스 모델 수립하기</h2>
     <p class="prep-intro">주어진 문제 상황을 읽고 해결 계획을 세워 보세요. 단계별 질문과 예시를 참고해 쓴 뒤, 내 글을 점검하며 다듬을 수 있습니다.</p>
     <div class="prep-grid">
       <a class="prep-card" href="/assessment/social-plan/">
@@ -6513,11 +6528,18 @@ function switchRulesTab(id,btn){
     </div>
     <div class="prep-footer"><span>로그인 없이 이용하며, 작성한 내용은 이 기기에 저장됩니다.</span><a href="/assessment/">내 계획 이어쓰기</a></div>
   </section>
-  <div class="card" id="career-plan-download">
-    <h2>2학기 진로활동 계획서</h2>
-    <p>진로활동 계획서 양식을 내려받아 작성하세요. 로그인 없이 누구나 이용할 수 있습니다.</p>
-    <a class="download-plan" href="/downloads/career-activity-plan-2026-semester2.docx" download="2학기_진로활동_계획서_양식.docx">진로활동 계획서 다운로드 (Word)</a>
   </div>
+  <div id="assessment-help-activity" class="assessment-help-pane" role="tabpanel" aria-labelledby="assessment-help-tab-activity" tabindex="0" hidden>
+  <div class="card" id="career-plan-download">
+    <h2>진로활동 계획서</h2>
+    <p>진로활동 계획서 양식을 내려받아 작성하세요. 로그인 없이 누구나 이용할 수 있습니다.</p>
+    <a class="download-plan" href="/downloads/career-activity-plan-2026-semester2.docx" download="진로활동_계획서_양식.docx">진로활동 계획서 다운로드 (Word)</a>
+  </div>
+  </div>
+</div><!-- /sub-assessment-help -->
+
+<!-- 2. 학교생활 -->
+<div class="sub-panel" id="sub-life">
 
 <style>
 .life-tab-nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
@@ -14558,6 +14580,31 @@ function switchSpTab(id,btn){
     });
   })();
 
+  function switchAssessmentTab(panelId, btn) {
+    var parent = document.getElementById('sub-assessment-help');
+    if (!parent || !parent.querySelector('#' + panelId)) return;
+    parent.querySelectorAll('.assessment-help-pane').forEach(function(panel) {
+      panel.hidden = panel.id !== panelId;
+    });
+    parent.querySelectorAll('.assessment-help-tab').forEach(function(tab) {
+      var selected = tab === btn;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
+  }
+  document.querySelectorAll('.assessment-help-tab').forEach(function(tab, index, tabs) {
+    tab.addEventListener('keydown', function(event) {
+      var next = index;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = tabs.length - 1;
+      else return;
+      event.preventDefault(); tabs[next].focus(); tabs[next].click();
+    });
+  });
+
   function switchSub(panelId, btn) {
     var parent = btn.closest('.tab-panel');
     parent.querySelectorAll('.sub-panel').forEach(function(p) {
@@ -14750,13 +14797,17 @@ function switchSpTab(id,btn){
       weekly:'sub-weekly'
     },
     student: {
-      rules:'sub-rules', curriculum:'sub-subject', life:'sub-life',
+      rules:'sub-rules', curriculum:'sub-subject', life:'sub-life', 'assessment-help':'sub-assessment-help',
       univ:'sub-univ', special:'sub-special', counsel:'sub-counsel', 'club-stats':'sub-club-stats'
     }
   };
 
   // sub-sub URL slug ↔ panel id + 호출 함수
   var SUB2_MAP = {
+    'student/assessment-help': {
+      subject: {id:'assessment-help-subject', fn:'switchAssessmentTab'},
+      activity: {id:'assessment-help-activity', fn:'switchAssessmentTab'}
+    },
     'student/curriculum': {
       national: {id:'curr-national', fn:'switchCurrTab'},
       school:   {id:'curr-school',   fn:'switchCurrTab'},
@@ -14809,7 +14860,11 @@ function switchSpTab(id,btn){
     if (_suppress) return;
     var h = buildHash(_state);
     if (window.location.hash !== h) {
-      history.replaceState(null, '', h);
+      if (h.indexOf('#student/assessment-help') === 0 || window.location.hash.indexOf('#student/assessment-help') === 0) {
+        history.pushState(null, '', h);
+      } else {
+        history.replaceState(null, '', h);
+      }
     }
   }
 
@@ -14874,6 +14929,10 @@ function switchSpTab(id,btn){
     if (panel) {
       var activeSub = panel.querySelector('.sub-panel.active');
       if (activeSub) _state.sub = panelToSlug(tabId, activeSub.id);
+      if (_state.sub === 'assessment-help') {
+        var activeHelp = panel.querySelector('.assessment-help-tab.active');
+        if (activeHelp) _state.sub2 = sub2ToSlug(tabId, _state.sub, activeHelp.getAttribute('aria-controls'));
+      }
     }
     updateHash();
   });
@@ -14881,10 +14940,18 @@ function switchSpTab(id,btn){
   wrap('switchSub', function(panelId) {
     _state.sub = panelToSlug(_state.tab, panelId);
     _state.sub2 = null;
+    if (panelId === 'sub-assessment-help') {
+      var helpButton = document.getElementById('assessment-help-tab-subject');
+      var wasSuppressed = _suppress;
+      _suppress = true;
+      try { window.switchAssessmentTab('assessment-help-subject', helpButton); }
+      finally { _suppress = wasSuppressed; }
+      _state.sub2 = 'subject';
+    }
     updateHash();
   });
 
-  ['switchCurrTab','switchUnivTab','switchSpTab','switchLifeTab'].forEach(function(fn) {
+  ['switchCurrTab','switchUnivTab','switchSpTab','switchLifeTab','switchAssessmentTab'].forEach(function(fn) {
     wrap(fn, function(id) {
       _state.sub2 = sub2ToSlug(_state.tab, _state.sub, id);
       updateHash();

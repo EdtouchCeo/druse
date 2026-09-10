@@ -204,7 +204,7 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
   <a class="skip-link" href="#workspace-main">본문으로 건너뛰기</a>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="/#student/life"><span class="brand-mark"><GraduationCap :size="23" /></span><span><strong>대륜고등학교</strong><small>수행평가 준비</small></span></a>
+      <a class="brand" href="/#student/assessment-help/subject"><span class="brand-mark"><GraduationCap :size="23" /></span><span><strong>대륜고등학교</strong><small>수행평가 준비</small></span></a>
       <nav class="tool-switch" aria-label="작성 도구"><button :class="{ active: kind === 'social' && !landing }" @click="navigate('social')"><FileText :size="17" /><span>사회 문제 해결</span></button><button :class="{ active: kind === 'business' && !landing }" @click="navigate('business')"><LayoutGrid :size="17" /><span>비즈니스 모델</span></button></nav>
       <button class="secondary projects-trigger" @click="dialog = 'projects'"><FolderOpen :size="18" /><span>내 원고</span></button>
     </header>
@@ -225,7 +225,7 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
           <button class="mobile-step-toggle" :aria-expanded="mobileSteps" @click="mobileSteps = !mobileSteps"><Menu :size="18" /> {{ guide.label }}<span>{{ positionText }}</span></button>
           <div class="sidebar-content"><div class="sidebar-heading"><span>작성한 항목</span><span>{{ completion }} / {{ writingGuides.length }}</span></div><div class="progress-track"><span :style="{ width: `${completion / writingGuides.length * 100}%` }" /></div><p class="progress-caption">{{ kind === 'social' ? '제공된 상황을 읽고 다섯 항목을 작성합니다.' : '내용을 쓴 항목 수입니다.' }}</p>
           <nav aria-label="작성 단계"><button v-for="(g, index) in guides" :key="g.key" class="step-item" :class="{ active: index === step }" :aria-current="index === step ? 'step' : undefined" @click="setStep(index)"><span class="step-number"><BookOpen v-if="kind === 'social' && g.key === 'situation'" :size="16" /><Check v-else-if="isWritten(g) && index !== step" :size="15" /><template v-else>{{ String(kind === 'social' ? index : index + 1).padStart(2, '0') }}</template></span><span>{{ g.label }}</span><ChevronRight v-if="index === step" :size="15" /></button></nav>
-          <div class="sidebar-bottom"><p>생각을 이어 가세요.</p><button class="text-button" @click="navigate(kind === 'social' ? 'business' : 'social')">{{ kind === 'social' ? '비즈니스 모델로 이어쓰기' : '사회 문제 해결 계획서로' }}<ArrowRight :size="16" /></button><a href="/#student/life"><ArrowLeft :size="14" /> 학교생활로 돌아가기</a></div></div>
+          <div class="sidebar-bottom"><p>생각을 이어 가세요.</p><button class="text-button" @click="navigate(kind === 'social' ? 'business' : 'social')">{{ kind === 'social' ? '비즈니스 모델로 이어쓰기' : '사회 문제 해결 계획서로' }}<ArrowRight :size="16" /></button><a href="/#student/assessment-help/subject"><ArrowLeft :size="14" /> 평가과제 도움 자료로</a></div></div>
         </aside>
         <main id="workspace-main" class="editor-main">
           <div class="project-heading"><label for="project-title">원고 제목</label><input id="project-title" v-model="project.title" maxlength="180" placeholder="내 프로젝트에 이름을 붙여 주세요" /><button class="icon-button" aria-label="원고 관리" @click="dialog = 'projects'"><MoreHorizontal :size="20" /></button></div>

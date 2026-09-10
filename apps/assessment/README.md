@@ -23,6 +23,8 @@ python -m http.server 5188 --bind 127.0.0.1 --directory output/web
 
 ## 주소와 학습 자료
 
+학생·학부모 안내의 `평가과제 도움 자료`에서 도구를 엽니다. `/#student/assessment-help/subject`는 교과 자료와 두 작성 도구, `/#student/assessment-help/activity`는 진로활동 계획서 다운로드입니다. 두 작성 도구의 복귀 링크는 교과 자료로 연결됩니다.
+
 - `/assessment/`: 두 도구와 저장한 원고의 진입점.
 - `/assessment/social-plan/`: 제공된 문제 상황을 선택해 읽고 디자인 싱킹 5단계를 작성합니다. 기법별 질문은 경로 8개, 지역·게임 트리·전문가 각각 10개입니다.
 - `/assessment/business-model/`: 린 캔버스 9항목. 인터뷰가 없어도 작성할 수 있습니다.
