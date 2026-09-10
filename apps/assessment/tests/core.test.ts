@@ -111,10 +111,10 @@ test('editing and restoring after review preserve the recorded original and stud
 
 test('social output includes six actual fields and active-technique answers only',()=>{
   const p=filledProject(),sections=documentSections(p,'social'),text=documentText(p,'social')
-  assert.equal(sections.length,7)
+  assert.equal(sections.length,6)
   for(const key of SOCIAL_KEYS)assert.ok(text.includes(`사회-${key}`),key)
   for(const q of TECHNIQUES.expert.questions)assert.ok(text.includes(`답변-${q.id}`))
-  assert.ok(!text.includes('답변-path-1'));assert.ok(text.includes(p.choiceReason));assert.ok(text.includes(p.sources))
+  assert.ok(!text.includes('답변-path-1'));assert.ok(text.includes(p.choiceReason));assert.ok(!text.includes(p.sources))
   assert.ok(printHtml(p,'social').includes('<img src="data:image/png;'))
 })
 
@@ -128,12 +128,12 @@ test('written ideas export the technique, choice reason and answers while untouc
 
 test('business output maps all nine actual canvas fields and does not mix social drafts',()=>{
   const p=filledProject(),sections=documentSections(p,'business'),text=documentText(p,'business')
-  assert.equal(sections.length,10)
+  assert.equal(sections.length,9)
   for(const key of CANVAS_KEYS)assert.ok(text.includes(`모델-${key}`),key)
-  assert.ok(!text.includes('사회-definition'));assert.ok(!printHtml(p,'business').includes('<img'))
+  assert.ok(!text.includes(p.sources));assert.ok(!text.includes('사회-definition'));assert.ok(!printHtml(p,'business').includes('<img'))
 })
 
-test('print output escapes user text in title, body, author and sources; unsafe sketch is omitted',()=>{
+test('print output escapes user text in title, body and author; unsafe sketch is omitted',()=>{
   const p=filledProject(),attack='<script>alert("owned")</script><img src=x onerror=alert(1)>'
   p.title=attack;p.author=attack;p.sources=attack;p.social.definition=attack;p.canvas.problem=attack;p.sketch='x" onerror="alert(1)'
   for(const kind of ['social','business'] as const){const html=printHtml(p,kind);assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img'));assert.ok(html.includes(escapeHtml(attack)))}

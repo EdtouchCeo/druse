@@ -22,7 +22,6 @@ export function documentSections(project:Project,kind:DocumentKind):{title:strin
   const sections=(kind==='social'?SOCIAL_GUIDES:CANVAS_GUIDES).map(g=>({title:kind==='social'&&g.key==='situation'?'문제 상황':g.label,text:kind==='social'?(g.key==='ideas'?getIdeaText(project):project.social[g.key as keyof Project['social']]):project.canvas[g.key as keyof Project['canvas']]}))
   if(kind==='social'&&project.variation.trim())sections[0]!.text += `\n\n이번 연습에서 바뀐 조건\n${project.variation}`
   if(kind==='social'&&(project.choiceReason.trim()||getIdeaText(project).trim()))sections.find(s=>s.title===SOCIAL_GUIDES.find(g=>g.key==='ideas')?.label)!.text=[`활용 기법: ${TECHNIQUES[project.technique].label}`,project.choiceReason.trim()?`선택한 이유\n${project.choiceReason}`:'',getIdeaText(project)].filter(Boolean).join('\n\n')
-  if(project.sources.trim())sections.push({title:'참고한 자료',text:project.sources})
   return sections
 }
 export function documentText(project:Project,kind:DocumentKind):string {
