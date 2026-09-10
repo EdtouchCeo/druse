@@ -7,7 +7,7 @@ export interface Question { id: string; question: string; example: string; clue:
 export interface TechniqueContent { key: Technique; label: string; summary: string; flow: string; questions: Question[]; caution: string }
 export interface Example { technique: Technique; title: string; source: string; social: Record<SocialKey,string>; canvas: Record<CanvasKey,string> }
 export interface Practice { id: string; technique: Technique; title: string; situation: string; source: string; change: string }
-export interface Review { field: string; original: string; revision: number; createdAt: string; prompts: string[]; reason: string }
+export interface Review { field: string; original: string; revision: number; createdAt: string; prompts: string[]; reason: string; checked?: number[] }
 export interface PlanSnapshot { revision: number; at: string; title: string; technique: Technique; social: Record<SocialKey,string>; answers: Record<Technique,Record<string,string>> }
 export interface Project {
   schemaVersion: 1; id: string; revision: number; socialRevision: number; title: string; createdAt: string; updatedAt: string;

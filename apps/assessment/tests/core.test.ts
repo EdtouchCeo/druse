@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import 'fake-indexeddb/auto'
-import { createProject, copy, linkPlan, setField, reviewField, suggestedCanvas, validateProject, SOCIAL_KEYS, CANVAS_KEYS } from '../src/lib/model'
+import { createProject, copy, linkPlan, setField, reviewField, suggestedCanvas, validateProject, isUntouchedProject, SOCIAL_KEYS, CANVAS_KEYS } from '../src/lib/model'
 import { saveProject, loadProject, listProjects, deleteProject } from '../src/lib/storage'
 import { importBackup, documentSections, documentText, printHtml, escapeHtml } from '../src/lib/exportProject'
 import { TECHNIQUES } from '../src/data/questionBank'
@@ -9,6 +9,10 @@ import { EXAMPLES } from '../src/data/examples'
 import { PRACTICES } from '../src/data/practiceProblems'
 
 const backup = (project: unknown) => JSON.stringify({ format:'daeryun-assessment', version:1, project })
+test('only an untouched automatic draft can be reused for the first selected practice',()=>{
+  assert.equal(isUntouchedProject(createProject()),true)
+  for(const mutate of [(p:any)=>p.title='내가 정한 제목',(p:any)=>p.canvas.problem='가',(p:any)=>p.social.empathy='가',(p:any)=>p.answers.path['path-1']='가',(p:any)=>p.author='가',(p:any)=>p.practiceId='path-new',(p:any)=>reviewField(p,'social:empathy',[]),(p:any)=>linkPlan(p)]){const p=createProject();mutate(p);assert.equal(isUntouchedProject(p),false)}
+})
 function filledProject() {
   const p=createProject('expert')
   p.title='과목 선택 연습';p.author='내가 정한 별칭';p.sketch='data:image/png;base64,aGVsbG8='
@@ -112,6 +116,14 @@ test('social output includes six actual fields and active-technique answers only
   for(const q of TECHNIQUES.expert.questions)assert.ok(text.includes(`답변-${q.id}`))
   assert.ok(!text.includes('답변-path-1'));assert.ok(text.includes(p.choiceReason));assert.ok(text.includes(p.sources))
   assert.ok(printHtml(p,'social').includes('<img src="data:image/png;'))
+})
+
+test('written ideas export the technique, choice reason and answers while untouched ideas remain empty',()=>{
+  const p=createProject('expert'),empty=documentSections(p,'social')[3]!
+  assert.equal(empty.text,'')
+  p.choiceReason='조건을 명시한 공식 규칙으로 판단하기 때문이다.';setField(p,'answer:expert:expert-1','이수 과목과 관심 분야를 입력한다.')
+  const sections=documentSections(p,'social'),ideas=sections[3]!.text
+  assert.equal(sections.length,6);assert.ok(ideas.includes('활용 기법: 전문가 시스템'));assert.ok(ideas.includes(p.choiceReason));assert.ok(ideas.includes('이수 과목과 관심 분야를 입력한다.'))
 })
 
 test('business output maps all nine actual canvas fields and does not mix social drafts',()=>{

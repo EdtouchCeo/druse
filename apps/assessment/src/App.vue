@@ -2,8 +2,9 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, ArrowRight, BookOpen, Check, ChevronRight, Copy, Download, FileText, FolderOpen, GraduationCap, LayoutGrid, Lightbulb, Menu, MoreHorizontal, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2, Upload, X } from 'lucide-vue-next'
 import type { CanvasKey, Guide, Mode, Practice, Project, SocialKey, Technique } from './lib/types'
-import { createProject, cloneProject, getField, getIdeaText, linkPlan, reviewField, setField, suggestedCanvas, touchSocial } from './lib/model'
+import { createProject, cloneProject, getField, getIdeaText, isUntouchedProject, linkPlan, reviewField, setReviewChecked, setField, suggestedCanvas, touchSocial } from './lib/model'
 import { listProjects, loadProject, saveProject, deleteProject } from './lib/storage'
+import { readViewState, writeViewState } from './lib/viewState'
 import { documentSections, documentText, downloadBackup, importBackup, printProject, readSketch } from './lib/exportProject'
 import { TECHNIQUES } from './data/questionBank'
 import { EXAMPLES } from './data/examples'
@@ -24,6 +25,7 @@ const saveStatus = ref('불러오는 중')
 const error = ref('')
 const toast = ref('')
 const helpOpen = ref(true)
+const checksOpen = ref(false)
 const mobileSteps = ref(false)
 const dialog = ref<DialogKind>('')
 const dialogElement = ref<HTMLElement>()
@@ -47,6 +49,7 @@ let toastTimer: ReturnType<typeof setTimeout> | undefined
 let savePromise: Promise<void> | null = null
 let lastFocus: HTMLElement | null = null
 let lastSaveOk = true
+let restoringPosition = false
 
 const techniques = Object.values(TECHNIQUES)
 const activeTechnique = computed(() => exampleMode.value ? exampleTechnique.value : project.value.technique)
@@ -71,14 +74,23 @@ const planChanged = computed(() => !!project.value.linkedPlan && project.value.l
 const suggestions = computed(() => suggestedCanvas(project.value))
 const transferEntries = computed(() => Object.entries(suggestions.value).map(([key, value]) => ({ key: key as CanvasKey, value: value || '', label: CANVAS_GUIDES.find(g => g.key === key)?.label || key })))
 const deletionTarget = computed(() => deleteId.value === project.value.id ? project.value : projects.value.find(p => p.id === deleteId.value))
+const answeredQuestions = computed(() => TECHNIQUES[project.value.technique].questions.filter(q => project.value.answers[project.value.technique][q.id]?.trim()).length)
+const firstUnanswered = computed(() => TECHNIQUES[project.value.technique].questions.findIndex(q => !project.value.answers[project.value.technique][q.id]?.trim()))
+const previousWriting = computed(() => SOCIAL_GUIDES.filter((g, index) => g.key !== 'situation' && (kind.value === 'business' || index < step.value)).map(g => ({ label: g.label, text: g.key === 'ideas' ? getIdeaText(project.value) : project.value.social[g.key as SocialKey] })).filter(item => item.text.trim()))
+const hasPlanContent = computed(() => !!project.value.social.situation.trim() || SOCIAL_GUIDES.some(g => g.key === 'ideas' ? !!getIdeaText(project.value).trim() : !!project.value.social[g.key as SocialKey].trim()))
+
+function rememberPosition() { if (initialized && !exampleMode.value && !restoringPosition) writeViewState(project.value, kind.value, step.value, activeQuestion.value) }
+function restorePosition() { restoringPosition = true; const position = readViewState(project.value, kind.value); step.value = position.step; activeQuestion.value = position.question; restoringPosition = false }
+watch([step, activeQuestion], () => { rememberPosition(); checksOpen.value = false }, { flush: 'sync' })
 
 function announce(message: string) { toast.value = message; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.value = '' }, 4500) }
 function serialize(p: Project): Project { return JSON.parse(JSON.stringify(p)) as Project }
 function write(value: string) { try { setField(project.value, field.value, value) } catch(e) { error.value = e instanceof Error ? e.message : '입력 내용을 확인해 주세요.' } }
 function openPracticePicker() { pendingPractice.value = null; dialog.value = 'start' }
 function startNew() { if (kind.value === 'social') openPracticePicker(); else void newProject() }
-function changeTechnique(value: Technique) { if (exampleMode.value) exampleTechnique.value = value; else { project.value.technique = value; touchSocial(project.value) }; activeQuestion.value = 0 }
-function setStep(index: number) { step.value = index; activeQuestion.value = 0; mobileSteps.value = false; nextTick(() => document.querySelector<HTMLElement>('#editor-heading')?.focus()) }
+function changeTechnique(value: Technique) { if (exampleMode.value) { exampleTechnique.value = value; activeQuestion.value = 0 } else { rememberPosition(); project.value.technique = value; touchSocial(project.value); restorePosition() } }
+function setStep(index: number) { step.value = index; mobileSteps.value = false; nextTick(() => document.querySelector<HTMLElement>('#editor-heading')?.focus()) }
+function selectQuestion(index: number) { activeQuestion.value = index; nextTick(() => { const heading = document.querySelector<HTMLElement>('#question-heading'); heading?.focus({ preventScroll: true }); heading?.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }) }) }
 function isWritten(g: Guide) { return g.key === 'ideas' && kind.value === 'social' ? !!getIdeaText(project.value).trim() : !!getField(project.value, `${kind.value === 'social' ? 'social' : 'canvas'}:${g.key}`).trim() }
 
 watch(project, () => {
@@ -118,24 +130,27 @@ function updateUrl(replace = false) {
   if (replace) history.replaceState({}, '', url); else history.pushState({}, '', url)
   document.title = `${landing.value ? '수행평가 준비' : title.value} | 대륜고등학교`
 }
-async function navigate(next: Kind) { await persist(); kind.value = next; landing.value = false; step.value = 0; activeQuestion.value = 0; updateUrl(); nextTick(() => document.querySelector<HTMLElement>('#editor-heading')?.focus()) }
-async function chooseProject(id: string) {
+async function navigate(next: Kind) { await persist(); rememberPosition(); kind.value = next; landing.value = false; if (!exampleMode.value) restorePosition(); else { step.value = 0; activeQuestion.value = 0 }; updateUrl(); nextTick(() => document.querySelector<HTMLElement>('#editor-heading')?.focus()) }
+async function chooseProject(id: string, remember = true, openEditor = true) {
   if (!await persist()) return
+  if (remember) rememberPosition()
   try {
     const loaded = await loadProject(id)
     if (!loaded) { error.value = '이 원고를 찾을 수 없습니다. 백업 파일이 있다면 불러오세요.'; return }
     suppressSave = true; project.value = loaded; suppressSave = false; dirty = false
-    exampleMode.value = false; step.value = 0; activeQuestion.value = 0; dialog.value = ''; saveStatus.value = '이 기기에 저장됨'; updateUrl(true)
+    exampleMode.value = false; if (openEditor) landing.value = false; restorePosition(); dialog.value = ''; saveStatus.value = '이 기기에 저장됨'; updateUrl(true)
   } catch { error.value = '원고를 열지 못했습니다. 원고 목록을 다시 열거나 백업 파일을 불러오세요.' }
 }
 async function newProject(practice?: Practice) {
   if (!await persist()) return
+  rememberPosition()
   const fresh = createProject(practice?.technique || project.value.technique)
-  if (practice) { fresh.title = practice.title; fresh.practiceId = practice.id; fresh.source = practice.source; fresh.social.situation = practice.situation; fresh.sources = practice.source }
+  if (practice && isUntouchedProject(project.value)) { fresh.id = project.value.id; fresh.revision = project.value.revision; fresh.createdAt = project.value.createdAt }
+  if (practice) { fresh.title = practice.title; fresh.practiceId = practice.id; fresh.source = practice.source; fresh.social.situation = practice.situation; fresh.sources = practice.source; writeViewState(fresh, 'social', 0, 0); writeViewState(fresh, 'business', 0, 0) }
   suppressSave = true; project.value = fresh; suppressSave = false
-  dirty = true; await persist(); exampleMode.value = false; landing.value = false; step.value = 0; activeQuestion.value = 0; dialog.value = ''; pendingPractice.value = null; updateUrl()
+  dirty = true; await persist(); exampleMode.value = false; landing.value = false; restorePosition(); dialog.value = ''; pendingPractice.value = null; updateUrl()
 }
-async function duplicate() { if (!await persist()) return; const copied = cloneProject(project.value); suppressSave = true; project.value = copied; suppressSave = false; dirty = true; await persist(); updateUrl(true); dialog.value = ''; announce('현재 원고를 복제했습니다.') }
+async function duplicate() { if (!await persist()) return; rememberPosition(); const position = readViewState(project.value, kind.value); const copied = cloneProject(project.value); writeViewState(copied, kind.value, position.step, position.question); suppressSave = true; project.value = copied; suppressSave = false; exampleMode.value = false; restorePosition(); dirty = true; await persist(); updateUrl(true); dialog.value = ''; announce('현재 원고를 복제했습니다.') }
 async function removeProject() {
   const id = deleteId.value
   if (!deleteBackedUp.value) return
@@ -144,7 +159,7 @@ async function removeProject() {
 }
 async function importFile(event: Event) {
   const input = event.target as HTMLInputElement; const file = input.files?.[0]; if (!file) return
-  try { if (file.size > 12_000_000) throw new Error('백업 파일은 12MB 이하여야 합니다.'); const restored = importBackup(await file.text()); if (!await persist()) return; suppressSave = true; project.value = restored; suppressSave = false; dirty = true; await persist(); exampleMode.value = false; dialog.value = ''; landing.value = false; step.value = 0; updateUrl(); announce('백업을 새 원고로 불러왔습니다.') }
+  try { if (file.size > 12_000_000) throw new Error('백업 파일은 12MB 이하여야 합니다.'); const restored = importBackup(await file.text()); if (!await persist()) return; rememberPosition(); suppressSave = true; project.value = restored; suppressSave = false; dirty = true; await persist(); exampleMode.value = false; dialog.value = ''; landing.value = false; restorePosition(); updateUrl(); announce('백업을 새 원고로 불러왔습니다.') }
   catch (e) { error.value = e instanceof Error ? e.message : '백업 파일을 확인해 주세요.' }
   finally { input.value = '' }
 }
@@ -156,6 +171,7 @@ async function uploadSketch(event: Event) {
 }
 function checkDraft() { reviewField(project.value, field.value, checks.value) }
 function saveReason(value: string) { const review = project.value.reviews[field.value]; if (review) review.reason = value }
+function saveCheck(index: number, checked: boolean) { setReviewChecked(project.value, field.value, index, checked) }
 function openTransfer() { transferKeys.value = transferEntries.value.filter(e => e.value.trim() && !project.value.canvas[e.key].trim()).map(e => e.key); dialog.value = 'transfer' }
 function applyTransfer() {
   let count = 0
@@ -164,16 +180,16 @@ function applyTransfer() {
 }
 async function createVariation() {
   if (!variationText.value.trim()) return
-  if (!await persist()) return; const copied = cloneProject(project.value, `${project.value.title} · 조건 바꾸기`); copied.variation = variationText.value.trim(); copied.mode = 'guided'
-  suppressSave = true; project.value = copied; suppressSave = false; dirty = true; await persist(); exampleMode.value = false; dialog.value = ''; updateUrl(); announce('원래 원고를 보존하고 조건 변화 연습용 사본을 만들었습니다.')
+  if (!await persist()) return; rememberPosition(); const position = readViewState(project.value, kind.value); const copied = cloneProject(project.value, `${project.value.title} · 조건 바꾸기`); copied.variation = variationText.value.trim(); copied.mode = 'guided'; writeViewState(copied, kind.value, position.step, position.question)
+  suppressSave = true; project.value = copied; suppressSave = false; dirty = true; await persist(); exampleMode.value = false; restorePosition(); dialog.value = ''; updateUrl(); announce('원래 원고를 보존하고 조건 변화 연습용 사본을 만들었습니다.')
 }
 function openVariation() { if (!project.value.social.situation.trim()) { openPracticePicker(); return }; variationText.value = selectedPractice.value?.change || PRACTICES.find(p => p.technique === project.value.technique)?.change || ''; dialog.value = 'variation' }
-function setMode(mode: Mode) { exampleMode.value = mode === 'example'; if (exampleMode.value) exampleTechnique.value = project.value.technique; else project.value.mode = mode; activeQuestion.value = 0 }
+function setMode(mode: Mode) { rememberPosition(); const wasExample = exampleMode.value; exampleMode.value = mode === 'example'; if (exampleMode.value) exampleTechnique.value = project.value.technique; else { project.value.mode = mode; if (wasExample) restorePosition() }; checksOpen.value = false }
 async function copyDocument() { const text = documentText(project.value, kind.value); try { await navigator.clipboard.writeText(text); announce('문서 전체를 복사했습니다.') } catch { copyText.value = text; dialog.value = 'copy' } }
 function printDocument() { try { printProject(project.value, kind.value) } catch (e) { error.value = e instanceof Error ? e.message : '인쇄 창을 열지 못했습니다. 브라우저의 팝업 허용을 확인하세요.' } }
 async function popstate() {
-  if (!await persist()) { updateUrl(true); return }; kind.value = location.pathname.includes('business-model') ? 'business' : 'social'; landing.value = !/social-plan|business-model/.test(location.pathname); step.value = 0; activeQuestion.value = 0
-  const id = new URLSearchParams(location.search).get('project'); if (id && id !== project.value.id) await chooseProject(id)
+  if (!await persist()) { updateUrl(true); return }; rememberPosition(); kind.value = location.pathname.includes('business-model') ? 'business' : 'social'; landing.value = !/social-plan|business-model/.test(location.pathname)
+  const id = new URLSearchParams(location.search).get('project'); if (id && id !== project.value.id) await chooseProject(id, false, !landing.value); else if (!exampleMode.value) restorePosition(); else { step.value = 0; activeQuestion.value = 0 }
 }
 function beforeUnload(event: BeforeUnloadEvent) { if (dirty || isSaving.value) { event.preventDefault(); event.returnValue = '' } }
 function trapDialog(event: KeyboardEvent) {
@@ -192,7 +208,7 @@ watch(dialog, async (value, previous) => {
   else lastFocus?.focus()
 })
 onMounted(async () => {
-  try { projects.value = await listProjects(); const id = new URLSearchParams(location.search).get('project'); const existing = id ? await loadProject(id) : projects.value[0]; if (existing) project.value = existing; else { if (id) error.value = '이 주소의 원고는 현재 기기에 없습니다. 백업 파일을 불러오거나 새 원고를 작성하세요.'; dirty = true }; initialized = true; await persist(); saveStatus.value = dirty ? '저장하지 못함' : '이 기기에 저장됨'; updateUrl(true) }
+  try { projects.value = await listProjects(); const id = new URLSearchParams(location.search).get('project'); const existing = id ? await loadProject(id) : projects.value[0]; if (existing) project.value = existing; else { if (id) error.value = '이 주소의 원고는 현재 기기에 없습니다. 백업 파일을 불러오거나 새 원고를 작성하세요.'; dirty = true }; restorePosition(); initialized = true; await persist(); saveStatus.value = dirty ? '저장하지 못함' : '이 기기에 저장됨'; updateUrl(true) }
   catch { initialized = true; dirty = true; saveStatus.value = '저장소 사용 불가'; error.value = '이 브라우저에서 기기 저장소를 열지 못했습니다. 작성은 가능하며 백업 파일을 내려받아 보관해야 합니다.' }
   finally { loading.value = false }
   window.addEventListener('popstate', popstate); window.addEventListener('beforeunload', beforeUnload)
@@ -223,17 +239,20 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
       <div class="workspace-layout" :class="{ 'without-help': !helpOpen }">
         <aside class="steps-sidebar" :class="{ 'mobile-expanded': mobileSteps }">
           <button class="mobile-step-toggle" :aria-expanded="mobileSteps" @click="mobileSteps = !mobileSteps"><Menu :size="18" /> {{ guide.label }}<span>{{ positionText }}</span></button>
-          <div class="sidebar-content"><div class="sidebar-heading"><span>작성한 항목</span><span>{{ completion }} / {{ writingGuides.length }}</span></div><div class="progress-track"><span :style="{ width: `${completion / writingGuides.length * 100}%` }" /></div><p class="progress-caption">{{ kind === 'social' ? '제공된 상황을 읽고 다섯 항목을 작성합니다.' : '내용을 쓴 항목 수입니다.' }}</p>
+          <div class="sidebar-content"><div class="sidebar-heading"><span>글이 있는 항목</span><span>{{ completion }} / {{ writingGuides.length }}</span></div><div class="progress-track"><span :style="{ width: `${completion / writingGuides.length * 100}%` }" /></div><p class="progress-caption">{{ kind === 'social' ? '내용을 적은 항목 수이며 완성도를 뜻하지 않습니다.' : '내용을 적은 항목 수이며 완성도를 뜻하지 않습니다.' }}</p>
           <nav aria-label="작성 단계"><button v-for="(g, index) in guides" :key="g.key" class="step-item" :class="{ active: index === step }" :aria-current="index === step ? 'step' : undefined" @click="setStep(index)"><span class="step-number"><BookOpen v-if="kind === 'social' && g.key === 'situation'" :size="16" /><Check v-else-if="isWritten(g) && index !== step" :size="15" /><template v-else>{{ String(kind === 'social' ? index : index + 1).padStart(2, '0') }}</template></span><span>{{ g.label }}</span><ChevronRight v-if="index === step" :size="15" /></button></nav>
           <div class="sidebar-bottom"><p>생각을 이어 가세요.</p><button class="text-button" @click="navigate(kind === 'social' ? 'business' : 'social')">{{ kind === 'social' ? '비즈니스 모델로 이어쓰기' : '사회 문제 해결 계획서로' }}<ArrowRight :size="16" /></button><a href="/#student/assessment-help/subject"><ArrowLeft :size="14" /> 평가과제 도움 자료로</a></div></div>
         </aside>
         <main id="workspace-main" class="editor-main">
           <div class="project-heading"><label for="project-title">원고 제목</label><input id="project-title" v-model="project.title" maxlength="180" placeholder="내 프로젝트에 이름을 붙여 주세요" /><button class="icon-button" aria-label="원고 관리" @click="dialog = 'projects'"><MoreHorizontal :size="20" /></button></div>
           <div class="mode-tabs" role="group" aria-label="연습 방식"><button :class="{ active: exampleMode }" @click="setMode('example')">예제로 익히기</button><button :class="{ active: !exampleMode && project.mode !== 'solo' }" @click="setMode('guided')">도움받아 써 보기</button><button :class="{ active: !exampleMode && project.mode === 'solo' }" @click="setMode('solo')">혼자 써 보기</button></div>
-          <div v-if="exampleMode" class="example-banner"><BookOpen :size="19" /><p>완성 예제를 읽고 있습니다. 내 원고는 따로 보관됩니다.</p><button class="text-button" @click="setMode('guided')">내 글로 돌아가기</button></div>
+          <div v-if="exampleMode" class="example-banner"><BookOpen :size="19" /><p>완성 예제를 읽고 있습니다. 내 원고는 따로 보관됩니다. 전체 보기와 인쇄에는 내 원고가 표시됩니다.</p><button class="text-button" @click="setMode('guided')">내 글로 돌아가기</button></div>
           <div v-else-if="project.variation" class="variation-banner"><span class="eyebrow">조건 바꾸기 연습</span><p>{{ project.variation }}</p><small>제공된 변화가 해결 계획에 어떤 영향을 주는지 확인하세요. 공감하기 이후의 글을 다듬고 수정 이유를 남길 수 있습니다.</small></div>
-          <div v-if="kind === 'business' && !exampleMode" class="plan-link-banner"><div><strong>{{ !project.linkedPlan ? '계획서의 생각을 이어 오세요' : planChanged ? '연결한 계획서가 수정되었습니다' : '사회 문제 해결 계획서가 연결되어 있습니다' }}</strong><p>{{ !project.linkedPlan ? '문제, 대상, 해결 절차를 참고하며 모델을 구체화합니다.' : '이미 작성한 캔버스는 유지됩니다. 필요한 항목을 선택해 가져오세요.' }}</p></div><button class="secondary" @click="openTransfer">{{ project.linkedPlan ? '연결 내용 확인' : '계획 가져오기' }}<ArrowRight :size="16" /></button></div>
-          <div class="editor-section-heading"><div><span class="eyebrow">{{ situationStep ? '먼저 읽기' : `STEP ${String(kind === 'social' ? step : step + 1).padStart(2, '0')}` }}</span><h2 id="editor-heading" tabindex="-1">{{ guide.label }}</h2></div><button class="help-toggle secondary" :aria-expanded="helpOpen" @click="helpOpen = !helpOpen"><Lightbulb :size="16" />{{ helpOpen ? '도움 접기' : situationStep ? '읽기 도움' : '작성 도움' }}</button></div>
+          <div v-if="kind === 'business' && !exampleMode && hasPlanContent" class="plan-link-banner"><div><strong>{{ !project.linkedPlan ? '계획서의 생각을 이어 오세요' : planChanged ? '연결한 계획서가 수정되었습니다' : '사회 문제 해결 계획서가 연결되어 있습니다' }}</strong><p>{{ !project.linkedPlan ? '문제, 대상, 해결 절차를 참고하며 모델을 구체화합니다.' : '이미 작성한 캔버스는 유지됩니다. 필요한 항목을 선택해 가져오세요.' }}</p></div><button class="secondary" @click="openTransfer">{{ project.linkedPlan ? '연결 내용 확인' : '계획 가져오기' }}<ArrowRight :size="16" /></button></div>
+          <div v-if="kind === 'business' && !exampleMode && !hasPlanContent" class="business-start-note"><h3>어떤 문제를 해결할지 먼저 살펴보세요.</h3><p>완성 예제를 읽거나, 제공된 문제로 사회 문제 해결 계획서를 준비할 수 있습니다. 바로 아래 항목에 생각을 써도 됩니다.</p><div class="button-row"><button class="secondary" @click="setMode('example')"><BookOpen :size="17" />예제로 익히기</button><button class="primary" @click="navigate('social')">계획서부터 준비하기<ArrowRight :size="17" /></button></div></div>
+          <details v-if="!exampleMode && !situationStep && (project.social.situation.trim() || previousWriting.length)" :key="project.id" class="context-reference"><summary><BookOpen :size="17" /><span>문제 상황과 앞에서 쓴 글 보기</span></summary><div class="reference-body"><section v-if="project.social.situation.trim()"><h3>제공된 문제 상황</h3><div class="situation-passages"><p v-for="(paragraph, index) in project.social.situation.split(/\n\s*\n/)" :key="index">{{ paragraph }}</p></div><small v-if="project.source">자료 출처: {{ project.source }}</small></section><section v-if="project.variation"><h3>제공된 조건 변화</h3><p>{{ project.variation }}</p></section><section v-for="item in previousWriting" :key="item.label"><h3>내가 쓴 {{ item.label }}</h3><p>{{ item.text }}</p></section></div></details>
+          <div class="editor-section-heading"><div><span class="eyebrow">{{ situationStep ? '먼저 읽기' : `STEP ${String(kind === 'social' ? step : step + 1).padStart(2, '0')}` }}</span><h2 id="editor-heading" tabindex="-1">{{ guide.label }}</h2></div><button class="help-toggle secondary" :aria-expanded="checksOpen" aria-controls="nearby-checks" @click="checksOpen = !checksOpen"><Lightbulb :size="16" />{{ checksOpen ? '확인할 점 접기' : '확인할 점' }}</button></div>
+          <section v-if="checksOpen" id="nearby-checks" class="nearby-checks"><h3>{{ situationStep ? '읽으며 확인할 것' : '이 글에서 확인할 것' }}</h3><ul><li v-for="item in checks" :key="item">{{ item }}</li></ul></section>
 
           <template v-if="exampleMode">
             <label class="field-label">읽을 예제<select :value="exampleTechnique" @change="changeTechnique(($event.target as HTMLSelectElement).value as Technique)"><option v-for="t in techniques" :key="t.key" :value="t.key">{{ t.label }} · {{ EXAMPLES[t.key].title }}</option></select></label>
@@ -255,16 +274,17 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
               <div class="technique-grid"><button v-for="t in techniques" :key="t.key" :class="{ selected: project.technique === t.key }" @click="changeTechnique(t.key)"><span>{{ t.label }}</span><small>{{ t.summary }}</small></button></div>
               <label class="field-label">고려한 방법과 이 방법을 고른 이유<textarea v-model="project.choiceReason" rows="3" placeholder="다른 해결 방법과 비교했을 때, 이 방법이 내 문제의 어떤 조건에 맞나요?" @input="touchSocial(project)" /></label>
               <details class="concept-note"><summary>{{ technique.label }}의 흐름과 확인할 점</summary><p>{{ technique.flow }}</p><p>{{ technique.caution }}</p></details>
-              <div class="question-navigation" role="group" aria-label="아이디어 질문"><button v-for="(q, index) in technique.questions" :key="q.id" :class="{ active: index === activeQuestion, answered: project.answers[project.technique]?.[q.id]?.trim() }" :aria-label="`질문 ${index + 1}: ${q.question}`" :aria-pressed="index === activeQuestion" @click="activeQuestion = index">{{ index + 1 }}</button></div>
-              <div class="question-heading"><span>질문 {{ activeQuestion + 1 }} / {{ technique.questions.length }}</span><h3>{{ question.question }}</h3></div>
+              <div class="question-navigation" role="group" aria-label="아이디어 질문"><button v-for="(q, index) in technique.questions" :key="q.id" :class="{ active: index === activeQuestion, answered: project.answers[project.technique]?.[q.id]?.trim() }" :aria-label="`질문 ${index + 1}: ${q.question}`" :aria-pressed="index === activeQuestion" @click="selectQuestion(index)">{{ index + 1 }}</button></div>
+              <div class="question-progress"><span>답한 질문 {{ answeredQuestions }} / {{ technique.questions.length }}</span><button v-if="firstUnanswered !== -1" class="text-button" @click="selectQuestion(firstUnanswered)">다음 빈 질문으로<ArrowRight :size="16" /></button><span v-else>모든 질문에 글을 적었습니다.</span></div>
+              <div class="question-heading"><span>질문 {{ activeQuestion + 1 }} / {{ technique.questions.length }}</span><h3 id="question-heading" tabindex="-1">{{ question.question }}</h3></div>
               <WritingHelp :key="question.id" :question="question.question" :clue="question.clue" :starter="question.starter" :example="question.example" :solo="project.mode === 'solo'" />
             </template>
             <WritingHelp v-else :key="`${kind}-${guide.key}`" :question="guide.question" :clue="guide.clue" :starter="guide.starter" :example="kind === 'social' ? example.social[guide.key as SocialKey] : example.canvas[guide.key as CanvasKey]" :solo="project.mode === 'solo'" />
-            <div class="draft-field"><div class="draft-label"><label for="draft-text">{{ ideaStep ? '내 상황에 맞는 답변' : '내 글' }}</label><span>{{ currentText.length.toLocaleString() }}자</span></div><textarea id="draft-text" :key="field" :value="currentText" maxlength="40000" :rows="ideaStep ? 7 : 10" :placeholder="project.mode === 'solo' ? '내가 이해한 내용을 내 문장으로 작성하세요.' : guide.starter" @input="write(($event.target as HTMLTextAreaElement).value)" /><p class="field-footnote">내가 쓴 문장 그대로 최종 문서에 담깁니다.</p></div>
-            <div v-if="ideaStep" class="question-footer"><button class="secondary" :disabled="activeQuestion === 0" @click="activeQuestion--"><ArrowLeft :size="16" />이전 질문</button><button class="secondary" :disabled="activeQuestion === technique.questions.length - 1" @click="activeQuestion++">다음 질문<ArrowRight :size="16" /></button></div>
+            <div class="draft-field"><div class="draft-label"><label for="draft-text">{{ ideaStep ? '내 상황에 맞는 답변' : '내 글' }}</label><span>{{ currentText.length.toLocaleString() }}자</span></div><textarea id="draft-text" :key="field" :value="currentText" maxlength="40000" :rows="ideaStep ? 7 : 10" :placeholder="project.mode === 'solo' ? '내가 이해한 내용을 내 문장으로 작성하세요.' : ideaStep ? question.starter : guide.starter" @input="write(($event.target as HTMLTextAreaElement).value)" /><p class="field-footnote">내가 쓴 문장 그대로 최종 문서에 담깁니다.</p></div>
+            <div v-if="ideaStep" class="question-footer"><button class="secondary" :disabled="activeQuestion === 0" @click="selectQuestion(activeQuestion - 1)"><ArrowLeft :size="16" />이전 질문</button><button class="secondary" :disabled="activeQuestion === technique.questions.length - 1" @click="selectQuestion(activeQuestion + 1)">다음 질문<ArrowRight :size="16" /></button></div>
             <template v-if="kind === 'social' && guide.key === 'empathy'"><details class="connection-exercise"><summary>예제와 내 상황 비교하기</summary><p>예제의 방법은 가져오되, 대상과 조건은 내 문제에 맞게 바꾸어 보세요.</p><label class="field-label">같은 해결 구조<textarea v-model="project.same" rows="3" placeholder="예제와 내 문제에서 같은 역할을 하는 것은 무엇인가요?" /></label><label class="field-label">달라진 대상과 조건<textarea v-model="project.different" rows="3" placeholder="누가, 어디에서, 어떤 제한을 겪는지가 어떻게 달라졌나요?" /></label></details><label class="field-label sources-field">참고한 자료와 출처<textarea v-model="project.sources" rows="3" placeholder="자료 이름, 작성 기관, 확인한 날짜, 링크를 기록하세요." /></label></template>
             <template v-if="kind === 'social' && guide.key === 'prototype'"><section class="sketch-panel"><div><h3>스케치 첨부</h3><p>종이에 그린 화면이나 모형을 이미지로 넣을 수 있습니다.</p></div><button class="secondary" @click="sketchInput?.click()"><Upload :size="17" />{{ project.sketch ? '이미지 바꾸기' : '이미지 고르기' }}</button><small>PNG, JPEG, WebP 이미지만 사용할 수 있습니다. 첨부한 이미지는 원고 백업과 인쇄에 포함됩니다.</small><template v-if="project.sketch"><img :src="project.sketch" alt="내가 첨부한 프로토타입 스케치" /><button class="text-button danger" @click="project.sketch = ''; touchSocial(project)">스케치 삭제</button></template></section></template>
-            <ReviewPanel :key="field" :review="currentReview" :current="currentText" :checks="checks" @review="checkDraft" @reason="saveReason" />
+            <ReviewPanel :key="field" :review="currentReview" :current="currentText" :checks="checks" @review="checkDraft" @reason="saveReason" @check="saveCheck" />
             </template>
           </template>
 
@@ -287,7 +307,7 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
       <template v-if="dialog === 'projects'"><p>원고는 이 브라우저에 보관됩니다. 다른 기기로 옮길 때는 백업 파일을 사용하세요.</p><div class="button-row"><button class="primary" @click="startNew"><Plus :size="17" />{{ kind === 'social' ? '연습 문제로 새 원고' : '빈 원고 만들기' }}</button><button class="secondary" @click="duplicate"><Copy :size="17" />현재 원고 복제</button><button class="secondary" @click="importInput?.click()"><Upload :size="17" />백업 불러오기</button></div><div class="project-list"><article v-for="p in projects" :key="p.id" :class="{ current: p.id === project.id }"><button class="project-open" @click="chooseProject(p.id)"><FileText :size="20" /><span><strong>{{ p.title || '제목 없는 원고' }}</strong><small>{{ TECHNIQUES[p.technique].label }} · {{ new Date(p.updatedAt).toLocaleString('ko-KR') }}</small><small v-if="p.id === project.id">현재 열려 있는 원고</small></span></button><button class="icon-button" :aria-label="`${p.title} 백업`" @click="downloadBackup(p)"><Download :size="18" /></button><button class="icon-button danger" :aria-label="`${p.title} 삭제`" @click="deleteId = p.id; deleteBackedUp = false; dialog = 'delete'"><Trash2 :size="18" /></button></article></div><p v-if="!projects.length" class="empty-state">아직 저장한 원고가 없습니다. 새 원고를 시작하거나 백업을 불러오세요.</p><label class="field-label">학번과 이름 (선택)<input v-model="project.author" maxlength="100" placeholder="인쇄물에 필요한 경우에만 입력하세요" /></label><small>학번과 이름은 이 기기에만 보관되며 인쇄물과 백업 파일에 포함됩니다.</small></template>
       <template v-if="dialog === 'start'"><p>읽을 연습 문제를 고르세요. 선택한 문제로 새 원고를 만들며, 기존 원고와 답변은 그대로 보관됩니다.</p><div class="practice-grid"><button v-for="p in PRACTICES" :key="p.id" :class="{ selected: pendingPractice?.id === p.id }" @click="pendingPractice = p"><span class="eyebrow">{{ TECHNIQUES[p.technique].label }}</span><strong>{{ p.title }}</strong><small>{{ p.source }}</small></button></div><article v-if="pendingPractice" class="practice-detail"><h3>{{ pendingPractice.title }}</h3><div class="situation-passages"><p v-for="(paragraph, index) in pendingPractice.situation.split(/\n\s*\n/)" :key="index">{{ paragraph }}</p></div><div class="button-row"><button class="primary" @click="newProject(pendingPractice)">이 문제로 새 원고 만들기<ArrowRight :size="16" /></button></div><small>상황을 읽은 뒤 공감하기, 문제 정의, 아이디어 창출, 프로토타입, 평가를 작성합니다.</small></article></template>
       <template v-if="dialog === 'preview'"><div class="preview-toolbar"><p>{{ title }} · 내 원고</p><div class="button-row"><button class="secondary" @click="copyDocument"><Copy :size="17" />전체 복사</button><button class="secondary" @click="downloadBackup(project)"><Download :size="17" />원고 백업</button><button class="primary" @click="printDocument"><Printer :size="17" />인쇄 / PDF 저장</button></div></div><label class="field-label">학번과 이름 (선택)<input v-model="project.author" maxlength="100" placeholder="출력물에 필요한 경우에만 입력하세요" /></label><article class="document-preview"><h2>{{ project.title || title }}</h2><p v-if="project.author" class="print-author">{{ project.author }}</p><section v-for="section in sections" :key="section.title"><h3>{{ section.title }}</h3><p>{{ section.text || '아직 작성하지 않았습니다.' }}</p></section><figure v-if="kind === 'social' && project.sketch"><img :src="project.sketch" alt="내 프로토타입 스케치" /><figcaption>프로토타입 스케치</figcaption></figure></article><p class="notice">예제 답안과 작성 도움은 출력물에 포함되지 않습니다. 인쇄 창에서 대상을 ‘PDF로 저장’으로 고르세요.</p></template>
-      <template v-if="dialog === 'transfer'"><p>현재 계획을 참고 자료로 연결합니다. 선택한 내용은 비어 있는 캔버스 항목에만 옮깁니다.</p><div v-if="project.linkedPlan" class="linked-compare"><h3>계획서 변경 확인</h3><p>{{ planChanged ? '연결 이후 계획서가 바뀌었습니다. 아래 내용을 비교하세요.' : '연결한 시점과 현재 계획의 버전이 같습니다.' }}</p><details v-for="g in SOCIAL_GUIDES" :key="g.key"><summary>{{ g.label }}</summary><div class="comparison"><section><h4>연결했을 때</h4><p>{{ (g.key === 'ideas' ? getIdeaText(project.linkedPlan) : project.linkedPlan.social[g.key as SocialKey]) || '작성 전' }}</p></section><section><h4>현재 계획</h4><p>{{ g.key === 'ideas' ? getIdeaText(project) : project.social[g.key as SocialKey] || '작성 전' }}</p></section></div></details></div><div class="transfer-list"><article v-for="entry in transferEntries" :key="entry.key"><label><input v-model="transferKeys" type="checkbox" :value="entry.key" :disabled="!!project.canvas[entry.key].trim() || !entry.value.trim()" /><strong>{{ entry.label }}</strong></label><p>{{ entry.value || '계획서에 가져올 내용이 없습니다.' }}</p><small v-if="project.canvas[entry.key].trim()">이 항목에 이미 쓴 글이 있어 자동으로 옮기지 않습니다. 아래 내용을 참고해 직접 다듬으세요.</small></article></div><button class="primary" @click="applyTransfer">선택 항목 가져오고 현재 계획 연결<ArrowRight :size="16" /></button></template>
+      <template v-if="dialog === 'transfer'"><p>현재 계획을 참고 자료로 연결합니다. 선택한 내용은 비어 있는 캔버스 항목에만 옮깁니다.</p><div v-if="project.linkedPlan" class="linked-compare"><h3>계획서 변경 확인</h3><p>{{ planChanged ? '연결 이후 계획서가 바뀌었습니다. 아래 내용을 비교하세요.' : '연결한 시점과 현재 계획의 버전이 같습니다.' }}</p><details v-for="g in SOCIAL_GUIDES" :key="g.key"><summary>{{ g.label }}</summary><div class="comparison"><section><h4>연결했을 때</h4><p>{{ (g.key === 'ideas' ? getIdeaText(project.linkedPlan) : project.linkedPlan.social[g.key as SocialKey]) || '작성 전' }}</p></section><section><h4>현재 계획</h4><p>{{ g.key === 'ideas' ? getIdeaText(project) : project.social[g.key as SocialKey] || '작성 전' }}</p></section></div></details></div><div class="transfer-list"><article v-for="entry in transferEntries" :key="entry.key"><label><input v-model="transferKeys" type="checkbox" :value="entry.key" :disabled="!!project.canvas[entry.key].trim() || !entry.value.trim()" /><strong>{{ entry.label }}</strong></label><p>{{ entry.value || '계획서에 가져올 내용이 없습니다.' }}</p><p v-if="entry.key === 'customerSegments' && entry.value.trim()" class="transfer-draft-note">공감하기에서 가져온 참고 초안입니다. 서비스를 쓰는 사람, 도움을 받는 사람, 도입을 결정하는 주체를 구분해 다시 써 보세요.</p><small v-if="project.canvas[entry.key].trim()">이 항목에 이미 쓴 글이 있어 자동으로 옮기지 않습니다. 아래 내용을 참고해 직접 다듬으세요.</small></article></div><button class="primary" @click="applyTransfer">선택 항목 가져오고 현재 계획 연결<ArrowRight :size="16" /></button></template>
       <template v-if="dialog === 'variation'"><p>아래와 같이 조건이 달라졌습니다. 문제 상황은 그대로 읽고, 내가 쓴 해결 계획에서 달라져야 할 부분을 찾아보세요.</p><article class="provided-change"><span class="eyebrow">제공된 조건 변화</span><p>{{ variationText }}</p></article><p>새 사본에서 연습하므로 원래 원고와 답변은 보존됩니다.</p><button class="primary" :disabled="!variationText.trim()" @click="createVariation">사본에서 연습 시작<ArrowRight :size="16" /></button></template>
       <template v-if="dialog === 'delete'"><p>‘{{ projects.find(p => p.id === deleteId)?.title || '선택한 원고' }}’를 이 기기에서 삭제합니다. 삭제 전 백업을 내려받으면 다시 불러올 수 있습니다.</p><div class="button-row"><button class="secondary" @click="downloadBackup(deletionTarget || project); deleteBackedUp = true"><Download :size="17" />삭제 전 백업</button><button class="secondary" @click="dialog = 'projects'">취소</button><button class="danger-button" :disabled="!deleteBackedUp" @click="removeProject">원고 삭제</button></div></template>
       <template v-if="dialog === 'copy'"><p>자동 복사를 사용할 수 없습니다. 아래 글을 선택하여 복사하세요.</p><textarea :value="copyText" readonly rows="15" aria-label="복사할 문서 전체" @focus="($event.target as HTMLTextAreaElement).select()" /></template>

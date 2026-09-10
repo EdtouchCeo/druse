@@ -16,6 +16,13 @@ export function cloneProject(project: Project, title = `${project.title} — 새
   const clone=copy(project), now=new Date().toISOString()
   return {...clone,id:crypto.randomUUID(),title,revision:0,createdAt:now,updatedAt:now,reviews:{},linkedPlan:null}
 }
+export function isUntouchedProject(project: Project): boolean {
+  return project.title === '나의 문제 해결 계획' && !project.practiceId && !project.linkedPlan
+    && Object.keys(project.reviews).length === 0
+    && [project.author,project.sources,project.same,project.different,project.choiceReason,project.sketch,project.variation,
+      ...Object.values(project.social),...Object.values(project.canvas),...Object.values(project.answers).flatMap(answers => Object.values(answers))]
+      .every(value => !value.trim())
+}
 export function snapshotPlan(project: Project) {
   return {revision:project.socialRevision,at:new Date().toISOString(),title:project.title,technique:project.technique,social:copy(project.social),answers:copy(project.answers)}
 }
@@ -48,9 +55,16 @@ export function reviewField(project: Project,field:string,checks:string[]): Revi
   const prompts=original.trim()
     ? ['아래 질문과 내가 쓴 내용을 비교해 보세요. 문장의 뜻과 타당성은 직접 확인합니다.',...checks]
     : ['아직 작성한 내용이 없습니다. 작성 도움에서 질문을 읽고 내 상황에 맞는 생각을 먼저 적어 보세요.']
-  const review={field,original,revision:project.revision,createdAt:new Date().toISOString(),prompts,reason:''}
+  const review: Review={field,original,revision:project.revision,createdAt:new Date().toISOString(),prompts,reason:'',checked:[]}
   project.reviews[field]=review
   return review
+}
+export function setReviewChecked(project: Project, field: string, index: number, checked: boolean): void {
+  const review=project.reviews[field]
+  if(!review||!Number.isInteger(index)||index<0||index>=review.prompts.length)return
+  const selected=new Set(review.checked??[])
+  if(checked)selected.add(index);else selected.delete(index)
+  review.checked=[...selected].sort((a,b)=>a-b)
 }
 export function suggestedCanvas(project: Project): Partial<Record<CanvasKey,string>> {
   return {problem:project.social.definition,customerSegments:project.social.empathy,solution:getIdeaText(project),keyMetrics:project.social.test}
@@ -84,7 +98,9 @@ export function validateProject(value: unknown): Project {
     if(!validFields.includes(key)) throw new Error('지원하지 않는 점검 기록입니다.')
     const r=obj(value)
     if(!Array.isArray(r.prompts)||r.prompts.length>20) throw new Error('점검 질문 형식이 올바르지 않습니다.')
-    p.reviews[key]={field:key,original:text(r.original),revision:num(r.revision),createdAt:text(r.createdAt,100),prompts:r.prompts.map(v=>text(v,3000)),reason:text(r.reason)}
+    const prompts=r.prompts.map(v=>text(v,3000))
+    if(r.checked!==undefined&&(!Array.isArray(r.checked)||r.checked.length>20||r.checked.some(v=>!Number.isInteger(v)||v<0||v>=prompts.length)))throw new Error('점검 표시 형식이 올바르지 않습니다.')
+    p.reviews[key]={field:key,original:text(r.original),revision:num(r.revision),createdAt:text(r.createdAt,100),prompts,reason:text(r.reason),checked:[...new Set((r.checked as number[]|undefined)??[])]}
   }
   return p
 }

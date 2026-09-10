@@ -2,3 +2,4 @@
 await import('./browser-readability.mjs')
 await import('./browser-pages.mjs')
 await import('./browser-menu.mjs')
+await import('./browser-usability.mjs')
