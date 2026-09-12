@@ -10,7 +10,7 @@ const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]
 class StorageError extends Error{constructor(status,code,message){super(message);this.status=status;this.code=code;}}
 const fail=(status,code,message)=>{throw new StorageError(status,code,message);};
 const conflict=()=>fail(409,'REVISION_CONFLICT','다른 요청에서 변경되었습니다. 최신 기록을 다시 불러와 주세요.');
-const unavailable=()=>fail(503,'STORAGE_UNAVAILABLE','상담 저장소를 확인하지 못했습니다. 저장 완료로 처리하지 않았습니다.');
+const unavailable=(diagnostic='INVALID_RESPONSE')=>{const error=new StorageError(503,'STORAGE_UNAVAILABLE','상담 저장소를 확인하지 못했습니다. 저장 완료로 처리하지 않았습니다.');error.storageDiagnostic=diagnostic;throw error;};
 const uuid=value=>typeof value==='string'&&UUID.test(value);
 const now=()=>new Date().toISOString();
 const hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -20,13 +20,27 @@ function mode(){const value=process.env.COUNSELING_STORAGE||'blobs';if(!['blobs'
 function handles(path){return /^(?:counseling_|rpc\/counseling_)/.test(path);}
 function withEvent(event,callback){return context.run({event},callback);}
 
+function diagnostic(error){
+ // Only fixed categories may reach the public health response. Never expose
+ // error.message, stack, URL, headers, SDK context, identifiers or credentials.
+ const names=[error?.name,error?.constructor?.name];
+ if(names.includes('MissingBlobsEnvironmentError'))return 'PLATFORM_CONTEXT_MISSING';
+ if(names.includes('BlobsConsistencyError'))return 'STRONG_CONTEXT_MISSING';
+ if(['MODULE_NOT_FOUND','ERR_MODULE_NOT_FOUND'].includes(error?.code))return 'SDK_MODULE_MISSING';
+ if(['AbortError','TimeoutError'].some(name=>names.includes(name)))return 'TRANSPORT_TIMEOUT';
+ if(['ENOTFOUND','ECONNRESET','ECONNREFUSED','ETIMEDOUT'].includes(error?.cause?.code))return 'TRANSPORT_NETWORK';
+ if(error instanceof StorageError&&['HTTP_400','HTTP_401','HTTP_403','HTTP_404','HTTP_429','HTTP_500','HTTP_502','HTTP_503','HTTP_504','INVALID_RESPONSE'].includes(error.storageDiagnostic))return error.storageDiagnostic;
+ if(error?.code==='STORAGE_CONFIG')return 'STORAGE_MODE_INVALID';
+ return 'STORAGE_UNCLASSIFIED';
+}
+
 function strictFetch(fetcher=globalThis.fetch){return async(input,options={})=>{
  const response=await fetcher(input,options);
  const method=String(options.method||input?.method||'GET').toUpperCase();
  const allowed=method==='GET'||method==='HEAD'?[200,304,404]:method==='PUT'?[200,201,204,412]:method==='DELETE'?[200,204,404]:[200,201,204];
  // SDK conditional writes currently misreport non-412 failures as successful.
  // Reject those responses before the SDK can turn them into modified:true.
- if(!allowed.includes(response.status))unavailable();
+ if(!allowed.includes(response.status))unavailable(`HTTP_${response.status}`);
  return response;
 };}
 
@@ -227,4 +241,4 @@ function createAdapter(store,supabase){
  }
  return {query,bootstrap:bootstrapManager,readConfig:config};
 }
-module.exports={StorageError,STORE_NAME,mode,handles,withEvent,query,bootstrap,strictFetch,createAdapter};
+module.exports={StorageError,STORE_NAME,mode,handles,withEvent,query,bootstrap,strictFetch,createAdapter,diagnostic};

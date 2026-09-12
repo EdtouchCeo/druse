@@ -58,7 +58,18 @@ test('missing uncached platform origin fails readiness instead of degrading cons
  setEnvironmentContext({...runtime,uncachedEdgeURL:undefined});global.fetch=async url=>{assert.equal(new URL(url).origin,'https://school.synthetic.invalid');return Response.json([]);};
  const entry=(await import('../netlify/functions/counseling-health.mjs')).default;
  const response=await entry(new Request('https://site.synthetic.invalid/.netlify/functions/counseling-health'));
- assert.equal(response.status,503);assert.equal((await response.json()).storage_ready,false);
+ assert.equal(response.status,503);const result=await response.json();assert.equal(result.storage_ready,false);assert.equal(result.storage_diagnostic,'STRONG_CONTEXT_MISSING');
+});
+test('public readiness classifies missing automatic context without leaking SDK errors',async()=>{
+ delete process.env.NETLIFY_BLOBS_CONTEXT;global.fetch=async()=>Response.json([]);
+ const entry=(await import('../netlify/functions/counseling-health.mjs')).default;
+ const response=await entry(new Request('https://site.synthetic.invalid/.netlify/functions/counseling-health'));
+ assert.equal(response.status,503);const result=await response.json();assert.equal(result.storage_diagnostic,'PLATFORM_CONTEXT_MISSING');assert.ok(!JSON.stringify(result).includes('synthetic'));
+});
+test('diagnostic categories never reflect arbitrary error text, URL or secret fields',async()=>{
+ for(const error of [new Error('secret token https://private.invalid'),{name:'secret',code:'secret',storageDiagnostic:'secret'},new TypeError('secret')])assert.equal(S.diagnostic(error),'STORAGE_UNCLASSIFIED');
+ let rejected;try{await S.strictFetch(async()=>new Response('secret',{status:403}))('https://synthetic.invalid');}catch(error){rejected=error;}
+ assert.equal(S.diagnostic(rejected),'HTTP_403');assert.ok(!rejected.message.includes('secret'));
 });
 test('server AI defaults reuse site credentials while explicit false always disables',()=>{
  assert.deepEqual(getCounselingAiConfig(),{enabled:false,model:'gemini-2.5-flash'});
