@@ -1,4 +1,4 @@
-# 대륜고 상담 API v1
+# 대륜고 학종 전략 API v1
 
 상태: 구현된 API 계약이며 실제 운영 배포·점검 결과는 별도 배포 기록에 남긴다. 상담 참여·관리 요청은 `Authorization: Bearer <대륜고 Supabase access token>`을 보낸다. 기존 로그인 저장값은 `dr_sess_v1.token`이며 역할·승인은 서버에서 재확인한다. 오류는 `{error:{code,message}}`이다. 만료 401, 권한 없음 403, 접근할 수 없는 기록 404, 버전 충돌 409, 설정 미준비 503이다.
 
@@ -14,6 +14,10 @@
 
 Case는 `counseling_local/CONTRACT.md`와 같되 `privacy:"standard"`다. `record`, `analysis`는 항상 null이다. `local_only` 또는 학생부 원문·분석이 포함된 입력과 백업은 거절한다. 실제 학생 정보는 서버가 등록한 고정 student_id로만 선택한다. 학번은 학년도별 이력이다.
 
+서버 0.3.0은 상담 내용을 교사의 학종 전략 수립과 학생 안내로 연결한다. 각 Session에 `strategy:{target_major,target_path,strengths,gaps,subject_plan,inquiry_plan,activity_plan,semester_plan,student_message}`가 있으며 9개 값은 각각 12,000자 이내 문자열이다. 과거 자료에 strategy가 없으면 빈 기본값을 반환한다. `guidance`는 null 또는 서버가 부여한 `{published_at,published_by}`이며 PUT으로 변경할 수 없다. 자료 형식 `schema_version:1`은 유지한다.
+
+전략은 본문 해시에 포함되고 guidance는 제외된다. 전략 값이 모두 비어 있으면 기존 본문 해시 형식을 유지해 과거 검토·확정의 무결성을 보존한다. 전략을 수정하면 미확정 회차의 검토를 무효화하며 확정한 내용은 다음 전략 개정 회차에서 수정한다. 전략이 있는 회차의 검토에는 주제·학생 안내 문장·실행 과제가 필요하다. 빈 전략의 기존 수기 기록은 과거 검토 규칙을 유지하지만, 학생에게 공개하려면 학생 안내 문장과 실행 과제를 갖춰야 한다.
+
 ## 세션
 
 `GET /.netlify/functions/counseling-session` → `{user:{id,role:"teacher"|"student"|"manager",approved:true,can_manage:boolean,display_name,student_id?},ai:{server:boolean},students:[{student_id,student_number,academic_year,school_stage,grade,name}]}`.
@@ -28,24 +32,31 @@ Case는 `counseling_local/CONTRACT.md`와 같되 `privacy:"standard"`다. `recor
 
 | 요청 | 입력 | 응답 |
 |---|---|---|
-| GET | 없음 | `{cases:[Case]}` 접근 가능한 목록 |
+| GET | 없음 | `{cases:[Case]}`. 교사는 담당 학생 목록, 학생은 명시적으로 안내된 회차가 있는 사례만 |
 | GET `?id=UUID` | 없음 | `{case:Case}` |
 | POST | `{student:{student_id},teacher?:{display_name}}` | `{case:Case}`. 배정 교사만, 학생·교사 정보는 서버가 채움 |
 | PUT `?id=UUID` | `{case:Case}` | `{case:Case}`. 기존 revision 필요. 수정한 미확정 회차의 검토·확정 무효화 |
-| POST `?action=next&id=UUID` | `{revision}` | `{case:Case}`. 이전 회차를 유지하고 새 회차 추가 |
+| POST `?action=next&id=UUID` | `{revision}` | `{case:Case}`. 전략과 미완료 과제를 새 과제 ID로 이어받으며 기본 주제는 전략 개정. 이전 주제·학생 안내 요약은 교사 context에 보존. 새 회차 검토·확정·안내는 초기화 |
 | POST `?action=review&id=UUID` | `{revision,session_id}` | `{case:Case,review}`. 동기 문체·필수항목 점검. 교사가 확정 전 직접 확인 |
 | POST `?action=confirm&id=UUID` | `{revision,session_id,review_acknowledged:true}` | `{case:Case}`. 같은 본문 해시의 최신 검토가 필요 |
+| POST `?action=publish&id=UUID` | `{revision,session_id}` | `{case:Case}`. 현재 해시와 일치하는 확정 회차를 학생에게 명시적으로 안내. 현재 담당 배정을 다시 확인하며 학생 안내 문장·실행 과제 필요. 중복 공개는 409 |
 | POST `?action=import` | `{bundle:{format:"daeryun-counseling",version:1,case:Case},student_id,student_confirmed:true}` | `{case:Case}`. 등록 학생 확인 후 새 사본. 과거 검토/확정은 참고 이력에 보관하고 현재 확인으로 승계하지 않음 |
 | GET `?action=export&id=UUID` | 없음 | JSON 첨부 `{format:"daeryun-counseling",version:1,case:Case}` |
-| GET `?action=report&id=UUID&session_id=UUID` | 없음 | 인증된 HTML. Bearer fetch 후 Blob 새창/브라우저 인쇄로 PDF 저장. 미확정은 초안 표기 |
+| GET `?action=report&id=UUID&session_id=UUID&audience=student` | 없음 | 인증된 HTML. audience는 student 또는 teacher. 학생 요청은 항상 학생용. 담당 교사는 공개 전 학생용 PDF도 미리보기 가능. 초안·확정·학생 안내 상태를 구분 |
 
-학생은 공동 보관함의 목록·상세·출력만 이용한다. 상담 작성·새 회차·검토·확정·반입은 승인 교사와 현재 담당 관계가 필요하다. 직접 PUT으로 학생·교사·privacy·버전·검토·확정 이력을 바꿀 수 없다. 확정 회차를 고치려면 다음 회차를 만든다.
+확정과 학생 안내는 별도다. 학생 list/get/export/report는 guidance가 있고 확정 해시가 유효한 회차만 반환한다. 공개 회차가 없으면 목록에서 제외하고 상세·백업·출력은 404다. current_session_id는 마지막 공개 회차를 가리킨다. 학생의 `student_question`, `context`, `evidence_notes`, `teacher_opinion`은 빈 문자열, record·analysis·review·confirmed는 null이며 imported_history·imported_from과 교사 내부 메타는 제거한다. 학생 응답은 전략·실행 과제·주제·날짜·다음 점검일 중심의 허용 목록으로 생성한다. 과거 수기 기록도 자동 공개하지 않는다.
+
+교사의 `audience=student` 출력은 공개 여부와 별개로 내부 메모를 제거하며 확정한 초안은 확정 상태로 표시한다. PDF 생성만으로 온라인 공개 상태가 바뀌지 않는다. 학생의 `audience=teacher` 요청으로 내부 내용을 읽을 수 없다. 상담 작성·전략 개정·검토·확정·공개·반입은 승인 교사와 현재 담당 관계가 필요하다. 반입은 전략을 이어받되 guidance·review·confirmed를 항상 초기화한다. 직접 PUT으로 학생·교사·privacy·버전·검토·확정·공개 이력을 바꿀 수 없다.
+
+선택 SQL 저장소를 사용하려면 `202609110001_counseling.sql` 뒤에 `202609120001_strategy_publication.sql`까지 적용·검증해야 한다. 기존 초안/과거 버전 JSON에는 교사 메모가 있으므로 raw cases/versions의 anon·authenticated SELECT와 기존 읽기 정책을 제거하고 service_role API로만 읽는다. 새 설치 migration도 같은 정책이다. 추가 migration은 기존 users·학교 Auth·다른 등록 테이블 권한을 바꾸지 않으며 적용하지 않은 SQL 전환은 지원하지 않는다. 현재 기본 Blobs 운영에는 이 DDL을 적용하지 않는다.
 
 ## 일반 AI
 
 `POST /.netlify/functions/counseling-ai` → `{text}`.
 
 입력은 `{case_id,session_id,revision,privacy:"standard",purpose:"counseling"|"style",instruction?:string}`이다. 서버가 접근 가능한 저장 상담에서 본문을 구성한다. 브라우저가 임의 prompt/history/첨부/PDF/분석을 보내는 범용 릴레이가 아니다. 승인된 담당 교사만 호출한다. 서버 자격은 기존 `_lib/vertex.js`를 사용하고 개인 키를 요청으로 받지 않는다. 서버 모드 실패 시 제공자를 자동 전환하지 않는다.
+
+AI에는 저장된 전략의 9개 항목을 함께 제공해 근거·확인 질문·실행할 전략 초안을 구분하도록 한다. 문체 점검은 전략과 학생 안내 문장을 포함하고 인용·수치·일정, 계획과 실제 수행의 차이를 보존한다. AI 응답은 자동으로 전략을 저장·확정·공개하지 않는다.
 
 공통 설정은 `_lib/counseling-ai-config.js`의 `getCounselingAiConfig()`가 반환하는 `{enabled,model}`이다. 기존 Gemini 키 또는 완성된 Vertex 설정이 있고 `COUNSELING_SERVER_AI_ENABLED`가 명시적으로 `false`가 아니면 사용 가능하다. 모델은 `LLM_MODEL` 또는 기존 사이트 기본값 `gemini-2.5-flash`다. 명시 비활성은 `AI_DISABLED`, 자격 설정 누락은 `AI_CONFIG` 503이며 상담 내용은 변경되지 않는다.
 

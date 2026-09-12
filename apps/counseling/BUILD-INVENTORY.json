@@ -1,6 +1,6 @@
 {
   "format": "daeryun-counseling-integration",
-  "created_at": "2026-09-12T00:18:17.016863+00:00",
+  "created_at": "2026-09-12T04:39:12.868282+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -9,48 +9,48 @@
     },
     {
       "path": "README.md",
-      "size": 8320,
-      "sha256": "8eca485c65a9c9e52c0b1e14f37fcee2f360fd7a3f498c02d024d8fb39df5be9"
+      "size": 9066,
+      "sha256": "e1f862e811facef9fe4027d2cbeb8e122556ef49a95257fb489507bf2bf3fc58"
     },
     {
       "path": "VERIFICATION.md",
-      "size": 5376,
-      "sha256": "c7d774289852078cd9d553a03b33952b39dd4ac055e0f84b52a01cb8064f3fc0"
+      "size": 6535,
+      "sha256": "35921c9d628c32e0089e441fdfbaf4d9515998ccb929e2ec8ccdd392fe7527f8"
     },
     {
-      "path": "dist/assets/AdminPanel-BGEoecKn.js",
+      "path": "dist/assets/AdminPanel-qyiqRf_y.js",
       "size": 16463,
-      "sha256": "9ecf5c6c34a84c0115bba9691289cf640ee4c98599e6f85ae62348c30f799c49"
+      "sha256": "1651629ae8ba153b9fba5193b16862f3e1a2e36af3ae2c5d8f2201e1bff85292"
     },
     {
-      "path": "dist/assets/cloudTransport-CiOfXErX.js",
-      "size": 5163,
-      "sha256": "2fb8e8c5bf69065bc44af9fe91e5f48630c208da34ebced0258d1941d5a00ef1"
+      "path": "dist/assets/cloudTransport-B-IEyjlT.js",
+      "size": 5768,
+      "sha256": "7c0f85fcf511bbea5fe48f2060a67d9c8e1bbdd15d031c362235dd6690e8df19"
     },
     {
-      "path": "dist/assets/index-KXTljw80.css",
-      "size": 26657,
-      "sha256": "24da5e8fc933c5bce6205d2973a3bb66483792c553ba8ac2299b2cc339b3a321"
+      "path": "dist/assets/index-BFTadiJR.js",
+      "size": 138736,
+      "sha256": "ce305f3aec1d185952c51115fde10498227281943d6177f23902bc4ccce5349a"
     },
     {
-      "path": "dist/assets/index-hGCEw4E9.js",
-      "size": 128295,
-      "sha256": "68e48f1a31740e4b6a112de4d1625333a75d527267349955e1cb12df58c655b5"
+      "path": "dist/assets/index-C2fMvBe7.css",
+      "size": 28406,
+      "sha256": "96d997902ea79e188547394c18428fb4e6963d40481d242adccb8a1bb785ec3a"
     },
     {
-      "path": "dist/assets/localTransport-Uu_fjFx2.js",
-      "size": 2463,
-      "sha256": "99d45ad7305bd0b7cc17ec0398323b4e3b07f803f659409374c9e7c769fd79a3"
+      "path": "dist/assets/localTransport-Clxjk9jq.js",
+      "size": 2490,
+      "sha256": "15dce9a122eb80d04ae1ec747ba7e95520ddeee0dc96b16fc992f6b0670f24f9"
     },
     {
       "path": "dist/index.html",
-      "size": 428,
-      "sha256": "3087380bc36e2c65ae007ea2ef45f6c248295f153f282bff8fc928d4f1499fb8"
+      "size": 437,
+      "sha256": "b5653bfc4f84bc667dd67868de76bd84d159130e9a06391b7ac05751e90c7ba6"
     },
     {
       "path": "index.html",
-      "size": 306,
-      "sha256": "d3993a0afdc0d00ba05cd051481766f510c411fe0183ec81d56b1b9c59edb76f"
+      "size": 315,
+      "sha256": "84748303e51b99c0e61076ef2c94146b1447582c169275dfe768f8ecf83c2482"
     },
     {
       "path": "package-lock.json",
@@ -74,13 +74,18 @@
     },
     {
       "path": "src/App.vue",
-      "size": 51169,
-      "sha256": "d9d352948e166ff87c77d9f680dcfd68b40e7fd5f38fb0892735cea51b687515"
+      "size": 57001,
+      "sha256": "f49ba5608fa1c7c9a57d0a68246bf98f114650ed8a9d872f90c5113cde52cfe3"
     },
     {
       "path": "src/components/AdminPanel.vue",
       "size": 13643,
       "sha256": "73209abc3ee7cc7d43ee4eaeff2b35b046f8daafb4cb470556d5ceb2a887e834"
+    },
+    {
+      "path": "src/components/StrategyEditor.vue",
+      "size": 1989,
+      "sha256": "ca135f393ecdddb039d904dbc144216abc059fd9b6d178265fafb1ddf70f8c5d"
     },
     {
       "path": "src/lib/admin.ts",
@@ -94,28 +99,28 @@
     },
     {
       "path": "src/lib/cloudTransport.ts",
-      "size": 7125,
-      "sha256": "303cfa0532d7d87b7a69a91a08dfd3c6ac8807d3bdb952e2f124f22dda4fc0d8"
+      "size": 7912,
+      "sha256": "8e1b608f1668eab08d99a8be951262808a7d55eb8c5555f96f40f601f88ab773"
     },
     {
       "path": "src/lib/localTransport.ts",
-      "size": 3671,
-      "sha256": "6b57dd411de6b70c5948aa76275739841ecc27a2bed222375f027814fe2814a1"
+      "size": 3732,
+      "sha256": "41488629007d841488c39ec5444b6a5e4362879ce7a9264778465dd1e8b213c0"
     },
     {
       "path": "src/lib/model.ts",
-      "size": 3794,
-      "sha256": "3b6a3f7b2b86c25a6f8f7efe406e057ea1fc0799e806dc3ea268d0c7ffa4b110"
+      "size": 7164,
+      "sha256": "5791c38c2b85dd1640120cd4aecdb683b81c28e7dbc65bf8a69a0d71a2b3916b"
     },
     {
       "path": "src/lib/transport.ts",
-      "size": 1331,
-      "sha256": "7120e8a0786bf9a1ee349f37d5f8e6d3fe878678a0f1a2dded8e5cf5325cca3c"
+      "size": 1533,
+      "sha256": "f6a68f0ba35fcb03daf7b61dd40e62a4af1478deb55be195c7c21a7d38f9bedf"
     },
     {
       "path": "src/lib/types.ts",
-      "size": 3869,
-      "sha256": "483e4e2d99ccab4601c0cfa6e512b19beaf69ea4dede983a5bb4c96eb69a1642"
+      "size": 4279,
+      "sha256": "79c9d598a79b6791de5225b773ecb724ac01f9e5e52acf453596a1698502f70e"
     },
     {
       "path": "src/main.ts",
@@ -124,13 +129,13 @@
     },
     {
       "path": "src/style.css",
-      "size": 26798,
-      "sha256": "af591aef6a5884aef40253b4ef020ea53812cae53187c312c747c15c4bc0540a"
+      "size": 28567,
+      "sha256": "95283ab870ad912d17c215ba022afe201eab51568c32810045bc45a9701b5568"
     },
     {
       "path": "tests/admin.spec.ts",
-      "size": 6847,
-      "sha256": "bf82f3f4194fb66e933551d2f68b1ad0b339a8d1358ce39d1d26fbf31cf6d71f"
+      "size": 6948,
+      "sha256": "dee1d5d3e3690399833f29390a8146db3ea918b55864f6a035dfdea27fea21c9"
     },
     {
       "path": "tests/admin.test.ts",
@@ -139,8 +144,8 @@
     },
     {
       "path": "tests/auth.spec.ts",
-      "size": 2745,
-      "sha256": "f90c72faf73e7be2ffdf55bcd6e2bfd9be5bead54aac46d9eea19957117c7599"
+      "size": 2783,
+      "sha256": "ce6b6c993f0d09aadc6917d192d40113f97eefab488b37bb6898180cab1e48e8"
     },
     {
       "path": "tests/auth.test.ts",
@@ -149,23 +154,23 @@
     },
     {
       "path": "tests/cloud.spec.ts",
-      "size": 6895,
-      "sha256": "b31858a67d8f6fe1207926c46ac0ee720b1c840b5dbf72c9b5a291778b809e17"
+      "size": 9971,
+      "sha256": "53893c278fa6423efa300d33d9ab15f566bfa0a7f5b3b5259a3e5abc78470a25"
     },
     {
       "path": "tests/core.test.ts",
-      "size": 6417,
-      "sha256": "8a4149bfe8a8b34538a776cd1fe00c9fdbe7b617eaa1fe967005c0c13f4c6ac1"
+      "size": 10651,
+      "sha256": "5dcd134aff7229d97a8e11f7ab1cd0d516d12e4a5e3a96ca6a05c9cb8af91735"
     },
     {
       "path": "tests/local.spec.ts",
-      "size": 5268,
-      "sha256": "d2afac1954999e5e44d0e065d1077bdcbc21765d000e0186e84b10b451b3a143"
+      "size": 5676,
+      "sha256": "9a2b2c1706bfa7e25bb825bdf02c842a4d4fdcbef82847bda851e1a286922d18"
     },
     {
       "path": "tests/ui.spec.ts",
-      "size": 11855,
-      "sha256": "437824c2fc3d04f43e1cfcd876969c26d337a48042a2aaafe1748ab47dc114e9"
+      "size": 13375,
+      "sha256": "c9b2bea41c3444417b5be6cbdb1e25d07544a6a0a4abccbbd418d8755ca9e2eb"
     },
     {
       "path": "tsconfig.json",
@@ -180,34 +185,34 @@
   ],
   "web_files": [
     {
-      "path": "assets/AdminPanel-BGEoecKn.js",
+      "path": "assets/AdminPanel-qyiqRf_y.js",
       "size": 16463,
-      "sha256": "9ecf5c6c34a84c0115bba9691289cf640ee4c98599e6f85ae62348c30f799c49"
+      "sha256": "1651629ae8ba153b9fba5193b16862f3e1a2e36af3ae2c5d8f2201e1bff85292"
     },
     {
-      "path": "assets/cloudTransport-CiOfXErX.js",
-      "size": 5163,
-      "sha256": "2fb8e8c5bf69065bc44af9fe91e5f48630c208da34ebced0258d1941d5a00ef1"
+      "path": "assets/cloudTransport-B-IEyjlT.js",
+      "size": 5768,
+      "sha256": "7c0f85fcf511bbea5fe48f2060a67d9c8e1bbdd15d031c362235dd6690e8df19"
     },
     {
-      "path": "assets/index-KXTljw80.css",
-      "size": 26657,
-      "sha256": "24da5e8fc933c5bce6205d2973a3bb66483792c553ba8ac2299b2cc339b3a321"
+      "path": "assets/index-BFTadiJR.js",
+      "size": 138736,
+      "sha256": "ce305f3aec1d185952c51115fde10498227281943d6177f23902bc4ccce5349a"
     },
     {
-      "path": "assets/index-hGCEw4E9.js",
-      "size": 128295,
-      "sha256": "68e48f1a31740e4b6a112de4d1625333a75d527267349955e1cb12df58c655b5"
+      "path": "assets/index-C2fMvBe7.css",
+      "size": 28406,
+      "sha256": "96d997902ea79e188547394c18428fb4e6963d40481d242adccb8a1bb785ec3a"
     },
     {
-      "path": "assets/localTransport-Uu_fjFx2.js",
-      "size": 2463,
-      "sha256": "99d45ad7305bd0b7cc17ec0398323b4e3b07f803f659409374c9e7c769fd79a3"
+      "path": "assets/localTransport-Clxjk9jq.js",
+      "size": 2490,
+      "sha256": "15dce9a122eb80d04ae1ec747ba7e95520ddeee0dc96b16fc992f6b0670f24f9"
     },
     {
       "path": "index.html",
-      "size": 428,
-      "sha256": "3087380bc36e2c65ae007ea2ef45f6c248295f153f282bff8fc928d4f1499fb8"
+      "size": 437,
+      "sha256": "b5653bfc4f84bc667dd67868de76bd84d159130e9a06391b7ac05751e90c7ba6"
     }
   ]
 }

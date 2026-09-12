@@ -67,15 +67,17 @@ alter table public.counseling_cases enable row level security;
 alter table public.counseling_case_versions enable row level security;
 alter table public.counseling_role_history enable row level security;
 revoke all on public.counseling_roles,public.counseling_students,public.counseling_student_numbers,public.counseling_assignments,public.counseling_cases,public.counseling_case_versions,public.counseling_role_history from anon,authenticated;
-grant select on public.counseling_roles,public.counseling_students,public.counseling_student_numbers,public.counseling_assignments,public.counseling_cases,public.counseling_case_versions to authenticated;
+-- Raw case JSON includes unpublished strategy and internal teacher notes.
+-- Student reads must use the Netlify API's explicit publication projection.
+revoke all on public.counseling_cases,public.counseling_case_versions from public;
+grant select on public.counseling_roles,public.counseling_students,public.counseling_student_numbers,public.counseling_assignments to authenticated;
 grant all on public.counseling_roles,public.counseling_students,public.counseling_student_numbers,public.counseling_assignments,public.counseling_cases,public.counseling_case_versions,public.counseling_role_history to service_role;
 grant usage,select on sequence public.counseling_role_history_id_seq to service_role;
 create policy counseling_own_role on public.counseling_roles for select to authenticated using(public.counseling_is_self(user_id));
 create policy counseling_student_read on public.counseling_students for select to authenticated using(public.counseling_can_read(id));
 create policy counseling_number_read on public.counseling_student_numbers for select to authenticated using(public.counseling_can_read(student_id));
 create policy counseling_assignment_read on public.counseling_assignments for select to authenticated using(public.counseling_can_read(student_id));
-create policy counseling_case_read on public.counseling_cases for select to authenticated using(public.counseling_can_read(student_id));
-create policy counseling_version_read on public.counseling_case_versions for select to authenticated using(exists(select 1 from public.counseling_cases c where c.id=case_id and public.counseling_can_read(c.student_id)));
+-- No browser SELECT policies on case bodies or immutable historical versions.
 revoke all on function public.counseling_has_role(uuid,text),public.counseling_actor_can_read(uuid,uuid),public.counseling_can_read(uuid),public.counseling_is_self(uuid) from public,anon,authenticated;
 grant execute on function public.counseling_can_read(uuid),public.counseling_is_self(uuid) to authenticated,service_role;
 

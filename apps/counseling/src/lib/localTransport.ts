@@ -18,7 +18,7 @@ export class LocalTransport implements Transport {
  async importBackup(bundle:Backup){return(await this.request<{case:CounselingCase}>('/import','POST',{bundle})).case}
  private async blob(path:string){return(await checked(await fetch('/api'+path,{credentials:'same-origin',cache:'no-store'}))).blob()}
  exportBackup(id:string){return this.blob('/cases/'+encodeURIComponent(id)+'/export')}
- report(id:string,sessionId:string){return this.blob('/cases/'+encodeURIComponent(id)+'/report.pdf?session_id='+encodeURIComponent(sessionId))}
+ report(id:string,sessionId:string,audience:'student'|'teacher'='teacher'){return this.blob('/cases/'+encodeURIComponent(id)+'/report.pdf?session_id='+encodeURIComponent(sessionId)+'&audience='+audience)}
  async upload(value:CounselingCase,sessionId:string,file:File,password:string,signal?:AbortSignal){return(await this.request<{case:CounselingCase}>('/cases/'+encodeURIComponent(value.id)+'/record','POST',{revision:value.revision,session_id:sessionId,filename:file.name,pdf_base64:await pdfBase64(file),...(password?{password}:{})},signal)).case}
  async analyze(value:CounselingCase,sessionId:string,model:string,goal:string,budget:number){return(await this.request<{job:Job}>('/cases/'+encodeURIComponent(value.id)+'/analyze','POST',{revision:value.revision,session_id:sessionId,model,goal,time_budget_minutes:budget})).job}
  async review(value:CounselingCase,sessionId:string,model?:string){return(await this.request<{job:Job}>('/cases/'+encodeURIComponent(value.id)+'/review','POST',{revision:value.revision,session_id:sessionId,...(model?{model}:{})})).job}

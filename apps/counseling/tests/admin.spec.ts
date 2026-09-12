@@ -70,8 +70,8 @@ test('school approval and invalid student inputs prevent sending management writ
 test('student cannot open management even with a manager value in browser storage or URL',async({page})=>{
  const api=await adminApi(page,'student',false)
  await page.goto('https://counseling.test:5178/counseling/?admin=1')
- await expect(page.getByRole('heading',{name:'아직 공유된 상담이 없습니다.'})).toBeVisible()
- await expect(page.getByRole('button',{name:'상담 운영 관리',exact:true})).toHaveCount(0)
+ await expect(page.getByRole('heading',{name:'아직 안내된 전략이 없습니다.'})).toBeVisible()
+ await expect(page.getByRole('button',{name:'학생·담당 관리',exact:true})).toHaveCount(0)
  await expect(page.getByRole('heading',{name:'상담 참여 권한',exact:true})).toHaveCount(0)
  expect(api.calls.some(item=>item.path.endsWith('counseling-admin'))).toBe(false)
 })
@@ -79,8 +79,8 @@ test('student cannot open management even with a manager value in browser storag
 test('teacher-manager can open management and return to counseling',async({page})=>{
  await adminApi(page,'teacher',true)
  await page.goto('https://counseling.test:5178/counseling/')
- await page.getByRole('button',{name:'상담 운영 관리',exact:true}).click()
+ await page.getByRole('button',{name:'학생·담당 관리',exact:true}).click()
  await expect(page.getByRole('heading',{name:'학생과 상담 교사를 연결합니다.'})).toBeVisible()
  await page.getByRole('button',{name:'상담으로 돌아가기',exact:true}).click()
- await expect(page.getByRole('heading',{name:'첫 상담을 시작해 보세요.'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'학생별 학종 전략을 시작해 보세요.'})).toBeVisible()
 })

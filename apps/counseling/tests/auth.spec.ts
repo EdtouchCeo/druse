@@ -32,7 +32,7 @@ test('local login opens fixed teacher site and receives credentials only after e
  expect(authBodies).toEqual([])
  expect(new URL(popup.url()).searchParams.get('connect_local')).toBe('http://127.0.0.1:5178')
  await popup.getByRole('button',{name:'이 PC 연결',exact:true}).click()
- await expect(page.getByRole('button',{name:'새 상담',exact:true})).toBeVisible()
+ await expect(page.getByRole('button',{name:'새 전략',exact:true})).toBeVisible()
  expect(authBodies).toEqual([{access_token:'synthetic-bridge-token'}])
  expect(urls.some(url=>url.includes('synthetic-bridge-token'))).toBe(false)
 })

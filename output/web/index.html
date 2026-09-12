@@ -12399,20 +12399,20 @@ function switchSpTab(id,btn){
   <div class="tab-panel" id="tab-strategy" aria-labelledby="tab-btn-strategy">
     <!-- TAB:strategy:START -->
     <h2 class="section-title" style="margin-top:0;">🧭 학습전략</h2>
-    <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px;">학생의 목표와 현재 상황을 살펴보고, 담당 교사와 상담하며 다음 실천을 이어갑니다.</p>
+    <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px;">교사가 학생별 학종 전략을 수립하고, 학생에게 교과·탐구·활동의 실행 방향을 안내합니다. 목표 전공과 현재 강점, 보완할 점을 살펴 학기별 계획으로 이어갑니다.</p>
     <div class="card">
-      <h3 class="section-title" style="margin-top:0;">상담 기록과 다음 상담</h3>
-      <p>학생 질문, 확인한 근거, 교사 의견과 다음 행동을 기록합니다. 문체와 내용을 검토한 뒤 PDF로 저장하고, JSON 백업이나 새 회차로 다음 상담을 이어갈 수 있습니다.</p>
-      <p>학교 계정으로 로그인한 학생은 본인 상담을 확인하고, 승인된 담당 교사는 상담을 작성합니다. 학년도별 학번을 연결하여 이력을 관리합니다.</p>
+      <h3 class="section-title" style="margin-top:0;">학생별 학종 전략 수립과 안내</h3>
+      <p>목표 전공·진로 방향, 강점·보완점, 교과·탐구·활동 계획과 학기별 실행 과제를 작성합니다. 교사가 최종 문체와 근거를 검토해 확정한 뒤 학생에게 전략을 안내합니다.</p>
+      <p>학생은 로그인하여 본인에게 안내된 전략과 실행 과제를 확인하고 PDF로 저장합니다. 작성 중인 전략과 교사 참고 메모는 학생에게 공개되지 않습니다. 담당 교사는 다음 전략을 개정하며 이력을 이어갑니다.</p>
       <div class="strategy-links">
-        <a class="strategy-link" id="strategy-open-counseling" href="/counseling/">상담실 열기</a>
+        <a class="strategy-link" id="strategy-open-counseling" href="/counseling/">학종 전략실 열기</a>
         <a class="strategy-link secondary" href="/counseling/guide.html">설치·사용 안내</a>
       </div>
     </div>
     <div class="card">
       <h3 class="section-title" style="margin-top:0;">학생부 분석과 전략 · 교사 전용</h3>
-      <p>교사 PC에서 학생부 PDF의 채워진 부분을 읽고, 강점·보완점과 상담 방향을 검토합니다. 중학교 학생부도 항목을 연결하여 분석하며 원문 근거를 확인할 수 있습니다.</p>
-      <p>학생부 분석·전략·AI 문체 점검은 <strong>로컬 Ollama 모델을 갖춘 교사</strong>만 이용합니다. 학생부와 분석 자료는 교사 PC에서 처리하고 온라인 상담에 자동으로 올리지 않습니다.</p>
+      <p>교사 PC에서 학생부 PDF의 채워진 부분을 읽고 강점·보완점의 근거를 확인하여 전략을 세웁니다. 중학교 학생부도 원래 항목을 보존하여 연결합니다.</p>
+      <p>학생부 분석과 이에 따른 AI 전략·문체 점검은 <strong>로컬 Ollama 모델을 갖춘 교사</strong>만 이용합니다. 원문·분석·파생 전략은 로컬에 보관하며, 교사가 확정한 학생 안내 PDF를 저장하여 직접 전달합니다.</p>
       <div class="strategy-links">
         <a class="strategy-link" href="/counseling/downloads/daeryun-counseling-local.zip" download>교사용 로컬 앱 내려받기</a>
         <a class="strategy-link secondary" href="/counseling/guide.html">로컬 분석 시작 안내</a>
@@ -12420,7 +12420,7 @@ function switchSpTab(id,btn){
     </div>
     <div class="card" style="background:var(--muted);">
       <h3 class="section-title" style="margin-top:0;">처음 이용할 때</h3>
-      <p>학교 관리자가 상담 권한을 승인하고 학생 학번과 담당 교사를 등록하면 온라인 상담을 시작할 수 있습니다. 로컬 앱은 먼저 제공된 합성 자료로 사용 흐름을 확인해 주세요.</p>
+      <p>학교 관리자가 이용 권한을 승인하고 학생 학번과 담당 교사를 등록하면 온라인 전략을 작성할 수 있습니다. 로컬 앱은 먼저 제공된 합성 자료로 사용 흐름을 확인해 주세요.</p>
     </div>
     <!-- TAB:strategy:END -->
   </div>

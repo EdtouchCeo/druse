@@ -20,12 +20,13 @@ export class CloudTransport implements Transport {
  async importBackup(bundle:Backup){assertStandard(bundle.case);return(await this.request<{case:CounselingCase}>(this.path(undefined,'import'),'POST',{bundle,student_id:bundle.case.student.student_id,student_confirmed:true})).case}
  private async blob(path:string){return(await checked(await fetch(base+path,{headers:this.headers(),cache:'no-store'}))).blob()}
  exportBackup(id:string){return this.blob(this.path(id,'export'))}
- report(id:string,sessionId:string){return this.blob(this.path(id,'report')+'&session_id='+encodeURIComponent(sessionId))}
+ report(id:string,sessionId:string,audience:'student'|'teacher'='teacher'){return this.blob(this.path(id,'report')+'&session_id='+encodeURIComponent(sessionId)+'&audience='+audience)}
  private restricted():never {throw new Error('학생부 분석은 교사 PC의 로컬 상담실에서만 사용할 수 있습니다.')}
  async upload():Promise<CounselingCase>{return this.restricted()}
  async analyze():Promise<Job>{return this.restricted()}
  async review(value:CounselingCase,sessionId:string){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id,'review'),'POST',{revision:value.revision,session_id:sessionId})).case}
- async confirm(value:CounselingCase,sessionId:string){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id,'confirm'),'POST',{revision:value.revision,session_id:sessionId,review_acknowledged:true})).case}
+  async confirm(value:CounselingCase,sessionId:string){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id,'confirm'),'POST',{revision:value.revision,session_id:sessionId,review_acknowledged:true})).case}
+  async publish(value:CounselingCase,sessionId:string){assertStandard(value);const session=sessionOf(value,sessionId);if(!session.confirmed)throw new Error('전략을 검토하고 교사 확정을 먼저 완료해 주세요.');if(session.guidance)throw new Error('이미 학생에게 안내한 전략입니다. 개정은 새 회차에서 진행해 주세요.');return(await this.request<{case:CounselingCase}>(this.path(value.id,'publish'),'POST',{revision:value.revision,session_id:sessionId})).case}
  async job():Promise<Job>{return this.restricted()}
  async cancel():Promise<Job>{return this.restricted()}
  async fixtures(){return []}
@@ -35,7 +36,7 @@ export class CloudTransport implements Transport {
   if(settings.provider==='server')return(await this.request<{text:string}>('counseling-ai','POST',{case_id:value.id,session_id:sessionId,revision:value.revision,privacy:'standard',purpose:'counseling'},signal)).text
   if(!settings.model.trim())throw new Error('사용할 모델 이름을 입력해 주세요.')
   const session=sessionOf(value,sessionId)
-  const prompt='다음 일반 상담 기록을 바탕으로 교사가 검토할 질문과 다음 행동을 제안하라. 학생이 실제로 하지 않은 일과 학생부 내용을 만들지 마라. 간결한 한국어 문장으로 작성하라.\n'+JSON.stringify({goal:session.topic,question:session.student_question,context:session.context,evidence_notes:session.evidence_notes,teacher_opinion:session.teacher_opinion,actions:session.actions.map(a=>({text:a.text,status:a.status}))})
+  const prompt='다음 일반 상담과 학종 전략을 바탕으로 교사가 검토할 교과·탐구·활동·학기별 계획, 학생 안내와 실행과제를 제안하라. 목표 전공이 미정이면 탐색 대안을 제안하라. 학생이 실제로 하지 않은 일과 학생부 내용을 만들거나 합격을 보장하지 마라. 확인한 근거, 해석, 앞으로의 계획을 구분하고 간결한 한국어로 작성하라.\n'+JSON.stringify({goal:session.topic,strategy:session.strategy,question:session.student_question,context:session.context,evidence_notes:session.evidence_notes,teacher_opinion:session.teacher_opinion,actions:session.actions.map(a=>({text:a.text,status:a.status}))})
   if(settings.provider==='gemini'){
    if(!settings.apiKey.trim())throw new Error('이 기기에서 사용할 개인 API 키를 입력해 주세요.')
    const r=await checked(await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(settings.model)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':settings.apiKey},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:8192}}),signal,referrerPolicy:'no-referrer'}))
