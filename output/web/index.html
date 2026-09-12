@@ -6475,6 +6475,7 @@ function switchRulesTab(id,btn){
 </div>
 <!-- 평가과제 도움 자료 -->
 <div class="sub-panel" id="sub-assessment-help">
+  <p style="padding:16px;border:1px solid #cbd5e1;border-radius:12px;line-height:1.7"><a href="/counseling/" style="font-weight:600">상담 기록과 다음 상담</a><br>학교가 승인한 학생과 담당 교사가 상담 기록을 함께 확인합니다. 학생부 PDF 분석은 교사 PC의 로컬 앱에서 진행합니다.</p>
   <h2 class="section-title" style="font-size:26px;line-height:1.5;margin-bottom:18px;">평가과제 도움 자료</h2>
   <div class="assessment-help-nav" role="tablist" aria-label="평가과제 자료 구분">
     <button id="assessment-help-tab-subject" class="assessment-help-tab active" role="tab" aria-selected="true" aria-controls="assessment-help-subject" onclick="switchAssessmentTab('assessment-help-subject', this)">교과</button>
@@ -12437,6 +12438,7 @@ function switchSpTab(id,btn){
     </div>
     <!-- AI 콘텐츠 (로그인 후 표시) -->
     <div id="ai-content">
+      <p style="padding:16px;border:1px solid #cbd5e1;border-radius:12px;line-height:1.7"><a href="/counseling/" style="font-weight:600">학생 상담 기록</a><br>배정된 학생의 상담을 작성하고 문체·근거 검토 후 확정합니다. 상담 파일을 내려받아 다음 상담에서 이어갈 수 있습니다.</p>
       <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
         <button id="ai-sub-btn-0" onclick="switchAiSub(0); window.ensureSearchData && window.ensureSearchData('law')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid var(--primary);background:var(--primary);color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">📜 법령·지침 AI</button>
         <button id="ai-sub-btn-1" onclick="switchAiSub(1); window.ensureSearchData && window.ensureSearchData('curr')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📖 국가교육과정 AI</button>
@@ -15114,13 +15116,14 @@ function switchSpTab(id,btn){
     var btn = document.getElementById('reg-submit');
     btn.disabled = true; btn.textContent = '저장 중...';
     var payload = { google_id: _pendingAuth.id, email: _pendingAuth.email, name: name, role: role,
-                    grade: grade, class: cls, admission_year: number };
+                    grade: grade, class: cls, student_number: number };
     fetch('/.netlify/functions/save-user', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _pendingToken }, body: JSON.stringify(payload)
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      var user = Array.isArray(data) ? data[0] : data;
+      if (!Array.isArray(data) || !data[0] || !data[0].id) throw new Error('회원 정보를 저장하지 못했습니다.');
+      var user = data[0];
       var session = { token: _pendingToken, refresh_token: _pendingRefresh, expires_at: _pendingExpiresAt, user: user };
       saveSession(session); applyAuth(session); gotoSchoolTab();
     })
@@ -15138,8 +15141,10 @@ function switchSpTab(id,btn){
   }
 
   function logActivity(userId, eventType, detail, page) {
+    var activeSession = getSession();
+    if (!activeSession || !activeSession.token) return;
     fetch('/.netlify/functions/save-log', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeSession.token },
       body: JSON.stringify({ user_id: userId, event_type: eventType, detail: detail, page: page })
     }).catch(function() {});
   }
@@ -15162,7 +15167,7 @@ function switchSpTab(id,btn){
       saveSession(stored); finishLogin(stored); return;
     }
     fetch('/.netlify/functions/get-user', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ google_id: authId })
     })
     .then(function(r) { return r.json(); })

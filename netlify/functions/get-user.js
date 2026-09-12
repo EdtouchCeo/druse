@@ -1,40 +1,9 @@
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
-
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Server config error' }) };
-  }
-
-  let body;
-  try {
-    body = JSON.parse(event.body);
-  } catch {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
-  }
-
-  const { google_id } = body;
-  if (!google_id) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'google_id required' }) };
-  }
-
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/users?google_id=eq.${encodeURIComponent(google_id)}&select=*`,
-    {
-      headers: {
-        'apikey': SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`
-      }
-    }
-  );
-
-  const data = await res.json();
-  return {
-    statusCode: res.ok ? 200 : 400,
-    body: JSON.stringify(data)
-  };
-};
+'use strict';
+const C=require('./_lib/counseling');
+exports.handler=C.wrap(async event=>{
+ if(event.httpMethod!=='POST')C.fail(405,'METHOD_NOT_ALLOWED','POST 요청만 허용됩니다.');
+ const b=C.body(event,3000),me=await C.identity(event);C.onlyKeys(b,['google_id']);
+ if(b.google_id&&b.google_id!==me.id)C.fail(403,'IDENTITY_MISMATCH','본인 회원 정보만 조회할 수 있습니다.');
+ const rows=await C.db(`users?google_id=eq.${encodeURIComponent(me.id)}&select=id,google_id,email,name,role,approved,admission_year,grade,class&limit=1`);
+ return C.json(200,rows);
+});

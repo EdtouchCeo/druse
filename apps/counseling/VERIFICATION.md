@@ -1,0 +1,38 @@
+# 프론트엔드 검증 기록
+
+검증 시점: 2026-09-12 09:06 KST. 실제 학생 정보 없이 합성 상담과 제공된 합성 PDF를 사용했습니다. 다음은 개발·브라우저 검증이며 교사의 교육적 내용 검토를 대신하지 않습니다.
+
+| 검사 | 결과 | 범위 |
+| --- | --- | --- |
+| `npm run build` | 통과 | vue-tsc 타입 검사와 Vite 빌드, 1,736개 모듈 |
+| `npm test` | 17/17 통과 | 인증 토큰, 전송 경계, CSRF, 회차 ID, 파일 형식, 충돌, 개인 AI 연결 제한 |
+| `npm run test:ui` | 12/12 통과 | Edge, 로컬 mock 5개, 온라인 HTTPS mock 2개, 인증 팝업 1개와 관리 화면 4개 |
+| `npx playwright test --config playwright.local.config.ts` | 1/1 통과 | 08:44 KST 실제 `127.0.0.1:8765` 합성 시연 서버 |
+
+실제 서버에서 별도 합성 학번 `19991`의 상담을 생성하고, 제공된 고1 부분 작성 PDF를 추출했습니다. 설치된 Ollama 모델 목록 표시, 자동 점검 후 직접 확인, 합성 시연 확정, PDF·JSON 다운로드, 학생 확인 후 새 사본 가져오기와 후속 회차 추가를 확인했습니다. 이 흐름의 브라우저 페이지 오류와 외부 요청은 모두 0건이었습니다.
+
+직접 검토는 `pending`을 반환한다는 실제 계약을 확인하고, 화면을 “교사 직접 확인 필요”로 표시하도록 수정했습니다. 현재 검토에 대한 교사 확인란을 선택하면 서버에 확정을 요청합니다. 교사 확인을 브라우저가 자동 통과로 만들지 않습니다. 분석 job의 `needs_revision`은 성공 안내 대신 오류를 표시하며 결과를 만들어 채우지 않습니다.
+
+390px 화면에서 문서 너비의 가로 넘침이 없음을 확인했습니다. 입력 모달의 Tab 순환·Escape 닫기, 저장 충돌 뒤 초안 유지와 백업, 진행 중 분석 취소를 검사했습니다. 온라인 교사에게는 배정 학생 선택과 작성 기능이, 학생에게는 조회·내려받기 기능이 보였습니다. 온라인 인쇄 HTML과 Bearer 헤더를 확인했으며 온라인 진입 시 로컬 transport 모듈을 불러오지 않았습니다.
+
+합성 검증 자료는 다음 위치에 있습니다.
+
+- `test-results/desktop-counseling.png`: 상담 작성 화면
+- `test-results/mobile-counseling.png`: 390px 모바일 화면
+- `test-results/online-teacher.png`: 온라인 교사 mock의 검토·인쇄 화면
+- `test-results/local-confirmed.png`: 실제 로컬 서버의 합성 확정 화면
+- `test-results/local-synthetic-report.pdf`: 실제 로컬 서버가 생성한 합성 PDF
+
+최종 `dist/index.html` SHA-256: `3087380BC36E2C65AE007EA2EF45F6C248295F153F282BFF8FC928D4F1499FB8`.
+
+해당 index가 사용하는 파일은 `assets/index-hGCEw4E9.js`, `assets/index-KXTljw80.css`이며 transport 분리 파일은 `assets/localTransport-Uu_fjFx2.js`, `assets/cloudTransport-CiOfXErX.js`입니다. 빌드 폴더에는 OneDrive에서 전체 삭제를 피하는 기존 설정에 따라 이전 해시 파일도 남아 있습니다.
+
+실제 Ollama 생성은 백엔드 담당의 별도 검증과 GPU 경합을 피하기 위해 이 브라우저 테스트에서 실행하지 않았습니다. 온라인 운영 계정·실제 서버 AI·개인 Gemini 호출·HTTPS 페이지에서 개인 Ollama로의 연결 허용은 이 결과에 포함하지 않습니다. 운영 권한은 서버 구현이 최종 검사하며, 여기의 온라인 역할 검사는 합성 API 응답을 사용한 화면 검사입니다. 배포하지 않았습니다.
+
+인증 팝업 검증에서는 로컬 로그인 화면에서 고정된 대륜고 도메인의 창을 열고, 승인 교사가 명시적으로 PC 연결을 선택한 뒤에만 로컬 인증 요청이 발생함을 확인했습니다. 토큰을 URL에 넣지 않았습니다. 핵심 테스트는 잘못된 origin·다른 source 창·미승인 교사·학생의 전달을 거절하는 경우를 포함합니다. 화면 자료는 `test-results/local-teacher-login.png`와 `test-results/teacher-connect-popup.png`입니다.
+
+패키징 스크립트의 허용 목록·현재 참조 자산·경로 탈출·필수파일 누락 검사 5/5가 통과했습니다. 릴리스와 통합 복사는 패키징 스크립트가 현재 index의 참조 자산을 다시 선정하여 수행합니다. 이번 관리 화면 변경의 통합 복사와 운영 배포는 배포 담당 단계에서 진행합니다.
+
+관리 화면 추가 검증에서는 manager-only가 상담본문 API를 호출하지 않고 진입하는지, teacher+manager가 상담과 관리를 오갈 수 있는지, 학생이 URL·브라우저 저장값을 바꾸어도 관리 API를 호출하지 않는지 확인했습니다. 학교 역할 불일치, 미승인 계정, 잘못되거나 중복된 학번, 미승인 교사 배정을 핵심 테스트로 차단했습니다. 3종 변경은 확인 창을 거친 뒤에만 POST되며 저장 후 목록을 다시 조회했습니다. 실제 운영 계정으로 관리 데이터를 변경한 검증은 포함하지 않습니다.
+
+관리자 화면은 `assets/AdminPanel-BGEoecKn.js`로 나뉘어 관리 진입 시에만 불러옵니다. 화면 증거는 `test-results/manager-register.png`와 `test-results/manager-mobile.png`입니다. 온라인 ZIP·안내 링크의 경로는 확인했으며 실제 공개 파일 배포는 별도 단계입니다.

@@ -1,0 +1,2 @@
+import { defineConfig } from '@playwright/test'
+export default defineConfig({testDir:'./tests',testMatch:['**/ui.spec.ts','**/cloud.spec.ts','**/auth.spec.ts','**/admin.spec.ts'],outputDir:'test-results/ui',workers:1,reporter:'list',use:{baseURL:'http://127.0.0.1:5178',channel:process.env.PW_BROWSER_CHANNEL||'msedge',headless:true,trace:'retain-on-failure'},webServer:{command:'npm run dev -- --port 5178',url:'http://127.0.0.1:5178/counseling/',reuseExistingServer:false,timeout:60000}})

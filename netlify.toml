@@ -1,5 +1,18 @@
 [build]
   publish = "output/web"
+  command = "node --test tests/counseling-*.test.cjs"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "./plugins/counseling-verify"
+
+[[headers]]
+  for = "/counseling/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Content-Type-Options = "nosniff"
 
 [functions]
   directory = "netlify/functions"

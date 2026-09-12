@@ -1,0 +1,9 @@
+{
+  "name": "daeryun-counseling-verify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js",
+  "engines": { "node": ">=22.12.0" },
+  "dependencies": { "@netlify/blobs": "11.0.3" }
+}

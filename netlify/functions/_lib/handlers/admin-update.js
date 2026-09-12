@@ -1,7 +1,8 @@
 // 관리자 전용 — 회원 승인 / 승인 해제 / 삭제 / 구분 변경
 const ADMIN_EMAIL = 'drhong81@gmail.com';
+const C = require('../counseling');
 
-exports.handler = async (event) => {
+exports.handler = C.wrap(async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -45,12 +46,22 @@ exports.handler = async (event) => {
       body: JSON.stringify({ approved: action === 'approve' })
     });
   } else if (action === 'role') {
-    if (!value) return { statusCode: 400, body: JSON.stringify({ error: 'role value required' }) };
+    if (!['교사', '학생', '학부모'].includes(value)) return { statusCode: 400, body: JSON.stringify({ error: '회원 구분을 확인해 주세요.' }) };
     res = await fetch(base, {
       method: 'PATCH', headers: h,
       body: JSON.stringify({ role: value })
     });
   } else if (action === 'delete') {
+    // Counseling records keep their account/FK history until a separate retention procedure is complete.
+    const check = await fetch(base + '&select=id', { headers: h });
+    const checkRows = await check.json().catch(() => null);
+    if (!check.ok || !Array.isArray(checkRows)) return { statusCode: 503, body: JSON.stringify({ error: '상담 연결 상태를 확인하지 못했습니다. 다시 시도해 주세요.' }) };
+    if (Array.isArray(checkRows) && checkRows[0]?.id) {
+      for (const table of ['counseling_roles', 'counseling_students']) {
+        const linkedRows = await C.db(`${table}?user_id=eq.${encodeURIComponent(checkRows[0].id)}&select=user_id&limit=1`);
+        if (!Array.isArray(linkedRows) || linkedRows.length) return { statusCode: 409, body: JSON.stringify({ error: '상담 이력이 연결된 회원은 승인 해제 후 별도 보존·삭제 절차로 처리해 주세요.' }) };
+      }
+    }
     // 회원 삭제 — logs.user_id가 users.id를 참조(FK logs_user_id_fkey)하므로
     // 활동 로그를 먼저 지워야 한다. 안 지우면 23503으로 삭제가 거부되던 실사고(2026-08-20).
     const uRes = await fetch(base + '&select=id', { headers: h });
@@ -80,4 +91,4 @@ exports.handler = async (event) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(res.ok ? { ok: true, data } : { error: data })
   };
-};
+});

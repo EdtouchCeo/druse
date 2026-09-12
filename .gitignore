@@ -1,6 +1,7 @@
 # 환경 변수 (토큰·비밀키 절대 커밋 금지)
 .env
 .env.*
+node_modules/
 
 # 오타 파일 (실수로 생성된 것)
 .gitinore

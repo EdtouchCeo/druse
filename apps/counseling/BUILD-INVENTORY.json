@@ -1,0 +1,213 @@
+{
+  "format": "daeryun-counseling-integration",
+  "created_at": "2026-09-12T00:18:17.016863+00:00",
+  "files": [
+    {
+      "path": ".gitignore",
+      "size": 65,
+      "sha256": "77940290dcbeea7d73afffd3d966ba239d9faab2168c0144a78990376951f89d"
+    },
+    {
+      "path": "README.md",
+      "size": 8320,
+      "sha256": "8eca485c65a9c9e52c0b1e14f37fcee2f360fd7a3f498c02d024d8fb39df5be9"
+    },
+    {
+      "path": "VERIFICATION.md",
+      "size": 5376,
+      "sha256": "c7d774289852078cd9d553a03b33952b39dd4ac055e0f84b52a01cb8064f3fc0"
+    },
+    {
+      "path": "dist/assets/AdminPanel-BGEoecKn.js",
+      "size": 16463,
+      "sha256": "9ecf5c6c34a84c0115bba9691289cf640ee4c98599e6f85ae62348c30f799c49"
+    },
+    {
+      "path": "dist/assets/cloudTransport-CiOfXErX.js",
+      "size": 5163,
+      "sha256": "2fb8e8c5bf69065bc44af9fe91e5f48630c208da34ebced0258d1941d5a00ef1"
+    },
+    {
+      "path": "dist/assets/index-KXTljw80.css",
+      "size": 26657,
+      "sha256": "24da5e8fc933c5bce6205d2973a3bb66483792c553ba8ac2299b2cc339b3a321"
+    },
+    {
+      "path": "dist/assets/index-hGCEw4E9.js",
+      "size": 128295,
+      "sha256": "68e48f1a31740e4b6a112de4d1625333a75d527267349955e1cb12df58c655b5"
+    },
+    {
+      "path": "dist/assets/localTransport-Uu_fjFx2.js",
+      "size": 2463,
+      "sha256": "99d45ad7305bd0b7cc17ec0398323b4e3b07f803f659409374c9e7c769fd79a3"
+    },
+    {
+      "path": "dist/index.html",
+      "size": 428,
+      "sha256": "3087380bc36e2c65ae007ea2ef45f6c248295f153f282bff8fc928d4f1499fb8"
+    },
+    {
+      "path": "index.html",
+      "size": 306,
+      "sha256": "d3993a0afdc0d00ba05cd051481766f510c411fe0183ec81d56b1b9c59edb76f"
+    },
+    {
+      "path": "package-lock.json",
+      "size": 57098,
+      "sha256": "b00d0424dbbe80af343a2a22dc5e797d5c4a2687854197b6b2fde63b0c568ac5"
+    },
+    {
+      "path": "package.json",
+      "size": 729,
+      "sha256": "da44a8aa2b2bb659523801234e42466ae43def738e7501613f039572137af137"
+    },
+    {
+      "path": "playwright.config.ts",
+      "size": 491,
+      "sha256": "865119050e03dce056ba4126733427599d82b9772498f88af6d7a973728f5b0f"
+    },
+    {
+      "path": "playwright.local.config.ts",
+      "size": 355,
+      "sha256": "9f7fd6610de761500148be05a58e713bec4486a1f4cabd5499fb0b7efdf47601"
+    },
+    {
+      "path": "src/App.vue",
+      "size": 51169,
+      "sha256": "d9d352948e166ff87c77d9f680dcfd68b40e7fd5f38fb0892735cea51b687515"
+    },
+    {
+      "path": "src/components/AdminPanel.vue",
+      "size": 13643,
+      "sha256": "73209abc3ee7cc7d43ee4eaeff2b35b046f8daafb4cb470556d5ceb2a887e834"
+    },
+    {
+      "path": "src/lib/admin.ts",
+      "size": 3500,
+      "sha256": "6fcea493cd33ed4e486d18759358ec31dffdc42a8e781e41fb72b79f34f7809f"
+    },
+    {
+      "path": "src/lib/authBridge.ts",
+      "size": 1331,
+      "sha256": "cb97e690c8e2453bb32cee1047f6ed342fc59d3bcf7ce2344a04ef87c7e599a2"
+    },
+    {
+      "path": "src/lib/cloudTransport.ts",
+      "size": 7125,
+      "sha256": "303cfa0532d7d87b7a69a91a08dfd3c6ac8807d3bdb952e2f124f22dda4fc0d8"
+    },
+    {
+      "path": "src/lib/localTransport.ts",
+      "size": 3671,
+      "sha256": "6b57dd411de6b70c5948aa76275739841ecc27a2bed222375f027814fe2814a1"
+    },
+    {
+      "path": "src/lib/model.ts",
+      "size": 3794,
+      "sha256": "3b6a3f7b2b86c25a6f8f7efe406e057ea1fc0799e806dc3ea268d0c7ffa4b110"
+    },
+    {
+      "path": "src/lib/transport.ts",
+      "size": 1331,
+      "sha256": "7120e8a0786bf9a1ee349f37d5f8e6d3fe878678a0f1a2dded8e5cf5325cca3c"
+    },
+    {
+      "path": "src/lib/types.ts",
+      "size": 3869,
+      "sha256": "483e4e2d99ccab4601c0cfa6e512b19beaf69ea4dede983a5bb4c96eb69a1642"
+    },
+    {
+      "path": "src/main.ts",
+      "size": 110,
+      "sha256": "376d6b79d3eb52d0193d316f5b32e23251fc6d54ff0fa84094a3552e28e1286b"
+    },
+    {
+      "path": "src/style.css",
+      "size": 26798,
+      "sha256": "af591aef6a5884aef40253b4ef020ea53812cae53187c312c747c15c4bc0540a"
+    },
+    {
+      "path": "tests/admin.spec.ts",
+      "size": 6847,
+      "sha256": "bf82f3f4194fb66e933551d2f68b1ad0b339a8d1358ce39d1d26fbf31cf6d71f"
+    },
+    {
+      "path": "tests/admin.test.ts",
+      "size": 3168,
+      "sha256": "d018394edd1bcd87657be5a610fbff2c5b2eb878c2e10e92859e0f8edd281b7c"
+    },
+    {
+      "path": "tests/auth.spec.ts",
+      "size": 2745,
+      "sha256": "f90c72faf73e7be2ffdf55bcd6e2bfd9be5bead54aac46d9eea19957117c7599"
+    },
+    {
+      "path": "tests/auth.test.ts",
+      "size": 2342,
+      "sha256": "26e9788ce7b9832ac1a7cc6f1e6a5690e11c0a710982df6fb6c477f399321017"
+    },
+    {
+      "path": "tests/cloud.spec.ts",
+      "size": 6895,
+      "sha256": "b31858a67d8f6fe1207926c46ac0ee720b1c840b5dbf72c9b5a291778b809e17"
+    },
+    {
+      "path": "tests/core.test.ts",
+      "size": 6417,
+      "sha256": "8a4149bfe8a8b34538a776cd1fe00c9fdbe7b617eaa1fe967005c0c13f4c6ac1"
+    },
+    {
+      "path": "tests/local.spec.ts",
+      "size": 5268,
+      "sha256": "d2afac1954999e5e44d0e065d1077bdcbc21765d000e0186e84b10b451b3a143"
+    },
+    {
+      "path": "tests/ui.spec.ts",
+      "size": 11855,
+      "sha256": "437824c2fc3d04f43e1cfcd876969c26d337a48042a2aaafe1748ab47dc114e9"
+    },
+    {
+      "path": "tsconfig.json",
+      "size": 373,
+      "sha256": "43afe2fae5deeff7cb20c2de89b6a1c39140a1c72a9e8b14f732e933948c105c"
+    },
+    {
+      "path": "vite.config.ts",
+      "size": 274,
+      "sha256": "4c643efaa2a2fb1b5f5eb7dd5cd1c843bea3a0d022c6ec4912f35ea668ddda1d"
+    }
+  ],
+  "web_files": [
+    {
+      "path": "assets/AdminPanel-BGEoecKn.js",
+      "size": 16463,
+      "sha256": "9ecf5c6c34a84c0115bba9691289cf640ee4c98599e6f85ae62348c30f799c49"
+    },
+    {
+      "path": "assets/cloudTransport-CiOfXErX.js",
+      "size": 5163,
+      "sha256": "2fb8e8c5bf69065bc44af9fe91e5f48630c208da34ebced0258d1941d5a00ef1"
+    },
+    {
+      "path": "assets/index-KXTljw80.css",
+      "size": 26657,
+      "sha256": "24da5e8fc933c5bce6205d2973a3bb66483792c553ba8ac2299b2cc339b3a321"
+    },
+    {
+      "path": "assets/index-hGCEw4E9.js",
+      "size": 128295,
+      "sha256": "68e48f1a31740e4b6a112de4d1625333a75d527267349955e1cb12df58c655b5"
+    },
+    {
+      "path": "assets/localTransport-Uu_fjFx2.js",
+      "size": 2463,
+      "sha256": "99d45ad7305bd0b7cc17ec0398323b4e3b07f803f659409374c9e7c769fd79a3"
+    },
+    {
+      "path": "index.html",
+      "size": 428,
+      "sha256": "3087380bc36e2c65ae007ea2ef45f6c248295f153f282bff8fc928d4f1499fb8"
+    }
+  ]
+}
