@@ -172,10 +172,36 @@
     }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
-    #tab-strategy .strategy-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
-    #tab-strategy .strategy-link { display:inline-flex; align-items:center; justify-content:center; padding:11px 18px; border:1px solid var(--primary); border-radius:10px; background:var(--primary); color:#fff; font-weight:600; text-decoration:none; }
-    #tab-strategy .strategy-link.secondary { background:var(--surface); color:var(--primary); }
-    #tab-strategy .strategy-link:focus-visible { outline:3px solid #f59e0b; outline-offset:3px; }
+    /* Only the strategy landing screen uses this task selection layout. */
+    body:has(#tab-strategy.active) { background:#fff; }
+    #tab-strategy { background:#fff; color:#262626; font-size:16px; line-height:1.7; }
+    #tab-strategy .strategy-page-title { display:block; margin:0 0 28px; padding:0; border:0; font-size:28px; font-weight:700; line-height:1.4; letter-spacing:-.03em; color:#171717; }
+    #tab-strategy .strategy-task { display:grid; grid-template-columns:minmax(0,1fr) 208px; align-items:start; gap:40px; margin:0; padding:28px 0; border:0; border-radius:0; box-shadow:none; background:transparent; }
+    #tab-strategy .strategy-task:first-of-type { padding-top:0; }
+    #tab-strategy .strategy-task + .strategy-task { border-top:1px solid #d4d4d4; }
+    #tab-strategy .strategy-task h3 { margin:0 0 10px; padding:0; border:0; font-size:20px; font-weight:700; line-height:1.5; letter-spacing:-.025em; color:#171717; }
+    #tab-strategy .strategy-task p { margin:0; font-size:16px; line-height:1.7; color:#262626; }
+    #tab-strategy h2, #tab-strategy h3, #tab-strategy p, #tab-strategy a { word-break:keep-all; overflow-wrap:anywhere; }
+    #tab-strategy .strategy-task .strategy-storage-note { margin-top:10px; color:#404040; }
+    #tab-strategy .strategy-task-actions { display:flex; flex-direction:column; align-items:stretch; gap:8px; }
+    #tab-strategy .strategy-task .strategy-condition { font-size:14px; text-align:center; color:#404040; }
+    #tab-strategy .strategy-primary, #tab-strategy .strategy-download { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:10px 18px; border:1px solid var(--primary); border-radius:5px; font-size:16px; font-weight:600; line-height:1.5; text-decoration:none; text-align:center; }
+    #tab-strategy .strategy-primary { background:var(--primary); color:#fff; }
+    #tab-strategy .strategy-primary:hover { background:#203f76; border-color:#203f76; text-decoration:none; }
+    #tab-strategy .strategy-download { background:#fff; color:var(--primary); }
+    #tab-strategy .strategy-download:hover { border-color:#203f76; color:#203f76; text-decoration:none; }
+    #tab-strategy .strategy-guide-link, #tab-strategy .strategy-access-link { display:inline-flex; align-items:center; min-height:44px; color:var(--primary); font-size:16px; text-decoration:underline; text-underline-offset:4px; }
+    #tab-strategy .strategy-guide-link { align-self:center; }
+    #tab-strategy .strategy-access { margin-top:4px; }
+    #tab-strategy a { transition:none; }
+    #tab-strategy a:focus-visible { outline:3px solid #1e40af; outline-offset:4px; }
+    @media(max-width:760px) {
+      #tab-strategy .strategy-page-title { margin-bottom:24px; }
+      #tab-strategy .strategy-task { grid-template-columns:minmax(0,1fr); gap:18px; padding:24px 0; }
+      #tab-strategy .strategy-task-actions { width:100%; }
+      #tab-strategy .strategy-task .strategy-condition { text-align:left; }
+      #tab-strategy .strategy-access { margin-top:0; }
+    }
 
     /* ===== 카드 컴포넌트 ===== */
     .card {
@@ -12488,31 +12514,31 @@ function switchSpTab(id,btn){
   <!-- 학종 전략 탭 패널 -->
   <div class="tab-panel" id="tab-strategy" aria-labelledby="tab-btn-strategy">
     <!-- TAB:strategy:START -->
-    <h2 class="section-title" style="margin-top:0;">🧭 학종 전략</h2>
-    <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px;">교사가 학생 자료를 관찰해 사전 전략을 먼저 수립합니다. 준비한 계획으로 학생과 실제 상담을 진행하고, 반응·합의한 방향·수정할 점을 반영하여 최종 전략과 실행과제를 완성합니다.</p>
-    <div class="card">
-      <h3 class="section-title" style="margin-top:0;">교사 전략 수립 → 학생 상담 → 최종 결과물</h3>
-      <p><strong>자료·분석:</strong> 성적·관심·활동의 근거와 실제 이수 과목에 맞는 학교 자료를 확인합니다. 교사가 교과·탐구·활동 계획과 실행 범위를 선택하며 상담 질문은 계획을 확인하는 보조 자료로 사용합니다.</p>
-      <p><strong>사전 전략 준비:</strong> 구체적인 계획과 실행과제를 작성하고 준비 완료하면 읽기 전용 사본으로 보존됩니다. <strong>학생 상담·반영:</strong> 실제 상담일·학생 반응·합의한 방향·수정할 점을 기록합니다.</p>
-      <p><strong>최종 결과물:</strong> 상담을 완료한 뒤 전략을 수정하고 문체·근거 검토와 교사 확정을 거칩니다. 학생 안내는 별도로 진행하며 학생은 본인에게 안내된 최종 전략과 실행과제를 확인하고 PDF로 저장합니다.</p>
-      <p>작성 중인 전략과 교사 참고 메모는 학생에게 공개되지 않습니다. 학생 기본자료·사전 전략 사본·상담 기록도 교사용으로 보관합니다. 사전 준비서는 교사가 사용하고 학생 결과물은 상담 반영 완료와 최종 확정 이후에 전달합니다.</p>
-      <div class="strategy-links">
-        <a class="strategy-link" id="strategy-open-counseling" href="/counseling/">학종 전략실 열기</a>
-        <a class="strategy-link secondary" href="/counseling/guide.html">설치·사용 안내</a>
+    <h2 class="section-title strategy-page-title">학습 전략</h2>
+    <section class="strategy-task" aria-labelledby="strategy-online-title">
+      <div class="strategy-task-copy">
+        <h3 id="strategy-online-title">온라인 학종 전략 작성</h3>
+        <p>학생 자료를 바탕으로 교과·탐구·활동 계획을 작성합니다.<br>교사가 확정해 안내한 내용만 학생이 확인합니다.</p>
       </div>
-    </div>
-    <div class="card">
-      <h3 class="section-title" style="margin-top:0;">학생부 분석과 전략 · 교사 전용</h3>
-      <p>교사 PC에서 학생부 PDF의 채워진 부분을 읽고 강점·보완점의 근거를 확인하여 사전 전략을 세웁니다. 중학교 학생부도 원래 항목을 보존하여 연결합니다.</p>
-      <p>학생부 분석과 이에 따른 AI 전략·문체 점검은 <strong>로컬 Ollama 모델을 갖춘 교사</strong>만 이용합니다. 원문·분석·파생 전략과 사전 준비·상담 기록·최종 결과물은 로컬에 보관합니다. 실제 상담을 반영하고 최종 검토·확정한 학생 안내 PDF를 교사가 직접 전달하며 온라인으로 동기화하지 않습니다.</p>
-      <div class="strategy-links">
-        <a class="strategy-link" href="/counseling/downloads/daeryun-counseling-local.zip" download>교사용 로컬 앱 내려받기</a>
-        <a class="strategy-link secondary" href="/counseling/guide.html">로컬 분석 시작 안내</a>
+      <div class="strategy-task-actions">
+        <a class="strategy-primary" id="strategy-open-counseling" href="/counseling/">전략실 열기</a>
+        <a class="strategy-guide-link" href="/counseling/guide.html">사용 안내</a>
       </div>
-    </div>
-    <div class="card" style="background:var(--muted);">
-      <h3 class="section-title" style="margin-top:0;">처음 이용할 때</h3>
-      <p>관리자가 이용 권한을 승인하고 학생 학번과 담당 교사를 등록하면 온라인 전략을 작성할 수 있습니다. 로컬 앱은 먼저 합성 자료로 흐름을 확인해 주세요. 가져온 사전 전략은 검증되지 않은 참고본이며 상담과 최종 검토를 다시 진행합니다.</p>
+    </section>
+    <section class="strategy-task" aria-labelledby="strategy-local-title">
+      <div class="strategy-task-copy">
+        <h3 id="strategy-local-title">학생부 PDF 분석</h3>
+        <p>교사 PC에서 학생부를 분석하고 강점과 보완점을 확인합니다.</p>
+        <p class="strategy-storage-note">학생부 원문과 분석 결과는 교사 PC에 보관합니다.</p>
+      </div>
+      <div class="strategy-task-actions">
+        <p class="strategy-condition">교사용 · Ollama 모델 필요</p>
+        <a class="strategy-download" href="/counseling/downloads/daeryun-counseling-local.zip" download>로컬 앱 내려받기</a>
+        <a class="strategy-guide-link" href="/counseling/guide.html">설치 및 분석 안내</a>
+      </div>
+    </section>
+    <div class="strategy-access">
+      <a class="strategy-access-link" href="/counseling/guide.html#access-registration">이용 권한과 학생 등록 안내</a>
     </div>
     <!-- TAB:strategy:END -->
   </div>
