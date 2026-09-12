@@ -17,6 +17,16 @@
 [functions]
   directory = "netlify/functions"
 
+# Blobs is loaded by the shared CommonJS helper inside native ESM entries.
+# Copy the SDK and its dependency graph into these function artifacts.
+[functions."counseling-*"]
+  node_bundler = "esbuild"
+  external_node_modules = ["@netlify/blobs"]
+
+[functions."admin-update"]
+  node_bundler = "esbuild"
+  external_node_modules = ["@netlify/blobs"]
+
 # 백워드 수업 설계(/backward/) API 프록시 — Cloud Run 백워드 엔드포인트로 리라이트.
 # 브라우저는 동일 오리진(daeryun.life/bw-api/*)으로 호출 → CORS 불필요, 원본 서버 무수정.
 [[redirects]]

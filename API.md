@@ -63,4 +63,4 @@ GET 응답은 `{users:[{id,name,role,approved}],roles:[{user_id,role,approved}],
 
 ## 공개 준비 상태
 
-`GET /.netlify/functions/counseling-health`는 인증 없이 저장소 읽기 가능 여부와 기존 학교 회원 스키마 조회 가능 여부를 확인한다. 응답은 `{service,version,storage,storage_ready,school_auth_ready,record_analysis:"local-ollama-only",server_ai_configured}`이며 준비되면 200, 실패하면 503이다. 자료·이메일·계정·키를 반환하지 않고 점검용 레코드를 쓰지 않는다. AI 설정 존재 여부만 확인하며 실제 모델 호출 성공을 보증하지 않는다.
+`GET /.netlify/functions/counseling-health`는 인증 없이 저장소 읽기 가능 여부와 기존 학교 회원 스키마 조회 가능 여부를 확인한다. 응답은 `{service,version,storage,storage_ready,storage_diagnostic,school_auth_ready,record_analysis:"local-ollama-only",server_ai_configured}`이며 준비되면 200, 실패하면 503이다. 자료·이메일·계정·키를 반환하지 않고 점검용 레코드를 쓰지 않는다. AI 설정 존재 여부만 확인하며 실제 모델 호출 성공을 보증하지 않는다.
