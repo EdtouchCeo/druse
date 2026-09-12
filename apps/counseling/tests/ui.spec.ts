@@ -41,7 +41,7 @@ test('desktop counseling, evidence, analysis, review, confirmation and next sess
  await expect.poll(()=>logo.evaluate(el=>(el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
  expect(new URL(await logo.getAttribute('src')||'',page.url()).origin).toBe(new URL(page.url()).origin)
  await expect(page.getByRole('navigation',{name:'서비스 경로'}).getByRole('link',{name:'사용 설명서',exact:true})).toHaveAttribute('href','https://daeryun.life/')
- await expect(page.getByRole('navigation',{name:'서비스 경로'}).getByRole('link',{name:'학습전략',exact:true})).toHaveAttribute('href','https://daeryun.life/#strategy')
+ await expect(page.getByRole('navigation',{name:'서비스 경로'}).getByRole('link',{name:'학종 전략',exact:true})).toHaveAttribute('href','https://daeryun.life/#strategy')
  await expect(page.getByRole('navigation',{name:'서비스 경로'}).locator('[aria-current=page]')).toHaveText('학종 전략실')
  expect(await page.locator('.topbar').evaluate(el=>getComputedStyle(el).backgroundImage)).toContain('rgb(30, 58, 107)')
  await page.getByRole('button',{name:'새 전략',exact:true}).click()

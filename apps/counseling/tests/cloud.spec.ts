@@ -29,7 +29,7 @@ async function cloudApi(page:Page,role:'teacher'|'student',published=true){
 test('online teacher uses assigned identity, server AI and authenticated HTML export without local record calls',async({page})=>{
  const api=await cloudApi(page,'teacher')
  await page.goto('https://counseling.test:5178/counseling/')
- await expect(page.getByRole('navigation',{name:'서비스 경로'}).getByRole('link',{name:'학습전략',exact:true})).toHaveAttribute('href','/#strategy')
+ await expect(page.getByRole('navigation',{name:'서비스 경로'}).getByRole('link',{name:'학종 전략',exact:true})).toHaveAttribute('href','/#strategy')
  await expect(page.getByRole('heading',{name:'교사 전략의 근거와 선택지를 검토합니다.'})).toBeVisible()
  await page.getByRole('button',{name:'교사 전략 수립',exact:true}).click()
  await expect(page.getByLabel('목표 전공',{exact:true})).toBeEnabled()

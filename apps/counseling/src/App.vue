@@ -126,10 +126,10 @@ onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunloa
    <img class="school-logo" :src="schoolLogo" alt="대륜고등학교 교표" width="96" height="64">
    <span class="brand-copy"><strong>학종 전략실</strong><small>학생의 방향을 학기별 실행으로 연결합니다</small></span>
   </a>
-  <div class="service-identity"><span class="service-label">학습전략</span><p>자료 분석 · 교사 전략 · 상담과 최종 안내</p></div>
+  <div class="service-identity"><span class="service-label">학종 전략</span><p>자료 분석 · 교사 전략 · 상담과 최종 안내</p></div>
  </div>
  <div class="workspace-bar">
-  <nav class="service-nav" aria-label="서비스 경로"><a :href="manualHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer"><BookOpen :size="15"/>사용 설명서</a><ChevronRight :size="14" aria-hidden="true"/><a :href="strategyHubHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer">학습전략</a><ChevronRight :size="14" aria-hidden="true"/><span aria-current="page">학종 전략실</span></nav>
+  <nav class="service-nav" aria-label="서비스 경로"><a :href="manualHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer"><BookOpen :size="15"/>사용 설명서</a><ChevronRight :size="14" aria-hidden="true"/><a :href="strategyHubHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer">학종 전략</a><ChevronRight :size="14" aria-hidden="true"/><span aria-current="page">학종 전략실</span></nav>
   <div class="top-actions"><span class="mode-chip"><Monitor v-if="localMode" :size="15"/><Cloud v-else :size="15"/>{{localMode?'이 PC에서 처리':'학생 전략 안내'}}</span><span v-if="health?.demo" class="badge warning">합성자료 시연</span><span v-else-if="ready" class="actor">{{health?.teacher?.display_name||health?.user?.display_name}} {{teacher?'교사':''}}</span><button v-if="canManage&&!adminOpen" class="text-button" :disabled="!!busy||adminBusy" @click="openAdmin"><ShieldCheck :size="17"/>학생·담당 관리</button><button v-if="ready&&!localMode&&teacher" class="icon-button" aria-label="일반 AI 설정" @click="settingsOpen=true"><Settings :size="20"/></button></div>
   <nav v-if="transport?.mode==='online'&&(teacher||canManage)" class="online-resources" aria-label="전략실 설치와 안내"><a href="/counseling/downloads/daeryun-counseling-local.zip" download><Download :size="15"/>로컬 실행기 다운로드</a><a href="/counseling/guide.html" target="_blank" rel="noopener noreferrer"><BookOpen :size="15"/>사용안내</a></nav>
  </div>
