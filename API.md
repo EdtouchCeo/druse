@@ -6,6 +6,8 @@
 
 상담 5개 함수와 `admin-update`는 `.mjs`의 Netlify Functions Request/Response 진입점을 사용한다. 내부 기존 handler와 요청·응답 계약은 유지한다. SDK 11.0.3의 `connectLambda`는 강한 읽기에 필요한 `uncachedEdgeURL`을 누락하므로 호출하지 않고, 플랫폼이 제공하는 자동 실행 컨텍스트로 `consistency:"strong"`을 사용한다. 브라우저가 보낸 헤더·본문을 저장소 자격으로 읽지 않는다. [Netlify Functions 공식 실행 방식](https://docs.netlify.com/build/functions/get-started/), [SDK Lambda 호환 구현](https://github.com/netlify/primitives/blob/main/packages/blobs/src/lambda_compat.ts).
 
+운영 함수의 npm 모듈 누락을 방지하기 위해 runtime은 `_lib/vendor/netlify-blobs.cjs`의 정적 상대경로를 사용한다. 설치된 SDK 11.0.3과 실제 참조 의존성만 esbuild로 묶으며 환경값을 삽입하지 않는다. 같은 폴더의 manifest에 버전·패키지 무결성·생성 파일 SHA256, `LICENSES.txt`에 배포 라이선스를 보존한다. `scripts/build-counseling-blobs-vendor.cjs`로 재생성하고, Node 내장 외의 외부 의존성이 남으면 생성을 거절한다. 빌드 점검 플러그인은 기존 npm SDK를 사용한다.
+
 권한·학생 등록·학번 이력·배정·권한 이력은 하나의 설정 문서에서 ETag 조건부 쓰기로 함께 변경한다. 상담은 변경 불가 버전을 먼저 저장하고 조건부 head 변경으로 공개한다. 충돌한 쓰기는 409이며 연결되지 않은 버전·목록 표식은 조회 결과에 나타나지 않는다. 학교 승인과 배정은 변경 전 다시 확인한다. 설정과 상담 head 사이에 SQL과 같은 다중 문서 트랜잭션이 있는 것은 아니며, 접근 요청마다 현재 권한을 검사한다. 설정 문서가 10 MiB를 넘으면 기존 자료를 보존하고 관리 변경을 거절한다.
 
 저장소 객체를 공개 URL로 제공하지 않는다. 승인된 계정만 상담 API에서 허용 범위의 자료를 읽으며, Netlify 운영 계정의 저장소 접근은 별도 관리 권한이다. site-wide 저장소는 배포 간 공유되므로 운영 사이트의 미리보기 배포도 같은 자료에 접근할 수 있는 신뢰된 서버 코드로 취급해야 한다. [Netlify Blobs 저장소·접근 범위](https://docs.netlify.com/build/data-and-storage/netlify-blobs/).

@@ -1,11 +1,23 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 process.env.NODE_ENV='test';
-const {getStore,setEnvironmentContext}=require('@netlify/blobs');
+const {getStore,setEnvironmentContext}=require('../netlify/functions/_lib/vendor/netlify-blobs.cjs');
 const S=require('../netlify/functions/_lib/counseling-storage');
 const {getCounselingAiConfig}=require('../netlify/functions/_lib/counseling-ai-config');
 const originalFetch=global.fetch;
 const runtime={siteID:'synthetic-site',token:'synthetic-only',edgeURL:'https://cache.synthetic.invalid',uncachedEdgeURL:'https://origin.synthetic.invalid'};
+test('vendored SDK matches provenance hash and loads without any npm dependencies',()=>{
+ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
+ const directory=path.join(__dirname,'../netlify/functions/_lib/vendor');
+ const source=fs.readFileSync(path.join(directory,'netlify-blobs.cjs'),'utf8');
+ const manifest=JSON.parse(fs.readFileSync(path.join(directory,'netlify-blobs.manifest.json'),'utf8'));
+ assert.equal(crypto.createHash('sha256').update(source).digest('hex'),manifest.sha256);
+ assert.equal(manifest.sdk.version,'11.0.3');assert.deepEqual(manifest.external_builtins,['process']);
+ const module={exports:{}},loaded=[];
+ vm.runInNewContext(source,{module,exports:module.exports,process:{env:{NODE_ENV:'test'}},Buffer,URL,fetch:()=>{throw Error('unexpected network');},require:name=>{loaded.push(name);assert.equal(name,'process');return {env:{NODE_ENV:'test'}};}});
+ assert.equal(typeof module.exports.getStore,'function');assert.ok(loaded.every(name=>name==='process'));
+ assert.ok(!source.includes('OneDrive'));assert.ok(!source.includes('synthetic-service-key'));
+});
 test.beforeEach(()=>{
  process.env.COUNSELING_STORAGE='blobs';process.env.SUPABASE_URL='https://school.synthetic.invalid';process.env.SUPABASE_SERVICE_KEY='synthetic-only';
  for(const key of ['GEMINI_API_KEY','VERTEX_PROJECT','VERTEX_SA_KEY','LLM_MODEL','COUNSELING_SERVER_AI_ENABLED'])delete process.env[key];

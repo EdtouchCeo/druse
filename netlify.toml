@@ -17,15 +17,15 @@
 [functions]
   directory = "netlify/functions"
 
-# Blobs is loaded by the shared CommonJS helper inside native ESM entries.
-# Copy the SDK and its dependency graph into these function artifacts.
+# The runtime SDK is a checked-in self-contained CJS bundle with provenance.
+# Include the local file explicitly; no runtime npm resolution is required.
 [functions."counseling-*"]
   node_bundler = "esbuild"
-  external_node_modules = ["@netlify/blobs"]
+  included_files = ["netlify/functions/_lib/vendor/netlify-blobs.cjs"]
 
 [functions."admin-update"]
   node_bundler = "esbuild"
-  external_node_modules = ["@netlify/blobs"]
+  included_files = ["netlify/functions/_lib/vendor/netlify-blobs.cjs"]
 
 # 백워드 수업 설계(/backward/) API 프록시 — Cloud Run 백워드 엔드포인트로 리라이트.
 # 브라우저는 동일 오리진(daeryun.life/bw-api/*)으로 호출 → CORS 불필요, 원본 서버 무수정.

@@ -1,0 +1,38 @@
+{
+  "sdk": {
+    "name": "@netlify/blobs",
+    "version": "11.0.3",
+    "source": "https://github.com/netlify/primitives/tree/main/packages/blobs"
+  },
+  "bundler": {
+    "name": "esbuild",
+    "version": "0.28.1"
+  },
+  "format": "cjs",
+  "target": "node22",
+  "external_builtins": [
+    "process"
+  ],
+  "sha256": "258d7c13f497e97f0665b1aeb8f3df99f603e1563434bd4fe4ac925f96a93c20",
+  "bytes": 36085,
+  "packages": [
+    {
+      "name": "@netlify/blobs",
+      "version": "11.0.3",
+      "license": "MIT",
+      "integrity": "sha512-Z8IXQtQC8BQjm76i1bN+l12TTyKQ/s1R92Ajhou7+fpP0KSxnJ65QzLEb5WuFuFutn8ORrcd4mlF8A2xhw8dzA=="
+    },
+    {
+      "name": "@netlify/otel",
+      "version": "7.0.2",
+      "license": "MIT",
+      "integrity": "sha512-MHEsRJTZtOCrLa2fR+Y3GN51rvgxUHazuRVxuWuG7R1qzwynXAZB20Ufwp7BxKSTKcp7LNVEnKAZ/k2ytVmYvQ=="
+    },
+    {
+      "name": "@netlify/runtime-utils",
+      "version": "3.0.0",
+      "license": "MIT",
+      "integrity": "sha512-OHo40+V3QZkR+UrDjqhN+LekrAby/dSSJxsvyYs9i88E/mSl3goB/ysoL+VYROm190egxmQyRYlHK7vL4GeHBQ=="
+    }
+  ]
+}

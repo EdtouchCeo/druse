@@ -47,7 +47,7 @@ function strictFetch(fetcher=globalThis.fetch){return async(input,options={})=>{
 function platformStore(){
  // Native Netlify Functions supply the complete request-scoped Blobs context.
  // Do not call connectLambda: SDK 11.0.3 drops uncachedEdgeURL and breaks strong reads.
- const {getStore}=require('@netlify/blobs');
+ const {getStore}=require('./vendor/netlify-blobs.cjs');
  return getStore({name:STORE_NAME,consistency:'strong',fetch:strictFetch()});
 }
 function currentAdapter(supabase){
