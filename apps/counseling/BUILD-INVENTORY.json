@@ -1,6 +1,6 @@
 {
   "format": "daeryun-counseling-integration",
-  "created_at": "2026-09-12T04:39:12.868282+00:00",
+  "created_at": "2026-09-12T05:15:43.968652+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -9,43 +9,43 @@
     },
     {
       "path": "README.md",
-      "size": 9066,
-      "sha256": "e1f862e811facef9fe4027d2cbeb8e122556ef49a95257fb489507bf2bf3fc58"
+      "size": 9803,
+      "sha256": "c2235e3301ada5bf7dec4f0552b2729f2d5663989995bcfb14dd59981d4929a2"
     },
     {
       "path": "VERIFICATION.md",
-      "size": 6535,
-      "sha256": "35921c9d628c32e0089e441fdfbaf4d9515998ccb929e2ec8ccdd392fe7527f8"
+      "size": 8027,
+      "sha256": "16a27a2d1090e6c9ea06ca5059dcf04778bcd965d5ee6fd66bf49188f2241600"
     },
     {
-      "path": "dist/assets/AdminPanel-qyiqRf_y.js",
+      "path": "dist/assets/AdminPanel-CVnPVSSH.js",
       "size": 16463,
-      "sha256": "1651629ae8ba153b9fba5193b16862f3e1a2e36af3ae2c5d8f2201e1bff85292"
+      "sha256": "aa7990493aeed72de539021f47dc52f7f0a9dc976c2e81d1dcea1d34b67303b4"
     },
     {
-      "path": "dist/assets/cloudTransport-B-IEyjlT.js",
-      "size": 5768,
-      "sha256": "7c0f85fcf511bbea5fe48f2060a67d9c8e1bbdd15d031c362235dd6690e8df19"
+      "path": "dist/assets/cloudTransport-DPbfXKnA.js",
+      "size": 6085,
+      "sha256": "64675658433d19f18dc37dde505f255070bc5f58c0a8e8b756ee5dafde72defb"
     },
     {
-      "path": "dist/assets/index-BFTadiJR.js",
-      "size": 138736,
-      "sha256": "ce305f3aec1d185952c51115fde10498227281943d6177f23902bc4ccce5349a"
+      "path": "dist/assets/index-DSd8MrCi.css",
+      "size": 35973,
+      "sha256": "a488d64d521b87f06447ee68fd8d378b50a27756a5b18bdfbde904c432fd0d0e"
     },
     {
-      "path": "dist/assets/index-C2fMvBe7.css",
-      "size": 28406,
-      "sha256": "96d997902ea79e188547394c18428fb4e6963d40481d242adccb8a1bb785ec3a"
+      "path": "dist/assets/index-S9sQdGoV.js",
+      "size": 617261,
+      "sha256": "2d5c4eb7f332fbe12f09b0dc46ab5765cfd908d0757ae2698ad59bf046709e69"
     },
     {
-      "path": "dist/assets/localTransport-Clxjk9jq.js",
+      "path": "dist/assets/localTransport-Cpn9GdZs.js",
       "size": 2490,
-      "sha256": "15dce9a122eb80d04ae1ec747ba7e95520ddeee0dc96b16fc992f6b0670f24f9"
+      "sha256": "31bc940d4c7824bbd6785a8e9ee0a365967cf85f313f0a6f89d27b9d899868f5"
     },
     {
       "path": "dist/index.html",
       "size": 437,
-      "sha256": "b5653bfc4f84bc667dd67868de76bd84d159130e9a06391b7ac05751e90c7ba6"
+      "sha256": "d942d3fc4df638dbbd1b153c8fb94755a4b636520f799b631d6e3e7525215256"
     },
     {
       "path": "index.html",
@@ -74,8 +74,8 @@
     },
     {
       "path": "src/App.vue",
-      "size": 57001,
-      "sha256": "f49ba5608fa1c7c9a57d0a68246bf98f114650ed8a9d872f90c5113cde52cfe3"
+      "size": 59527,
+      "sha256": "14fcefbb56e0121d3c5d0b17eb769ca072929e0ad2199e642e3df5a89ae942b3"
     },
     {
       "path": "src/components/AdminPanel.vue",
@@ -83,9 +83,29 @@
       "sha256": "73209abc3ee7cc7d43ee4eaeff2b35b046f8daafb4cb470556d5ceb2a887e834"
     },
     {
+      "path": "src/components/ProfileEditor.vue",
+      "size": 4656,
+      "sha256": "d3a2c71377e607b7612cac68ab1a2399942f2f53f92212b771c8e45671dca383"
+    },
+    {
+      "path": "src/components/SchoolContextCards.vue",
+      "size": 5913,
+      "sha256": "3cd59a3c9dc434f8425217f3ad36d24d4d70d97b2aaf760da0bb77c083e2dedc"
+    },
+    {
       "path": "src/components/StrategyEditor.vue",
       "size": 1989,
       "sha256": "ca135f393ecdddb039d904dbc144216abc059fd9b6d178265fafb1ddf70f8c5d"
+    },
+    {
+      "path": "src/components/StudentUnderstanding.vue",
+      "size": 9249,
+      "sha256": "d3cc733b881cd9cb8e2729953d613a422267fb4f9a6e1173da405b7bb4af4cdf"
+    },
+    {
+      "path": "src/data/school-context.json",
+      "size": 454252,
+      "sha256": "be58d67726d9135b54dfff0d3ff097033d027d3a6648ef60dfd8b0fd76a15113"
     },
     {
       "path": "src/lib/admin.ts",
@@ -99,8 +119,8 @@
     },
     {
       "path": "src/lib/cloudTransport.ts",
-      "size": 7912,
-      "sha256": "8e1b608f1668eab08d99a8be951262808a7d55eb8c5555f96f40f601f88ab773"
+      "size": 8291,
+      "sha256": "b14b7eb4666ba7b880018c166de4cd14c76f5b95b604ecfbe622c4977a640fc3"
     },
     {
       "path": "src/lib/localTransport.ts",
@@ -109,8 +129,18 @@
     },
     {
       "path": "src/lib/model.ts",
-      "size": 7164,
-      "sha256": "5791c38c2b85dd1640120cd4aecdb683b81c28e7dbc65bf8a69a0d71a2b3916b"
+      "size": 7409,
+      "sha256": "aef4fec714a132dcb8ae06f37c79e161427a21150693217572895e8063228a10"
+    },
+    {
+      "path": "src/lib/profile.ts",
+      "size": 13179,
+      "sha256": "2079362dedfb46a4d1c989b42c0196a7d6cce7c94e6035bd4aafae1be60e4944"
+    },
+    {
+      "path": "src/lib/schoolContext.ts",
+      "size": 4049,
+      "sha256": "843485a7aa992feacc76e616ed95ea7d023da148b964ca08d9b4b43c09eaf8f3"
     },
     {
       "path": "src/lib/transport.ts",
@@ -119,8 +149,8 @@
     },
     {
       "path": "src/lib/types.ts",
-      "size": 4279,
-      "sha256": "79c9d598a79b6791de5225b773ecb724ac01f9e5e52acf453596a1698502f70e"
+      "size": 4767,
+      "sha256": "09fff04c9b36cfec47ae9b3cedf4f98613dc51791be94b6e19b3e786808d20b7"
     },
     {
       "path": "src/main.ts",
@@ -129,13 +159,13 @@
     },
     {
       "path": "src/style.css",
-      "size": 28567,
-      "sha256": "95283ab870ad912d17c215ba022afe201eab51568c32810045bc45a9701b5568"
+      "size": 36179,
+      "sha256": "007749fb6f29ba1f2aaeb466fa43c97932ac92e7bf02736557a25d98be36a819"
     },
     {
       "path": "tests/admin.spec.ts",
-      "size": 6948,
-      "sha256": "dee1d5d3e3690399833f29390a8146db3ea918b55864f6a035dfdea27fea21c9"
+      "size": 6964,
+      "sha256": "db1ddffdeb475ab92e57860807cdc568ab47d73d7931908c20540023bc37ce3f"
     },
     {
       "path": "tests/admin.test.ts",
@@ -154,8 +184,8 @@
     },
     {
       "path": "tests/cloud.spec.ts",
-      "size": 9971,
-      "sha256": "53893c278fa6423efa300d33d9ab15f566bfa0a7f5b3b5259a3e5abc78470a25"
+      "size": 10710,
+      "sha256": "0941d804fecf5ba33be2f46f5ad77e2890e19eb683cbdb93e6473c264025f301"
     },
     {
       "path": "tests/core.test.ts",
@@ -164,13 +194,18 @@
     },
     {
       "path": "tests/local.spec.ts",
-      "size": 5676,
-      "sha256": "9a2b2c1706bfa7e25bb825bdf02c842a4d4fdcbef82847bda851e1a286922d18"
+      "size": 9342,
+      "sha256": "d494a560cbbba3b79210d6f88d020d05cb7a5215b39028c02175fc119a71dcbb"
+    },
+    {
+      "path": "tests/profile.test.ts",
+      "size": 7776,
+      "sha256": "339ceb5d31b2ea879717ba1207c30884334c8c96008544a232c9960a86669317"
     },
     {
       "path": "tests/ui.spec.ts",
-      "size": 13375,
-      "sha256": "c9b2bea41c3444417b5be6cbdb1e25d07544a6a0a4abccbbd418d8755ca9e2eb"
+      "size": 20044,
+      "sha256": "77d99dd4b26e5d4649a2425dac346864565f0b32dc37ceb3b3e6da924d3b441b"
     },
     {
       "path": "tsconfig.json",
@@ -185,34 +220,34 @@
   ],
   "web_files": [
     {
-      "path": "assets/AdminPanel-qyiqRf_y.js",
+      "path": "assets/AdminPanel-CVnPVSSH.js",
       "size": 16463,
-      "sha256": "1651629ae8ba153b9fba5193b16862f3e1a2e36af3ae2c5d8f2201e1bff85292"
+      "sha256": "aa7990493aeed72de539021f47dc52f7f0a9dc976c2e81d1dcea1d34b67303b4"
     },
     {
-      "path": "assets/cloudTransport-B-IEyjlT.js",
-      "size": 5768,
-      "sha256": "7c0f85fcf511bbea5fe48f2060a67d9c8e1bbdd15d031c362235dd6690e8df19"
+      "path": "assets/cloudTransport-DPbfXKnA.js",
+      "size": 6085,
+      "sha256": "64675658433d19f18dc37dde505f255070bc5f58c0a8e8b756ee5dafde72defb"
     },
     {
-      "path": "assets/index-BFTadiJR.js",
-      "size": 138736,
-      "sha256": "ce305f3aec1d185952c51115fde10498227281943d6177f23902bc4ccce5349a"
+      "path": "assets/index-DSd8MrCi.css",
+      "size": 35973,
+      "sha256": "a488d64d521b87f06447ee68fd8d378b50a27756a5b18bdfbde904c432fd0d0e"
     },
     {
-      "path": "assets/index-C2fMvBe7.css",
-      "size": 28406,
-      "sha256": "96d997902ea79e188547394c18428fb4e6963d40481d242adccb8a1bb785ec3a"
+      "path": "assets/index-S9sQdGoV.js",
+      "size": 617261,
+      "sha256": "2d5c4eb7f332fbe12f09b0dc46ab5765cfd908d0757ae2698ad59bf046709e69"
     },
     {
-      "path": "assets/localTransport-Clxjk9jq.js",
+      "path": "assets/localTransport-Cpn9GdZs.js",
       "size": 2490,
-      "sha256": "15dce9a122eb80d04ae1ec747ba7e95520ddeee0dc96b16fc992f6b0670f24f9"
+      "sha256": "31bc940d4c7824bbd6785a8e9ee0a365967cf85f313f0a6f89d27b9d899868f5"
     },
     {
       "path": "index.html",
       "size": 437,
-      "sha256": "b5653bfc4f84bc667dd67868de76bd84d159130e9a06391b7ac05751e90c7ba6"
+      "sha256": "d942d3fc4df638dbbd1b153c8fb94755a4b636520f799b631d6e3e7525215256"
     }
   ]
 }

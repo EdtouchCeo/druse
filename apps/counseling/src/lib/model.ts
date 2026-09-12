@@ -1,4 +1,5 @@
 import type { Analysis, Backup, CounselingCase, Mode, Session, Strategy } from './types'
+import {normalizeProfile} from './profile'
 export function applyAnalysis(strategy:Strategy,analysis:Analysis):Strategy {const next={...strategy};if(!next.strengths.trim())next.strengths=analysis.strengths.map(f=>[f.text,f.guidance].filter(Boolean).join('\n')).join('\n\n');if(!next.gaps.trim())next.gaps=analysis.improvements.map(f=>[f.text,f.guidance].filter(Boolean).join('\n')).join('\n\n');return next}
 export const strategyFields = [
  {key:'target_major',label:'목표 전공',hint:'관심 전공이나 아직 탐색 중인 계열을 적습니다.'},
@@ -12,8 +13,8 @@ export const strategyFields = [
  {key:'student_message',label:'학생 안내 메시지',hint:'학생이 지금 할 일과 함께 점검할 내용을 직접 안내합니다.'},
 ] as const satisfies readonly {key:keyof Strategy;label:string;hint:string}[]
 export function emptyStrategy():Strategy{return {target_major:'',target_path:'',strengths:'',gaps:'',subject_plan:'',inquiry_plan:'',activity_plan:'',semester_plan:'',student_message:''}}
-export function normalizeCase(value:CounselingCase):CounselingCase {const copy=clone(value);for(const session of copy.sessions){const input=session.strategy;session.strategy=emptyStrategy();for(const {key} of strategyFields)if(typeof input?.[key]==='string')session.strategy[key]=input[key];session.guidance=session.guidance||null}return copy}
-export function studentView(value:CounselingCase):CounselingCase|null {const copy=normalizeCase(value);copy.sessions=copy.sessions.filter(s=>Boolean(s.guidance?.published_at&&s.guidance?.published_by));if(!copy.sessions.length)return null;for(const s of copy.sessions){s.student_question='';s.context='';s.evidence_notes='';s.teacher_opinion='';s.record=null;s.analysis=null;s.review=null;s.confirmed=null}copy.current_session_id=copy.sessions.some(s=>s.id===copy.current_session_id)?copy.current_session_id:copy.sessions.at(-1)!.id;return copy}
+export function normalizeCase(value:CounselingCase):CounselingCase {const copy=clone(value);for(const session of copy.sessions){session.profile=normalizeProfile(session.profile);const input=session.strategy;session.strategy=emptyStrategy();for(const {key} of strategyFields)if(typeof input?.[key]==='string')session.strategy[key]=input[key];session.guidance=session.guidance||null}return copy}
+export function studentView(value:CounselingCase):CounselingCase|null {const copy=clone(value);for(const s of copy.sessions)delete s.profile;const normalized=normalizeCase(copy);normalized.sessions=normalized.sessions.filter(s=>Boolean(s.guidance?.published_at&&s.guidance?.published_by));if(!normalized.sessions.length)return null;for(const s of normalized.sessions){delete s.profile;s.student_question='';s.context='';s.evidence_notes='';s.teacher_opinion='';s.record=null;s.analysis=null;s.review=null;s.confirmed=null}normalized.current_session_id=normalized.sessions.some(s=>s.id===normalized.current_session_id)?normalized.current_session_id:normalized.sessions.at(-1)!.id;return normalized}
 export function isLoopback(host:string):boolean { return ['localhost','127.0.0.1','::1','[::1]'].includes(host.toLowerCase()) }
 export function modeForHost(host:string):Mode { return isLoopback(host) ? 'local' : 'online' }
 export const clone = <T>(value:T):T => JSON.parse(JSON.stringify(value)) as T

@@ -82,5 +82,5 @@ test('teacher-manager can open management and return to counseling',async({page}
  await page.getByRole('button',{name:'학생·담당 관리',exact:true}).click()
  await expect(page.getByRole('heading',{name:'학생과 상담 교사를 연결합니다.'})).toBeVisible()
  await page.getByRole('button',{name:'상담으로 돌아가기',exact:true}).click()
- await expect(page.getByRole('heading',{name:'학생별 학종 전략을 시작해 보세요.'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'학생 자료를 입력하고 전략 준비를 시작하세요.'})).toBeVisible()
 })

@@ -14,7 +14,20 @@
 
 Case는 `counseling_local/CONTRACT.md`와 같되 `privacy:"standard"`다. `record`, `analysis`는 항상 null이다. `local_only` 또는 학생부 원문·분석이 포함된 입력과 백업은 거절한다. 실제 학생 정보는 서버가 등록한 고정 student_id로만 선택한다. 학번은 학년도별 이력이다.
 
-서버 0.3.0은 상담 내용을 교사의 학종 전략 수립과 학생 안내로 연결한다. 각 Session에 `strategy:{target_major,target_path,strengths,gaps,subject_plan,inquiry_plan,activity_plan,semester_plan,student_message}`가 있으며 9개 값은 각각 12,000자 이내 문자열이다. 과거 자료에 strategy가 없으면 빈 기본값을 반환한다. `guidance`는 null 또는 서버가 부여한 `{published_at,published_by}`이며 PUT으로 변경할 수 없다. 자료 형식 `schema_version:1`은 유지한다.
+서버 0.4.0은 교사의 학생 자료 입력·분석과 학종 전략 수립·학생 안내를 연결한다. 각 Session에 `strategy:{target_major,target_path,strengths,gaps,subject_plan,inquiry_plan,activity_plan,semester_plan,student_message}`가 있으며 9개 값은 각각 12,000자 이내 문자열이다. 과거 자료에 strategy가 없으면 빈 기본값을 반환한다. `guidance`는 null 또는 서버가 부여한 `{published_at,published_by}`이며 PUT으로 변경할 수 없다. 자료 형식 `schema_version:1`은 유지한다.
+
+`Session.profile`은 교사가 입력한 자료이며 학생에게 공개하는 전략과 분리한다. 과거 자료에서 없거나 일부 항목만 제공되면 나머지는 아래 빈 기본값으로 정규화한다. 제공된 잘못된 자료형과 알 수 없는 항목은 거절한다. 서술·과목·성취도 앞뒤 공백을 정리하고 NUL 문자는 거절한다. 선택 과목은 공백 정리 후 빈 이름·중복을 허용하지 않는다. 작성 중인 성적 행의 빈 과목명은 백업·복원할 수 있으며 교사용 PDF에 과목 미입력으로 표시한다.
+
+| profile 항목 | 형식·범위 | 빈 기본값 |
+|---|---|---|
+| target_major, interests, learning_concerns, study_habits, activities, reading, attendance_notes, teacher_observations | 각각 6,000자 이내 문자열 | 빈 문자열 |
+| selected_subjects | 문자열 배열, 최대 20개, 과목당 최대 100자 | `[]` |
+| weekly_minutes | 0~2400 정수 또는 null. 0도 입력값으로 보존 | null |
+| grades | 아래 성적 행 배열, 최대 60개, 중복 ID 금지 | `[]` |
+
+성적 행은 `{id,subject,academic_year,semester,grade_scale,rank_grade,score,achievement}`다. id는 UUID, subject는 100자 이내 문자열, academic_year는 1990~2100 정수, semester는 1 또는 2다. grade_scale은 문자열 `"5"`, `"9"`, `"achievement"`, `"unknown"` 중 하나이며 rank_grade는 해당 5·9등급 범위의 정수 또는 null이다. 성취도·미확인 척도에서는 rank_grade가 반드시 null이어야 한다. score는 0~100 숫자(소수 허용) 또는 null이고 achievement는 20자 이내 문자열이다. 일부 자료만 입력된 상태도 정상이며 입력되지 않은 값을 점수나 약점으로 추정하지 않는다.
+
+profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있으면 본문 해시에 포함하므로 수정 시 검토가 무효화되고 확정 회차는 변경할 수 없다. next와 검증된 import는 profile을 이어받지만 새 회차·가져온 사본의 guidance는 초기화한다. 교사 백업과 교사용 PDF에는 입력 자료 요약·척도를 구분한 성적표를 포함한다. 학생 list/get/export와 학생용 PDF(교사의 학생용 미리보기 포함)에서는 profile 키와 자료를 전부 제외한다. 성적·출결·교사 관찰을 학생에게 자동 공개하지 않는다.
 
 전략은 본문 해시에 포함되고 guidance는 제외된다. 전략 값이 모두 비어 있으면 기존 본문 해시 형식을 유지해 과거 검토·확정의 무결성을 보존한다. 전략을 수정하면 미확정 회차의 검토를 무효화하며 확정한 내용은 다음 전략 개정 회차에서 수정한다. 전략이 있는 회차의 검토에는 주제·학생 안내 문장·실행 과제가 필요하다. 빈 전략의 기존 수기 기록은 과거 검토 규칙을 유지하지만, 학생에게 공개하려면 학생 안내 문장과 실행 과제를 갖춰야 한다.
 
@@ -56,7 +69,7 @@ Case는 `counseling_local/CONTRACT.md`와 같되 `privacy:"standard"`다. `recor
 
 입력은 `{case_id,session_id,revision,privacy:"standard",purpose:"counseling"|"style",instruction?:string}`이다. 서버가 접근 가능한 저장 상담에서 본문을 구성한다. 브라우저가 임의 prompt/history/첨부/PDF/분석을 보내는 범용 릴레이가 아니다. 승인된 담당 교사만 호출한다. 서버 자격은 기존 `_lib/vertex.js`를 사용하고 개인 키를 요청으로 받지 않는다. 서버 모드 실패 시 제공자를 자동 전환하지 않는다.
 
-AI에는 저장된 전략의 9개 항목을 함께 제공해 근거·확인 질문·실행할 전략 초안을 구분하도록 한다. 문체 점검은 전략과 학생 안내 문장을 포함하고 인용·수치·일정, 계획과 실제 수행의 차이를 보존한다. AI 응답은 자동으로 전략을 저장·확정·공개하지 않는다.
+승인된 담당 교사의 AI 요청에는 서버가 읽은 profile과 저장 전략 9개 항목을 함께 제공한다. 일반 분석 응답은 입력 근거에 따른 관찰 → 확인이 필요한 자료 → 교과 연결 → 다음 상담 질문 → 실행 제안 순서로 요청한다. 입력되지 않은 정보를 약점이나 역량 부족으로 판단하거나 근거 없는 합격 가능성·합격 등급을 만들지 않도록 명시한다. 서로 다른 5·9등급·성취도 척도를 하나의 평균 등급으로 합치지 않는다. 이는 교사 검토용 생성 초안이며 모델의 판단 정확도를 보증하지 않는다. 문체 점검은 전략과 학생 안내 문장을 포함하고 인용·수치·일정, 계획과 실제 수행의 차이를 보존한다. AI 응답은 자동으로 전략을 저장·확정·공개하지 않는다.
 
 공통 설정은 `_lib/counseling-ai-config.js`의 `getCounselingAiConfig()`가 반환하는 `{enabled,model}`이다. 기존 Gemini 키 또는 완성된 Vertex 설정이 있고 `COUNSELING_SERVER_AI_ENABLED`가 명시적으로 `false`가 아니면 사용 가능하다. 모델은 `LLM_MODEL` 또는 기존 사이트 기본값 `gemini-2.5-flash`다. 명시 비활성은 `AI_DISABLED`, 자격 설정 누락은 `AI_CONFIG` 503이며 상담 내용은 변경되지 않는다.
 
