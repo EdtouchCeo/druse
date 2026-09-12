@@ -7,7 +7,7 @@ export class CloudTransport implements Transport {
  readonly mode='online' as const
  async admin(){return this.request<AdminData>('counseling-admin')}
  async administer(input:AdminAction){if(input.action==='role'&&!['teacher','student'].includes(input.role))throw new Error('이 화면에서는 교사와 학생의 상담 권한만 변경할 수 있습니다.');return this.request<{ok?:boolean;student_id?:string}>('counseling-admin','POST',input)}
- private headers(){const token=readSessionToken(localStorage);if(!token)throw new Error('대륜고 사용설명서에 로그인한 뒤 상담실을 다시 열어 주세요.');return {'Content-Type':'application/json',Authorization:'Bearer '+token}}
+ private headers(){const token=readSessionToken(localStorage);if(!token)throw new Error('학교 계정 로그인이 필요합니다. 아래 로그인 버튼을 누르면 로그인 후 학종 전략실로 이동합니다.');return {'Content-Type':'application/json',Authorization:'Bearer '+token}}
  private async request<T>(path:string,method='GET',body?:unknown,signal?:AbortSignal):Promise<T>{const r=await checked(await fetch(base+path,{method,headers:this.headers(),...(body!==undefined?{body:JSON.stringify(body)}:{}),signal,cache:'no-store',credentials:'same-origin'}));return r.json() as Promise<T>}
  private path(id?:string,action?:string){const q=new URLSearchParams();if(id)q.set('id',id);if(action)q.set('action',action);return 'counseling-cases'+(q.size?'?'+q:'')}
  async health(signal?:AbortSignal):Promise<Health>{const data=await this.request<{user:Actor;ai:{server:boolean};students:Student[]}>('counseling-session','GET',undefined,signal);return {mode:'online',demo:false,teacher:data.user.role==='teacher'?data.user:null,user:data.user,students:data.students,ai:data.ai,ollama:{available:false,models:[]}}}

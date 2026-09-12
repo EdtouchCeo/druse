@@ -1,6 +1,6 @@
 {
   "format": "daeryun-counseling-integration",
-  "created_at": "2026-09-12T06:33:56.683233+00:00",
+  "created_at": "2026-09-12T06:40:10.718413+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -18,19 +18,19 @@
       "sha256": "b268f4578903bd24556be66e9e7c5703597ae64041ed02bbd12d4abb60eea772"
     },
     {
-      "path": "dist/assets/AdminPanel-DhQGd2kQ.js",
+      "path": "dist/assets/AdminPanel-CeWp7EYq.js",
       "size": 16463,
-      "sha256": "8ba4890267ce6a9d6ad4c2559e7e3d0df97242c6a5833263a5e8726fccb7f14f"
+      "sha256": "282de2f194c54c5f92cc5e6a22fee39f1e5796f1a31ba6d25120caf8606af99c"
     },
     {
-      "path": "dist/assets/cloudTransport-CcLn1GAh.js",
-      "size": 6566,
-      "sha256": "049787a51f9d548235260e445b9468a6729b2ff8d22f176c56c186fa10aa5114"
+      "path": "dist/assets/cloudTransport-Clo6Oz9N.js",
+      "size": 6614,
+      "sha256": "02f75fac2e080a8f32101890e777498c083d1cce83628042df71db20f9b0ac05"
     },
     {
-      "path": "dist/assets/index-DDG92g2U.js",
+      "path": "dist/assets/index-B-6z9XBT.js",
       "size": 649411,
-      "sha256": "f54c80c6fc18d1c2fd2acb300d40d8df79817bee11b592e23cd94d886800439e"
+      "sha256": "e08d2894407051a72a1e66cc8054f2ee6f5cbbdd458f2950e7a9354d8144ba14"
     },
     {
       "path": "dist/assets/index-fi3tDOtL.css",
@@ -38,9 +38,9 @@
       "sha256": "36659c9897f19cd8368e594a76b7e8c34a517dbf660d525563cca9c8d5616bcf"
     },
     {
-      "path": "dist/assets/localTransport-BnWjb-QU.js",
+      "path": "dist/assets/localTransport-DGQ0gsmI.js",
       "size": 2630,
-      "sha256": "303f497098b613b909ed9499eb8075ec1950d942f37e060115188cdb0a9d12ae"
+      "sha256": "b8964d352c5e2f407a8df0fb22f3d29a240985700d1178d030194fd9e26228d5"
     },
     {
       "path": "dist/assets/school-logo-z178Sqr0.png",
@@ -50,7 +50,7 @@
     {
       "path": "dist/index.html",
       "size": 437,
-      "sha256": "abb81bad038df2e8a9fd6bfb6c9a724d2fabd7845c41e0923fdf5aeb1f77c8e2"
+      "sha256": "872a8bcc4eee2fd4c8c66c72c5598e4e5454a0631fb9c4c2a82175942a3797c8"
     },
     {
       "path": "index.html",
@@ -134,8 +134,8 @@
     },
     {
       "path": "src/lib/cloudTransport.ts",
-      "size": 8876,
-      "sha256": "3bbe127031489d15cb80bcdf3d447fd65ce50b2a2643df02fa930b57fb4d184f"
+      "size": 8923,
+      "sha256": "a9910a3470f8aa0058be7c933b19e2e5955233d72dcb31767b6b2ed46a3c7d9c"
     },
     {
       "path": "src/lib/localTransport.ts",
@@ -255,19 +255,19 @@
   ],
   "web_files": [
     {
-      "path": "assets/AdminPanel-DhQGd2kQ.js",
+      "path": "assets/AdminPanel-CeWp7EYq.js",
       "size": 16463,
-      "sha256": "8ba4890267ce6a9d6ad4c2559e7e3d0df97242c6a5833263a5e8726fccb7f14f"
+      "sha256": "282de2f194c54c5f92cc5e6a22fee39f1e5796f1a31ba6d25120caf8606af99c"
     },
     {
-      "path": "assets/cloudTransport-CcLn1GAh.js",
-      "size": 6566,
-      "sha256": "049787a51f9d548235260e445b9468a6729b2ff8d22f176c56c186fa10aa5114"
+      "path": "assets/cloudTransport-Clo6Oz9N.js",
+      "size": 6614,
+      "sha256": "02f75fac2e080a8f32101890e777498c083d1cce83628042df71db20f9b0ac05"
     },
     {
-      "path": "assets/index-DDG92g2U.js",
+      "path": "assets/index-B-6z9XBT.js",
       "size": 649411,
-      "sha256": "f54c80c6fc18d1c2fd2acb300d40d8df79817bee11b592e23cd94d886800439e"
+      "sha256": "e08d2894407051a72a1e66cc8054f2ee6f5cbbdd458f2950e7a9354d8144ba14"
     },
     {
       "path": "assets/index-fi3tDOtL.css",
@@ -275,9 +275,9 @@
       "sha256": "36659c9897f19cd8368e594a76b7e8c34a517dbf660d525563cca9c8d5616bcf"
     },
     {
-      "path": "assets/localTransport-BnWjb-QU.js",
+      "path": "assets/localTransport-DGQ0gsmI.js",
       "size": 2630,
-      "sha256": "303f497098b613b909ed9499eb8075ec1950d942f37e060115188cdb0a9d12ae"
+      "sha256": "b8964d352c5e2f407a8df0fb22f3d29a240985700d1178d030194fd9e26228d5"
     },
     {
       "path": "assets/school-logo-z178Sqr0.png",
@@ -287,7 +287,7 @@
     {
       "path": "index.html",
       "size": 437,
-      "sha256": "abb81bad038df2e8a9fd6bfb6c9a724d2fabd7845c41e0923fdf5aeb1f77c8e2"
+      "sha256": "872a8bcc4eee2fd4c8c66c72c5598e4e5454a0631fb9c4c2a82175942a3797c8"
     }
   ]
 }
