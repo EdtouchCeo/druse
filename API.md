@@ -14,7 +14,19 @@
 
 Case는 `counseling_local/CONTRACT.md`와 같되 `privacy:"standard"`다. `record`, `analysis`는 항상 null이다. `local_only` 또는 학생부 원문·분석이 포함된 입력과 백업은 거절한다. 실제 학생 정보는 서버가 등록한 고정 student_id로만 선택한다. 학번은 학년도별 이력이다.
 
-서버 0.4.0은 교사의 학생 자료 입력·분석과 학종 전략 수립·학생 안내를 연결한다. 각 Session에 `strategy:{target_major,target_path,strengths,gaps,subject_plan,inquiry_plan,activity_plan,semester_plan,student_message}`가 있으며 9개 값은 각각 12,000자 이내 문자열이다. 과거 자료에 strategy가 없으면 빈 기본값을 반환한다. `guidance`는 null 또는 서버가 부여한 `{published_at,published_by}`이며 PUT으로 변경할 수 없다. 자료 형식 `schema_version:1`은 유지한다.
+서버 0.5.0은 교사의 학생 자료 입력·분석 → 사전 전략 수립 → 학생 상담 → 상담을 반영한 최종 전략·PDF 결과물을 연결한다. 각 Session에 `strategy:{target_major,target_path,strengths,gaps,subject_plan,inquiry_plan,activity_plan,semester_plan,student_message}`가 있으며 9개 값은 각각 12,000자 이내 문자열이다. 과거 자료에 strategy가 없으면 빈 기본값을 반환한다. `guidance`는 null 또는 서버가 부여한 `{published_at,published_by}`이며 PUT으로 변경할 수 없다. 자료 형식 `schema_version:1`은 유지한다.
+
+새 create·next 회차에는 `workflow_version:2`, `preparation:null`, 빈 `consultation`을 부여한다. workflow_version이 없는 과거 회차는 기존 검토·확정·학생 PDF 규칙을 유지하며 자동으로 새 절차에 편입하지 않는다. 과거 미확정 회차도 prepare를 요청하면 버전 2로 전환할 수 있다. workflow_version과 preparation은 서버 보호 필드이며 직접 PUT으로 부여·제거·수정할 수 없다.
+
+`preparation`은 null 또는 `{prepared_at,prepared_by,topic,strategy,actions}`다. prepare는 현재 주제·전략·과제를 한 번 복사하고 현재 인증 교사의 ID와 서버 시각을 기록한다. 200자 이내의 비어 있지 않은 주제 및 subject_plan·inquiry_plan·activity_plan·semester_plan 중 하나 이상이 필요하다. 확정된 회차 또는 이미 준비한 회차의 재준비는 409다. 준비가 끝나면 원안을 유지하면서 현재 strategy·actions를 상담 결과에 따라 수정한다. 준비본은 workflow_version 2에서만 허용한다.
+
+`consultation`은 `{status:"not_started"|"in_progress"|"completed",date,student_response,agreed_direction,adjustments,summary}`다. 기본 상태는 not_started, 나머지는 빈 문자열이며 각 문자열은 6,000자 이내, NUL 금지다. date는 비어 있거나 실제 달력에 존재하는 YYYY-MM-DD다. 준비 전에는 상담 상태 변경과 날짜·본문 입력을 허용하지 않는다. prepare는 status를 in_progress로 바꾸며 이후 not_started로 되돌릴 수 없다. 교사가 PUT으로 completed를 저장할 때 유효한 date·공백만 아닌 student_response·agreed_direction이 필요하다. 상담을 완료한 뒤 최종 전략을 다듬어도 completed는 유지하고 내용의 검토는 초기화한다.
+
+버전 2의 confirm·publish·학생용 PDF는 preparation과 completed 상담이 모두 필요하다. 준비 누락은 `PREPARATION_REQUIRED`, 미완료 상담은 `CONSULTATION_REQUIRED` 409다. 학생용 PDF는 교사가 미리 보는 경우에도 현재 본문 해시와 일치하는 confirmed가 필요하며, 미확정·해시 불일치는 `CONFIRM_REQUIRED` 409다. 별도의 문체·근거 검토와 교사 확인, 학생 안내 문장·실행 과제 조건도 유지한다. 교사용 보고서는 미완료·미확정 초안에서도 볼 수 있으며 학생 입력 자료, 사전 전략 스냅샷, 상담 반영 사항, 현재 최종 전략 초안을 구분한다. 학생용 결과물에는 현재 전략·실행 과제만 포함하고 preparation·consultation의 키와 내용은 학생 API·JSON·PDF에서 전부 제외한다.
+
+명시된 workflow_version 2, preparation, 값이 있는 consultation은 본문 해시에 포함한다. 과거 버전 부재 회차에 preparation null·빈 상담 기본값을 추가해도 이전 해시를 유지한다. 상담이나 최종 전략을 수정하면 검토가 무효화되며 확정된 회차는 변경할 수 없다. next는 전략·profile·미완료 과제만 이어받고 preparation·consultation을 초기화한다.
+
+import는 사전 전략의 전체 strategy·actions 형식과 prepared_at의 시간대 있는 ISO timestamp(최대 100자), prepared_by의 비어 있지 않은 NUL 없는 문자열(최대 160자)을 검증한다. 가져온 prepared_by·prepared_at은 현재 인증 교사의 검증된 준비 이력으로 취급하지 않는다. 준비본이 있는 사본은 내용을 참고용으로 보존하고 `imported_history.preparation_imported:true`, consultation.status in_progress를 부여하며 보고서에 **가져온 사전 전략 참고본**으로 표시한다. 과거 review·confirmed·guidance는 현재 신뢰로 승계하지 않는다. 준비본 없는 legacy 사본에는 workflow_version 2를 강제로 부여하지 않는다.
 
 `Session.profile`은 교사가 입력한 자료이며 학생에게 공개하는 전략과 분리한다. 과거 자료에서 없거나 일부 항목만 제공되면 나머지는 아래 빈 기본값으로 정규화한다. 제공된 잘못된 자료형과 알 수 없는 항목은 거절한다. 서술·과목·성취도 앞뒤 공백을 정리하고 NUL 문자는 거절한다. 선택 과목은 공백 정리 후 빈 이름·중복을 허용하지 않는다. 작성 중인 성적 행의 빈 과목명은 백업·복원할 수 있으며 교사용 PDF에 과목 미입력으로 표시한다.
 
@@ -50,12 +62,13 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 | POST | `{student:{student_id},teacher?:{display_name}}` | `{case:Case}`. 배정 교사만, 학생·교사 정보는 서버가 채움 |
 | PUT `?id=UUID` | `{case:Case}` | `{case:Case}`. 기존 revision 필요. 수정한 미확정 회차의 검토·확정 무효화 |
 | POST `?action=next&id=UUID` | `{revision}` | `{case:Case}`. 전략과 미완료 과제를 새 과제 ID로 이어받으며 기본 주제는 전략 개정. 이전 주제·학생 안내 요약은 교사 context에 보존. 새 회차 검토·확정·안내는 초기화 |
+| POST `?action=prepare&id=UUID` | `{revision,session_id}` | `{case:Case}`. 현재 배정과 revision을 재확인해 교사의 사전 전략을 한 번 저장하고 상담 시작. 최소 주제·전략 계획 필요 |
 | POST `?action=review&id=UUID` | `{revision,session_id}` | `{case:Case,review}`. 동기 문체·필수항목 점검. 교사가 확정 전 직접 확인 |
-| POST `?action=confirm&id=UUID` | `{revision,session_id,review_acknowledged:true}` | `{case:Case}`. 같은 본문 해시의 최신 검토가 필요 |
+| POST `?action=confirm&id=UUID` | `{revision,session_id,review_acknowledged:true}` | `{case:Case}`. 같은 본문 해시의 최신 검토가 필요. 버전 2는 사전 준비·상담 완료 필수 |
 | POST `?action=publish&id=UUID` | `{revision,session_id}` | `{case:Case}`. 현재 해시와 일치하는 확정 회차를 학생에게 명시적으로 안내. 현재 담당 배정을 다시 확인하며 학생 안내 문장·실행 과제 필요. 중복 공개는 409 |
 | POST `?action=import` | `{bundle:{format:"daeryun-counseling",version:1,case:Case},student_id,student_confirmed:true}` | `{case:Case}`. 등록 학생 확인 후 새 사본. 과거 검토/확정은 참고 이력에 보관하고 현재 확인으로 승계하지 않음 |
 | GET `?action=export&id=UUID` | 없음 | JSON 첨부 `{format:"daeryun-counseling",version:1,case:Case}` |
-| GET `?action=report&id=UUID&session_id=UUID&audience=student` | 없음 | 인증된 HTML. audience는 student 또는 teacher. 학생 요청은 항상 학생용. 담당 교사는 공개 전 학생용 PDF도 미리보기 가능. 초안·확정·학생 안내 상태를 구분 |
+| GET `?action=report&id=UUID&session_id=UUID&audience=student` | 없음 | 인증된 HTML. audience는 student 또는 teacher. 학생 요청은 항상 학생용. 담당 교사는 공개 전 학생용 PDF도 확인 가능하되 버전 2는 사전 준비·상담 완료·현재 해시의 교사 확정 후에만 허용. 교사용 초안과 legacy 미리보기는 유지 |
 
 확정과 학생 안내는 별도다. 학생 list/get/export/report는 guidance가 있고 확정 해시가 유효한 회차만 반환한다. 공개 회차가 없으면 목록에서 제외하고 상세·백업·출력은 404다. current_session_id는 마지막 공개 회차를 가리킨다. 학생의 `student_question`, `context`, `evidence_notes`, `teacher_opinion`은 빈 문자열, record·analysis·review·confirmed는 null이며 imported_history·imported_from과 교사 내부 메타는 제거한다. 학생 응답은 전략·실행 과제·주제·날짜·다음 점검일 중심의 허용 목록으로 생성한다. 과거 수기 기록도 자동 공개하지 않는다.
 
@@ -69,7 +82,7 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 
 입력은 `{case_id,session_id,revision,privacy:"standard",purpose:"counseling"|"style",instruction?:string}`이다. 서버가 접근 가능한 저장 상담에서 본문을 구성한다. 브라우저가 임의 prompt/history/첨부/PDF/분석을 보내는 범용 릴레이가 아니다. 승인된 담당 교사만 호출한다. 서버 자격은 기존 `_lib/vertex.js`를 사용하고 개인 키를 요청으로 받지 않는다. 서버 모드 실패 시 제공자를 자동 전환하지 않는다.
 
-승인된 담당 교사의 AI 요청에는 서버가 읽은 profile과 저장 전략 9개 항목을 함께 제공한다. 일반 분석 응답은 입력 근거에 따른 관찰 → 확인이 필요한 자료 → 교과 연결 → 다음 상담 질문 → 실행 제안 순서로 요청한다. 입력되지 않은 정보를 약점이나 역량 부족으로 판단하거나 근거 없는 합격 가능성·합격 등급을 만들지 않도록 명시한다. 서로 다른 5·9등급·성취도 척도를 하나의 평균 등급으로 합치지 않는다. 이는 교사 검토용 생성 초안이며 모델의 판단 정확도를 보증하지 않는다. 문체 점검은 전략과 학생 안내 문장을 포함하고 인용·수치·일정, 계획과 실제 수행의 차이를 보존한다. AI 응답은 자동으로 전략을 저장·확정·공개하지 않는다.
+승인된 담당 교사의 AI 요청에는 서버가 읽은 profile·저장 전략·사전 전략 원안·상담 내용을 함께 제공한다. 사전 전략의 작성자·시각 메타는 프롬프트에서 제외한다. 교사가 학생 자료를 근거로 전략부터 수립하고 상담 질문은 그 전략을 확인하는 부속 자료로 작성하도록 요청한다. 상담 전에는 학생 반응·합의를 만들지 않으며 상담 후에는 기록된 반응·합의·조정을 최종 전략·실행 과제에 반영하도록 명시한다. 일반 분석의 입력 근거에 따른 관찰 → 확인이 필요한 자료 → 교과 연결 → 다음 상담 질문 → 실행 제안 순서를 구체적인 교과·탐구·활동·학기별 계획으로 연결한다. 입력되지 않은 정보를 약점이나 역량 부족으로 판단하거나 근거 없는 합격 가능성·합격 등급을 만들지 않도록 명시한다. 서로 다른 5·9등급·성취도 척도를 하나의 평균 등급으로 합치지 않는다. 이는 교사 검토용 생성 초안이며 모델의 판단 정확도를 보증하지 않는다. 문체 점검은 전략과 학생 안내 문장을 포함하고 인용·수치·일정, 계획과 실제 수행의 차이를 보존한다. 비공개 상담 원문을 학생 안내 문장에 자동 전재하지 않으며 AI 응답은 자동으로 전략을 저장·확정·공개하지 않는다.
 
 공통 설정은 `_lib/counseling-ai-config.js`의 `getCounselingAiConfig()`가 반환하는 `{enabled,model}`이다. 기존 Gemini 키 또는 완성된 Vertex 설정이 있고 `COUNSELING_SERVER_AI_ENABLED`가 명시적으로 `false`가 아니면 사용 가능하다. 모델은 `LLM_MODEL` 또는 기존 사이트 기본값 `gemini-2.5-flash`다. 명시 비활성은 `AI_DISABLED`, 자격 설정 누락은 `AI_CONFIG` 503이며 상담 내용은 변경되지 않는다.
 

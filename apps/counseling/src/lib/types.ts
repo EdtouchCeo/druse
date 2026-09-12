@@ -10,11 +10,13 @@ export type Finding = {text:string;evidence_ids:string[];guidance:string}
 export type Analysis = {summary:string;strengths:Finding[];improvements:Finding[];questions:string[];actions:{text:string;reason:string;evidence_ids:string[]}[];limitations:string[];model:string;created_at:string}
 export type Review = {state:'passed'|'needs_revision'|'pending';method:'manual'|'ollama';content_hash:string;notes:string[];created_at:string}
 export type Strategy = {target_major:string;target_path:string;strengths:string;gaps:string;subject_plan:string;inquiry_plan:string;activity_plan:string;semester_plan:string;student_message:string}
+export type Preparation = {prepared_at:string;prepared_by:string;topic:string;strategy:Strategy;actions:Action[]}
+export type Consultation = {status:'not_started'|'in_progress'|'completed';date:string;student_response:string;agreed_direction:string;adjustments:string;summary:string}
 export type Guidance = {published_at:string;published_by:string}
 export type GradeRecord = {id:string;subject:string;academic_year:number;semester:1|2;grade_scale:'5'|'9'|'achievement'|'unknown';rank_grade:number|null;score:number|null;achievement:string}
 export type StudentProfile = {target_major:string;interests:string;learning_concerns:string;study_habits:string;activities:string;reading:string;attendance_notes:string;teacher_observations:string;selected_subjects:string[];weekly_minutes:number|null;grades:GradeRecord[]}
-export type Session = {id:string;date:string;topic:string;student_question:string;context:string;evidence_notes:string;teacher_opinion:string;profile?:StudentProfile;strategy?:Strategy;guidance?:Guidance|null;actions:Action[];next_date:string;record:SchoolRecord|null;analysis:Analysis|null;review:Review|null;confirmed:Record<string,unknown>|null}
-export type CounselingCase = {schema_version:1;id:string;revision:number;privacy:'local_only'|'standard';created_at:string;updated_at:string;origin:string;student:Student;teacher:{display_name:string};current_session_id:string;sessions:Session[]}
+export type Session = {id:string;date:string;topic:string;student_question:string;context:string;evidence_notes:string;teacher_opinion:string;profile?:StudentProfile;workflow_version?:2;preparation?:Preparation|null;consultation?:Consultation;imported_history?:{preparation_imported?:boolean;[key:string]:unknown};strategy?:Strategy;guidance?:Guidance|null;actions:Action[];next_date:string;record:SchoolRecord|null;analysis:Analysis|null;review:Review|null;confirmed:Record<string,unknown>|null}
+export type CounselingCase = {schema_version:1;id:string;revision:number;privacy:'local_only'|'standard';created_at:string;updated_at:string;origin:string;imported_from?:unknown;student:Student;teacher:{display_name:string};current_session_id:string;sessions:Session[]}
 export type Backup = {format:'daeryun-counseling';version:1;case:CounselingCase}
 export type Job = {id:string;state:'queued'|'running'|'succeeded'|'needs_revision'|'failed'|'cancelled';stage?:string;message?:string;case_id?:string}
 export type Fixture = {id:string;title:string;description:string}
@@ -29,6 +31,7 @@ export interface Transport {
   upload(value:CounselingCase,sessionId:string,file:File,password:string,signal?:AbortSignal):Promise<CounselingCase>
   analyze(value:CounselingCase,sessionId:string,model:string,goal:string,budget:number):Promise<Job>
   review(value:CounselingCase,sessionId:string,model?:string):Promise<Job|CounselingCase>
+  prepare(value:CounselingCase,sessionId:string):Promise<CounselingCase>
   confirm(value:CounselingCase,sessionId:string):Promise<CounselingCase>
   publish?(value:CounselingCase,sessionId:string):Promise<CounselingCase>
   job(id:string,signal?:AbortSignal):Promise<Job>;cancel(id:string):Promise<Job>

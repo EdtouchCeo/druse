@@ -1,6 +1,6 @@
 {
   "format": "daeryun-counseling-integration",
-  "created_at": "2026-09-12T05:34:00.200731+00:00",
+  "created_at": "2026-09-12T06:09:58.757301+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -9,38 +9,38 @@
     },
     {
       "path": "README.md",
-      "size": 10420,
-      "sha256": "0c3295cc74422801ce307e063ce1afe111368dce27eafc65768546547db14951"
+      "size": 10976,
+      "sha256": "7d3e5edab630fe741ec477f26a6f725705041f63e803099919d927ec36cfd9a5"
     },
     {
       "path": "VERIFICATION.md",
-      "size": 9158,
-      "sha256": "827a47d1abd4db75d032fad8c0a73a3931bb0af49a61d95e94a1a0d62ffdbd35"
+      "size": 11845,
+      "sha256": "a8d663756f60f1ecec612f050e901256a5dd42963a93478feb5ab1528cf19ae6"
     },
     {
-      "path": "dist/assets/AdminPanel-Sxda7hlW.js",
+      "path": "dist/assets/AdminPanel-BG0OB5CZ.js",
       "size": 16463,
-      "sha256": "74fa6c8f18ead51d956e211f487b726bd8c6c0bc07c39c40482e06c747958644"
+      "sha256": "91ab573fce5d482aa66357cad3c0101018a0a690e906017b146260967626e44b"
     },
     {
-      "path": "dist/assets/cloudTransport-Bcxo6GRP.js",
-      "size": 6085,
-      "sha256": "75e30c447455f93ac10081d37307d89fc00ef3fa979f33f2f02930b612826768"
+      "path": "dist/assets/cloudTransport-pvhBnM7-.js",
+      "size": 6566,
+      "sha256": "f7a9dcd3b1eccc4e2647a476d4d3bd6045033db7ba88aa66550ffeae48babd16"
     },
     {
-      "path": "dist/assets/index-Bm4fba0g.js",
-      "size": 618251,
-      "sha256": "a8094ec1a7d05c6088553c8936e28f1b4167bc85756a306733ad1a43e9469ef5"
+      "path": "dist/assets/index-CkRw5gtD.js",
+      "size": 649302,
+      "sha256": "6bc758ac960788713d0245340857a3c9dde1aaec90c371951b529c7f0826135b"
     },
     {
-      "path": "dist/assets/index-D6Vf6amw.css",
-      "size": 41010,
-      "sha256": "23a38f08eb6f0a9dbf256b29bbe41706e2b9dbba3f440d5a7ed9371c1d789540"
+      "path": "dist/assets/index-fi3tDOtL.css",
+      "size": 47969,
+      "sha256": "36659c9897f19cd8368e594a76b7e8c34a517dbf660d525563cca9c8d5616bcf"
     },
     {
-      "path": "dist/assets/localTransport-UmfRNlTA.js",
-      "size": 2490,
-      "sha256": "ea4ea3b4ba23fb24bcd4ef1aec0d0e638cf7b3173f25f49311915257b7830560"
+      "path": "dist/assets/localTransport-CN3kY5tV.js",
+      "size": 2630,
+      "sha256": "3e90502f87c23f6fa98974c8b906782762bb7f4c01084c8674cbe67d73c443dc"
     },
     {
       "path": "dist/assets/school-logo-z178Sqr0.png",
@@ -50,7 +50,7 @@
     {
       "path": "dist/index.html",
       "size": 437,
-      "sha256": "6000d124af152b9b00a6fae2c251a0153df44ac852c2b3318f651a72a4069416"
+      "sha256": "6ccd16c4e55f6b686f62ac5b7e7650924108193157a464321eebc71b123536d7"
     },
     {
       "path": "index.html",
@@ -79,8 +79,8 @@
     },
     {
       "path": "src/App.vue",
-      "size": 60547,
-      "sha256": "0b06537709e0d90d62607a458319a3fdb9385da283b8808d972ca8903cd7fb9f"
+      "size": 69560,
+      "sha256": "55bedf77a18879a1358f40add4d1bfe59139d505a848cb2ed51528a19f668eec"
     },
     {
       "path": "src/assets/school-logo.png",
@@ -91,6 +91,11 @@
       "path": "src/components/AdminPanel.vue",
       "size": 13643,
       "sha256": "73209abc3ee7cc7d43ee4eaeff2b35b046f8daafb4cb470556d5ceb2a887e834"
+    },
+    {
+      "path": "src/components/ConsultationEditor.vue",
+      "size": 5556,
+      "sha256": "ac9d34b170730b5b0e38893851505d5c4b010aefb6f7be267023e15aa5763fc9"
     },
     {
       "path": "src/components/ProfileEditor.vue",
@@ -104,13 +109,13 @@
     },
     {
       "path": "src/components/StrategyEditor.vue",
-      "size": 1989,
-      "sha256": "ca135f393ecdddb039d904dbc144216abc059fd9b6d178265fafb1ddf70f8c5d"
+      "size": 2379,
+      "sha256": "9a4599778e679f2550acd097b08903831fac3a55867154c68c5b6d1d17ec84f8"
     },
     {
       "path": "src/components/StudentUnderstanding.vue",
-      "size": 9249,
-      "sha256": "d3cc733b881cd9cb8e2729953d613a422267fb4f9a6e1173da405b7bb4af4cdf"
+      "size": 11400,
+      "sha256": "b18029ad2d357d0b56e072bbfd3d3cd3213776f96f4a950ff859cbbab65ae7fd"
     },
     {
       "path": "src/data/school-context.json",
@@ -129,28 +134,33 @@
     },
     {
       "path": "src/lib/cloudTransport.ts",
-      "size": 8291,
-      "sha256": "b14b7eb4666ba7b880018c166de4cd14c76f5b95b604ecfbe622c4977a640fc3"
+      "size": 8876,
+      "sha256": "3bbe127031489d15cb80bcdf3d447fd65ce50b2a2643df02fa930b57fb4d184f"
     },
     {
       "path": "src/lib/localTransport.ts",
-      "size": 3732,
-      "sha256": "41488629007d841488c39ec5444b6a5e4362879ce7a9264778465dd1e8b213c0"
+      "size": 3978,
+      "sha256": "d0985a9a2ab2bef8b664f6c1890d04b3af8ba5de700c851faf75f6a9c6421c9e"
     },
     {
       "path": "src/lib/model.ts",
-      "size": 7409,
-      "sha256": "aef4fec714a132dcb8ae06f37c79e161427a21150693217572895e8063228a10"
+      "size": 8235,
+      "sha256": "0bed8ac9753feead69ef59f009df14de0d36a73f961f8455ce64ab839d6b8bbd"
     },
     {
       "path": "src/lib/profile.ts",
-      "size": 13179,
-      "sha256": "2079362dedfb46a4d1c989b42c0196a7d6cce7c94e6035bd4aafae1be60e4944"
+      "size": 13499,
+      "sha256": "78586069cf8e6023f962dcd3dc140c57f8d3b1f1f7c5df5b00872caaaf14290b"
     },
     {
       "path": "src/lib/schoolContext.ts",
       "size": 4049,
       "sha256": "843485a7aa992feacc76e616ed95ea7d023da148b964ca08d9b4b43c09eaf8f3"
+    },
+    {
+      "path": "src/lib/strategyPreparation.ts",
+      "size": 13189,
+      "sha256": "78d21e870e66d0f764edbf001fbf938c37a606811a7d38f76ef0238150de2088"
     },
     {
       "path": "src/lib/transport.ts",
@@ -159,8 +169,13 @@
     },
     {
       "path": "src/lib/types.ts",
-      "size": 4767,
-      "sha256": "09fff04c9b36cfec47ae9b3cedf4f98613dc51791be94b6e19b3e786808d20b7"
+      "size": 5335,
+      "sha256": "f4ff8549aa408f9dedcca96de47dd23c06dd9076452510530163e00112204944"
+    },
+    {
+      "path": "src/lib/workflow.ts",
+      "size": 5198,
+      "sha256": "972e507ab96be66140f51fa1036fd8309923f51dee1aed06d574d82e5f42d6aa"
     },
     {
       "path": "src/main.ts",
@@ -169,8 +184,8 @@
     },
     {
       "path": "src/style.css",
-      "size": 41723,
-      "sha256": "bfb829e94c14412d51678166587d30619446c6afc9232288c10a53cbbb60aef1"
+      "size": 48814,
+      "sha256": "522f205613dcc6510fc2d51abe2b7e41fdc1ca07bdb61ea2fa917d441c3aff64"
     },
     {
       "path": "tests/admin.spec.ts",
@@ -184,8 +199,8 @@
     },
     {
       "path": "tests/auth.spec.ts",
-      "size": 2783,
-      "sha256": "ce6b6c993f0d09aadc6917d192d40113f97eefab488b37bb6898180cab1e48e8"
+      "size": 5695,
+      "sha256": "541363e84320c80f1bd0c33849fb748ac88572389fd3e6604ef82dc8a0bae228"
     },
     {
       "path": "tests/auth.test.ts",
@@ -194,8 +209,8 @@
     },
     {
       "path": "tests/cloud.spec.ts",
-      "size": 10869,
-      "sha256": "38788a614bb46b3c76ed330c5998f64b9cd4d83b67e34ee3d92dac7ad6c9a947"
+      "size": 12736,
+      "sha256": "6c3c1c88e88999e40cbb3283480d2f41a65cea1ce3b3a908e9866ec633264d18"
     },
     {
       "path": "tests/core.test.ts",
@@ -204,18 +219,28 @@
     },
     {
       "path": "tests/local.spec.ts",
-      "size": 9342,
-      "sha256": "d494a560cbbba3b79210d6f88d020d05cb7a5215b39028c02175fc119a71dcbb"
+      "size": 11225,
+      "sha256": "97deb532be09249bf7526a183bd907d42e181600492b584453ad6ad94a72e0ff"
     },
     {
       "path": "tests/profile.test.ts",
-      "size": 7776,
-      "sha256": "339ceb5d31b2ea879717ba1207c30884334c8c96008544a232c9960a86669317"
+      "size": 7782,
+      "sha256": "3c48c1a407a5ea6e21300843242a59298fc22cff1f37d958c7fd415c57fdd2d1"
+    },
+    {
+      "path": "tests/strategyPreparation.test.ts",
+      "size": 9383,
+      "sha256": "6bf71c98adbd82b21f85af12673bd31b8c9e4282c365b136fcb338360cfc4062"
     },
     {
       "path": "tests/ui.spec.ts",
-      "size": 21211,
-      "sha256": "e6a0184d2495af41bd6fd235916dc8c6b0414794c0b463fa36252c577714af12"
+      "size": 28738,
+      "sha256": "883cf8ffa560d4df45b5ed20277e30e1b43fb3694171d2325b73a4d28c00e99f"
+    },
+    {
+      "path": "tests/workflow.test.ts",
+      "size": 6468,
+      "sha256": "d339392443e11a1281447fab8fe1b8f450f47c879900ddce6a9b4bf6e06d17e7"
     },
     {
       "path": "tsconfig.json",
@@ -230,29 +255,29 @@
   ],
   "web_files": [
     {
-      "path": "assets/AdminPanel-Sxda7hlW.js",
+      "path": "assets/AdminPanel-BG0OB5CZ.js",
       "size": 16463,
-      "sha256": "74fa6c8f18ead51d956e211f487b726bd8c6c0bc07c39c40482e06c747958644"
+      "sha256": "91ab573fce5d482aa66357cad3c0101018a0a690e906017b146260967626e44b"
     },
     {
-      "path": "assets/cloudTransport-Bcxo6GRP.js",
-      "size": 6085,
-      "sha256": "75e30c447455f93ac10081d37307d89fc00ef3fa979f33f2f02930b612826768"
+      "path": "assets/cloudTransport-pvhBnM7-.js",
+      "size": 6566,
+      "sha256": "f7a9dcd3b1eccc4e2647a476d4d3bd6045033db7ba88aa66550ffeae48babd16"
     },
     {
-      "path": "assets/index-Bm4fba0g.js",
-      "size": 618251,
-      "sha256": "a8094ec1a7d05c6088553c8936e28f1b4167bc85756a306733ad1a43e9469ef5"
+      "path": "assets/index-CkRw5gtD.js",
+      "size": 649302,
+      "sha256": "6bc758ac960788713d0245340857a3c9dde1aaec90c371951b529c7f0826135b"
     },
     {
-      "path": "assets/index-D6Vf6amw.css",
-      "size": 41010,
-      "sha256": "23a38f08eb6f0a9dbf256b29bbe41706e2b9dbba3f440d5a7ed9371c1d789540"
+      "path": "assets/index-fi3tDOtL.css",
+      "size": 47969,
+      "sha256": "36659c9897f19cd8368e594a76b7e8c34a517dbf660d525563cca9c8d5616bcf"
     },
     {
-      "path": "assets/localTransport-UmfRNlTA.js",
-      "size": 2490,
-      "sha256": "ea4ea3b4ba23fb24bcd4ef1aec0d0e638cf7b3173f25f49311915257b7830560"
+      "path": "assets/localTransport-CN3kY5tV.js",
+      "size": 2630,
+      "sha256": "3e90502f87c23f6fa98974c8b906782762bb7f4c01084c8674cbe67d73c443dc"
     },
     {
       "path": "assets/school-logo-z178Sqr0.png",
@@ -262,7 +287,7 @@
     {
       "path": "index.html",
       "size": 437,
-      "sha256": "6000d124af152b9b00a6fae2c251a0153df44ac852c2b3318f651a72a4069416"
+      "sha256": "6ccd16c4e55f6b686f62ac5b7e7650924108193157a464321eebc71b123536d7"
     }
   ]
 }

@@ -72,11 +72,11 @@ export function missingProfile(profile:StudentProfile):string[]{const missing=[]
 export function profileDraft(profile:StudentProfile):Partial<Strategy>{
  const next:Partial<Strategy>={}
  if(profile.target_major.trim())next.target_major=profile.target_major.trim()
- if(profile.interests.trim()){next.target_path=`입력한 관심: ${profile.interests.trim()}\n관련 수업과 경험을 학생과 확인하며 탐색 방향을 좁힙니다.`;next.inquiry_plan=`관심 주제 “${quote(profile.interests)}”에서 질문 하나를 정합니다. 실제 수업 범위와 자료를 확인한 뒤 방법 → 산출물 → 피드백 순서로 교사와 구체화합니다.`}
- if(profile.selected_subjects.length)next.subject_plan=`입력한 이수 과목: ${profile.selected_subjects.join(', ')}\n현재 배우는 개념과 과제의 연도·학기·마감·허용 조건을 확인하고 이번 주에 점검할 내용을 정합니다.`
- if(profile.activities.trim())next.activity_plan=`입력한 활동 경험: ${profile.activities.trim()}\n학생의 역할·결과물·피드백을 확인한 뒤 이어 할 활동을 함께 정합니다.`
- if(profile.weekly_minutes!==null)next.semester_plan=profile.weekly_minutes===0?'추가 가용 시간은 0분으로 입력했습니다. 기존 수업과 활동 안에서 점검할 일을 정하고 추가 활동은 시간 여건을 다시 확인한 뒤 계획합니다.':`주간 가용 시간은 ${profile.weekly_minutes}분으로 입력했습니다. 이번 학기 수업 일정과 과제 마감을 확인해 실행과제 하나와 점검일을 정하고, 이후 학기 계획은 피드백을 반영해 조정합니다.`
- const questions=profileQuestions(profile);if(questions.length)next.student_message=`먼저 함께 확인할 질문: ${questions[0]!.question}\n답변과 실제 수업 일정을 바탕으로 이번 주에 할 일 하나와 점검일을 함께 정해 봅시다.`
+ if(profile.interests.trim()){next.target_path=`입력한 관심: ${profile.interests.trim()}\n교사는 관련 수업과 활동에서 탐색할 방향을 준비하고 상담에서 학생의 관심과 대조합니다.`;next.inquiry_plan=`교사 준비안: 관심 주제 “${quote(profile.interests)}”를 실제 수업 개념과 연결할 탐구 질문 후보 하나로 좁힙니다. 수업 범위와 허용 조건을 확인해 방법 → 산출물 → 피드백을 계획하고 상담에서 학생과 실행 범위를 조정합니다.`}
+ if(profile.selected_subjects.length)next.subject_plan=`입력한 이수 과목: ${profile.selected_subjects.join(', ')}\n교사 준비안: 실제 수업의 개념 하나를 골라 설명·연습·점검으로 이어갈 교과 학습 계획을 세웁니다. 과제의 연도·학기·마감·허용 조건은 원문과 확인한 뒤 반영합니다.`
+ if(profile.activities.trim())next.activity_plan=`입력한 활동 경험: ${profile.activities.trim()}\n교사 준비안: 기존 활동의 역할·결과물·피드백을 근거로 이어갈 활동 하나를 검토합니다. 상담에서 학생의 실제 역할과 참여 여건을 확인해 최종 범위를 정합니다.`
+ if(profile.weekly_minutes!==null)next.semester_plan=profile.weekly_minutes===0?'추가 가용 시간은 0분으로 입력했습니다. 기존 수업과 활동 안에서 실행·점검할 계획을 준비하며, 추가 활동을 전제하지 않습니다.':`주간 가용 시간은 ${profile.weekly_minutes}분으로 입력했습니다. 교사는 이번 학기에 실행할 과제 하나와 점검 기준을 준비하고, 상담에서 일정과 부담을 확인해 최종 점검일과 이후 학기 계획을 조정합니다.`
+ if(profile.weekly_minutes===0){for(const key of ['subject_plan','inquiry_plan','activity_plan'] as const)if(next[key])next[key]+='\n추가 가용 시간 0분: 기존 수업·활동 안에서 가능한 범위로 제한합니다.'}
  return next
 }
 export function adoptProfile(profile:StudentProfile,strategy:Strategy):Strategy{const copy={...strategy};for(const [key,value] of Object.entries(profileDraft(profile)) as [keyof Strategy,string][])if(!copy[key].trim())copy[key]=value;return copy}

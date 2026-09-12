@@ -36,3 +36,32 @@ test('local login opens fixed teacher site and receives credentials only after e
  expect(authBodies).toEqual([{access_token:'synthetic-bridge-token'}])
  expect(urls.some(url=>url.includes('synthetic-bridge-token'))).toBe(false)
 })
+
+
+test('expired teacher A data is cleared before connecting teacher B with an empty case list',async({page})=>{
+ let healthReads=0,connectedB=false
+ const oldCase={schema_version:1,id:'case-a',revision:1,privacy:'local_only',created_at:'2026-09-12',updated_at:'2026-09-12',origin:'synthetic',student:{student_id:'student-a',student_number:'19991',academic_year:2026,school_stage:'high',grade:1,name:'합성이전학생'},teacher:{display_name:'합성교사A'},current_session_id:'session-a',sessions:[{id:'session-a',date:'2026-09-12',topic:'이전 교사 전략',student_question:'',context:'교사A 내부 맥락',evidence_notes:'',teacher_opinion:'',profile:{interests:'교사A에게만 보일 합성 자료'},actions:[],next_date:'',record:{id:'record-a',filename:'synthetic-a.pdf',sha256:'synthetic',page_count:1,school_stage:'high',sections:[],warnings:[],readable_pages:[1],unreadable_pages:[]},analysis:null,review:null,confirmed:null}]}
+ await page.route('**/api/**',async route=>{
+  const path=new URL(route.request().url()).pathname
+  const json=(data:unknown)=>route.fulfill({contentType:'application/json',body:JSON.stringify(data)})
+  if(path==='/api/auth'){connectedB=true;return json({ok:true})}
+  if(path==='/api/health'){healthReads++;return json({mode:'local',demo:false,csrf_token:'synthetic-csrf',teacher:connectedB?{id:'teacher-b',display_name:'합성교사B',approved:true}:healthReads===1?{id:'teacher-a',display_name:'합성교사A',approved:true}:null,ollama:{available:false,models:[]}})}
+  if(path==='/api/cases')return json({cases:connectedB?[]:[oldCase]})
+  if(path==='/api/fixtures')return json({fixtures:[]})
+  return json({})
+ })
+ await page.goto('/counseling/')
+ await expect(page.locator('.document-heading')).toContainText('합성이전학생')
+ await expect(page.locator('.profile-summary')).toContainText('교사A에게만 보일 합성 자료')
+ await page.getByRole('button',{name:'Ollama 근거 분석',exact:true}).click()
+ await page.getByRole('button',{name:'연결 다시 확인',exact:true}).click()
+ await expect(page.getByRole('button',{name:'대륜고 계정으로 연결',exact:true})).toBeVisible()
+ await page.getByText('고급 연결 · 인증 토큰 직접 입력',{exact:true}).click()
+ await page.getByLabel('교사 인증 토큰',{exact:true}).fill('synthetic-teacher-b-token')
+ await page.getByRole('button',{name:'교사 계정 확인',exact:true}).click()
+ await expect(page.locator('.actor')).toContainText('합성교사B')
+ await expect(page.getByRole('heading',{name:'학생 자료를 입력하고 전략 준비를 시작하세요.'})).toBeVisible()
+ await expect(page.getByText('합성이전학생',{exact:false})).toHaveCount(0)
+ await expect(page.getByText('교사A에게만 보일 합성 자료',{exact:false})).toHaveCount(0)
+ await expect(page.locator('.document-heading,.case-item,.ai-output')).toHaveCount(0)
+})
