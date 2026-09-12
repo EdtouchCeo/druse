@@ -1,6 +1,6 @@
 {
   "format": "daeryun-counseling-integration",
-  "created_at": "2026-09-12T05:15:43.968652+00:00",
+  "created_at": "2026-09-12T05:34:00.200731+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -9,43 +9,48 @@
     },
     {
       "path": "README.md",
-      "size": 9803,
-      "sha256": "c2235e3301ada5bf7dec4f0552b2729f2d5663989995bcfb14dd59981d4929a2"
+      "size": 10420,
+      "sha256": "0c3295cc74422801ce307e063ce1afe111368dce27eafc65768546547db14951"
     },
     {
       "path": "VERIFICATION.md",
-      "size": 8027,
-      "sha256": "16a27a2d1090e6c9ea06ca5059dcf04778bcd965d5ee6fd66bf49188f2241600"
+      "size": 9158,
+      "sha256": "827a47d1abd4db75d032fad8c0a73a3931bb0af49a61d95e94a1a0d62ffdbd35"
     },
     {
-      "path": "dist/assets/AdminPanel-CVnPVSSH.js",
+      "path": "dist/assets/AdminPanel-Sxda7hlW.js",
       "size": 16463,
-      "sha256": "aa7990493aeed72de539021f47dc52f7f0a9dc976c2e81d1dcea1d34b67303b4"
+      "sha256": "74fa6c8f18ead51d956e211f487b726bd8c6c0bc07c39c40482e06c747958644"
     },
     {
-      "path": "dist/assets/cloudTransport-DPbfXKnA.js",
+      "path": "dist/assets/cloudTransport-Bcxo6GRP.js",
       "size": 6085,
-      "sha256": "64675658433d19f18dc37dde505f255070bc5f58c0a8e8b756ee5dafde72defb"
+      "sha256": "75e30c447455f93ac10081d37307d89fc00ef3fa979f33f2f02930b612826768"
     },
     {
-      "path": "dist/assets/index-DSd8MrCi.css",
-      "size": 35973,
-      "sha256": "a488d64d521b87f06447ee68fd8d378b50a27756a5b18bdfbde904c432fd0d0e"
+      "path": "dist/assets/index-Bm4fba0g.js",
+      "size": 618251,
+      "sha256": "a8094ec1a7d05c6088553c8936e28f1b4167bc85756a306733ad1a43e9469ef5"
     },
     {
-      "path": "dist/assets/index-S9sQdGoV.js",
-      "size": 617261,
-      "sha256": "2d5c4eb7f332fbe12f09b0dc46ab5765cfd908d0757ae2698ad59bf046709e69"
+      "path": "dist/assets/index-D6Vf6amw.css",
+      "size": 41010,
+      "sha256": "23a38f08eb6f0a9dbf256b29bbe41706e2b9dbba3f440d5a7ed9371c1d789540"
     },
     {
-      "path": "dist/assets/localTransport-Cpn9GdZs.js",
+      "path": "dist/assets/localTransport-UmfRNlTA.js",
       "size": 2490,
-      "sha256": "31bc940d4c7824bbd6785a8e9ee0a365967cf85f313f0a6f89d27b9d899868f5"
+      "sha256": "ea4ea3b4ba23fb24bcd4ef1aec0d0e638cf7b3173f25f49311915257b7830560"
+    },
+    {
+      "path": "dist/assets/school-logo-z178Sqr0.png",
+      "size": 116615,
+      "sha256": "6355210238e234262552ea4ce6f26bab5632bff654959b6651371e1d4326346e"
     },
     {
       "path": "dist/index.html",
       "size": 437,
-      "sha256": "d942d3fc4df638dbbd1b153c8fb94755a4b636520f799b631d6e3e7525215256"
+      "sha256": "6000d124af152b9b00a6fae2c251a0153df44ac852c2b3318f651a72a4069416"
     },
     {
       "path": "index.html",
@@ -74,8 +79,13 @@
     },
     {
       "path": "src/App.vue",
-      "size": 59527,
-      "sha256": "14fcefbb56e0121d3c5d0b17eb769ca072929e0ad2199e642e3df5a89ae942b3"
+      "size": 60547,
+      "sha256": "0b06537709e0d90d62607a458319a3fdb9385da283b8808d972ca8903cd7fb9f"
+    },
+    {
+      "path": "src/assets/school-logo.png",
+      "size": 116615,
+      "sha256": "6355210238e234262552ea4ce6f26bab5632bff654959b6651371e1d4326346e"
     },
     {
       "path": "src/components/AdminPanel.vue",
@@ -159,8 +169,8 @@
     },
     {
       "path": "src/style.css",
-      "size": 36179,
-      "sha256": "007749fb6f29ba1f2aaeb466fa43c97932ac92e7bf02736557a25d98be36a819"
+      "size": 41723,
+      "sha256": "bfb829e94c14412d51678166587d30619446c6afc9232288c10a53cbbb60aef1"
     },
     {
       "path": "tests/admin.spec.ts",
@@ -184,8 +194,8 @@
     },
     {
       "path": "tests/cloud.spec.ts",
-      "size": 10710,
-      "sha256": "0941d804fecf5ba33be2f46f5ad77e2890e19eb683cbdb93e6473c264025f301"
+      "size": 10869,
+      "sha256": "38788a614bb46b3c76ed330c5998f64b9cd4d83b67e34ee3d92dac7ad6c9a947"
     },
     {
       "path": "tests/core.test.ts",
@@ -204,8 +214,8 @@
     },
     {
       "path": "tests/ui.spec.ts",
-      "size": 20044,
-      "sha256": "77d99dd4b26e5d4649a2425dac346864565f0b32dc37ceb3b3e6da924d3b441b"
+      "size": 21211,
+      "sha256": "e6a0184d2495af41bd6fd235916dc8c6b0414794c0b463fa36252c577714af12"
     },
     {
       "path": "tsconfig.json",
@@ -220,34 +230,39 @@
   ],
   "web_files": [
     {
-      "path": "assets/AdminPanel-CVnPVSSH.js",
+      "path": "assets/AdminPanel-Sxda7hlW.js",
       "size": 16463,
-      "sha256": "aa7990493aeed72de539021f47dc52f7f0a9dc976c2e81d1dcea1d34b67303b4"
+      "sha256": "74fa6c8f18ead51d956e211f487b726bd8c6c0bc07c39c40482e06c747958644"
     },
     {
-      "path": "assets/cloudTransport-DPbfXKnA.js",
+      "path": "assets/cloudTransport-Bcxo6GRP.js",
       "size": 6085,
-      "sha256": "64675658433d19f18dc37dde505f255070bc5f58c0a8e8b756ee5dafde72defb"
+      "sha256": "75e30c447455f93ac10081d37307d89fc00ef3fa979f33f2f02930b612826768"
     },
     {
-      "path": "assets/index-DSd8MrCi.css",
-      "size": 35973,
-      "sha256": "a488d64d521b87f06447ee68fd8d378b50a27756a5b18bdfbde904c432fd0d0e"
+      "path": "assets/index-Bm4fba0g.js",
+      "size": 618251,
+      "sha256": "a8094ec1a7d05c6088553c8936e28f1b4167bc85756a306733ad1a43e9469ef5"
     },
     {
-      "path": "assets/index-S9sQdGoV.js",
-      "size": 617261,
-      "sha256": "2d5c4eb7f332fbe12f09b0dc46ab5765cfd908d0757ae2698ad59bf046709e69"
+      "path": "assets/index-D6Vf6amw.css",
+      "size": 41010,
+      "sha256": "23a38f08eb6f0a9dbf256b29bbe41706e2b9dbba3f440d5a7ed9371c1d789540"
     },
     {
-      "path": "assets/localTransport-Cpn9GdZs.js",
+      "path": "assets/localTransport-UmfRNlTA.js",
       "size": 2490,
-      "sha256": "31bc940d4c7824bbd6785a8e9ee0a365967cf85f313f0a6f89d27b9d899868f5"
+      "sha256": "ea4ea3b4ba23fb24bcd4ef1aec0d0e638cf7b3173f25f49311915257b7830560"
+    },
+    {
+      "path": "assets/school-logo-z178Sqr0.png",
+      "size": 116615,
+      "sha256": "6355210238e234262552ea4ce6f26bab5632bff654959b6651371e1d4326346e"
     },
     {
       "path": "index.html",
       "size": 437,
-      "sha256": "d942d3fc4df638dbbd1b153c8fb94755a4b636520f799b631d6e3e7525215256"
+      "sha256": "6000d124af152b9b00a6fae2c251a0153df44ac852c2b3318f651a72a4069416"
     }
   ]
 }

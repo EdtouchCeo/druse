@@ -5,6 +5,7 @@ import {createTransport,isRevisionConflict} from './lib/transport'
 import {connectionUrl,validatedLocalOrigin,receivedTeacherToken,approvedTeacherToken,AUTH_MESSAGE} from './lib/authBridge'
 import {clone,stamp,sessionOf,parseBackup,download,readableError,reportFilename,normalizeCase,studentView,applyAnalysis} from './lib/model'
 import type {Transport,Health,CounselingCase,Student,Backup,Job,Fixture,AiSettings} from './lib/types'
+import schoolLogo from './assets/school-logo.png'
 import StrategyEditor from './components/StrategyEditor.vue'
 import StudentUnderstanding from './components/StudentUnderstanding.vue'
 import SchoolContextCards from './components/SchoolContextCards.vue'
@@ -23,6 +24,8 @@ const settingsOpen=ref(false),aiDraft=ref(''),externalConsent=ref(false),setting
 const pdfInput=ref<HTMLInputElement|null>(null),jsonInput=ref<HTMLInputElement|null>(null)
 const newStudent=ref<Student>({student_id:'',student_number:'',academic_year:new Date().getFullYear(),school_stage:'high',grade:1,name:''})
 const onlineStudentId=ref(''),newTeacher=ref(''),localMode=computed(()=>transport.value?.mode==='local')
+const manualHref=computed(()=>localMode.value?'https://daeryun.life/':'/')
+const strategyHubHref=computed(()=>manualHref.value+'#strategy')
 const ready=computed(()=>Boolean(health.value&&(health.value.demo||health.value.teacher||health.value.user)))
 const teacher=computed(()=>Boolean(health.value?.demo||health.value?.teacher))
 const canManage=computed(()=>!localMode.value&&health.value?.user?.can_manage===true)
@@ -97,8 +100,20 @@ onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunloa
 <template>
 <a class="skip" href="#main">학종 전략으로 이동</a>
 <div class="app">
-<header class="topbar"><a class="brand" href="/counseling/"><span class="brand-mark"><BookOpen :size="22"/></span><span><strong>대륜고 학종 전략실</strong><small>학생의 방향을 학기별 실행으로 연결합니다</small></span></a><div class="top-actions"><span class="mode-chip"><Monitor v-if="localMode" :size="15"/><Cloud v-else :size="15"/>{{localMode?'이 PC에서 처리':'학생 전략 안내'}}</span><span v-if="health?.demo" class="badge warning">합성자료 시연</span><span v-else-if="ready" class="actor">{{health?.teacher?.display_name||health?.user?.display_name}} {{teacher?'교사':''}}</span><button v-if="canManage&&!adminOpen" class="text-button" :disabled="!!busy||adminBusy" @click="openAdmin"><ShieldCheck :size="17"/>학생·담당 관리</button><button v-if="ready&&!localMode&&teacher" class="icon-button" aria-label="일반 AI 설정" @click="settingsOpen=true"><Settings :size="20"/></button><a v-if="!localMode" class="home-link" href="/">사용설명서 <ExternalLink :size="14"/></a></div></header>
-<nav v-if="transport?.mode==='online'&&(teacher||canManage)" class="online-resources" aria-label="전략실 설치와 안내"><a href="/counseling/downloads/daeryun-counseling-local.zip" download><Download :size="15"/>로컬 실행기 다운로드</a><a href="/counseling/guide.html" target="_blank" rel="noopener noreferrer"><BookOpen :size="15"/>사용안내</a><span>학생부 분석은 교사 PC의 로컬 전략실에서 진행합니다.</span></nav>
+<header class="school-header">
+ <div class="topbar">
+  <a class="brand" :href="manualHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer" aria-label="대륜고 사용 설명서 홈">
+   <img class="school-logo" :src="schoolLogo" alt="대륜고등학교 교표" width="96" height="64">
+   <span class="brand-copy"><strong><span class="school-name">대륜고</span> 사용 설명서</strong><small>학교생활의 모든 것, 한곳에서</small></span>
+  </a>
+  <div class="service-identity"><span class="service-label">학습전략</span><p>학생 이해 · 전략 수립 · 실행 점검</p></div>
+ </div>
+ <div class="workspace-bar">
+  <nav class="service-nav" aria-label="서비스 경로"><a :href="manualHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer"><BookOpen :size="15"/>사용 설명서</a><ChevronRight :size="14" aria-hidden="true"/><a :href="strategyHubHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer">학습전략</a><ChevronRight :size="14" aria-hidden="true"/><span aria-current="page">학종 전략실</span></nav>
+  <div class="top-actions"><span class="mode-chip"><Monitor v-if="localMode" :size="15"/><Cloud v-else :size="15"/>{{localMode?'이 PC에서 처리':'학생 전략 안내'}}</span><span v-if="health?.demo" class="badge warning">합성자료 시연</span><span v-else-if="ready" class="actor">{{health?.teacher?.display_name||health?.user?.display_name}} {{teacher?'교사':''}}</span><button v-if="canManage&&!adminOpen" class="text-button" :disabled="!!busy||adminBusy" @click="openAdmin"><ShieldCheck :size="17"/>학생·담당 관리</button><button v-if="ready&&!localMode&&teacher" class="icon-button" aria-label="일반 AI 설정" @click="settingsOpen=true"><Settings :size="20"/></button></div>
+  <nav v-if="transport?.mode==='online'&&(teacher||canManage)" class="online-resources" aria-label="전략실 설치와 안내"><a href="/counseling/downloads/daeryun-counseling-local.zip" download><Download :size="15"/>로컬 실행기 다운로드</a><a href="/counseling/guide.html" target="_blank" rel="noopener noreferrer"><BookOpen :size="15"/>사용안내</a></nav>
+ </div>
+</header>
 
 <div v-if="error" class="message error" role="alert"><AlertCircle :size="20"/><span>{{error}}</span><div class="button-row"><button v-if="conflict&&draft" @click="exportJson">작성 내용 백업</button><button v-if="conflict" @click="reload">최신 기록 불러오기</button><button class="icon-button" aria-label="오류 안내 닫기" @click="error=''"><X :size="17"/></button></div></div>
 <div v-if="notice" class="message success" role="status"><Check :size="18"/><span>{{notice}}</span><button class="icon-button" aria-label="알림 닫기" @click="notice=''"><X :size="16"/></button></div>
@@ -113,7 +128,7 @@ onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunloa
 <AdminPanel v-else-if="canManage&&adminOpen&&transport" :api="transport" :can-return="health?.user?.role!=='manager'" @busy="adminBusy=$event" @close="closeAdmin"/>
 <div v-else class="layout">
  <button class="mobile-list secondary" @click="sidebarOpen=!sidebarOpen"><FolderOpen :size="17"/>학생별 전략 목록</button>
- <aside class="sidebar" :class="{open:sidebarOpen}"><div class="sidebar-head"><h2>{{teacher?'학생별 전략':'나의 전략'}}</h2><span>{{cases.length}}건</span></div><button v-if="teacher" class="primary wide" :disabled="!!busy" @click="openNew"><Plus :size="18"/>새 전략</button><label class="search-box"><Search :size="17"/><input v-model="search" aria-label="학번 이름 전공 검색" placeholder="학번, 이름, 목표 전공"></label><div class="case-list"><button v-for="item in visibleCases" :key="item.id" class="case-item" :class="{active:draft?.id===item.id}" @click="openCase(item)"><span class="student-avatar">{{item.student.student_number.slice(-2)}}</span><span><strong>{{item.student.student_number}} <span>{{item.student.name}}</span></strong><small>{{item.sessions.at(-1)?.strategy?.target_major||item.sessions.at(-1)?.topic||'진로 방향 탐색 중'}}</small><span class="case-meta">{{item.sessions.length}}차 전략 · {{item.updated_at.slice(0,10)}}</span></span><ChevronRight :size="16"/></button><div v-if="!visibleCases.length" class="sidebar-empty">{{search?'검색한 전략이 없습니다.':'첫 학생 전략을 만들어 보세요.'}}</div></div><div class="sidebar-bottom"><button v-if="teacher" class="text-button" :disabled="!!busy" @click="jsonInput?.click()"><Upload :size="16"/>전략 백업 가져오기</button><p v-if="localMode"><ShieldCheck :size="15"/>학생부와 분석은 이 PC에서 처리합니다.</p><p v-else>현재 담당 학생의 전략을 확인합니다.</p></div></aside>
+ <aside class="sidebar" :class="{open:sidebarOpen}"><div class="sidebar-head"><h2>{{teacher?'학생별 전략':'나의 전략'}}</h2><span>{{cases.length}}건</span><button class="icon-button mobile-sidebar-close" aria-label="학생 목록 닫기" @click="sidebarOpen=false"><X :size="19"/></button></div><button v-if="teacher" class="primary wide" :disabled="!!busy" @click="openNew"><Plus :size="18"/>새 전략</button><label class="search-box"><Search :size="17"/><input v-model="search" aria-label="학번 이름 전공 검색" placeholder="학번, 이름, 목표 전공"></label><div class="case-list"><button v-for="item in visibleCases" :key="item.id" class="case-item" :class="{active:draft?.id===item.id}" @click="openCase(item)"><span class="student-avatar">{{item.student.student_number.slice(-2)}}</span><span><strong>{{item.student.student_number}} <span>{{item.student.name}}</span></strong><small>{{item.sessions.at(-1)?.strategy?.target_major||item.sessions.at(-1)?.topic||'진로 방향 탐색 중'}}</small><span class="case-meta">{{item.sessions.length}}차 전략 · {{item.updated_at.slice(0,10)}}</span></span><ChevronRight :size="16"/></button><div v-if="!visibleCases.length" class="sidebar-empty">{{search?'검색한 전략이 없습니다.':'첫 학생 전략을 만들어 보세요.'}}</div></div><div class="sidebar-bottom"><button v-if="teacher" class="text-button" :disabled="!!busy" @click="jsonInput?.click()"><Upload :size="16"/>전략 백업 가져오기</button><p v-if="localMode"><ShieldCheck :size="15"/>학생부와 분석은 이 PC에서 처리합니다.</p><p v-else>현재 담당 학생의 전략을 확인합니다.</p></div></aside>
 
 <main id="main" class="main">
  <div v-if="!draft" class="empty-main card"><MessageSquare :size="40"/><h1>{{teacher?'학생 자료를 입력하고 전략 준비를 시작하세요.':'아직 안내된 전략이 없습니다.'}}</h1><p>{{teacher?'학생의 과목·성적·활동·관심부터 입력하세요. 자료와 확인 질문을 정리한 뒤 구체적인 전략으로 이어갑니다.':'담당 선생님이 전략을 안내하면 목표와 계획, 실행과제를 이곳에서 확인할 수 있습니다.'}}</p><button v-if="teacher" class="primary" @click="openNew"><Plus :size="18"/>학생 선택·자료 입력</button></div>
