@@ -7,7 +7,7 @@ import net from "node:net";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const INDEX_PATH = join(ROOT, "output", "web", "index.html");
-const PAGE_URL = `${pathToFileURL(INDEX_PATH).href}#/student/club-stats`;
+const PAGE_URL = process.env.CLUB_PAGE_URL || `${pathToFileURL(INDEX_PATH).href}#/student/club-stats`;
 const EDGE = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
 
 function getFreePort() {
@@ -86,144 +86,123 @@ async function main() {
   const browser = spawn(EDGE, [
     "--headless", "--disable-gpu", "--no-sandbox", "--no-first-run", "--disable-extensions",
     `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "about:blank",
-  ], { stdio: ["ignore", "ignore", "ignore"] });
+  ], { windowsHide: true, stdio: ["ignore", "ignore", "ignore"] });
   let client;
   try {
     await waitForJson(`http://127.0.0.1:${port}/json/version`);
-    const targetResponse = await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: "PUT" });
-    const target = await targetResponse.json();
+    const response = await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: "PUT" });
+    const target = await response.json();
     client = new CdpClient(target.webSocketDebuggerUrl);
     await client.open();
     const exceptions = [];
     client.on("Runtime.exceptionThrown", ({ exceptionDetails }) => exceptions.push(exceptionDetails.exception?.description || exceptionDetails.text));
-    await Promise.all([client.send("Page.enable"), client.send("Runtime.enable"), client.send("Log.enable")]);
+    await Promise.all([client.send("Page.enable"), client.send("Runtime.enable")]);
     const loaded = client.once("Page.loadEventFired");
     await client.send("Page.navigate", { url: PAGE_URL });
     await loaded;
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     async function evaluate(expression) {
       const result = await client.send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
       if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
       return result.result.value;
     }
-    await evaluate(`(() => {
-      window.__drcsRouteApplied = document.querySelector('#tab-student').classList.contains('active') &&
-        document.querySelector('#tab-student #sub-club-stats').classList.contains('active');
-      return window.drClubStatsInit();
-    })()`);
-
     const checks = [];
     async function check(label, expression) {
       const value = await evaluate(expression);
-      checks.push({ label, ok: Boolean(value), value });
+      checks.push({ label, ok: value === true, value });
     }
+    async function fill(selector, text) {
+      await evaluate(`(() => { const input=document.querySelector(${JSON.stringify(selector)}); input.value=${JSON.stringify(text)}; input.dispatchEvent(new Event('input',{bubbles:true})); })()`);
+    }
+    const visibleNames = "[...document.querySelectorAll('.drcs-item:not([hidden]) > strong')].map(el=>el.textContent.trim())";
+    const routeVisible = "document.querySelector('#tab-student').classList.contains('active') && document.querySelector('#sub-club-stats').classList.contains('active')";
+
     const indexSource = await readFile(INDEX_PATH, "utf8");
-    checks.push({
-      label: "search and tab contracts are preserved",
-      ok: indexSource.includes("semanticRetrieve") && indexSource.includes("SRCH") &&
-        indexSource.includes("<!-- TAB:student:START -->") && indexSource.includes("<!-- TAB:student:END -->"),
-    });
+    checks.push({ label: "shared search and student tab markers remain", ok: indexSource.includes("semanticRetrieve") && indexSource.includes("SRCH") && indexSource.includes("<!-- TAB:student:START -->") && indexSource.includes("<!-- TAB:student:END -->") });
+    await check("public deep link opens club overview without login", `${routeVisible} && !getSess()`);
+    await check("club navigation uses the new label", "[...document.querySelectorAll('#tab-student > .sub-nav .sub-nav-btn')].some(el=>el.textContent.trim()==='📋 동아리 현황')");
+    await check("headline describes whole-school clubs", "document.querySelector('#sub-club-stats .section-title').textContent==='대륜고등학교 동아리 현황'");
+    await check("three groups follow school year order", "JSON.stringify([...document.querySelectorAll('.drcs-group-title')].map(el=>el.textContent))===JSON.stringify(['1·2학년 1학기','1·2학년 2학기','3학년'])");
+    await check("all 29, 29 and 16 entries are initially visible", "JSON.stringify([...document.querySelectorAll('.drcs-group')].map(el=>el.querySelectorAll('.drcs-item:not([hidden])').length))==='[29,29,16]'");
+    await check("every entry contains only its name and description", "[...document.querySelectorAll('.drcs-item')].every(el=>el.children.length===2 && el.children[0].matches('strong') && el.children[1].matches('p') && el.children[0].textContent.trim().length>0 && el.children[1].textContent.trim().length>0)");
+    await check("old recruitment widgets and dataset are not loaded", "!document.querySelector('#drcs-grade-filter,#drcs-tbody,script[src*=club_stats_2026_2]') && !window.DR_CLUB_STATS_2026_2 && !/정원|모집 가능|지원 인원|지도교사|학생명|담당교사/.test(document.querySelector('#sub-club-stats').innerText)");
+    await check("source-specific names survive", "document.querySelector('[data-group=first]').textContent.includes('씨ᄋᆞᆯ') && [...document.querySelectorAll('[data-group=first] .drcs-item > strong')].some(el=>el.textContent==='생물 EX') && [...document.querySelectorAll('[data-group=second] .drcs-item > strong')].some(el=>el.textContent==='생물EX')");
+    await check("grade three has no semester heading or controls", "document.querySelector('[data-group=third] .drcs-group-title').textContent==='3학년' && !document.querySelector('[data-group=third] button,[data-group=third] select')");
 
-    await check("student hash route targets club stats", "location.hash === '#/student/club-stats' && window.__drcsRouteApplied && document.querySelector('#tab-student #sub-club-stats').classList.contains('active')");
-    await check("stats moved out of teacher content", "!document.querySelector('#tab-teacher #sub-club-stats') && document.querySelectorAll('#tab-student #sub-club-stats').length === 1");
-    await check("student navigation label is exact", "[...document.querySelectorAll('#tab-student > .sub-nav .sub-nav-btn')].some(b => b.textContent.trim() === '📊 2학기 동아리 조직 현황')");
-    await check("schema two public snapshot loaded", "window.DR_CLUB_STATS_2026_2?.schemaVersion === 2 && window.DR_CLUB_STATS_2026_2?.clubs.length === 18 && !document.querySelector('#drcs-content').hidden");
-    await check("public stats visible without login", "getComputedStyle(document.querySelector('#tab-student')).display !== 'none' && getComputedStyle(document.querySelector('#sub-club-stats')).display !== 'none' && !getSess()");
-    await check("headline phase and basis date rendered", "document.querySelector('#sub-club-stats .section-title').textContent.includes('2026학년도 2학기 동아리 2차 지원 안내') && document.querySelector('#drcs-phase').textContent === '2차 지원 가능 인원 안내' && document.querySelector('#drcs-basis').textContent.includes('2026.09.01.')");
-    await check("summary values rendered", "['18개','17개 · 94명','13개 · 80명','174명'].every(v => document.querySelector('#drcs-summary').textContent.includes(v))");
-    await check("group summary rendered", "document.querySelector('#drcs-summary-note').textContent.includes('학생 주도 12개 · 교사 주도 6개')");
-    await check("default table and mobile list have 18 seven-column rows", "document.querySelectorAll('#drcs-tbody tr').length === 18 && document.querySelectorAll('#drcs-tbody tr:first-child td').length === 7 && document.querySelectorAll('#drcs-mobile-list .drcs-mobile-card').length === 18");
-    await check("AI youth entrepreneur uses 22 and 11/11", `(() => { const c=window.DR_CLUB_STATS_2026_2.clubs.find(c=>c.name==='AI유스프러너'); const row=[...document.querySelectorAll('#drcs-tbody tr')].find(r=>r.cells[0]?.textContent==='AI유스프러너'); return c?.group==='student' && c.capacity===22 && c.grade1.current===9 && c.grade1.target===11 && c.grade1.available===2 && c.grade2.current===11 && c.grade2.target===11 && c.grade2.available===0 && row?.cells[2].textContent.includes('9명 / 11명') && row?.cells[3].textContent.trim()==='2명' && row?.cells[5].textContent.includes('모집 없음'); })()`);
-    await check("status model and privacy display are removed", "!document.querySelector('#drcs-status-filter') && !document.querySelector('#drcs-privacy') && !document.querySelector('#sub-club-stats').textContent.includes('학생 개인정보 없이 집계 자료만 제공합니다.') && !('privacyNotice' in window.DR_CLUB_STATS_2026_2)");
-    await check("student and teacher capacity rules are visible", "(() => { const t=document.querySelector('.drcs-note').textContent; return t.includes('학생 주도 동아리는 정원 22명') && t.includes('교사 주도 동아리는 정원 21명') && t.includes('최종 배정 또는 합격 인원이 아닙니다'); })()");
+    await fill('#drcs-search', 'AI유스프러너');
+    await check("club name search finds the second-semester entry", `${visibleNames}.join('|')==='AI유스프러너' && !document.querySelector('[data-group=second]').hidden && document.querySelector('[data-group=first]').hidden`);
+    await fill('#drcs-search', '비즈니스 모델');
+    await check("activity description search finds the grade-three club", `${visibleNames}.join('|')==='AI기업가클럽'`);
+    await fill('#drcs-search', 'aI 유스 프러너');
+    await check("search ignores letter case and spaces", `${visibleNames}.join('|')==='AI유스프러너'`);
+    await fill('#drcs-search', '<img src=x onerror=alert(1)>');
+    await check("empty search has a visible message and no injected element", "!document.querySelector('#drcs-empty').hidden && document.querySelector('#drcs-result-count').textContent.includes('0건') && !document.querySelector('#sub-club-stats img')");
+    await evaluate("document.querySelector('#drcs-reset').click()");
+    await check("reset restores all entries and keyboard focus", `${visibleNames}.length===74 && document.activeElement.id==='drcs-search' && document.querySelector('#drcs-empty').hidden`);
+    await client.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+    await client.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+    await check("keyboard tab reaches reset control", "document.activeElement.id==='drcs-reset'");
 
-    await evaluate(`(() => {
-      const teacherButton = [...document.querySelectorAll('.tab-btn')].find(button => (button.getAttribute('onclick') || '').includes("'teacher'"));
-      switchTab('teacher', teacherButton);
-    })()`);
-    await check("teacher manual stays behind auth gate", "getComputedStyle(document.querySelector('#teacher-login-required')).display !== 'none' && getComputedStyle(document.querySelector('#teacher-content')).display === 'none' && [...document.querySelectorAll('#cat-activity .sub-nav-btn')].some(b => b.textContent.trim() === '🎯 동아리 업무 매뉴얼')");
-    await evaluate("location.hash='#student/club-stats'");
-    await new Promise((resolve) => setTimeout(resolve, 180));
-    await check("hash without leading slash is supported", "document.querySelector('#tab-student').classList.contains('active') && document.querySelector('#tab-student #sub-club-stats').classList.contains('active')");
-    await evaluate("location.hash='#/student/club-stats'");
-    await new Promise((resolve) => setTimeout(resolve, 180));
-    await check("hash with leading slash is supported", "document.querySelector('#tab-student').classList.contains('active') && document.querySelector('#tab-student #sub-club-stats').classList.contains('active')");
+    await fill('#drcs-search', '없는동아리');
+    await evaluate("document.querySelector('[data-club-jump=third]').click()");
+    await check("grade shortcut restores list and focuses its heading", `${visibleNames}.length===74 && document.activeElement.id==='drcs-title-third'`);
+    await fill('#drcs-search', '없는동아리');
+    await fill('#searchInput', 'AI유스프러너');
+    await new Promise(resolve => setTimeout(resolve, 260));
+    await check("global search indexes new club name and overview path", "[...document.querySelectorAll('#searchResults .search-result-item')].some(el=>el.textContent.includes('AI유스프러너') && el.textContent.includes('동아리 현황'))");
+    await evaluate("[...document.querySelectorAll('#searchResults .search-result-item')].find(el=>el.textContent.includes('AI유스프러너')).click()");
+    await new Promise(resolve => setTimeout(resolve, 240));
+    await check("global search navigation reveals a locally hidden club", `${routeVisible} && document.querySelector('#drcs-search').value==='' && ${visibleNames}.includes('AI유스프러너')`);
+    await fill('#searchInput', '비즈니스 모델');
+    await new Promise(resolve => setTimeout(resolve, 260));
+    await check("global search indexes club description", "[...document.querySelectorAll('#searchResults .search-result-item')].some(el=>el.textContent.includes('AI기업가클럽'))");
+    await fill('#searchInput', '');
 
-    async function select(id, value) {
-      await evaluate(`(() => { const el=document.querySelector(${JSON.stringify(id)}); el.value=${JSON.stringify(value)}; el.dispatchEvent(new Event('change',{bubbles:true})); })()`);
+    await evaluate("switchTab('teacher', [...document.querySelectorAll('.tab-btn')].find(el=>(el.getAttribute('onclick')||'').includes(\"'teacher'\")))");
+    await check("teacher content remains behind the existing login gate", "getComputedStyle(document.querySelector('#teacher-login-required')).display!=='none' && getComputedStyle(document.querySelector('#teacher-content')).display==='none'");
+    for (const hash of ['#student/club-stats', '#/student/club-stats']) {
+      await evaluate(`location.hash=${JSON.stringify(hash)}`);
+      await new Promise(resolve => setTimeout(resolve, 180));
+      await check(`deep link variant ${hash} opens the overview`, routeVisible);
     }
-    async function chooseGrade(value) {
-      await evaluate(`(() => { const button=[...document.querySelectorAll('#drcs-grade-filter [data-grade]')].find(b=>b.dataset.grade===${JSON.stringify(value)}); button.click(); })()`);
-    }
-    await chooseGrade("1");
-    await check("grade one filter returns 17 and 94", "document.querySelector('#drcs-result-count').textContent === '1학년 지원 가능 17개 동아리 · 94명' && document.querySelectorAll('#drcs-tbody tr').length===17");
-    await chooseGrade("2");
-    await check("grade two filter returns 13 and 80", "document.querySelector('#drcs-result-count').textContent === '2학년 지원 가능 13개 동아리 · 80명' && document.querySelectorAll('#drcs-tbody tr').length===13");
-    await check("cross-grade overage does not hide available club", `(() => { const c=window.DR_CLUB_STATS_2026_2.clubs.find(c=>c.grade1.available===0 && c.grade2.available>0); const row=[...document.querySelectorAll('#drcs-tbody tr')].find(r=>r.cells[0]?.textContent===c?.name); return !!c && !!row && row.cells[3].textContent.includes('모집 없음') && row.cells[5].textContent.includes(c.grade2.available+'명'); })()`);
-    await chooseGrade("");
-    await check("all grades restore 18 and 174", "document.querySelector('#drcs-result-count').textContent === '전체 추가 모집 18개 동아리 · 174명'");
 
-    await select("#drcs-group-filter", "student");
-    await check("student-led filter returns 12", "document.querySelector('#drcs-result-count').textContent.includes('12개 동아리') && document.querySelectorAll('#drcs-tbody tr').length===12");
-    await select("#drcs-group-filter", "teacher");
-    await check("teacher-led filter returns 6", "document.querySelector('#drcs-result-count').textContent.includes('6개 동아리') && document.querySelectorAll('#drcs-tbody tr').length===6");
-    await select("#drcs-group-filter", "");
-    await evaluate(`(() => { const el=document.querySelector('#drcs-search'); el.value='AI유스프러너'; el.dispatchEvent(new Event('input',{bubbles:true})); })()`);
-    await check("name search returns AI youth entrepreneur", "document.querySelector('#drcs-result-count').textContent.includes('1개 동아리') && document.querySelector('#drcs-tbody').textContent.includes('AI유스프러너')");
-    await evaluate(`(() => { const el=document.querySelector('#drcs-search'); el.value='없는 동아리'; el.dispatchEvent(new Event('input',{bubbles:true})); })()`);
-    await check("empty search has student-facing message", "document.querySelector('#drcs-tbody .drcs-empty').textContent.includes('선택한 학년의 추가 모집 대상에 해당하는 동아리가 없습니다.') && document.querySelector('#drcs-mobile-list .drcs-empty')");
-    await evaluate(`(() => { const el=document.querySelector('#drcs-search'); el.value=''; el.dispatchEvent(new Event('input',{bubbles:true})); })()`);
+    await fill('#drcs-search', 'AI유스프러너');
+    await evaluate("window.__realPrint=window.print; window.__printCalls=0; window.print=()=>window.__printCalls++; document.querySelector('#drcs-print').click(); window.print=window.__realPrint;");
+    await check("print button opens the browser print dialog", "window.__printCalls===1");
+    await client.send("Emulation.setEmulatedMedia", { media: "print" });
+    await evaluate("window.dispatchEvent(new Event('beforeprint'))");
+    await check("printing a filtered view includes all 74 entries", "[...document.querySelectorAll('.drcs-item')].every(el=>el.getBoundingClientRect().height>0) && [...document.querySelectorAll('.drcs-group')].every(el=>getComputedStyle(el).display!=='none')");
+    await check("print hides controls and other site tabs", "getComputedStyle(document.querySelector('#drcs-print')).display!=='none' && document.querySelector('#drcs-print').getBoundingClientRect().height===0 && getComputedStyle(document.querySelector('#tab-school')).display==='none'");
+    await evaluate("window.dispatchEvent(new Event('afterprint'))");
+    await client.send("Emulation.setEmulatedMedia", { media: "screen" });
+    await check("closing print preserves the previous search", `${visibleNames}.join('|')==='AI유스프러너' && document.querySelector('#drcs-search').value==='AI유스프러너' && !document.body.classList.contains('drcs-printing')`);
+    await evaluate("document.querySelector('#drcs-reset').click()");
 
-    await select("#drcs-sort", "total");
-    await check("total availability sort uses computed values", `(() => { const expected=window.DR_CLUB_STATS_2026_2.clubs.slice().sort((a,b)=>b.totalAvailable-a.totalAvailable||a.order-b.order)[0].name; return document.querySelector('#drcs-tbody tr:first-child td:first-child').textContent===expected; })()`);
-    await chooseGrade("1");
-    await select("#drcs-sort", "selected");
-    await check("selected grade sort uses grade availability", `(() => { const expected=window.DR_CLUB_STATS_2026_2.clubs.filter(c=>c.grade1.available>0).sort((a,b)=>b.grade1.available-a.grade1.available||a.order-b.order)[0].name; return document.querySelector('#drcs-tbody tr:first-child td:first-child').textContent===expected; })()`);
-    await chooseGrade("");
-    await select("#drcs-sort", "source");
-
-    await check("CSV contains only seven public columns", `(() => { const csv=window.drClubStatsBuildCsv(); const lines=csv.replace(/^\\uFEFF/,'').split(/\\r?\\n/); const header=lines[0]; return header.split(',').length===7 && lines.length===19 && ${JSON.stringify(["advisor", "location", "leader", "description", "sharepoint.com", "forms.cloud.microsoft", "@"]) }.every(v=>!csv.toLowerCase().includes(v.toLowerCase())); })()`);
-    await check("CSV neutralizes spreadsheet formula prefixes", `(() => { const source=window.DR_CLUB_STATS_2026_2; const club=source.clubs[0]; const original=club.name; const values=['=1+1','+SUM(A1)','-2+3','@SUM(A1)','\\t=1+1','\\r=1+1']; const safe=values.every(value=>{ club.name=value; const csv=window.drClubStatsBuildCsv(); const expected='"'+"'"+value.replace(/"/g,'""')+'"'; return csv.includes(expected); }); club.name=original; window.drClubStatsInit(source); return safe; })()`);
-    await check("CSV filename is round-two specific", "window.drClubStatsCsvFilename === '2026-2학기-동아리-2차-추가모집.csv'");
-    await check("print controls and print-only contract exist", "document.querySelector('#drcs-print') && document.querySelector('#drcs-csv') && document.querySelector('#sub-club-stats style').textContent.includes('@media print') && document.querySelector('#sub-club-stats style').textContent.includes('drcs-mobile-list')");
-    await check("controls meet keyboard and touch contract", "[...document.querySelectorAll('#drcs-search,#drcs-group-filter,#drcs-sort,#drcs-csv,#drcs-print,#drcs-grade-filter button')].every(el => !el.disabled && el.getBoundingClientRect().height >= 44)");
-
-    await check("updated aggregate fixture renders without hard-coded totals", `(() => { const source=window.DR_CLUB_STATS_2026_2; const f=structuredClone(source); const c=f.clubs.find(c=>c.grade1.current>0 && c.grade1.available>0); if(!c) return false; c.grade1.current-=1; c.grade1.available+=1; c.totalAvailable+=1; f.totals.grade1.available+=1; f.totals.available+=1; const ok=window.drClubStatsInit(f) && document.querySelector('#drcs-summary .drcs-stat:last-child strong').textContent===(f.totals.available+'명'); window.drClubStatsInit(source); return ok; })()`);
-    await check("teacher tie fixture gives 11 to grade one", `(() => { const f=structuredClone(window.DR_CLUB_STATS_2026_2); const c=f.clubs.find(c=>c.group==='teacher'); c.grade1={current:0,target:11,available:11}; c.grade2={current:0,target:10,available:10}; c.totalAvailable=21; const recalc=()=>{ const g1=f.clubs.reduce((s,x)=>s+x.grade1.available,0), g2=f.clubs.reduce((s,x)=>s+x.grade2.available,0); f.totals={clubs:f.clubs.length,groups:{student:f.clubs.filter(x=>x.group==='student').length,teacher:f.clubs.filter(x=>x.group==='teacher').length},grade1:{clubs:f.clubs.filter(x=>x.grade1.available>0).length,available:g1},grade2:{clubs:f.clubs.filter(x=>x.grade2.available>0).length,available:g2},available:g1+g2}; }; recalc(); const accepts=window.drClubStatsIsValid(f); c.grade1={current:0,target:10,available:10}; c.grade2={current:0,target:11,available:11}; recalc(); return accepts && !window.drClubStatsIsValid(f); })()`);
-    await check("schema one, mismatched totals and extra fields fail closed", `(() => { const source=window.DR_CLUB_STATS_2026_2; const badTotal=structuredClone(source); badTotal.totals.available+=1; const extra=structuredClone(source); extra.privacyNotice='not allowed'; const schemaOne=structuredClone(source); schemaOne.schemaVersion=1; return !window.drClubStatsIsValid(badTotal) && !window.drClubStatsIsValid(extra) && !window.drClubStatsIsValid(schemaOne); })()`);
-    await check("invalid date duplicate name and non-contiguous order fail closed", `(() => { const source=window.DR_CLUB_STATS_2026_2; const badDate=structuredClone(source); badDate.basisDate='2026-02-30'; const duplicate=structuredClone(source); duplicate.clubs[1].name=duplicate.clubs[0].name; const gap=structuredClone(source); gap.clubs[gap.clubs.length-1].order=gap.clubs.length+1; return !window.drClubStatsIsValid(badDate) && !window.drClubStatsIsValid(duplicate) && !window.drClubStatsIsValid(gap); })()`);
-    await check("URL path and internal file markers fail closed", `(() => { const markers=['sharepoint','forms.cloud.microsoft','onedrive','student@example.com','report.xlsx','report.xls','report.hwpx','report.pdf','https://example.com','http://example.com','file://secret']; return markers.every(marker=>{ const f=structuredClone(window.DR_CLUB_STATS_2026_2); f.clubs[0].name='동아리 '+marker; return !window.drClubStatsIsValid(f); }); })()`);
-    await check("invalid schema hides content and shows Korean error", "(() => { const ok=window.drClubStatsInit({}); const hidden=document.querySelector('#drcs-content').hidden; const shown=getComputedStyle(document.querySelector('#drcs-error')).display!=='none'; const message=document.querySelector('#drcs-error').textContent.includes('형식 또는 합계가 올바르지 않습니다'); window.drClubStatsInit(window.DR_CLUB_STATS_2026_2); return ok===false && hidden && shown && message; })()");
-
-    await chooseGrade("2");
     for (const width of [320, 375, 768, 1440]) {
       await client.send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: width < 768 });
-      await new Promise((resolve) => setTimeout(resolve, 120));
-      await check(`${width}px page has no horizontal overflow`, "document.documentElement.scrollWidth <= window.innerWidth + 1");
-      if (width <= 768) {
-        await check(`${width}px uses 13 mobile cards`, "getComputedStyle(document.querySelector('.drcs-table-wrap')).display==='none' && getComputedStyle(document.querySelector('#drcs-mobile-list')).display==='grid' && document.querySelectorAll('#drcs-mobile-list .drcs-mobile-card').length===13");
-        await check(`${width}px selected grade is first in each card`, "[...document.querySelectorAll('#drcs-mobile-list .drcs-mobile-card')].every(card=>card.querySelector('.drcs-mobile-grade:first-child').dataset.grade==='2' && card.querySelector('.drcs-mobile-grade:first-child').classList.contains('drcs-mobile-primary'))");
-      } else {
-        await check(`${width}px uses desktop table`, "getComputedStyle(document.querySelector('.drcs-table-wrap')).display!=='none' && getComputedStyle(document.querySelector('#drcs-mobile-list')).display==='none'");
-      }
+      await new Promise(resolve => setTimeout(resolve, 120));
+      await check(`${width}px has no horizontal page overflow`, "document.documentElement.scrollWidth<=window.innerWidth+1");
+      await check(`${width}px keeps all content visible`, `${visibleNames}.length===74 && [...document.querySelectorAll('.drcs-group')].every(el=>el.getBoundingClientRect().width>0)`);
+      await check(`${width}px controls meet 44px touch target`, "[...document.querySelectorAll('#sub-club-stats button,#drcs-search')].every(el=>el.getBoundingClientRect().height>=44)");
+      await check(`${width}px uses the expected group columns`, `getComputedStyle(document.querySelector('.drcs-groups')).gridTemplateColumns.split(' ').length===${width > 900 ? 3 : 1}`);
+      await evaluate("document.querySelector('[data-club-jump=second]').click()");
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      await check(`${width}px group shortcut keeps heading below sticky navigation`, "(() => { const title=document.querySelector('#drcs-title-second'), top=title.getBoundingClientRect().top, navBottom=document.querySelector('nav.tab-nav').getBoundingClientRect().bottom; return top>=navBottom ? true : {top,navBottom,margin:getComputedStyle(title).scrollMarginTop}; })()");
     }
-    await check("no runtime exceptions", `${JSON.stringify(exceptions)}.length === 0`);
-
-    const failed = checks.filter((item) => !item.ok);
-    checks.forEach((item) => console.log(`${item.ok ? "PASS" : "FAIL"}  ${item.label}`));
-    console.log(`\n${checks.length - failed.length}/${checks.length} checks passed`);
+    checks.push({ label: "no browser runtime exceptions", ok: exceptions.length === 0, value: exceptions });
+    const failed = checks.filter(item => !item.ok);
+    checks.forEach(item => console.log(`${item.ok ? "PASS" : "FAIL"}  ${item.label}${item.ok ? '' : ' '+JSON.stringify(item.value)}`));
+    console.log(`\n${checks.length-failed.length}/${checks.length} checks passed`);
     if (failed.length) process.exitCode = 1;
     await client.send("Browser.close").catch(() => {});
     client.close();
   } finally {
     if (!browser.killed) browser.kill();
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 250));
+    // mkdtemp returned this task's absolute profile path; no external paths are removed.
     await rm(profile, { recursive: true, force: true }).catch(() => {});
   }
 }
 
-main().catch((error) => {
-  console.error(error.stack || error);
-  process.exitCode = 1;
-});
+main().catch(error => { console.error(error.stack || error); process.exitCode = 1; });
