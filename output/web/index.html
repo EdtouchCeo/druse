@@ -5305,41 +5305,47 @@
 <div class="sub-panel" id="sub-club-stats">
   <style>
     #sub-club-stats [hidden] { display:none !important; }
-    #sub-club-stats .drcs-lead { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:20px; }
-    #sub-club-stats .drcs-year { margin-bottom:4px; color:var(--primary); font-size:0.9rem; font-weight:600; }
-    #sub-club-stats .section-title { margin:0 0 10px; }
-    #sub-club-stats .drcs-intro { color:var(--text-secondary); font-size:0.95rem; line-height:1.75; word-break:keep-all; overflow-wrap:break-word; }
-    #sub-club-stats .drcs-button { display:inline-flex; justify-content:center; align-items:center; min-height:44px; padding:9px 14px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text); font-size:0.9rem; font-weight:600; line-height:1.5; font-family:inherit; cursor:pointer; }
+    #sub-club-stats .drcs-lead { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:24px; }
+    #sub-club-stats .drcs-year { margin-bottom:8px; color:var(--primary); font-size:15px; font-weight:600; }
+    #sub-club-stats .section-title { margin:0 0 12px; padding-bottom:0; border:0; font-size:28px; line-height:1.4; letter-spacing:-0.025em; word-break:keep-all; }
+    #sub-club-stats .drcs-intro { color:var(--text); font-size:16px; line-height:1.75; word-break:keep-all; overflow-wrap:break-word; }
+    #sub-club-stats .drcs-button { display:inline-flex; justify-content:center; align-items:center; min-height:48px; padding:10px 16px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text); font-size:15px; font-weight:600; line-height:1.5; font-family:inherit; cursor:pointer; }
     #sub-club-stats .drcs-button:hover { border-color:var(--primary); background:var(--muted); }
     #sub-club-stats .drcs-button:focus-visible, #sub-club-stats .drcs-control:focus-visible, #sub-club-stats .drcs-group-title:focus-visible { outline:3px solid var(--ring); outline-offset:3px; }
     #sub-club-stats .drcs-actions { flex-shrink:0; }
-    #sub-club-stats .drcs-jumps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:20px; }
-    #sub-club-stats .drcs-jump { justify-content:space-between; gap:8px; color:var(--primary); }
-    #sub-club-stats .drcs-jump span { color:var(--text-secondary); font-size:0.85rem; font-weight:400; white-space:nowrap; }
-    #sub-club-stats .drcs-search-label { display:block; margin-bottom:7px; color:var(--text); font-weight:600; font-size:0.9rem; }
+    #sub-club-stats .drcs-jumps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:24px; }
+    #sub-club-stats .drcs-jump { justify-content:space-between; gap:8px; color:var(--primary); font-size:17px; font-weight:700; }
+    #sub-club-stats .drcs-jump span { padding:2px 8px; border-radius:6px; background:var(--muted); color:var(--text); font-size:14px; font-weight:500; white-space:nowrap; }
+    #sub-club-stats .drcs-search-label { display:block; margin-bottom:8px; color:var(--text); font-weight:600; font-size:16px; }
     #sub-club-stats .drcs-controls { display:flex; gap:8px; }
     #sub-club-stats .drcs-control { flex:1; min-width:0; min-height:46px; padding:10px 13px; border:1px solid var(--input); border-radius:var(--radius); background:var(--surface); color:var(--text); font-family:inherit; font-size:16px; }
-    #sub-club-stats .drcs-results { min-height:24px; margin:8px 0 18px; color:var(--text-secondary); font-size:0.9rem; }
-    #sub-club-stats .drcs-groups { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; align-items:start; }
-    #sub-club-stats .drcs-group { min-width:0; border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:hidden; }
-    #sub-club-stats .drcs-group-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px; border-top:3px solid var(--primary); border-bottom:1px solid var(--border); background:var(--muted); }
-    #sub-club-stats .drcs-group-title { margin:0; color:var(--primary); font-size:1.1rem; line-height:1.5; scroll-margin-top:86px; }
-    #sub-club-stats .drcs-group-count { color:var(--text-secondary); font-size:0.85rem; white-space:nowrap; }
-    #sub-club-stats .drcs-item.card { margin:0; padding:16px; border:0; border-bottom:1px solid var(--border); border-radius:0; box-shadow:none; background:var(--surface); overflow-wrap:anywhere; word-break:keep-all; }
-    #sub-club-stats .drcs-item.card:last-child { border-bottom:0; }
-    #sub-club-stats .drcs-item > strong { display:block; margin:0 0 7px; color:var(--text); font-size:1rem; font-weight:700; line-height:1.55; }
-    #sub-club-stats .drcs-item > p { margin:0; color:var(--text-secondary); font-size:0.92rem; line-height:1.8; }
+    #sub-club-stats .drcs-results { min-height:24px; margin:10px 0 24px; color:var(--text-secondary); font-size:15px; }
+    #sub-club-stats .drcs-groups { display:grid; grid-template-columns:minmax(0,1fr); gap:40px; align-items:start; }
+    #sub-club-stats .drcs-group { min-width:0; }
+    #sub-club-stats .drcs-group-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 24px; border-radius:12px; background:var(--primary); }
+    #sub-club-stats .drcs-group-title { margin:0; color:var(--surface); font-size:22px; font-weight:700; line-height:1.5; scroll-margin-top:86px; }
+    #sub-club-stats .drcs-group-count { padding:3px 10px; border-radius:6px; background:var(--surface); color:var(--primary); font-size:15px; font-weight:700; white-space:nowrap; }
+    #sub-club-stats .drcs-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px; }
+    #sub-club-stats .drcs-item.card { min-width:0; margin:0; padding:22px 24px; border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm); background:var(--surface); overflow-wrap:anywhere; word-break:keep-all; }
+    #sub-club-stats .drcs-item > strong { display:block; margin:0 0 12px; color:var(--primary); font-size:20px; font-weight:700; line-height:1.5; letter-spacing:-0.015em; }
+    #sub-club-stats .drcs-item > p { margin:0; color:var(--text); font-size:17px; line-height:1.8; letter-spacing:0; }
     #sub-club-stats .drcs-empty { margin:0; padding:28px 18px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text-secondary); text-align:center; }
     @media (max-width:900px) {
-      #sub-club-stats .drcs-groups { grid-template-columns:1fr; gap:24px; }
       #sub-club-stats .drcs-lead { display:block; }
       #sub-club-stats .drcs-actions { margin-top:14px; }
     }
+    @media (max-width:720px) {
+      #sub-club-stats .drcs-list { grid-template-columns:minmax(0,1fr); }
+      #sub-club-stats .drcs-jump { font-size:15px; }
+      #sub-club-stats .drcs-item.card { padding:20px; }
+    }
     @media (max-width:480px) {
-      #sub-club-stats .drcs-jumps { grid-template-columns:1fr; gap:7px; }
-      #sub-club-stats .drcs-item.card { padding:16px 14px; }
-      #sub-club-stats .drcs-item > p { font-size:0.95rem; }
-      #sub-club-stats .drcs-group-heading { padding:14px; }
+      #sub-club-stats .section-title { font-size:24px; }
+      #sub-club-stats .drcs-jumps { grid-template-columns:1fr; gap:8px; }
+      #sub-club-stats .drcs-jump { font-size:17px; }
+      #sub-club-stats .drcs-item > p { font-size:16px; }
+      #sub-club-stats .drcs-group-heading { padding:16px 20px; }
+      #sub-club-stats .drcs-group-title { font-size:21px; }
     }
     @media print {
       body.drcs-printing > :not(main), body.drcs-printing main > :not(#tab-student), body.drcs-printing #tab-student > :not(#sub-club-stats) { display:none !important; }
@@ -5350,9 +5356,10 @@
       body.drcs-printing #sub-club-stats .drcs-group { display:block !important; border:0; overflow:visible; }
       body.drcs-printing #sub-club-stats .drcs-group + .drcs-group { break-before:page; }
       body.drcs-printing #sub-club-stats .drcs-group-heading { margin-bottom:5mm; padding:3mm 0; background:var(--surface); break-after:avoid; }
+      body.drcs-printing #sub-club-stats .drcs-group-title { color:var(--primary); font-size:16pt; }
       body.drcs-printing #sub-club-stats .drcs-group-count { display:none; }
-      body.drcs-printing #sub-club-stats .drcs-list { columns:2; column-gap:8mm; }
-      body.drcs-printing #sub-club-stats .drcs-item.card { display:block !important; break-inside:avoid; margin:0 0 4mm; padding:0 0 3mm; }
+      body.drcs-printing #sub-club-stats .drcs-list { display:block; columns:2; column-gap:8mm; margin-top:0; }
+      body.drcs-printing #sub-club-stats .drcs-item.card { display:block !important; break-inside:avoid; margin:0 0 4mm; padding:0 0 3mm; border:0; border-bottom:1px solid var(--border); border-radius:0; box-shadow:none; }
       body.drcs-printing #sub-club-stats .drcs-item > strong { font-size:11pt; margin-bottom:1.5mm; }
       body.drcs-printing #sub-club-stats .drcs-item > p { font-size:10pt; line-height:1.6; color:var(--text); }
       body.drcs-printing #sub-club-stats .drcs-lead { display:block; margin-bottom:5mm; }
@@ -5362,7 +5369,7 @@
     <div>
       <p class="drcs-year">2026학년도</p>
       <h2 class="section-title">대륜고등학교 동아리 현황</h2>
-      <p class="drcs-intro">1·2학년은 함께 편성하며, 1학기와 2학기로 나누어 안내합니다.<br>3학년은 학기 구분 없이 안내합니다.</p>
+      <p class="drcs-intro">1·2학년은 함께 편성하며, 1학기와 2학기로 나누어 안내함.<br>3학년은 학기 구분 없이 안내함.</p>
     </div>
     <div class="drcs-actions drcs-no-print" hidden>
       <button type="button" class="drcs-button" id="drcs-print">전체 목록 인쇄 / PDF 저장</button>
@@ -5379,7 +5386,7 @@
       <input type="search" id="drcs-search" class="drcs-control" placeholder="동아리명이나 활동 내용 검색" aria-describedby="drcs-result-count" autocomplete="off">
       <button type="button" class="drcs-button" id="drcs-reset">초기화</button>
     </div>
-    <p class="drcs-results" id="drcs-result-count" role="status" aria-live="polite">모든 동아리를 표시합니다.</p>
+    <p class="drcs-results" id="drcs-result-count" role="status" aria-live="polite">모든 동아리를 표시함.</p>
   </div>
   <div class="drcs-groups">
     <section class="drcs-group" data-group="first" aria-labelledby="drcs-title-first">
@@ -5390,119 +5397,119 @@
       <div class="drcs-list">
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">공학에 물리다</strong>
-          <p>물리 법칙을 공학 기술에 적용합니다. 설계·실험·분석·재실험을 거치며 과학적 탐구 능력을 기릅니다.</p>
+          <p>물리 법칙을 공학 기술에 적용함. 설계·실험·분석·재실험을 거치며 과학적 탐구 능력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">이코노바</strong>
-          <p>AI가 경제와 경영에 미치는 영향을 비즈니스 사례와 데이터로 분석합니다. AI 도구를 활용해 시장과 기업 전략을 연구합니다.</p>
+          <p>AI가 경제와 경영에 미치는 영향을 비즈니스 사례와 데이터로 분석함. AI 도구를 활용해 시장과 기업 전략을 연구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">의학 탐구</strong>
-          <p>관심 있는 의학 분야를 스스로 탐구하고, 의학계의 쟁점을 함께 토론하며 진로를 살펴봅니다.</p>
+          <p>관심 있는 의학 분야를 스스로 탐구하고, 의학계의 쟁점을 함께 토론하며 진로를 탐색함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">공학 산출물 개발</strong>
-          <p>공학 제품과 코드의 구조를 살펴보고, 조별로 공학 제품이나 앱을 개발합니다.</p>
+          <p>공학 제품과 코드의 구조를 살펴보고, 조별로 공학 제품이나 앱을 개발함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">유스티티아</strong>
-          <p>판사의 역할을 알아보고 모의재판을 진행합니다. 사회 문제를 분석하며 사고력과 문제 해결 능력을 기릅니다.</p>
+          <p>판사의 역할을 알아보고 모의재판을 진행함. 사회 문제를 분석하며 사고력과 문제 해결 능력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">수리공작소</strong>
-          <p>공통수학의 심화 개념을 탐구하고 파이썬으로 구현하며 수학적 사고력과 프로그래밍 역량을 함께 기릅니다.</p>
+          <p>공통수학의 심화 개념을 탐구하고 파이썬으로 구현하며 수학적 사고력과 프로그래밍 역량을 함께 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">영미영어소설읽기</strong>
-          <p>영미권 작가의 영어소설을 원서로 읽고 문화적 배경과 표현 방식을 살펴보며 영어 독해력과 사고력을 기릅니다.</p>
+          <p>영미권 작가의 영어소설을 원서로 읽고 문화적 배경과 표현 방식을 살펴보며 영어 독해력과 사고력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">시사 따라잡기</strong>
-          <p>매주 접하는 시사 문제와 그 이면을 살펴보며 사회를 보는 시야를 넓힙니다.</p>
+          <p>매주 접하는 시사 문제와 그 이면을 살펴보며 사회를 보는 시야를 확장함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">융합인사이트</strong>
-          <p>사회 문제를 인문·사회·과학 관점에서 함께 탐구합니다. 토론과 모둠별 심화 탐구를 바탕으로 정책을 제안합니다.</p>
+          <p>사회 문제를 인문·사회·과학 관점에서 함께 탐구함. 토론과 모둠별 심화 탐구를 바탕으로 정책을 제안함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">과학 디스커버리</strong>
-          <p>관심 있는 과학 주제를 자유롭게 정하고 팀별로 연구하여 탐구 보고서를 작성하고 발표합니다.</p>
+          <p>관심 있는 과학 주제를 자유롭게 정하고 팀별로 연구하여 탐구 보고서를 작성하고 발표함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">법의학</strong>
-          <p>법·의학 관련 사건을 수학·공학·의학 관점에서 분석하고, 판결과 법적 절차를 탐구합니다.</p>
+          <p>법·의학 관련 사건을 수학·공학·의학 관점에서 분석하고, 판결과 법적 절차를 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">바이오앤케미</strong>
-          <p>생명과학과 화학이 만나는 현상에서 질문을 찾고 실험을 설계·수행하며 생활 속 과학을 분석합니다.</p>
+          <p>생명과학과 화학이 만나는 현상에서 질문을 찾고 실험을 설계·수행하며 생활 속 과학을 분석함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">공대</strong>
-          <p>전자기기를 분해·분석하는 리버스 엔지니어링과 가상 물리 시뮬레이션 등 공학의 여러 과정을 경험합니다.</p>
+          <p>전자기기를 분해·분석하는 리버스 엔지니어링과 가상 물리 시뮬레이션 등 공학의 여러 과정을 경험함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">생물 EX</strong>
-          <p>유전·면역·근육 등 생명과학 주제를 실험하고 조사합니다. 조원들과 토론하며 생명의 원리를 깊이 탐구합니다.</p>
+          <p>유전·면역·근육 등 생명과학 주제를 실험하고 조사함. 조원들과 토론하며 생명의 원리를 깊이 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">코드아틀리에</strong>
-          <p>일상 속 문제를 발견하고 데이터를 수집·분석합니다. AI와 코딩으로 해결 방안을 설계하고 시스템을 개선합니다.</p>
+          <p>일상 속 문제를 발견하고 데이터를 수집·분석함. AI와 코딩으로 해결 방안을 설계하고 시스템을 개선함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">온라인 강연 주제 탐구</strong>
-          <p>TED 강연 영상을 활용해 자유 주제를 탐구하고 결과 보고서를 작성하여 발표합니다.</p>
+          <p>TED 강연 영상을 활용해 자유 주제를 탐구하고 결과 보고서를 작성하여 발표함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">AI바이오딥러닝</strong>
-          <p>AI 모델을 설계·학습시켜 생명과학·생명공학 데이터를 분석합니다. 창업가와 연구자의 피드백으로 모델과 연구 아이디어를 발전시킵니다.</p>
+          <p>AI 모델을 설계·학습시켜 생명과학·생명공학 데이터를 분석함. 창업가와 연구자의 피드백으로 모델과 연구 아이디어를 개선함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">유레카</strong>
-          <p>사회와 일상에서 문제를 찾고 과학 지식을 적용해 창의적인 해결 방법을 탐구합니다.</p>
+          <p>사회와 일상에서 문제를 찾고 과학 지식을 적용해 창의적인 해결 방법을 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">의학영자신문</strong>
-          <p>의학·약학·생명공학 주제로 영어 기사와 칼럼을 작성하고 신문을 제작합니다.</p>
+          <p>의학·약학·생명공학 주제로 영어 기사와 칼럼을 작성하고 신문을 제작함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">창체농구</strong>
-          <p>농구로 체력과 신체 능력을 기르고 스포츠 과학을 이해하며 협동심과 리더십을 키웁니다.</p>
+          <p>농구로 체력과 신체 능력을 기르고 스포츠 과학을 이해하며 협동심과 리더십을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">화학과 인류</strong>
-          <p>인류 역사와 화학의 발전사를 살펴보고 미래의 변화 요인을 탐구하여 결과를 발표합니다.</p>
+          <p>인류 역사와 화학의 발전사를 살펴보고 미래의 변화 요인을 탐구하여 결과를 발표함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">씨ᄋᆞᆯ</strong>
-          <p>주제를 정해 관련 시를 감상하고 자신의 관점으로 해석하며 문학 작품을 능동적으로 읽는 힘을 기릅니다.</p>
+          <p>주제를 정해 관련 시를 감상하고 자신의 관점으로 해석하며 문학 작품을 능동적으로 읽는 능력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">코드포지</strong>
-          <p>알고리즘·시간복잡도·최적화를 공부하고 알고리즘을 직접 설계해 프로그램으로 구현합니다.</p>
+          <p>알고리즘·시간복잡도·최적화를 공부하고 알고리즘을 직접 설계해 프로그램으로 구현함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">이코노랩</strong>
-          <p>모의투자로 투자 경험을 쌓고 데이터를 분석하며 투자를 여러 관점에서 바라보는 힘을 기릅니다.</p>
+          <p>모의투자로 투자 경험을 쌓고 데이터를 분석하며 투자를 여러 관점에서 바라보는 능력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">족구반</strong>
-          <p>실력에 관계없이 함께 족구를 연습하고 친선경기를 하며 스트레스를 해소하고 팀워크를 키웁니다.</p>
+          <p>실력에 관계없이 함께 족구를 연습하고 친선경기를 하며 스트레스를 해소하고 팀워크를 강화함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">미술반</strong>
-          <p>미술에 관심이 있거나 미술대학 진학을 희망하는 학생이 창의적이고 개성 있는 작품을 제작합니다.</p>
+          <p>미술에 관심이 있거나 미술대학 진학을 희망하는 학생이 창의적이고 개성 있는 작품을 제작함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">축구반</strong>
-          <p>축구부원을 대상으로 경기를 통해 전술과 개인 기술을 익힙니다.</p>
+          <p>축구부원을 대상으로 경기를 통해 전술과 개인 기술을 습득함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">시냅스</strong>
-          <p>1·2학년이 팀을 이루어 피드백과 멘토링을 주고받으며 자율적인 생명과학 탐구 프로젝트를 진행합니다.</p>
+          <p>1·2학년이 팀을 이루어 피드백과 멘토링을 주고받으며 자율적인 생명과학 탐구 프로젝트를 진행함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">음악 평론반</strong>
-          <p>음악 작품을 감상하고 작품의 메시지를 분석하여 평론합니다.</p>
+          <p>음악 작품을 감상하고 작품의 메시지를 분석하여 평론함.</p>
         </article>
       </div>
     </section>
@@ -5514,119 +5521,119 @@
       <div class="drcs-list">
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">화학과 인류</strong>
-          <p>인류 역사와 화학의 발전사를 살펴보고 미래의 변화 요인을 탐구하여 보고서를 작성하고 발표합니다.</p>
+          <p>인류 역사와 화학의 발전사를 살펴보고 미래의 변화 요인을 탐구하여 보고서를 작성하고 발표함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">아트 마인드</strong>
-          <p>다양한 미술 재료와 기법을 실험합니다. 생각·감정·경험을 독창적인 작품으로 표현하며 아이디어를 발전시킵니다.</p>
+          <p>다양한 미술 재료와 기법을 실험함. 생각·감정·경험을 독창적인 작품으로 표현하며 아이디어를 개선함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">수학적 시선</strong>
-          <p>일상과 사회 현상을 수학적 모델로 분석합니다. 확률과 통계 등 심화 개념을 적용해 현실 문제의 해결 방안을 탐구합니다.</p>
+          <p>일상과 사회 현상을 수학적 모델로 분석함. 확률과 통계 등 심화 개념을 적용해 현실 문제의 해결 방안을 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">AI 실무 탐구단</strong>
-          <p>관심 주제를 정해 AI와 함께 문제 해결 프로젝트를 진행합니다. 조사·실행·피드백을 거치며 질문을 설계하고 AI 답변을 비판적으로 검증합니다.</p>
+          <p>관심 주제를 정해 AI와 함께 문제 해결 프로젝트를 진행함. 조사·실행·피드백을 거치며 질문을 설계하고 AI 답변을 비판적으로 검증함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">축구반</strong>
-          <p>축구부원을 대상으로 경기를 진행하며 전술과 개인 기술을 익힙니다.</p>
+          <p>축구부원을 대상으로 경기를 진행하며 전술과 개인 기술을 습득함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">공대</strong>
-          <p>하드웨어·소프트웨어·AI 기술을 융합하여 다양한 공학 분야를 탐구합니다.</p>
+          <p>하드웨어·소프트웨어·AI 기술을 융합하여 다양한 공학 분야를 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">공학개발</strong>
-          <p>공학을 여러 관점에서 살펴보고 팀원과 의견을 나누며 공학 결과물을 직접 개발합니다.</p>
+          <p>공학을 여러 관점에서 살펴보고 팀원과 의견을 나누며 공학 결과물을 직접 개발함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">리더스온</strong>
-          <p>정치·사회·언론·국제·경영·국방·치안 분야의 문제를 탐구합니다. 현안 분석, 정책 설계, 모의회의·협상, 기관 탐방과 인터뷰로 해결 방향을 제안합니다.</p>
+          <p>정치·사회·언론·국제·경영·국방·치안 분야의 문제를 탐구함. 현안 분석, 정책 설계, 모의회의·협상, 기관 탐방과 인터뷰로 해결 방향을 제안함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">에듀랩</strong>
-          <p>교육의 의미와 시대에 따른 변화를 탐구합니다. 교육 이론을 바탕으로 모의 수업을 설계하고 실행합니다.</p>
+          <p>교육의 의미와 시대에 따른 변화를 탐구함. 교육 이론을 바탕으로 모의 수업을 설계하고 실행함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">크리컬쳐</strong>
-          <p>사회·문화 문제와 다양한 주제를 탐구합니다. 보고서·그림·글·영상 등 자유로운 창작물로 생각을 표현하고 공유합니다.</p>
+          <p>사회·문화 문제와 다양한 주제를 탐구함. 보고서·그림·글·영상 등 자유로운 창작물로 생각을 표현하고 공유함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">코드아틀리에</strong>
-          <p>실생활의 문제와 개선할 점을 분석하고 프로그래밍과 AI를 활용해 해결 방안을 탐구합니다.</p>
+          <p>실생활의 문제와 개선할 점을 분석하고 프로그래밍과 AI를 활용해 해결 방안을 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">생물EX</strong>
-          <p>생명과학에 관한 질문을 바탕으로 실험하고 결과를 분석하여 자신의 결론을 도출합니다.</p>
+          <p>생명과학에 관한 질문을 바탕으로 실험하고 결과를 분석하여 자신의 결론을 도출함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">이코노랩</strong>
-          <p>경제와 투자 원리를 배우고 기업 분석·모의 투자·경제 이슈 탐구로 경제를 이해합니다.</p>
+          <p>경제와 투자 원리를 배우고 기업 분석·모의 투자·경제 이슈 탐구로 경제를 이해함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">AI바이오딥러닝</strong>
-          <p>AI 알고리즘을 직접 설계합니다. 생명 현상과 복잡한 세상을 시뮬레이션하여 결과물을 제작합니다.</p>
+          <p>AI 알고리즘을 직접 설계함. 생명 현상과 복잡한 세상을 시뮬레이션하여 결과물을 제작함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">바이오앤케미</strong>
-          <p>생명과학과 화학이 맞닿는 현상을 실험과 이론으로 탐구합니다. 조별 실험과 개인별 심화 탐구로 문제 해결과 논리적 사고를 연습합니다.</p>
+          <p>생명과학과 화학이 맞닿는 현상을 실험과 이론으로 탐구함. 조별 실험과 개인별 심화 탐구로 문제 해결과 논리적 사고를 연습함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">코드포지</strong>
-          <p>자신만의 주제로 알고리즘을 구상하고 프로그램으로 구현하며 수학적 역량과 컴퓨팅 사고력을 기릅니다.</p>
+          <p>자신만의 주제로 알고리즘을 구상하고 프로그램으로 구현하며 수학적 역량과 컴퓨팅 사고력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">웹소설 작가</strong>
-          <p>웹소설의 창작 과정과 작가의 감정을 탐구하고 인물과 이야기를 구성하여 작품을 씁니다.</p>
+          <p>웹소설의 창작 과정과 작가의 감정을 탐구하고 인물과 이야기를 구성하여 작품을 작성함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">퓨전공학탐구</strong>
-          <p>진로와 관련된 공학 문제를 찾아 실험하고 탐구합니다. 발표와 서로 다른 공학 분야의 피드백으로 결과를 보완합니다.</p>
+          <p>진로와 관련된 공학 문제를 찾아 실험하고 탐구함. 발표와 서로 다른 공학 분야의 피드백으로 결과를 보완함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">배드민턴반</strong>
-          <p>배드민턴 기본기·풋워크·전술을 익히고 훈련과 실전 경기를 진행합니다. 경기를 분석하고 팀원과 협력하며 전략적 사고를 기릅니다.</p>
+          <p>배드민턴 기본기·풋워크·전술을 익히고 훈련과 실전 경기를 진행함. 경기를 분석하고 팀원과 협력하며 전략적 사고를 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">이코노바</strong>
-          <p>AI와 다양한 매체로 경제·경영 현상을 탐구하고 사회와 기업의 변화를 분석합니다.</p>
+          <p>AI와 다양한 매체로 경제·경영 현상을 탐구하고 사회와 기업의 변화를 분석함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">의학 탐구</strong>
-          <p>의학 분야를 자기 주도적으로 탐구하며 진로와 소질을 발견합니다. 함께 활동하며 자기관리와 의사소통 능력을 기릅니다.</p>
+          <p>의학 분야를 자기 주도적으로 탐구하며 진로와 소질을 발견함. 함께 활동하며 자기관리와 의사소통 능력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">메디체인저</strong>
-          <p>생명과학·보건의학 분야의 관심 주제를 자유롭게 탐구합니다. 탐구 결과를 교내 보건 캠페인 등으로 연결해 학교 공동체의 변화에 기여합니다.</p>
+          <p>생명과학·보건의학 분야의 관심 주제를 자유롭게 탐구함. 탐구 결과를 교내 보건 캠페인 등으로 연결해 학교 공동체의 변화에 기여함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">데이터생물학과</strong>
-          <p>공식 연구 기관의 빅데이터와 시뮬레이션으로 의학·생물학 가설을 분석·검증합니다. 데이터 분석과 실험 결과를 학술 포스터로 제작해 발표합니다.</p>
+          <p>공식 연구 기관의 빅데이터와 시뮬레이션으로 의학·생물학 가설을 분석·검증함. 데이터 분석과 실험 결과를 학술 포스터로 제작해 발표함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">공학에 물리다</strong>
-          <p>물리 원리를 바탕으로 학교와 일상의 공학 현상을 탐구합니다. 문제를 발견하고 공학 결과물을 제작합니다.</p>
+          <p>물리 원리를 바탕으로 학교와 일상의 공학 현상을 탐구함. 문제를 발견하고 공학 결과물을 제작함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">스크린 뮤직랩</strong>
-          <p>영상 속 장면의 분위기와 감정을 분석하고 어울리는 음악을 선정합니다. 영상과 음악의 관계를 탐구하며 작품을 해석하고 비평합니다.</p>
+          <p>영상 속 장면의 분위기와 감정을 분석하고 어울리는 음악을 선정함. 영상과 음악의 관계를 탐구하며 작품을 해석하고 비평함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">호모루덴스</strong>
-          <p>보드게임 속 의사결정을 행동경제학으로 분석하고 변수와 규칙을 설계합니다. 확률 분포와 기댓값으로 게임의 균형을 검증합니다.</p>
+          <p>보드게임 속 의사결정을 행동경제학으로 분석하고 변수와 규칙을 설계함. 확률 분포와 기댓값으로 게임의 균형을 검증함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">원더풀사이언스</strong>
-          <p>진로 연계 독서와 「100가지 위대한 발견」 영상을 통해 과학사의 발견 과정과 생활 속 과학 원리를 탐구합니다. 창의적인 문제 해결 사례를 조사해 발표합니다.</p>
+          <p>진로 연계 독서와 「100가지 위대한 발견」 영상을 통해 과학사의 발견 과정과 생활 속 과학 원리를 탐구함. 창의적인 문제 해결 사례를 조사해 발표함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">수학 탐구토론반</strong>
-          <p>수학 개념과 수학사, 일상과 사회 속 수학 원리를 조별로 탐구합니다. 도서와 자료를 조사해 발표하고 서로 다른 관점으로 토론합니다.</p>
+          <p>수학 개념과 수학사, 일상과 사회 속 수학 원리를 조별로 탐구함. 도서와 자료를 조사해 발표하고 서로 다른 관점으로 토론함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">AI유스프러너</strong>
-          <p>학교와 지역사회에서 해결할 문제를 찾고 AI로 창업 아이디어를 구체화하며 기업가정신을 배웁니다.</p>
+          <p>학교와 지역사회에서 해결할 문제를 찾고 AI로 창업 아이디어를 구체화하며 기업가정신을 학습함.</p>
         </article>
       </div>
     </section>
@@ -5638,72 +5645,72 @@
       <div class="drcs-list">
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">영자신문</strong>
-          <p>영자신문 기사를 읽으며 다양한 시각과 표현 방식을 살펴보고 직접 영어 기사를 작성합니다.</p>
+          <p>영자신문 기사를 읽으며 다양한 시각과 표현 방식을 살펴보고 직접 영어 기사를 작성함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">AI기업가클럽</strong>
-          <p>사회·경제적 가치를 만드는 AI 서비스를 개발하고 비즈니스 모델과 홍보 콘텐츠를 제작합니다.</p>
+          <p>사회·경제적 가치를 만드는 AI 서비스를 개발하고 비즈니스 모델과 홍보 콘텐츠를 제작함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">물리독서</strong>
-          <p>물리 도서의 핵심 개념을 정리하고 현대 과학기술·우주·철학적 쟁점과 연결해 주제를 탐구합니다.</p>
+          <p>물리 도서의 핵심 개념을 정리하고 현대 과학기술·우주·철학적 쟁점과 연결해 주제를 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">고3로그</strong>
-          <p>쇼트폼 매체를 이해하고 고3의 일상을 브이로그로 제작할 계획을 모둠별로 세우며 매체 언어와 협력적 의사소통을 배웁니다.</p>
+          <p>쇼트폼 매체를 이해하고 고3의 일상을 브이로그로 제작할 계획을 모둠별로 세우며 매체 언어와 협력적 의사소통을 학습함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">수학문제만들기</strong>
-          <p>수능 과목과 관련된 수학 문제를 직접 만들며 문제 해결력과 사고력을 기릅니다.</p>
+          <p>수능 과목과 관련된 수학 문제를 직접 만들며 문제 해결력과 사고력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">생명과학해봄</strong>
-          <p>생명과학 도서를 읽고 의생명·고전 생명과학·첨단 생명과학의 관심 주제를 탐구합니다. 관련 다큐멘터리와 시사 자료도 살펴봅니다.</p>
+          <p>생명과학 도서를 읽고 의생명·고전 생명과학·첨단 생명과학의 관심 주제를 탐구함. 관련 다큐멘터리와 시사 자료도 검토함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">바이오인사이트</strong>
-          <p>최신 뉴스 기사로 의학·환경·유전학 등 생명과학 주제를 탐구하고 비평글을 작성합니다.</p>
+          <p>최신 뉴스 기사로 의학·환경·유전학 등 생명과학 주제를 탐구하고 비평글을 작성함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">생활속의 과학</strong>
-          <p>과학 도서와 다큐멘터리에서 핵심 개념을 정리하고 실생활과 연결해 탐구합니다.</p>
+          <p>과학 도서와 다큐멘터리에서 핵심 개념을 정리하고 실생활과 연결해 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">환경 과학 윤리</strong>
-          <p>환경문제와 자원 불균형을 과학 지식과 윤리적 관점에서 살펴보며 균형 있는 시각을 기릅니다.</p>
+          <p>환경문제와 자원 불균형을 과학 지식과 윤리적 관점에서 살펴보며 균형 있는 시각을 형성함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">의생명탐구</strong>
-          <p>의학과 생명과학을 진로와 연결해 탐구합니다. 개인이나 조별로 주제를 자유롭게 정해 심화 탐구를 진행합니다.</p>
+          <p>의학과 생명과학을 진로와 연결해 탐구함. 개인이나 조별로 주제를 자유롭게 정해 심화 탐구를 진행함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">세계문화탐방</strong>
-          <p>세계 여러 나라의 문화를 소개하고 이해하며 세계화 시대에 필요한 소양을 기릅니다.</p>
+          <p>세계 여러 나라의 문화를 소개하고 이해하며 세계화 시대에 필요한 소양을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">셰익스피어 문학 탐구</strong>
-          <p>셰익스피어 작품의 인물 갈등과 주제를 분석합니다. 시대적 배경과 보편적인 감정을 탐구하고 토론하며 작품 해석 능력을 기릅니다.</p>
+          <p>셰익스피어 작품의 인물 갈등과 주제를 분석함. 시대적 배경과 보편적인 감정을 탐구하고 토론하며 작품 해석 능력을 함양함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">최신개발 기술동향</strong>
-          <p>연구자료로 기계·전자·컴퓨터 등 공학 분야의 최신 기술 동향을 살펴보고 교과 내용과 연결해 탐구합니다.</p>
+          <p>연구자료로 기계·전자·컴퓨터 등 공학 분야의 최신 기술 동향을 살펴보고 교과 내용과 연결해 탐구함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">과학자와 과학사 탐구</strong>
-          <p>과학자의 생애와 업적을 살펴보며 과학사 속 탐구 과정을 배웁니다.</p>
+          <p>과학자의 생애와 업적을 살펴보며 과학사 속 탐구 과정을 학습함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">심화축구</strong>
-          <p>축구 기본기와 전술을 훈련하고 교내외 친선경기와 대회에 참가해 실전 경험을 쌓습니다.</p>
+          <p>축구 기본기와 전술을 훈련하고 교내외 친선경기와 대회에 참가해 실전 경험을 축적함.</p>
         </article>
         <article class="card drcs-item">
           <strong role="heading" aria-level="4">스포츠 데이터과학 연구</strong>
-          <p>AI와 데이터 분석으로 스포츠 경기·신체 데이터를 분석하고 머신러닝 알고리즘을 적용하며 문제 해결 능력을 기릅니다.</p>
+          <p>AI와 데이터 분석으로 스포츠 경기·신체 데이터를 분석하고 머신러닝 알고리즘을 적용하며 문제 해결 능력을 함양함.</p>
         </article>
       </div>
     </section>
   </div>
-  <p class="drcs-empty drcs-no-print" id="drcs-empty" hidden>검색한 동아리가 없습니다. 동아리명이나 활동 내용을 바꾸어 검색해 주세요.</p>
+  <p class="drcs-empty drcs-no-print" id="drcs-empty" hidden>검색 결과 없음. 다른 동아리명이나 활동 내용으로 검색.</p>
   <script>
   (function () {
     'use strict';
@@ -5725,7 +5732,7 @@
         group.querySelector('.drcs-group-count').textContent = count + '개';
         total += count;
       });
-      document.getElementById('drcs-result-count').textContent = query ? '검색 결과 ' + total + '건 · 학년과 학기별로 표시합니다.' : '모든 동아리를 표시합니다.';
+      document.getElementById('drcs-result-count').textContent = query ? '검색 결과 ' + total + '건 · 학년과 학기별로 표시함.' : '모든 동아리를 표시함.';
       document.getElementById('drcs-empty').hidden = total !== 0;
     }
     function reset() { search.value = ''; filter(); }

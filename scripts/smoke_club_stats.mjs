@@ -185,10 +185,10 @@ async function main() {
       await check(`${width}px has no horizontal page overflow`, "document.documentElement.scrollWidth<=window.innerWidth+1");
       await check(`${width}px keeps all content visible`, `${visibleNames}.length===74 && [...document.querySelectorAll('.drcs-group')].every(el=>el.getBoundingClientRect().width>0)`);
       await check(`${width}px controls meet 44px touch target`, "[...document.querySelectorAll('#sub-club-stats button,#drcs-search')].every(el=>el.getBoundingClientRect().height>=44)");
-      await check(`${width}px uses the expected group columns`, `getComputedStyle(document.querySelector('.drcs-groups')).gridTemplateColumns.split(' ').length===${width > 900 ? 3 : 1}`);
+      await check(`${width}px offers wide sections with readable card columns`, `getComputedStyle(document.querySelector('.drcs-groups')).gridTemplateColumns.split(' ').length===1 && getComputedStyle(document.querySelector('.drcs-list')).gridTemplateColumns.split(' ').length===${width > 720 ? 2 : 1}`);
       await evaluate("document.querySelector('[data-club-jump=second]').click()");
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      await check(`${width}px group shortcut keeps heading below sticky navigation`, "(() => { const title=document.querySelector('#drcs-title-second'), top=title.getBoundingClientRect().top, navBottom=document.querySelector('nav.tab-nav').getBoundingClientRect().bottom; return top>=navBottom ? true : {top,navBottom,margin:getComputedStyle(title).scrollMarginTop}; })()");
+      await evaluate("(async () => { let previous=window.scrollY, stable=0; for(let i=0;i<50 && stable<5;i++){await new Promise(resolve=>setTimeout(resolve,100)); const next=window.scrollY; stable=Math.abs(next-previous)<0.5 ? stable+1 : 0; previous=next;} })()");
+      await check(`${width}px group shortcut keeps heading below sticky navigation`, "(() => { const title=document.querySelector('#drcs-title-second'), top=title.getBoundingClientRect().top, navBottom=document.querySelector('nav.tab-nav').getBoundingClientRect().bottom; return top>=navBottom && title.getBoundingClientRect().bottom<=window.innerHeight; })()");
     }
     checks.push({ label: "no browser runtime exceptions", ok: exceptions.length === 0, value: exceptions });
     const failed = checks.filter(item => !item.ok);
