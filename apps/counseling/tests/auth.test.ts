@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {validatedLocalOrigin,connectionUrl,receivedTeacherToken,approvedTeacherToken,AUTH_ORIGIN,AUTH_MESSAGE} from '../src/lib/authBridge'
+import {validatedLocalOrigin,connectionUrl,schoolLoginUrl,receivedTeacherToken,approvedTeacherToken,AUTH_ORIGIN,AUTH_MESSAGE} from '../src/lib/authBridge'
 import type {Health} from '../src/lib/types'
 
 test('authentication bridge accepts only explicit HTTP loopback origins',()=>{
@@ -24,4 +24,14 @@ test('only a server-confirmed approved online teacher may share the token',()=>{
  assert.equal(approvedTeacherToken({...health,teacher:null,user:{id:'student',display_name:'합성학생',role:'student',approved:true}},storage),null)
  assert.equal(approvedTeacherToken({...health,teacher:{...health.teacher!,approved:false}},storage),null)
  assert.equal(approvedTeacherToken({...health,mode:'local'},storage),null)
+})
+
+
+test('school login has a fixed strategy-room return path with no connection or credential parameters',()=>{
+ assert.equal(schoolLoginUrl(),'/?login_return=%2Fcounseling%2F#login')
+ const login=new URL(schoolLoginUrl(),AUTH_ORIGIN)
+ assert.equal(login.origin,AUTH_ORIGIN);assert.equal(login.pathname,'/');assert.equal(login.hash,'#login')
+ assert.deepEqual([...login.searchParams.keys()],['login_return'])
+ assert.equal(login.searchParams.get('login_return'),'/counseling/')
+ assert.equal(new URL(login.searchParams.get('login_return')!,AUTH_ORIGIN).search,'')
 })

@@ -12,6 +12,8 @@ export function connectionUrl(localOrigin:string):string{
  if(!target)throw new Error('이 PC의 localhost 또는 127.0.0.1 주소에서 연결해 주세요.')
  return AUTH_ORIGIN+'/counseling/?connect_local='+encodeURIComponent(target)
 }
+export function schoolLoginUrl():string{return '/?login_return=%2Fcounseling%2F#login'}
+
 export function receivedTeacherToken(event:Pick<MessageEvent,'origin'|'source'|'data'>,expected:MessageEventSource|null):string|null{
  if(!expected||event.origin!==AUTH_ORIGIN||event.source!==expected)return null
  const data=event.data

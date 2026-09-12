@@ -65,3 +65,24 @@ test('expired teacher A data is cleared before connecting teacher B with an empt
  await expect(page.getByText('교사A에게만 보일 합성 자료',{exact:false})).toHaveCount(0)
  await expect(page.locator('.document-heading,.case-item,.ai-output')).toHaveCount(0)
 })
+
+
+test('online login returns in the same tab while the original PC-connection window is preserved',async({page})=>{
+ await page.route('https://counseling.test:5178/**',async route=>{
+  const url=new URL(route.request().url());url.hostname='127.0.0.1';url.protocol='http:'
+  return route.fulfill({response:await route.fetch({url:url.toString()})})
+ })
+ await page.goto('https://counseling.test:5178/counseling/')
+ const login=page.getByRole('link',{name:'로그인하고 전략실로 이동',exact:true})
+ await expect(login).toHaveAttribute('href','/?login_return=%2Fcounseling%2F#login')
+ await expect(login).not.toHaveAttribute('target')
+ const origin='http://127.0.0.1:8768'
+ await page.goto('https://counseling.test:5178/counseling/?connect_local='+encodeURIComponent(origin))
+ const connectionLogin=page.getByRole('link',{name:'로그인하고 전략실로 이동',exact:true})
+ await expect(connectionLogin).toHaveAttribute('href','/?login_return=%2Fcounseling%2F#login')
+ await expect(connectionLogin).toHaveAttribute('target','_blank')
+ await expect(connectionLogin).toHaveAttribute('rel','noopener noreferrer')
+ await expect(page.getByText('로그인은 새 탭에서 진행합니다.',{exact:false})).toBeVisible()
+ await expect(page.getByRole('button',{name:'로그인 상태 다시 확인',exact:true})).toBeVisible()
+ await expect(page.getByRole('button',{name:'이 PC 연결',exact:true})).toHaveCount(0)
+})

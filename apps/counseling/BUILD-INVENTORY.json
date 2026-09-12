@@ -1,6 +1,6 @@
 {
   "format": "daeryun-counseling-integration",
-  "created_at": "2026-09-12T06:09:58.757301+00:00",
+  "created_at": "2026-09-12T06:33:56.683233+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -9,28 +9,28 @@
     },
     {
       "path": "README.md",
-      "size": 10976,
-      "sha256": "7d3e5edab630fe741ec477f26a6f725705041f63e803099919d927ec36cfd9a5"
+      "size": 11510,
+      "sha256": "94373ba3ee8004995d5778bea5f68218e1b364831bd8e5474c36ad627098de64"
     },
     {
       "path": "VERIFICATION.md",
-      "size": 11845,
-      "sha256": "a8d663756f60f1ecec612f050e901256a5dd42963a93478feb5ab1528cf19ae6"
+      "size": 13690,
+      "sha256": "b268f4578903bd24556be66e9e7c5703597ae64041ed02bbd12d4abb60eea772"
     },
     {
-      "path": "dist/assets/AdminPanel-BG0OB5CZ.js",
+      "path": "dist/assets/AdminPanel-DhQGd2kQ.js",
       "size": 16463,
-      "sha256": "91ab573fce5d482aa66357cad3c0101018a0a690e906017b146260967626e44b"
+      "sha256": "8ba4890267ce6a9d6ad4c2559e7e3d0df97242c6a5833263a5e8726fccb7f14f"
     },
     {
-      "path": "dist/assets/cloudTransport-pvhBnM7-.js",
+      "path": "dist/assets/cloudTransport-CcLn1GAh.js",
       "size": 6566,
-      "sha256": "f7a9dcd3b1eccc4e2647a476d4d3bd6045033db7ba88aa66550ffeae48babd16"
+      "sha256": "049787a51f9d548235260e445b9468a6729b2ff8d22f176c56c186fa10aa5114"
     },
     {
-      "path": "dist/assets/index-CkRw5gtD.js",
-      "size": 649302,
-      "sha256": "6bc758ac960788713d0245340857a3c9dde1aaec90c371951b529c7f0826135b"
+      "path": "dist/assets/index-DDG92g2U.js",
+      "size": 649411,
+      "sha256": "f54c80c6fc18d1c2fd2acb300d40d8df79817bee11b592e23cd94d886800439e"
     },
     {
       "path": "dist/assets/index-fi3tDOtL.css",
@@ -38,9 +38,9 @@
       "sha256": "36659c9897f19cd8368e594a76b7e8c34a517dbf660d525563cca9c8d5616bcf"
     },
     {
-      "path": "dist/assets/localTransport-CN3kY5tV.js",
+      "path": "dist/assets/localTransport-BnWjb-QU.js",
       "size": 2630,
-      "sha256": "3e90502f87c23f6fa98974c8b906782762bb7f4c01084c8674cbe67d73c443dc"
+      "sha256": "303f497098b613b909ed9499eb8075ec1950d942f37e060115188cdb0a9d12ae"
     },
     {
       "path": "dist/assets/school-logo-z178Sqr0.png",
@@ -50,7 +50,7 @@
     {
       "path": "dist/index.html",
       "size": 437,
-      "sha256": "6ccd16c4e55f6b686f62ac5b7e7650924108193157a464321eebc71b123536d7"
+      "sha256": "abb81bad038df2e8a9fd6bfb6c9a724d2fabd7845c41e0923fdf5aeb1f77c8e2"
     },
     {
       "path": "index.html",
@@ -79,8 +79,8 @@
     },
     {
       "path": "src/App.vue",
-      "size": 69560,
-      "sha256": "55bedf77a18879a1358f40add4d1bfe59139d505a848cb2ed51528a19f668eec"
+      "size": 69629,
+      "sha256": "d72c98b303ca160ac23f83ce7ef5c226760a88f427a42229789f34784426e7f3"
     },
     {
       "path": "src/assets/school-logo.png",
@@ -129,8 +129,8 @@
     },
     {
       "path": "src/lib/authBridge.ts",
-      "size": 1331,
-      "sha256": "cb97e690c8e2453bb32cee1047f6ed342fc59d3bcf7ce2344a04ef87c7e599a2"
+      "size": 1445,
+      "sha256": "8d092dd23efc711c01dcf0d89a32a0f9ddf1b496a5d3cdc66479f79038c65265"
     },
     {
       "path": "src/lib/cloudTransport.ts",
@@ -199,13 +199,13 @@
     },
     {
       "path": "tests/auth.spec.ts",
-      "size": 5695,
-      "sha256": "541363e84320c80f1bd0c33849fb748ac88572389fd3e6604ef82dc8a0bae228"
+      "size": 7138,
+      "sha256": "4fdeabcd7b46e9be3b460e7aea044f3631bd4adfd9f0db07d33ea7279146d630"
     },
     {
       "path": "tests/auth.test.ts",
-      "size": 2342,
-      "sha256": "26e9788ce7b9832ac1a7cc6f1e6a5690e11c0a710982df6fb6c477f399321017"
+      "size": 2959,
+      "sha256": "a967438cd270b798ba4b4b45a2c66cade7477fa9ddc80c1e8c893281397d0400"
     },
     {
       "path": "tests/cloud.spec.ts",
@@ -255,19 +255,19 @@
   ],
   "web_files": [
     {
-      "path": "assets/AdminPanel-BG0OB5CZ.js",
+      "path": "assets/AdminPanel-DhQGd2kQ.js",
       "size": 16463,
-      "sha256": "91ab573fce5d482aa66357cad3c0101018a0a690e906017b146260967626e44b"
+      "sha256": "8ba4890267ce6a9d6ad4c2559e7e3d0df97242c6a5833263a5e8726fccb7f14f"
     },
     {
-      "path": "assets/cloudTransport-pvhBnM7-.js",
+      "path": "assets/cloudTransport-CcLn1GAh.js",
       "size": 6566,
-      "sha256": "f7a9dcd3b1eccc4e2647a476d4d3bd6045033db7ba88aa66550ffeae48babd16"
+      "sha256": "049787a51f9d548235260e445b9468a6729b2ff8d22f176c56c186fa10aa5114"
     },
     {
-      "path": "assets/index-CkRw5gtD.js",
-      "size": 649302,
-      "sha256": "6bc758ac960788713d0245340857a3c9dde1aaec90c371951b529c7f0826135b"
+      "path": "assets/index-DDG92g2U.js",
+      "size": 649411,
+      "sha256": "f54c80c6fc18d1c2fd2acb300d40d8df79817bee11b592e23cd94d886800439e"
     },
     {
       "path": "assets/index-fi3tDOtL.css",
@@ -275,9 +275,9 @@
       "sha256": "36659c9897f19cd8368e594a76b7e8c34a517dbf660d525563cca9c8d5616bcf"
     },
     {
-      "path": "assets/localTransport-CN3kY5tV.js",
+      "path": "assets/localTransport-BnWjb-QU.js",
       "size": 2630,
-      "sha256": "3e90502f87c23f6fa98974c8b906782762bb7f4c01084c8674cbe67d73c443dc"
+      "sha256": "303f497098b613b909ed9499eb8075ec1950d942f37e060115188cdb0a9d12ae"
     },
     {
       "path": "assets/school-logo-z178Sqr0.png",
@@ -287,7 +287,7 @@
     {
       "path": "index.html",
       "size": 437,
-      "sha256": "6ccd16c4e55f6b686f62ac5b7e7650924108193157a464321eebc71b123536d7"
+      "sha256": "abb81bad038df2e8a9fd6bfb6c9a724d2fabd7845c41e0923fdf5aeb1f77c8e2"
     }
   ]
 }

@@ -15099,6 +15099,9 @@ function switchSpTab(id,btn){
   var SB_URL      = 'https://aafpkfcxzdrguuctdwth.supabase.co';
   var SB_KEY      = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhZnBrZmN4emRyZ3V1Y3Rkd3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEwNjYsImV4cCI6MjA5MjMwNzA2Nn0.1VWheZHC2qNwWJhJ6KTFhjfFf9-bAfAdjzja2cD-xmw';
   var SESSION_KEY = 'dr_sess_v1';
+  var LOGIN_RETURN_KEY = 'dr_login_return_v1';
+  var _loginReturn = null;
+  var _returnLoginBusy = false;
   var _pendingToken = null;
   var _pendingRefresh = null;
   var _pendingExpiresAt = null;
@@ -15128,6 +15131,82 @@ function switchSpTab(id,btn){
   function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
   function clearSession()  { localStorage.removeItem(SESSION_KEY); }
   window.clearSession = clearSession;
+
+  // A same-tab, single-use destination. Never accept an arbitrary redirect URL.
+  function clearLoginReturn() {
+    _loginReturn = null;
+    try { sessionStorage.removeItem(LOGIN_RETURN_KEY); } catch (e) {}
+  }
+  function captureLoginReturn(params, isCallback) {
+    var values = params.getAll('login_return');
+    if (values.length) {
+      clearLoginReturn();
+      if (values.length === 1 && values[0] === '/counseling/') {
+        _loginReturn = { path: '/counseling/', at: Date.now() };
+        try { sessionStorage.setItem(LOGIN_RETURN_KEY, JSON.stringify(_loginReturn)); } catch (e) {}
+        return true;
+      }
+    } else if (isCallback) {
+      try { _loginReturn = JSON.parse(sessionStorage.getItem(LOGIN_RETURN_KEY)); } catch (e) {}
+    } else {
+      clearLoginReturn();
+    }
+    return false;
+  }
+  function hasLoginReturn() {
+    if (_loginReturn && _loginReturn.path === '/counseling/' && typeof _loginReturn.at === 'number'
+        && Number.isFinite(_loginReturn.at) && Date.now() >= _loginReturn.at
+        && Date.now() - _loginReturn.at < 30 * 60 * 1000) return true;
+    clearLoginReturn();
+    return false;
+  }
+  function returnToStrategy() {
+    if (!hasLoginReturn()) return false;
+    clearLoginReturn();
+    window.location.replace('/counseling/');
+    return true;
+  }
+
+  // Recheck cached credentials before returning; a stale token must not send
+  // the user back to the strategy login screen over and over.
+  function resumeStrategyLogin(session) {
+    if (_returnLoginBusy) return;
+    _returnLoginBusy = true;
+    function retryLogin() {
+      clearSession();
+      _returnLoginBusy = false;
+      window.startLogin();
+    }
+    function verify(current, mayRefresh) {
+      if (!current || !current.token) { retryLogin(); return Promise.resolve(); }
+      return fetch('/.netlify/functions/get-user', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + current.token },
+        body: JSON.stringify({})
+      }).then(function(r) {
+        if (r.status === 401 || r.status === 403) {
+          if (mayRefresh && current.refresh_token) {
+            return refreshSession().then(function(fresh) { return fresh ? verify(fresh, false) : retryLogin(); });
+          }
+          retryLogin(); return;
+        }
+        if (!r.ok) throw new Error('login_check_failed');
+        return r.json().then(function(profiles) {
+          if (!Array.isArray(profiles) || !profiles[0] || !profiles[0].id) {
+            retryLogin(); return;
+          }
+          current.user = profiles[0];
+          saveSession(current);
+          _returnLoginBusy = false;
+          finishLogin(current);
+        });
+      });
+    }
+    verify(session, true).catch(function() {
+      _returnLoginBusy = false;
+      showLoginBtn();
+      alert('로그인 상태를 확인하지 못했습니다. 잠시 후 로그인 버튼을 다시 눌러 주세요.');
+    });
+  }
 
   // refresh_token으로 access token 갱신 → 갱신된 세션 반환(실패 시 null)
   function refreshSession() {
@@ -15183,7 +15262,11 @@ function switchSpTab(id,btn){
 
   window.startLogin = function () {
     var existing = getSession();
-    if (existing) { applyAuth(existing); return; }
+    if (existing) {
+      if (hasLoginReturn()) resumeStrategyLogin(existing);
+      else applyAuth(existing);
+      return;
+    }
     var verifier = generateVerifier();
     localStorage.setItem('pkce_v', verifier);
     challengeFromVerifier(verifier).then(function(challenge) {
@@ -15194,6 +15277,7 @@ function switchSpTab(id,btn){
   };
 
   window.doLogout = function () {
+    clearLoginReturn();
     clearSession();
     showLoginBtn();
     showRegStep('login');
@@ -15244,7 +15328,7 @@ function switchSpTab(id,btn){
       if (!Array.isArray(data) || !data[0] || !data[0].id) throw new Error('회원 정보를 저장하지 못했습니다.');
       var user = data[0];
       var session = { token: _pendingToken, refresh_token: _pendingRefresh, expires_at: _pendingExpiresAt, user: user };
-      saveSession(session); applyAuth(session); gotoSchoolTab();
+      saveSession(session); finishLogin(session);
     })
     .catch(function() {
       btn.disabled = false; btn.textContent = '가입 완료';
@@ -15303,12 +15387,12 @@ function switchSpTab(id,btn){
     .catch(function() {
       var tempUser = { google_id: authId, name: gName || '사용자', role: '', id: authId };
       var session  = { token: token, refresh_token: _pendingRefresh, expires_at: _pendingExpiresAt, user: tempUser };
-      saveSession(session); finishLogin(session);
+      saveSession(session); applyAuth(session);
       showRegStep('form'); gotoRegTab();
     });
   }
 
-  function finishLogin(session) { applyAuth(session); gotoSchoolTab(); }
+  function finishLogin(session) { applyAuth(session); if (!returnToStrategy()) gotoSchoolTab(); }
 
   function gotoSchoolTab() {
     var btn = document.querySelector('.tab-btn[onclick*="school"]');
@@ -15364,18 +15448,22 @@ function switchSpTab(id,btn){
     showRegStep('login');
     var params = new URLSearchParams(window.location.search);
     var code = params.get('code');
+    var hash = new URLSearchParams(window.location.hash.slice(1));
+    var token = hash.get('access_token');
+    var requestedReturn = captureLoginReturn(params, Boolean(code || token));
     if (code) {
       history.replaceState(null, '', window.location.pathname);
       exchangeCode(code); return;
     }
-    var hash = new URLSearchParams(window.location.hash.slice(1));
-    var token = hash.get('access_token');
     if (token) {
       history.replaceState(null, '', window.location.pathname);
       handleOAuthCallback(token, hash.get('refresh_token'), hash.get('expires_in')); return;
     }
     var session = getSession();
-    if (session) { applyAuth(session); } else { showLoginBtn(); }
+    if (requestedReturn || window.location.hash === '#login') {
+      showLoginBtn();
+      window.startLogin();
+    } else if (session) { applyAuth(session); } else { showLoginBtn(); }
   }
 
   if (document.readyState === 'loading') {
