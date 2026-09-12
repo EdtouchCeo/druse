@@ -113,7 +113,7 @@ function prepareFromProfile(){if(!teacher.value||planLocked.value||!session.valu
 function adoptFindings(){if(!localMode.value||planLocked.value||!strategy.value||!analysis.value||!session.value)return;session.value.strategy=applyAnalysis(strategy.value,analysis.value);tab.value=preparation.value?'review':'counseling';notice.value='빈 강점·보완점 항목에 분석 초안을 반영했습니다. 교사가 근거를 확인하고 편집한 뒤 저장해 주세요.'}
 function addAnalysisAction(text:string){if(!planLocked.value&&session.value){session.value.actions.push({id:crypto.randomUUID(),text,due_date:'',status:'planned'});tab.value=preparation.value?'review':'counseling';notice.value='실행과제 초안에 추가했습니다. 내용과 기한을 확인한 뒤 저장해 주세요.'}}
 function beforeUnload(event:BeforeUnloadEvent){if(dirty.value||busy.value||adminBusy.value){event.preventDefault();event.returnValue=''}}
-onMounted(()=>{document.title='대륜고 학종 전략실';void initialize();window.addEventListener('beforeunload',beforeUnload);window.addEventListener('keydown',modalKeyboard);window.addEventListener('message',receiveTeacherConnection)})
+onMounted(()=>{document.title='학종 전략실';void initialize();window.addEventListener('beforeunload',beforeUnload);window.addEventListener('keydown',modalKeyboard);window.addEventListener('message',receiveTeacherConnection)})
 onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunload',beforeUnload);window.removeEventListener('keydown',modalKeyboard);window.removeEventListener('message',receiveTeacherConnection)})
 </script>
 
@@ -122,9 +122,9 @@ onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunloa
 <div class="app">
 <header class="school-header">
  <div class="topbar">
-  <a class="brand" :href="manualHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer" aria-label="대륜고 사용 설명서 홈">
+  <a class="brand" :href="manualHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer" aria-label="사용 설명서 홈">
    <img class="school-logo" :src="schoolLogo" alt="대륜고등학교 교표" width="96" height="64">
-   <span class="brand-copy"><strong><span class="school-name">대륜고</span> 사용 설명서</strong><small>학교생활의 모든 것, 한곳에서</small></span>
+   <span class="brand-copy"><strong>학종 전략실</strong><small>학생의 방향을 학기별 실행으로 연결합니다</small></span>
   </a>
   <div class="service-identity"><span class="service-label">학습전략</span><p>자료 분석 · 교사 전략 · 상담과 최종 안내</p></div>
  </div>
@@ -190,7 +190,7 @@ onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunloa
   </section>
 
   <section v-if="teacher&&tab==='review'&&finalReady" class="card review-panel"><div class="section-heading"><span class="step">04</span><div><h2>내용과 문체를 확인하고 확정</h2><p>상담을 반영한 최종 전략을 같은 버전으로 확정하고 PDF와 전략 백업을 만듭니다.</p></div></div><div class="review-checklist"><div><span class="check-marker">1</span><p>학생의 원문과 관찰 근거를 보존했는지 확인합니다.</p></div><div><span class="check-marker">2</span><p>확인한 사실, 해석, 앞으로의 계획을 구분합니다.</p></div><div><span class="check-marker">3</span><p>한 문장에 핵심 하나를 담고, 실행과제를 구체적으로 적습니다.</p></div></div><div v-if="teacher&&!session.confirmed" class="button-row"><button class="secondary" :disabled="!!busy" @click="reviewCase(false)"><ClipboardCheck :size="17"/>자동 점검 후 직접 검토</button><button v-if="localMode" class="secondary" :disabled="!!busy||!model||!health?.ollama.available" @click="reviewCase(true)"><Sparkles :size="17"/>선택한 Ollama로 문체 검토</button></div><p v-if="dirty" class="inline-note warning">내용이 변경되어 이전 검토와 확정 여부를 다시 확인해야 합니다. 검토를 시작하면 작성 내용을 먼저 저장합니다.</p><div v-if="review" class="review-result"><span class="badge" :class="{success:review.state==='passed',warning:review.state!=='passed'}">{{review.state==='passed'?'점검 결과 확인 가능':review.state==='needs_revision'?'수정 후 다시 검토':'교사 직접 확인 필요'}}</span><p>{{review.method==='ollama'?'Ollama 문체 검토':'자동 점검 및 교사 직접 검토'}} · {{review.created_at.slice(0,16).replace('T',' ')}}</p><ul><li v-for="note in review.notes" :key="note">{{note}}</li></ul><p v-if="!review.notes.length">점검 의견이 없습니다. 아래 확인 항목을 교사가 직접 검토해 주세요.</p></div><div v-else class="empty-section compact-empty"><ClipboardCheck :size="28"/><p>현재 저장 내용에 대한 검토 결과가 없습니다.</p></div><div v-if="teacher&&!session.confirmed" class="confirm-area"><label class="check-label"><input v-model="reviewAcknowledged" type="checkbox" :disabled="!reviewConfirmable||!!busy">원문 근거와 전략 내용, 문체 검토 의견을 확인했습니다.</label><button class="primary" :disabled="!reviewAcknowledged||!reviewConfirmable||!!busy" @click="confirmCase"><ShieldCheck :size="18"/>{{health?.demo?'합성 시연 회차 확정':'교사 확인 후 확정'}}</button><small v-if="health?.demo">합성자료 시연의 확정은 실제 교사가 학생 전략을 승인했다는 뜻이 아닙니다.</small></div><div v-if="session.confirmed" class="inline-note success"><ShieldCheck :size="20"/><p>{{health?.demo?'합성 시연으로 확정한 회차입니다.':'교사가 확인한 전략 회차입니다.'}} 변경할 내용은 다음 회차에 이어서 기록합니다.</p></div><div class="guidance-card final-delivery"><h2>최종 결과물을 학생에게 안내</h2><template v-if="localMode"><p>확정한 최종 전략·실행과제만 학생 안내 PDF로 저장합니다. 학생부와 교사 사전 전략·상담 기록은 이 PC에 보관합니다.</p><button class="primary" :disabled="!!busy||!session.confirmed||dirty||!finalReady" @click="exportPdf('student')">학생 안내 PDF 저장</button><small v-if="!session.confirmed">최종 검토와 교사 확정을 먼저 완료하세요.</small></template><template v-else><p v-if="published">{{session.guidance?.published_at.slice(0,10)}} 학생에게 안내했습니다. 개정은 새 회차에서 진행합니다.</p><template v-else><p>확정만으로 공개되지는 않습니다. 최종 전략과 실행과제만 학생 계정에 안내하며, 사전 전략·상담 기록·교사 메모는 제외합니다.</p><button class="primary" :disabled="!!busy||!session.confirmed||dirty||!finalReady" @click="publishStrategy">학생에게 전략 안내</button><small v-if="!session.confirmed">최종 검토와 교사 확정을 먼저 완료하세요.</small></template></template></div></section>
- </template><footer class="footer">대륜고 학종 전략실 · {{localMode?'학생부와 파생 자료는 교사 PC에서 보관합니다.':'학생과 담당 교사가 전략과 실행을 함께 점검합니다.'}}</footer>
+ </template><footer class="footer">학종 전략실 · {{localMode?'학생부와 파생 자료는 교사 PC에서 보관합니다.':'학생과 담당 교사가 전략과 실행을 함께 점검합니다.'}}</footer>
 </main></div>
 
 <input v-if="teacher" ref="jsonInput" class="hidden" type="file" accept=".json,application/json" @change="readImport">

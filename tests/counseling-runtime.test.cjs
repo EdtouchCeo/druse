@@ -56,7 +56,7 @@ test('native health entry preserves automatic strong context and exposes no prof
  };
  const entry=(await import('../netlify/functions/counseling-health.mjs')).default;
  const response=await entry(new Request('https://site.synthetic.invalid/.netlify/functions/counseling-health'));
- assert.equal(response.status,200);const value=await response.json();assert.equal(value.version,'0.5.1');assert.equal(value.storage_ready,true);assert.equal(value.school_auth_ready,true);assert.equal(value.server_ai_configured,false);
+ assert.equal(response.status,200);const value=await response.json();assert.equal(value.version,'0.5.2');assert.equal(value.storage_ready,true);assert.equal(value.school_auth_ready,true);assert.equal(value.server_ai_configured,false);
  assert.equal(requests.length,2);assert.ok(requests.every(r=>!r.method||r.method.toUpperCase()==='GET'));
  assert.ok(!JSON.stringify(value).includes('synthetic'));assert.equal(response.headers.get('cache-control'),'no-store');
 });
