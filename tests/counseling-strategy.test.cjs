@@ -12,7 +12,7 @@ function confirmed(c=legacySample()){const s=c.sessions[0];s.review={...C.review
 function published(c=confirmed()){c.sessions[0].guidance={published_at:C.now(),published_by:ids.teacher};return c;}
 const event=(method='GET',body,q={})=>({httpMethod:method,headers:{authorization:'Bearer synthetic-only'},body:body===undefined?null:JSON.stringify(body),queryStringParameters:q});
 const parsed=response=>JSON.parse(response.body);
-function mock(records=[legacySample()],{studentActor=false,assigned=true,revokeAt=Infinity}={}){
+function mock(records=[legacySample()],{studentActor=false,assigned=true,revokeAt=Infinity,accountLinked=true}={}){
  const rows=new Map(records.map(c=>[c.id,structuredClone(c)]));const calls=[];let studentMode=studentActor,assignmentReads=0;
  global.fetch=async(input,options={})=>{
   const url=new URL(input),query=url.searchParams;calls.push({url,options});let data;
@@ -20,7 +20,7 @@ function mock(records=[legacySample()],{studentActor=false,assigned=true,revokeA
   else if(url.pathname.endsWith('/users'))data=[studentMode?{...person,id:ids.studentUser,role:'학생'}:person];
   else if(url.pathname.endsWith('/counseling_roles'))data=[{role:studentMode?'student':'teacher'}];
   else if(url.pathname.endsWith('/counseling_assignments'))data=assigned&&++assignmentReads<revokeAt?[{student_id:ids.student}]:[];
-  else if(url.pathname.endsWith('/counseling_students'))data=[{id:ids.student,user_id:ids.studentUser,name:student.name}];
+  else if(url.pathname.endsWith('/counseling_students'))data=[{id:ids.student,user_id:accountLinked?ids.studentUser:null,name:student.name}];
   else if(url.pathname.endsWith('/counseling_student_numbers'))data=[student];
   else if(url.pathname.endsWith('/counseling_cases')){const id=query.get('id')?.slice(3);data=(id?[rows.get(id)].filter(Boolean):[...rows.values()]).map(c=>({data:c,student_id:c.student.student_id}));}
   else if(url.pathname.endsWith('/rpc/counseling_write_case')){const b=JSON.parse(options.body);rows.set(b.p_case.id,structuredClone(b.p_case));data=b.p_case;}
@@ -68,6 +68,21 @@ test('publish needs current confirmation hash, student message, actions and is n
 test('publish rejects student actors and rechecks assignment after reading the case',async()=>{
  const c=confirmed();let m=mock([c],{studentActor:true});assert.equal((await cases(event('POST',{revision:1,session_id:c.current_session_id},{id:c.id,action:'publish'}))).statusCode,403);assert.equal(m.writes().length,0);
  for(const options of [{assigned:false},{revokeAt:2}]){m=mock([c],options);const response=await cases(event('POST',{revision:1,session_id:c.current_session_id},{id:c.id,action:'publish'}));assert.equal(response.statusCode,404);assert.equal(m.writes().length,0);}
+});
+test('accountless student cannot be published online but keeps teacher PDF and strategy access',async()=>{
+ const c=confirmed(),m=mock([c],{accountLinked:false});
+ const response=await cases(event('POST',{revision:1,session_id:c.current_session_id},{id:c.id,action:'publish'}));
+ assert.equal(response.statusCode,409);assert.equal(parsed(response).error.code,'STUDENT_ACCOUNT_REQUIRED');assert.ok(parsed(response).error.message.includes('PDF'));assert.equal(m.writes().length,0);
+ const printable=await cases(event('GET',undefined,{id:c.id,action:'report',audience:'student'}));assert.equal(printable.statusCode,200);assert.ok(printable.body.includes(c.sessions[0].strategy.student_message));assert.ok(!printable.body.includes('PRIVATE_TEACHER_OPINION'));
+ const next=await cases(event('POST',{revision:1},{id:c.id,action:'next'}));assert.equal(next.statusCode,200);assert.equal(parsed(next).case.sessions.length,2);
+});
+
+test('student roster reflects current login linkage without persisting it in case identity',async()=>{
+ for(const accountLinked of [true,false]){
+  mock([],{accountLinked});const rows=await C.studentsFor({id:ids.teacher,role:'teacher'});
+  assert.equal(rows[0].account_linked,accountLinked);assert.equal(Object.hasOwn(rows[0],'user_id'),false);
+  const c=C.newCase(rows[0],{id:ids.teacher,display_name:'합성 교사'});assert.deepEqual(c.student,student);assert.equal(Object.hasOwn(c.student,'account_linked'),false);
+ }
 });
 test('student list/detail select only published sessions and remove internal and import metadata',async()=>{
  const c=published(),draft=C.freshSession();draft.topic='PRIVATE_DRAFT';draft.strategy.student_message='PRIVATE_DRAFT_STRATEGY';c.sessions.push(draft);c.current_session_id=draft.id;c.imported_from={id:'PRIVATE_SOURCE'};c.sessions[0].imported_history={review:{notes:['PRIVATE_HISTORY']}};c.teacher.private_note='PRIVATE_TEACHER_META';

@@ -2,7 +2,8 @@ import type {AdminAction,AdminData} from './admin'
 import {checked} from './transport'
 import {assertStandard,sessionOf,isLoopback} from './model'
 import {SchoolSessionAuth} from './schoolSession'
-import type {Transport,Health,Student,CounselingCase,Backup,Job,AiSettings,Actor} from './types'
+import type {Transport,Health,Student,NewStudentInput,CounselingCase,Backup,Job,AiSettings,Actor} from './types'
+import {validateNewStudent} from './students'
 const base='/.netlify/functions/'
 export class CloudTransport implements Transport {
  readonly mode='online' as const
@@ -23,6 +24,7 @@ export class CloudTransport implements Transport {
  authenticate(_token:string){return this.health()}
  async list(signal?:AbortSignal){return(await this.request<{cases:CounselingCase[]}>(this.path(), 'GET',undefined,signal)).cases}
  async get(id:string){return(await this.request<{case:CounselingCase}>(this.path(id))).case}
+ async addStudent(input:NewStudentInput){return(await this.request<{student:Student}>('counseling-students','POST',validateNewStudent(input))).student}
  async create(student:Student,teacher:string){return(await this.request<{case:CounselingCase}>(this.path(),'POST',{student:{student_id:student.student_id},teacher:{display_name:teacher}})).case}
  async save(value:CounselingCase){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id),'PUT',{case:value})).case}
  async next(value:CounselingCase){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id,'next'),'POST',{revision:value.revision})).case}

@@ -1,6 +1,7 @@
 import type {AdminAction,AdminData} from './admin'
 export type Mode = 'local' | 'online'
-export type Student = { student_id: string; student_number: string; academic_year: number; school_stage: 'middle' | 'high'; grade: number; name?: string }
+export type Student = { student_id: string; student_number: string; academic_year: number; school_stage: 'middle' | 'high'; grade: number; name?: string; account_linked?:boolean }
+export type NewStudentInput = {name:string;student_number:string;academic_year:number;school_stage:'middle'|'high';grade:number}
 export type Actor = { id: string; display_name: string; approved: boolean; role?: 'teacher' | 'student' | 'manager'; can_manage?: boolean; student_id?: string }
 export type Health = { version?: string; mode: Mode; demo: boolean; csrf_token?: string; teacher: Actor | null; user?: Actor; storage_path?: string; students?: Student[]; ai?: {server:boolean}; ollama: {available:boolean;models:{name:string;vision?:boolean}[];message?:string} }
 export type Action = { id:string;text:string;due_date:string;status:'planned'|'in_progress'|'done'|'deferred' }
@@ -25,6 +26,7 @@ export interface Transport {
   admin?():Promise<AdminData>;administer?(input:AdminAction):Promise<{ok?:boolean;student_id?:string}>;
   mode:Mode;health(signal?:AbortSignal):Promise<Health>;authenticate(token:string):Promise<Health>
   list(signal?:AbortSignal):Promise<CounselingCase[]>;get(id:string):Promise<CounselingCase>
+  addStudent?(input:NewStudentInput):Promise<Student>
   create(student:Student,teacher:string):Promise<CounselingCase>;save(value:CounselingCase):Promise<CounselingCase>
   next(value:CounselingCase):Promise<CounselingCase>;importBackup(bundle:Backup):Promise<CounselingCase>
   exportBackup(id:string):Promise<Blob>;report(id:string,sessionId:string,audience?:'student'|'teacher'):Promise<Blob>

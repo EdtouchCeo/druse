@@ -1,7 +1,7 @@
 import {test,expect,type Page} from '@playwright/test'
 import {emptyStrategy} from '../src/lib/model'
 import {emptyConsultation} from '../src/lib/workflow'
-import type {CounselingCase} from '../src/lib/types'
+import type {CounselingCase,Student} from '../src/lib/types'
 const freshCase=():CounselingCase=>({schema_version:1,id:'cloud-case',revision:1,privacy:'standard',created_at:'2026-09-11',updated_at:'2026-09-11',origin:'teacher',student:{student_id:'assigned-student',student_number:'10101',academic_year:2026,school_stage:'high',grade:1,name:'합성학생'},teacher:{display_name:'합성교사'},current_session_id:'cloud-session',sessions:[{id:'cloud-session',date:'2026-09-11',topic:'질문 정하기',student_question:'무엇을 먼저 비교할까요?',context:'합성 상담',evidence_notes:'자료의 관찰 내용을 확인함',teacher_opinion:'비교 기준 하나를 정합니다.',actions:[],next_date:'',record:null,analysis:null,review:null,confirmed:null}]})
 async function cloudApi(page:Page,role:'teacher'|'student',published=true){
  let value=freshCase();value.sessions[0]!.workflow_version=2;value.sessions[0]!.profile={target_major:'비공개 전공 입력',interests:'비공개 관심 입력',learning_concerns:'학생에게 노출하지 않을 학습 고민',study_habits:'',activities:'',reading:'',attendance_notes:'',teacher_observations:'',selected_subjects:[],weekly_minutes:null,grades:[]};value.sessions[0]!.strategy={...emptyStrategy(),target_major:'환경공학과 탐색',target_path:'환경 문제를 자료로 설명하기',student_message:'비교 기준을 정하고 자료 두 개를 확인해 봅시다. '.repeat(12)};value.sessions[0]!.actions=[{id:'action-1',text:'비교 자료 두 개를 찾아 관찰 기준을 적기',due_date:'2026-09-20',status:'planned'}];if(role==='student'){value.sessions[0]!.preparation={prepared_at:'2026-09-12',prepared_by:'teacher',topic:'교사 전용 사전 전략',strategy:{...emptyStrategy(),subject_plan:'학생에게 숨겨야 하는 사전 판단'},actions:[]};value.sessions[0]!.consultation={...emptyConsultation(),status:'in_progress',student_response:'학생에게 숨겨야 하는 내부 반응 기록'}};if(role==='student'&&published)value.sessions[0]!.guidance={published_at:'2026-09-12',published_by:'teacher'};const calls:{path:string;method:string;body:any;authorization:string|undefined}[]=[],assets:string[]=[]
@@ -49,6 +49,7 @@ test('online teacher uses assigned identity, server AI and authenticated HTML ex
  await page.getByLabel('학생 기본자료·전략·교사 메모·상담 반영 기록이 선택한 외부 AI로 전송됨을 확인했습니다.').check()
  await page.getByRole('button',{name:'전략 초안 요청',exact:true}).click()
  await expect(page.getByText('자료 두 개의 관찰 결과를 한 문장씩 적어 봅니다.',{exact:true})).toBeVisible()
+ await expect(page.getByText('필요한 내용을 전략 항목에 옮겨 적은 뒤 저장하세요.',{exact:true})).toBeVisible()
  const ai=api.calls.find(c=>c.path.endsWith('counseling-ai'))!
  expect(ai.body).toEqual({case_id:'cloud-case',session_id:'cloud-session',revision:2,privacy:'standard',purpose:'counseling'})
  await page.getByRole('button',{name:'전략 준비 완료·상담으로',exact:true}).click()
@@ -71,7 +72,9 @@ test('online teacher uses assigned identity, server AI and authenticated HTML ex
  page.once('dialog',dialog=>{expect(dialog.message()).toContain('교사 참고 메모는 공개하지 않습니다.');return dialog.accept()})
  await page.getByRole('button',{name:'학생에게 전략 안내',exact:true}).click()
  await expect(page.getByText('학생 안내 완료',{exact:true})).toBeVisible()
- await expect(page.getByLabel('목표 전공',{exact:true})).toBeDisabled()
+ await expect(page.locator('.strategy-read-grid')).toContainText('환경공학과 탐색')
+ await expect(page.locator('.strategy-editor textarea')).toHaveCount(0)
+ await expect(page.getByText('현재는 교사 작성 초안입니다.',{exact:false})).toHaveCount(0)
  expect(api.calls.find(c=>c.path.includes('action=publish'))?.body).toEqual({revision:6,session_id:'cloud-session'})
  const popupPromise=page.waitForEvent('popup')
  await page.getByRole('button',{name:'학생 안내 PDF 저장',exact:true}).click()
@@ -94,7 +97,7 @@ test('student sees only published strategy and tasks, no teacher notes or tools,
  await expect(page.getByText('학생에게 숨겨야 하는 내부 반응 기록',{exact:true})).toHaveCount(0)
  await expect(page.getByText('학생에게 숨겨야 하는 사전 판단',{exact:true})).toHaveCount(0)
  for(const label of ['교사의 의견','학생의 질문','일반 AI 설정']) await expect(page.getByLabel(label,{exact:true})).toHaveCount(0)
- for(const label of ['자료·분석','교사 전략 수립','학생 상담·반영','최종 결과물','새 전략','회차 추가','JSON 백업','학생부 PDF 근거','학생에게 전략 안내','교사 검토용 PDF']) await expect(page.getByRole('button',{name:label,exact:true})).toHaveCount(0)
+ for(const label of ['자료·분석','교사 전략 수립','학생 상담·반영','최종 결과물','새 전략','회차 추가','전략 백업 저장','학생부 PDF 근거','학생에게 전략 안내','교사 검토용 PDF']) await expect(page.getByRole('button',{name:label,exact:true})).toHaveCount(0)
  await expect(page.locator('input[type=file],textarea,fieldset')).toHaveCount(0)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
  await page.screenshot({path:'test-results/strategy-student-mobile.png',fullPage:true})
@@ -111,4 +114,171 @@ test('student receives no unpublished draft even when an unexpected response inc
  await expect(page.getByRole('heading',{name:'아직 안내된 전략이 없습니다.'})).toBeVisible()
  await expect(page.getByRole('heading',{name:'나의 학종 전략'})).toHaveCount(0)
  await expect(page.getByRole('button',{name:'학생 안내 PDF 저장'})).toHaveCount(0)
+})
+
+async function manualStudentApi(page:Page,options:{assigned?:Student[];caseFailures?:number;addFailures?:number;pauseAdd?:boolean;existing?:CounselingCase}={}){
+ const students=[...(options.assigned||[])],calls:{path:string;method:string;body:any}[]=[]
+ let value=options.existing?structuredClone(options.existing):null,caseFailures=options.caseFailures||0,addFailures=options.addFailures||0
+ let releaseRegistration=()=>{}
+ const registrationReady=options.pauseAdd?new Promise<void>(resolve=>{releaseRegistration=resolve}):Promise.resolve()
+ await page.addInitScript(()=>localStorage.setItem('dr_sess_v1',JSON.stringify({token:'synthetic-session-token'})))
+ await page.route('https://counseling.test:5178/**',async route=>{
+  const req=route.request(),url=new URL(req.url())
+  if(!url.pathname.startsWith('/.netlify/functions/')){url.hostname='127.0.0.1';url.protocol='http:';return route.fulfill({response:await route.fetch({url:url.toString()})})}
+  const body=req.postDataJSON();calls.push({path:url.pathname+url.search,method:req.method(),body})
+  const json=(data:unknown,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)})
+  if(url.pathname.endsWith('counseling-session'))return json({user:{id:'synthetic-teacher',role:'teacher',approved:true,display_name:'합성교사'},students,ai:{server:false}})
+  if(url.pathname.endsWith('counseling-students')){
+   await registrationReady
+   if(addFailures-->0)return json({error:{code:'DUPLICATE',message:'이미 등록된 학번입니다. 담당 학생 목록을 확인해 주세요.'}},409)
+   const student:Student={...body,student_id:'manual-student',account_linked:false};students.push(student);return json({student})
+  }
+  if(req.method()==='POST'){
+   if(caseFailures-->0)return json({error:{code:'TEMPORARY_FAILURE',message:'전략 저장이 지연되었습니다. 다시 시도해 주세요.'}},503)
+   const student=students.find(s=>s.student_id===body.student.student_id)!
+   value=freshCase();const {account_linked:_,...identity}=student;value.student=identity;value.id='created-case';value.sessions[0]!.workflow_version=2
+   return json({case:value})
+  }
+  if(req.method()==='PUT'){value=body.case;value!.revision++;return json({case:value})}
+  return json(url.searchParams.get('id')?{case:value}:{cases:value?[value]:[]})
+ })
+ return {calls,releaseRegistration,students}
+}
+
+async function fillManualStudent(page:Page){
+ const modal=page.getByRole('dialog')
+ await modal.getByLabel('학생 이름',{exact:true}).fill('직접추가학생')
+ await modal.getByLabel('학번',{exact:true}).fill('20102')
+ await modal.getByLabel('학년도',{exact:true}).fill('2026')
+ await modal.getByLabel('학교급',{exact:true}).selectOption('middle')
+ await modal.getByLabel('학년',{exact:true}).selectOption('2')
+}
+
+test('teacher without assigned students directly adds one and resumes the saved strategy after refresh',async({page},testInfo)=>{
+ const api=await manualStudentApi(page)
+ await page.setViewportSize({width:390,height:844})
+ await page.goto('https://counseling.test:5178/counseling/')
+ await page.getByRole('button',{name:'학생별 전략 목록',exact:true}).click()
+ await page.getByRole('button',{name:'새 전략',exact:true}).click()
+ const modal=page.getByRole('dialog')
+ await expect(modal.getByRole('button',{name:'학생 직접 추가',exact:true})).toHaveAttribute('aria-pressed','true')
+ await fillManualStudent(page)
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+ await modal.screenshot({path:testInfo.outputPath('manual-student-mobile.png')})
+ await modal.getByRole('button',{name:'학생 추가하고 전략 시작',exact:true}).click()
+ await expect(modal).toHaveCount(0)
+ await expect(page.locator('.document-heading')).toContainText('20102 직접추가학생')
+ await expect(page.getByLabel('관심 주제',{exact:true})).toBeVisible()
+ await page.getByLabel('관심 주제',{exact:true}).fill('학교 주변 하천 관찰')
+ await page.getByRole('button',{name:'저장',exact:true}).click()
+ await expect(page.locator('.save-state')).toHaveText('저장된 기록')
+ expect(api.calls.find(c=>c.path.endsWith('counseling-students'))?.body).toEqual({name:'직접추가학생',student_number:'20102',academic_year:2026,school_stage:'middle',grade:2})
+ expect(api.calls.find(c=>c.path.endsWith('counseling-cases')&&c.method==='POST')?.body.student).toEqual({student_id:'manual-student'})
+ await page.reload()
+ await expect(page.locator('.document-heading')).toContainText('20102 직접추가학생')
+ await page.getByRole('button',{name:'기본자료 입력·수정',exact:true}).click()
+ await expect(page.getByLabel('관심 주제',{exact:true})).toHaveValue('학교 주변 하천 관찰')
+ await page.getByRole('button',{name:'학생별 전략 목록',exact:true}).click()
+ await page.getByRole('button',{name:'새 전략',exact:true}).click()
+ await expect(modal.getByLabel('배정된 학생',{exact:true})).toHaveValue('manual-student')
+ await expect(modal.getByLabel('배정된 학생',{exact:true})).toContainText('2026 · 20102 직접추가학생')
+ expect(api.calls.filter(c=>c.path.endsWith('counseling-students'))).toHaveLength(1)
+})
+
+test('teacher can keep selecting an assigned student and switch to manual registration',async({page})=>{
+ const assigned=freshCase().student,api=await manualStudentApi(page,{assigned:[assigned]})
+ await page.goto('https://counseling.test:5178/counseling/')
+ await page.getByRole('button',{name:'새 전략',exact:true}).click()
+ const modal=page.getByRole('dialog')
+ await expect(modal.getByLabel('배정된 학생',{exact:true})).toHaveValue(assigned.student_id)
+ await expect(modal.getByLabel('학번',{exact:true})).toHaveCount(0)
+ await modal.getByRole('button',{name:'학생 직접 추가',exact:true}).click()
+ await expect(modal.getByLabel('학생 이름',{exact:true})).toBeVisible()
+ await modal.getByRole('button',{name:'배정된 학생 선택',exact:true}).click()
+ await modal.getByRole('button',{name:'첫 전략 만들기',exact:true}).click()
+ await expect(modal).toHaveCount(0)
+ expect(api.calls.some(c=>c.path.endsWith('counseling-students'))).toBe(false)
+ expect(api.calls.find(c=>c.method==='POST')?.body.student).toEqual({student_id:assigned.student_id})
+})
+
+test('manual registration validates fields and preserves entered details when the server rejects a number',async({page})=>{
+ const api=await manualStudentApi(page,{addFailures:1})
+ await page.goto('https://counseling.test:5178/counseling/')
+ await page.getByRole('button',{name:'새 전략',exact:true}).click()
+ const modal=page.getByRole('dialog'),submit=modal.getByRole('button',{name:'학생 추가하고 전략 시작',exact:true})
+ await submit.click()
+ expect(api.calls.some(c=>c.method==='POST')).toBe(false)
+ await fillManualStudent(page)
+ await modal.getByLabel('학번',{exact:true}).fill('abc')
+ await submit.click()
+ expect(api.calls.some(c=>c.method==='POST')).toBe(false)
+ await modal.getByLabel('학번',{exact:true}).fill('20102')
+ await modal.getByLabel('학생 이름',{exact:true}).fill('   ')
+ await submit.click()
+ await expect(modal.getByRole('alert')).toContainText('학생 이름')
+ expect(api.calls.some(c=>c.method==='POST')).toBe(false)
+ await modal.getByLabel('학생 이름',{exact:true}).fill('직접추가학생')
+ await submit.click()
+ await expect(modal.getByRole('alert')).toContainText('이미 등록된 학번')
+ await expect(modal.getByLabel('학생 이름',{exact:true})).toHaveValue('직접추가학생')
+ await expect(modal.getByLabel('학년',{exact:true})).toHaveValue('2')
+ expect(api.calls.filter(c=>c.path.endsWith('counseling-cases')&&c.method==='POST')).toHaveLength(0)
+ await modal.getByLabel('학번',{exact:true}).fill('20103')
+ await submit.click()
+ await expect(modal).toHaveCount(0)
+ expect(api.calls.filter(c=>c.path.endsWith('counseling-students'))).toHaveLength(2)
+})
+
+test('duplicate submission is blocked and a failed strategy retries the registered student after reopening',async({page})=>{
+ const api=await manualStudentApi(page,{caseFailures:1,pauseAdd:true})
+ await page.goto('https://counseling.test:5178/counseling/')
+ await page.getByRole('button',{name:'새 전략',exact:true}).click()
+ const modal=page.getByRole('dialog')
+ await fillManualStudent(page)
+ await modal.getByRole('button',{name:'학생 추가하고 전략 시작',exact:true}).click()
+ await expect.poll(()=>api.calls.filter(c=>c.path.endsWith('counseling-students')).length).toBe(1)
+ await modal.locator('form').dispatchEvent('submit')
+ await expect(modal.getByRole('button',{name:'닫기',exact:true})).toBeDisabled()
+ await page.keyboard.press('Escape')
+ await expect(modal).toBeVisible()
+ api.releaseRegistration()
+ await expect(modal.getByRole('alert')).toContainText('전략 저장이 지연')
+ await expect(modal.getByLabel('배정된 학생',{exact:true})).toHaveValue('manual-student')
+ await expect(modal.getByText('학생을 내 담당 학생으로 등록했습니다.',{exact:false})).toBeVisible()
+ await modal.getByRole('button',{name:'취소',exact:true}).click()
+ await page.getByRole('button',{name:'새 전략',exact:true}).click()
+ await expect(modal.getByLabel('배정된 학생',{exact:true})).toHaveValue('manual-student')
+ await modal.getByRole('button',{name:'첫 전략 만들기',exact:true}).click()
+ await expect(modal).toHaveCount(0)
+ expect(api.calls.filter(c=>c.path.endsWith('counseling-students'))).toHaveLength(1)
+ const caseCalls=api.calls.filter(c=>c.path.endsWith('counseling-cases')&&c.method==='POST')
+ expect(caseCalls).toHaveLength(2)
+ expect(caseCalls.every(c=>c.body.student.student_id==='manual-student')).toBe(true)
+})
+
+test('an accountless student uses PDF delivery without an online publication button',async({page})=>{
+ const value=freshCase();value.sessions[0]!.confirmed={by:'synthetic-teacher'}
+ await manualStudentApi(page,{assigned:[{...value.student,account_linked:false}],existing:value})
+ await page.goto('https://counseling.test:5178/counseling/')
+ await page.getByRole('button',{name:'최종 결과물',exact:true}).click()
+ await expect(page.locator('.final-delivery')).toContainText('학생 계정 없이 추가한 학생입니다. 최종 확정 후 학생 안내 PDF로 전달해 주세요.')
+ await expect(page.getByRole('button',{name:'학생에게 전략 안내',exact:true})).toHaveCount(0)
+ await expect(page.locator('.final-delivery').getByRole('button',{name:'학생 안내 PDF 저장',exact:true})).toBeEnabled()
+ await expect(page.locator('.final-delivery')).toContainText('인쇄 창에서 PDF로 저장을 선택하세요.')
+})
+
+test('selecting the same preparation plan again preserves teacher edits and reports no change',async({page})=>{
+ await cloudApi(page,'teacher')
+ await page.goto('https://counseling.test:5178/counseling/')
+ const choose=page.locator('.strategy-option').first().getByRole('button',{name:'이 계획을 교사 전략에 선택',exact:true})
+ await choose.click()
+ await page.getByLabel('교과 계획',{exact:true}).fill('교사가 확인한 수업 자료 두 개로 비교 기준을 정하기')
+ const count=await page.locator('.action-card').count()
+ await page.getByRole('button',{name:'저장',exact:true}).click()
+ await page.getByRole('button',{name:'자료·분석',exact:true}).click()
+ await choose.click()
+ await expect(page.getByText('이미 작성한 계획이 있습니다. 전략 화면에서 직접 수정하세요.',{exact:true})).toBeVisible()
+ await expect(page.getByLabel('교과 계획',{exact:true})).toHaveValue('교사가 확인한 수업 자료 두 개로 비교 기준을 정하기')
+ await expect(page.locator('.action-card')).toHaveCount(count)
+ await expect(page.locator('.save-state')).toHaveText('저장된 기록')
 })

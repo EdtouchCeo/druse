@@ -17,7 +17,7 @@ test('real demo server: student profile, synthetic PDF, review, backup restore a
  await page.getByRole('button',{name:'첫 전략 만들기'}).click()
  await expect(page.getByRole('heading',{name:'교사 전략의 근거와 선택지를 검토합니다.'})).toBeVisible()
  const expectedProfile={target_major:'환경 분야 탐색',interests:'합성 자료에서 관찰 사실과 해석 구분하기',learning_concerns:'서술형 설명에서 근거를 빠뜨리는 상황 확인',selected_subjects:['공통국어1','통합과학1'],grades:[{subject:'공통국어1',academic_year:2026,semester:1,grade_scale:'5',rank_grade:3,score:84,achievement:'B'}]}
- await page.getByRole('button',{name:'기본자료 입력·수정'}).click()
+ await expect(page.getByRole('button',{name:'입력 접기',exact:true})).toBeVisible()
  await page.getByLabel('관심 전공·계열',{exact:true}).fill(expectedProfile.target_major)
  await page.getByLabel('관심 주제',{exact:true}).fill(expectedProfile.interests)
  await page.getByLabel('학습 고민',{exact:true}).fill(expectedProfile.learning_concerns)
@@ -82,7 +82,7 @@ test('real demo server: student profile, synthetic PDF, review, backup restore a
  await report.saveAs('test-results/local-synthetic-report.pdf')
  expect((await readFile((await report.path())!)).subarray(0,5).toString()).toBe('%PDF-')
  const jsonDownload=page.waitForEvent('download')
- await page.getByRole('button',{name:'JSON 백업',exact:true}).click()
+ await page.getByRole('button',{name:'전략 백업 저장',exact:true}).click()
  const backup=await jsonDownload
  const buffer=await readFile((await backup.path())!)
  const bundle=JSON.parse(buffer.toString('utf8'))
@@ -115,7 +115,7 @@ test('real demo server: student profile, synthetic PDF, review, backup restore a
  await expect(page.getByLabel('실제 이수 과목',{exact:true})).toHaveValue(expectedProfile.selected_subjects.join(', '))
  await expect(page.getByLabel('성적 1 석차등급',{exact:true})).toHaveValue('3')
  const nextDownload=page.waitForEvent('download')
- await page.getByRole('button',{name:'JSON 백업',exact:true}).click()
+ await page.getByRole('button',{name:'전략 백업 저장',exact:true}).click()
  const nextBundle=JSON.parse((await readFile((await (await nextDownload).path())!)).toString('utf8'))
  expect(nextBundle.case.sessions).toHaveLength(2)
  expect(nextBundle.case.sessions[0].profile).toEqual(savedProfile)

@@ -1,6 +1,7 @@
 'use strict';
 const {AsyncLocalStorage}=require('node:async_hooks');
 const crypto=require('node:crypto');
+const {normalizeStudentInput}=require('./counseling-students');
 const context=new AsyncLocalStorage();
 const STORE_NAME='daeryun-counseling-v1';
 const ADMIN_EMAIL='drhong81@gmail.com';
@@ -143,6 +144,26 @@ function createAdapter(store,supabase){
    return input.action==='student'?{student_id:data.students.find(s=>s.user_id===target).id}:{ok:true};
   });
  }
+ async function createStudent({p_actor,p_input}){
+  const input=normalizeStudentInput(p_input,fail),id=crypto.randomUUID(),auditId=crypto.randomUUID();
+  return changeConfig(async data=>{
+   await authorize(data,p_actor,'teacher');
+   const existingNumber=data.numbers.find(n=>n.academic_year===input.academic_year&&n.student_number===input.student_number);
+   if(existingNumber){
+    const existing=data.students.find(s=>s.id===existingNumber.student_id);
+    // Retry only the creator's unchanged registration while access is still
+    // active. Never adopt an existing account or restore a revoked assignment.
+    if(existing?.user_id===null&&existing.created_by===p_actor&&existing.name===input.name&&existingNumber.school_stage===input.school_stage&&existingNumber.grade===input.grade&&accessible(data,p_actor,existing.id))return {unchanged:true,value:{student_id:existing.id,...input,account_linked:false}};
+    fail(409,'DUPLICATE','해당 학년도에 이미 등록된 학번입니다. 학번을 확인하거나 관리자에게 문의해 주세요.');
+   }
+   const timestamp=now();
+   data.students.push({id,user_id:null,created_by:p_actor,name:input.name,active:true,created_at:timestamp});
+   data.numbers.push({student_id:id,academic_year:input.academic_year,student_number:input.student_number,school_stage:input.school_stage,grade:input.grade});
+   data.assignments.push({student_id:id,teacher_user_id:p_actor,active:true,updated_at:timestamp});
+   data.audit.push({id:auditId,actor_id:p_actor,target_user_id:null,action:'create_student',previous:null,current_value:{student_id:id,...input},created_at:timestamp});
+   return {student_id:id,...input,account_linked:false};
+  });
+ }
  async function head(id){
   if(!uuid(id))fail(400,'BAD_REQUEST','상담 ID를 확인해 주세요.');
   const entry=await read(`cases/${id}/head`);
@@ -232,6 +253,7 @@ function createAdapter(store,supabase){
  }
  async function query(path,{method='GET',data}={}){
   if(path==='rpc/counseling_administer'&&method==='POST')return administer(data);
+  if(path==='rpc/counseling_create_student'&&method==='POST')return createStudent(data);
   if(path==='rpc/counseling_write_case'&&method==='POST')return writeCase(data);
   if(method!=='GET')fail(400,'UNSUPPORTED_STORAGE_QUERY','상담 변경은 지정된 API로 처리해 주세요.');
   const request=parse(path);

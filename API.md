@@ -45,13 +45,23 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 
 ## 세션
 
-`GET /.netlify/functions/counseling-session` → `{user:{id,role:"teacher"|"student"|"manager",approved:true,can_manage:boolean,display_name,student_id?},ai:{server:boolean},students:[{student_id,student_number,academic_year,school_stage,grade,name}]}`.
+`GET /.netlify/functions/counseling-session` → `{user:{id,role:"teacher"|"student"|"manager",approved:true,can_manage:boolean,display_name,student_id?},ai:{server:boolean},students:[{student_id,student_number,academic_year,school_stage,grade,name,account_linked:boolean}]}`.
 
 `can_manage`는 별도 승인된 manager 역할이 있을 때만 true다. 교사+관리자는 role teacher를 유지한다. 관리자 역할만 있으면 role manager, students 빈 목록, ai.server false이며 상담 본문 API에는 접근할 수 없다. 관리 화면은 can_manage로 표시하고 관리자만 있는 세션에서는 상담 목록 호출을 생략한다.
 
 학교 회원 승인이 완료된 교사(`users.role="교사"`, `approved=true`)는 별도 상담 역할 승인 없이 teacher로 이용한다. 학생과 관리자는 기존의 명시적 상담 역할 승인이 필요하다. 교사는 유효한 배정 학생만, 학생은 본인만 반환한다. 승인 교사에게 배정 학생이 없으면 빈 전략실을 반환하며 임의로 학생을 만들지 않는다. 로컬 앱의 교사 인증에도 이 고정 endpoint를 사용한다.
 
 `POST /.netlify/functions/counseling-refresh`는 `{refresh_token}`을 받아 기존 학교 인증 서버에서 갱신하고 `{access_token,refresh_token,expires_in}`만 반환한다. 모든 응답은 `no-store`다. 유효하지 않은 갱신 토큰은 401, 일시적인 인증 서버 오류는 503이며 역할을 발급하거나 변경하지 않는다. 온라인 앱은 사용설명서의 `dr_sess_v1`을 재사용하고 만료 임박 시 자동 갱신한다. API가 401을 반환하면 한 번만 갱신·재시도하며, 다른 계정으로 변경되거나 로그아웃한 세션을 되살리지 않는다.
+
+## 교사의 학생 직접 추가
+
+`POST /.netlify/functions/counseling-students`는 승인된 교사만 호출한다. 입력은 `{name,student_number,academic_year,school_stage,grade}`, 응답은 `200 {student:{student_id,name,student_number,academic_year,school_stage,grade,account_linked:false}}`다. 이름은 공백 제거 후 1~80자, 학번은 숫자 4~8자리, 학년도는 2020~2100, 학교급은 `middle` 또는 `high`, 학년은 1~3이다.
+
+학생 로그인 계정을 만들지 않고 `user_id:null`인 학생과 학번 이력을 등록하여 요청한 교사에게 자동 배정한다. 생성자와 담당 교사는 서버가 검증한 회원 ID로 결정하며, 요청 본문의 `user_id`, `student_id`, `teacher_user_id`, 승인·역할 값은 받지 않는다. Blobs에서는 학생·학번·배정·감사 기록을 한 번의 조건부 설정 저장으로 반영한다.
+
+같은 교사가 생성했고 현재도 담당 중인 학생에 대해 동일한 입력을 재시도하면 기존 학생을 반환한다. 같은 학년도의 학번이 다른 등록 학생과 충돌하거나 담당 관계가 해제되었다면 다른 학생 정보를 노출하지 않는 409를 반환한다. 기존 학생을 자동으로 공유하거나 로그인 회원과 자동 연결하지 않는다. 학생 등록 후 기존 상담 생성 API에 반환받은 `student_id`를 전달하여 전략을 시작한다. 상담 생성 실패 시 이미 등록한 학생을 선택 상태로 유지하여 다시 시도할 수 있다.
+
+세션의 학생 목록에는 현재 로그인 회원 계정 연결 상태인 `account_linked`를 포함한다. 이 값은 전략의 고정 학생 신원에는 저장하지 않는다. 계정 없는 학생의 온라인 `publish`는 `STUDENT_ACCOUNT_REQUIRED` 409로 거절하며, 교사는 기존의 최종 확정 절차를 거쳐 학생 안내 PDF를 전달한다. 기존 학생 로그인·담당 배정·공개 범위는 그대로 유지된다. 선택 SQL 저장소는 `202609130002_teacher_created_students.sql`을 추가로 적용해야 하며 기본 Blobs 저장소에는 DDL 적용이 필요 없다.
 
 ## 상담
 
@@ -76,7 +86,7 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 
 교사의 `audience=student` 출력은 공개 여부와 별개로 내부 메모를 제거하며 확정한 초안은 확정 상태로 표시한다. PDF 생성만으로 온라인 공개 상태가 바뀌지 않는다. 학생의 `audience=teacher` 요청으로 내부 내용을 읽을 수 없다. 상담 작성·전략 개정·검토·확정·공개·반입은 승인 교사와 현재 담당 관계가 필요하다. 반입은 전략을 이어받되 guidance·review·confirmed를 항상 초기화한다. 직접 PUT으로 학생·교사·privacy·버전·검토·확정·공개 이력을 바꿀 수 없다.
 
-선택 SQL 저장소를 사용하려면 `202609110001_counseling.sql` 뒤에 `202609120001_strategy_publication.sql`까지 적용·검증해야 한다. 기존 초안/과거 버전 JSON에는 교사 메모가 있으므로 raw cases/versions의 anon·authenticated SELECT와 기존 읽기 정책을 제거하고 service_role API로만 읽는다. 새 설치 migration도 같은 정책이다. 추가 migration은 기존 users·학교 Auth·다른 등록 테이블 권한을 바꾸지 않으며 적용하지 않은 SQL 전환은 지원하지 않는다. 현재 기본 Blobs 운영에는 이 DDL을 적용하지 않는다.
+선택 SQL 저장소를 사용하려면 `202609110001_counseling.sql`부터 `202609130002_teacher_created_students.sql`까지 순서대로 적용·검증해야 한다. 기존 초안/과거 버전 JSON에는 교사 메모가 있으므로 raw cases/versions의 anon·authenticated SELECT와 기존 읽기 정책을 제거하고 service_role API로만 읽는다. 새 설치 migration도 같은 정책이다. 추가 migration은 기존 users·학교 Auth·다른 등록 테이블 권한을 바꾸지 않으며 적용하지 않은 SQL 전환은 지원하지 않는다. 현재 기본 Blobs 운영에는 이 DDL을 적용하지 않는다.
 
 ## 일반 AI
 

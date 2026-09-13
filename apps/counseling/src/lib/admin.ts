@@ -1,5 +1,5 @@
 export type ManagedUser={id:string;name:string;role:string;approved:boolean}
-export type AdminData={users:ManagedUser[];roles:{user_id:string;role:string;approved:boolean}[];students:{id:string;user_id:string;name:string;active:boolean}[];numbers:{student_id:string;academic_year:number;student_number:string;school_stage:'middle'|'high';grade:number}[];assignments:{student_id:string;teacher_user_id:string;active:boolean}[]}
+export type AdminData={users:ManagedUser[];roles:{user_id:string;role:string;approved:boolean}[];students:{id:string;user_id:string|null;name:string;active:boolean}[];numbers:{student_id:string;academic_year:number;student_number:string;school_stage:'middle'|'high';grade:number}[];assignments:{student_id:string;teacher_user_id:string;active:boolean}[]}
 export type AdminAction=
  |{action:'role';user_id:string;role:'teacher'|'student';approved:boolean}
  |{action:'student';user_id:string;student_id?:string;student_number:string;academic_year:number;school_stage:'middle'|'high';grade:number;name:string}

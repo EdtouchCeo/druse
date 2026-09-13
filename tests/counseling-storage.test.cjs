@@ -141,3 +141,83 @@ test('missing or corrupt version never degrades into an empty successful respons
  const f=fixture(),c=sample();await write(f,c);const key=f.store.entries.get(`cases/${c.id}/head`).data.version_key;f.store.entries.delete(key);await assert.rejects(get(f,c.id),code('STORAGE_UNAVAILABLE'));
 });
 test('corrupt configuration never gets silently replaced or bootstrapped',async()=>{const f=fixture();f.store.seed('configuration/v1',{schema_version:1,revision:1});await assert.rejects(f.adapter.readConfig(),code('STORAGE_UNAVAILABLE'));});
+
+const manualInput=()=>({name:'직접 등록 학생',student_number:'10102',academic_year:2026,school_stage:'high',grade:1});
+const createStudent=(f,input=manualInput(),actor=ids.teacher)=>f.adapter.query('rpc/counseling_create_student',{method:'POST',data:{p_actor:actor,p_input:input}});
+
+test('approved teacher creates a student without an account and immediately saves strategy',async()=>{
+ const f=fixture({seed:false}),student=await createStudent(f),data=(await f.adapter.readConfig()).data;
+ assert.deepEqual(student,{student_id:data.students[0].id,...manualInput(),account_linked:false});
+ assert.equal(data.students[0].user_id,null);assert.equal(data.students[0].created_by,ids.teacher);
+ assert.deepEqual(data.numbers,[{student_id:student.student_id,academic_year:2026,student_number:'10102',school_stage:'high',grade:1}]);
+ assert.equal(data.assignments.length,1);assert.equal(data.assignments[0].teacher_user_id,ids.teacher);assert.equal(data.assignments[0].active,true);
+ assert.deepEqual(data.roles,[]);assert.equal(data.audit.length,1);assert.equal(data.audit[0].actor_id,ids.teacher);assert.equal(data.audit[0].action,'create_student');
+ assert.equal(f.store.calls.filter(c=>c.method==='set'&&c.key==='configuration/v1').length,1);
+ const c=C.newCase(student,{id:ids.teacher,display_name:'합성 교사'});assert.equal(Object.hasOwn(c.student,'account_linked'),false);await write(f,c);assert.deepEqual((await get(f,c.id))[0].data,c);
+ assert.deepEqual(await f.adapter.query(`counseling_students?user_id=eq.${ids.studentUser}&active=eq.true&select=id`),[]);
+});
+
+test('student creation rejects non-teachers and revoked or missing school approval',async()=>{
+ for(const changed of [{approved:false},{approved:null},{role:'학생'},{role:'학부모'}]){
+  const f=fixture();Object.assign(f.profiles.get(ids.teacher),changed);
+  await assert.rejects(createStudent(f),code('ACCESS_DENIED'));assert.deepEqual((await f.adapter.readConfig()).data,f.config);
+ }
+ const f=fixture();f.profiles.delete(ids.teacher);await assert.rejects(createStudent(f),code('ACCESS_DENIED'));
+});
+
+test('student registration rejects invalid fields and identity or access injection',async()=>{
+ const invalid=[{name:''},{name:' '.repeat(3)},{name:'x'.repeat(81)},{name:'a\nb'},{student_number:'123'},{student_number:'123456789'},{student_number:10102},{academic_year:2019},{academic_year:2101},{academic_year:'2026'},{academic_year:2026.1},{school_stage:'university'},{grade:0},{grade:4},{grade:'1'},...['actor','p_actor','user_id','student_id','teacher_user_id','created_by','approved','active','role'].map(key=>({[key]:ids.manager}))];
+ for(const fields of invalid){const f=fixture();await assert.rejects(createStudent(f,{...manualInput(),...fields}),error=>error instanceof S.StorageError&&error.status===400);assert.deepEqual((await f.adapter.readConfig()).data,f.config);}
+ const f=fixture(),student=await createStudent(f,{...manualInput(),name:' 직접 등록 학생 ',student_number:' 10102 '});assert.equal(student.name,manualInput().name);assert.equal(student.student_number,'10102');
+});
+
+test('same teacher retries are idempotent, including concurrent duplicate submissions',async()=>{
+ const f=fixture(),results=await Promise.all([createStudent(f),createStudent(f)]);
+ assert.deepEqual(results[0],results[1]);assert.deepEqual(await createStudent(f),results[0]);
+ const data=(await f.adapter.readConfig()).data;assert.equal(data.students.length,2);assert.equal(data.numbers.length,2);assert.equal(data.assignments.length,2);assert.equal(data.audit.length,1);
+ await assert.rejects(createStudent(f,{...manualInput(),name:'다른 이름'}),code('DUPLICATE'));
+ await assert.rejects(createStudent(f,{...manualInput(),grade:2}),code('DUPLICATE'));
+ await assert.rejects(createStudent(f,{...manualInput(),school_stage:'middle'}),code('DUPLICATE'));
+ assert.deepEqual((await f.adapter.readConfig()).data,data);
+});
+
+test('existing member student is never adopted, even when already assigned to the creator',async()=>{
+ const f=fixture();await assert.rejects(createStudent(f,{...manualInput(),name:'합성 학생',student_number:'10101'}),error=>code('DUPLICATE')(error)&&!error.message.includes('합성 학생')&&!error.message.includes(ids.student));
+ assert.deepEqual((await f.adapter.readConfig()).data,f.config);
+});
+
+test('teacher cannot acquire another teacher manual student, even with matching input',async()=>{
+ const f=fixture(),student=await createStudent(f),previous=(await f.adapter.readConfig()).data;
+ await assert.rejects(createStudent(f,manualInput(),ids.manager),code('DUPLICATE'));assert.deepEqual((await f.adapter.readConfig()).data,previous);
+ const c=C.newCase(student,{id:ids.manager,display_name:'다른 교사'});
+ await assert.rejects(f.adapter.query('rpc/counseling_write_case',{method:'POST',data:{p_actor:ids.manager,p_case:c,p_expected:0,p_action:'create'}}),code('ACCESS_DENIED'));
+});
+
+test('retry never reactivates a revoked student or assignment',async()=>{
+ for(const revoke of [data=>{data.assignments.at(-1).active=false},data=>{data.assignments.pop()},data=>{data.students.at(-1).active=false}]){
+  const f=fixture();await createStudent(f);const data=(await f.adapter.readConfig()).data;revoke(data);f.store.seed('configuration/v1',data);
+  await assert.rejects(createStudent(f),code('DUPLICATE'));assert.deepEqual((await f.adapter.readConfig()).data,data);
+ }
+});
+
+test('concurrent teachers creating the same number produce one owner and one non-disclosing 409',async()=>{
+ const f=fixture(),results=await Promise.allSettled([createStudent(f),createStudent(f,manualInput(),ids.manager)]);
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(results.filter(r=>r.status==='rejected'&&r.reason.code==='DUPLICATE').length,1);
+ const data=(await f.adapter.readConfig()).data;assert.equal(data.students.length,2);assert.equal(data.assignments.length,2);assert.equal(data.audit.length,1);assert.equal(data.students.at(-1).created_by,data.assignments.at(-1).teacher_user_id);
+});
+
+test('concurrent different student registrations both survive configuration CAS',async()=>{
+ const f=fixture(),students=await Promise.all([createStudent(f),createStudent(f,{...manualInput(),student_number:'10103'})]);
+ const data=(await f.adapter.readConfig()).data;assert.notEqual(students[0].student_id,students[1].student_id);assert.equal(data.students.length,3);assert.equal(data.numbers.length,3);assert.equal(data.assignments.length,3);assert.equal(data.audit.length,2);
+});
+
+test('failed registration CAS and storage failures never leave a student or assignment behind',async()=>{
+ for(const [result,expected]of [[{modified:false},'REVISION_CONFLICT'],[{modified:true,etag:''},'STORAGE_UNAVAILABLE']]){
+  const f=fixture();f.store.beforeSet=async()=>result;await assert.rejects(createStudent(f),code(expected));assert.deepEqual((await f.adapter.readConfig()).data,f.config);
+ }
+});
+
+test('registration rechecks school approval when a conflicting write forces a retry',async()=>{
+ const f=fixture();f.store.beforeSet=async()=>{f.profiles.get(ids.teacher).approved=false;return {modified:false};};
+ await assert.rejects(createStudent(f),code('ACCESS_DENIED'));assert.deepEqual((await f.adapter.readConfig()).data,f.config);
+});

@@ -100,3 +100,5 @@
 
 .import-draft-warning{display:block}.import-draft-warning .secondary{margin-top:12px}
 @media(max-width:760px){.workflow-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;border-bottom:0;overflow:visible;padding-bottom:0}.workflow-tabs button{border:1px solid var(--border);border-radius:7px;background:var(--card);justify-content:flex-start;padding:9px 10px;min-height:42px;font-size:12px}.workflow-tabs button.active{border-color:#b8cce9;background:var(--brand-soft)}.workflow-tabs:has(>button:only-child){display:flex}.workflow-tabs:has(>button:only-child) button{border:0;background:transparent}}
+
+.new-student-mode{margin-bottom:20px;gap:8px}.new-student-mode>button{flex:1}@media(max-width:480px){.new-student-mode>button{font-size:12px;padding:9px 8px}.modal .field-grid.three{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.modal .field-grid.three>label:first-child{grid-column:1/-1}}

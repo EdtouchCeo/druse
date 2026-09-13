@@ -53,7 +53,7 @@ async function studentsFor(actor) {
  const rows=await db(`counseling_students?${filter}&active=eq.true&select=id,user_id,name`);
  if(!rows.length)return [];
  const histories=await db(`counseling_student_numbers?student_id=in.(${rows.map(r=>r.id).join(',')})&select=student_id,student_number,academic_year,school_stage,grade&order=academic_year.desc`);
- return rows.map(r=>({student_id:r.id,name:r.name||'',...(histories.find(h=>h.student_id===r.id)||{})}));
+ return rows.map(r=>({student_id:r.id,name:r.name||'',...(histories.find(h=>h.student_id===r.id)||{}),account_linked:uuid(r.user_id)}));
 }
 async function requireStudent(actor,id) { if(!uuid(id))fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');const students=await studentsFor(actor);const s=students.find(s=>s.student_id===id);if(!s)fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');return s; }
 async function readCase(actor,id) { if(!uuid(id))fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');const rows=await db(`counseling_cases?id=eq.${id}&select=data,student_id&limit=1`);if(!rows?.length)fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');await requireStudent(actor,rows[0].student_id);const result=caseForActor(rows[0].data,actor);if(!result)fail(404,'NOT_FOUND','안내된 전략을 찾을 수 없습니다.');return result; }
@@ -103,7 +103,7 @@ function validateCase(c) {
  const ids=new Set();for(const s of c.sessions){validateSession(s);if(ids.has(s.id))fail(400,'INVALID_SESSION','회차 ID가 중복되었습니다.');ids.add(s.id);}if(!ids.has(c.current_session_id))fail(400,'INVALID_SESSION','현재 회차를 확인해 주세요.');
 }
 function freshSession() { return {id:newId(),date:now().slice(0,10),topic:'',student_question:'',context:'',evidence_notes:'',teacher_opinion:'',strategy:strategyOf({}),profile:P.profileOf({}),workflow_version:2,preparation:null,consultation:W.consultationOf({}),guidance:null,actions:[],next_date:'',record:null,analysis:null,review:null,confirmed:null}; }
-function newCase(student,actor) { const s=freshSession(),t=now();return {schema_version:1,id:newId(),revision:1,privacy:'standard',created_at:t,updated_at:t,origin:'teacher',student,teacher:{id:actor.id,display_name:actor.display_name},current_session_id:s.id,sessions:[s]}; }
+function newCase(student,actor) { const s=freshSession(),t=now();const identity=Object.fromEntries(['student_id','name','student_number','academic_year','school_stage','grade'].filter(k=>student[k]!==undefined).map(k=>[k,student[k]]));return {schema_version:1,id:newId(),revision:1,privacy:'standard',created_at:t,updated_at:t,origin:'teacher',student:identity,teacher:{id:actor.id,display_name:actor.display_name},current_session_id:s.id,sessions:[s]}; }
 function revision(c,b) { if(b.revision!==c.revision)fail(409,'REVISION_CONFLICT','다른 창에서 변경되었습니다. 다시 불러와 주세요.'); }
 function getSession(c,id) {const s=c.sessions.find(s=>s.id===id);if(!s)fail(404,'NOT_FOUND','상담 회차를 찾을 수 없습니다.');return s;}
 function updateCase(stored,incoming) {
