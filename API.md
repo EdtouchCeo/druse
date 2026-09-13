@@ -49,7 +49,9 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 
 `can_manage`는 별도 승인된 manager 역할이 있을 때만 true다. 교사+관리자는 role teacher를 유지한다. 관리자 역할만 있으면 role manager, students 빈 목록, ai.server false이며 상담 본문 API에는 접근할 수 없다. 관리 화면은 can_manage로 표시하고 관리자만 있는 세션에서는 상담 목록 호출을 생략한다.
 
-승인된 상담 역할이 필요하다. 교사는 유효한 배정 학생만, 학생은 본인만 반환한다. 설정되거나 배정된 계정이 없으면 빈 목록/접근 거절을 반환하며 임의로 학생을 만들지 않는다. 로컬 앱의 교사 인증에도 이 고정 endpoint를 사용한다.
+학교 회원 승인이 완료된 교사(`users.role="교사"`, `approved=true`)는 별도 상담 역할 승인 없이 teacher로 이용한다. 학생과 관리자는 기존의 명시적 상담 역할 승인이 필요하다. 교사는 유효한 배정 학생만, 학생은 본인만 반환한다. 승인 교사에게 배정 학생이 없으면 빈 전략실을 반환하며 임의로 학생을 만들지 않는다. 로컬 앱의 교사 인증에도 이 고정 endpoint를 사용한다.
+
+`POST /.netlify/functions/counseling-refresh`는 `{refresh_token}`을 받아 기존 학교 인증 서버에서 갱신하고 `{access_token,refresh_token,expires_in}`만 반환한다. 모든 응답은 `no-store`다. 유효하지 않은 갱신 토큰은 401, 일시적인 인증 서버 오류는 503이며 역할을 발급하거나 변경하지 않는다. 온라인 앱은 사용설명서의 `dr_sess_v1`을 재사용하고 만료 임박 시 자동 갱신한다. API가 401을 반환하면 한 번만 갱신·재시도하며, 다른 계정으로 변경되거나 로그아웃한 세션을 되살리지 않는다.
 
 ## 상담
 
@@ -95,10 +97,10 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 GET 응답은 `{users:[{id,name,role,approved}],roles:[{user_id,role,approved}],students:[{id,user_id,name,active}],numbers:[{student_id,academic_year,student_number,school_stage,grade}],assignments:[{student_id,teacher_user_id,active}]}`다. 이메일·인증 UID·활동 로그·상담 본문은 반환하지 않는다. 목록은 서버가 500개씩 읽어 합치며 목록별 10,000개를 넘으면 일부만 표시하지 않고 `ADMIN_LIST_LIMIT` 오류를 반환한다.
 
 - `{action:"student",user_id,student_id?,student_number,academic_year,school_stage,grade,name}` → `{student_id}`. 인증된 기존 학생 계정을 고정 학생 ID·학번 이력에 연결.
-- `{action:"role",user_id,role:"teacher"|"student"|"manager",approved:boolean}` → `{ok:true}`. 이전 상태와 행위자를 이력에 기록.
+- `{action:"role",user_id,role:"student"|"manager",approved:boolean}` → `{ok:true}`. 이전 상태와 행위자를 이력에 기록. 교사 역할 변경 요청은 `TEACHER_ACCESS_AUTOMATIC` 400으로 거절하며, 교직원 이용 여부는 학교 회원 승인으로 관리한다.
 - `{action:"assign",student_id,teacher_user_id,active:boolean}` → `{ok:true}`. 학생과 승인 교사를 연결하거나 철회.
 
-기본 Blobs 경로의 최초 manager는 기존 사이트 관리자와 일치하는 검증된 Supabase Auth 이메일·이메일 확인 상태·Auth UID와 연결된 기존 승인 회원을 서버가 함께 확인한 뒤, 해당 계정의 첫 `counseling-session` 접속에서 한 번만 등록하고 이력을 남긴다. 학교 회원 구분이 교사일 때는 teacher도 함께 등록한다. 초기화 후 권한을 철회해도 로그인으로 다시 생기지 않는다. 임의 이메일·요청 본문으로 최초 관리자를 지정하거나 자기 승격하는 API는 없다. 이후 학교 계정 승인과 상담 역할 승인은 별개이며 관리 화면에서 대상 계정을 선택해 등록한다. 선택 SQL 경로는 별도 migration과 검증된 최초 manager의 수동 설정이 필요하다.
+기본 Blobs 경로의 최초 manager는 기존 사이트 관리자와 일치하는 검증된 Supabase Auth 이메일·이메일 확인 상태·Auth UID와 연결된 기존 승인 회원을 서버가 함께 확인한 뒤, 해당 계정의 첫 `counseling-session` 접속에서 한 번만 등록하고 이력을 남긴다. 학교 회원 구분이 교사일 때는 teacher도 함께 등록한다. 초기화 후 관리자 권한을 철회해도 로그인으로 다시 생기지 않는다. 임의 이메일·요청 본문으로 최초 관리자를 지정하거나 자기 승격하는 API는 없다. 학생·관리자의 상담 역할 승인은 학교 회원 승인과 별개다. 교사는 학교 회원 승인으로 자동 이용하며 기존 teacher 역할 행은 이용 허용·차단에 사용하지 않는다. 선택 SQL 경로는 `202609130001_school_teacher_strategy_access.sql`까지의 migration과 검증된 최초 manager의 수동 설정이 필요하다.
 
 ## 공개 준비 상태
 

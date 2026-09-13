@@ -39,6 +39,9 @@ async function auth(event,{roles=['teacher','student'],allowBootstrap=false}={})
  if(allowBootstrap)await storage.bootstrap(me,profile,supabaseDB);
  const grants=await db(`counseling_roles?user_id=eq.${profile.id}&approved=eq.true&select=role`);
  const granted=(grants||[]).map(x=>x.role).filter(r=>r==='manager'||(r==='teacher'&&profile.role==='교사')||(r==='student'&&profile.role==='학생'));
+ // School-approved teachers can use strategy without a second service approval.
+ // Manager and student access still require their explicit counseling grants.
+ if(profile.role==='교사'&&!granted.includes('teacher'))granted.push('teacher');
  const role=roles.find(r=>granted.includes(r));if(!role)fail(403,'COUNSELING_NOT_APPROVED','상담 참여 권한이 부여되지 않았습니다.');
  return {id:profile.id,authId:me.id,role,roles:granted,display_name:profile.name||'',profile};
 }
@@ -135,4 +138,4 @@ function report(c,s,{audience='teacher',confirmedPreview=false}={}) {
  const status=s.guidance?'학생 안내':s.confirmed||confirmedPreview?'확정 · 학생 안내 전':'초안 · 학생 안내 전';
  return `<!doctype html><html lang="ko"><meta charset="utf-8"><title>대륜고 학종 전략 안내</title><style>body{font-family:"Malgun Gothic",sans-serif;max-width:820px;margin:32px auto;line-height:1.7}p{white-space:pre-wrap;overflow-wrap:anywhere}h2{font-size:18px}section{break-inside:avoid}table{border-collapse:collapse;width:100%;table-layout:fixed}th,td{border:1px solid #bbb;padding:6px;overflow-wrap:anywhere}@page{size:A4;margin:18mm}@media print{button{display:none}}</style><button onclick="window.print()">인쇄 / PDF 저장</button><h1>대륜고 학종 전략 안내 · ${status}</h1><p>${e(c.student.academic_year)}학년도 ${e(c.student.student_number)} ${e(c.student.name)} · ${e(s.date)}</p>${profileHtml}${workflowHtml}${fields.map(([k,v])=>`<section><h2>${e(k)}</h2><p>${e(v)}</p></section>`).join('')}<p>전략 버전 ${c.revision} · ${e(c.teacher.display_name)} · ${s.guidance?'학생 안내 '+e(s.guidance.published_at):student?'학생 안내용 미리보기':s.confirmed?'교사 확인 '+e(s.confirmed.at):'교사 최종 확인 전'}</p></html>`;
 }
-module.exports={HttpError,fail,uuid,newId,now,json,wrap,body,onlyKeys,db,identity,profileFor,auth,studentsFor,requireStudent,readCase,rejectPrivate,strategyFields,strategyOf,profileOf:P.profileOf,consultationOf:W.consultationOf,planFields:W.planFields,requireWorkflowReady:s=>W.requireReady(s,fail),normalizeCase,studentCase,caseForActor,guidanceReady,hashSession,validateCase,freshSession,newCase,revision,getSession,updateCase,reviewSession,writeCase,report};
+module.exports={HttpError,fail,uuid,newId,now,json,wrap,body,onlyKeys,config,db,identity,profileFor,auth,studentsFor,requireStudent,readCase,rejectPrivate,strategyFields,strategyOf,profileOf:P.profileOf,consultationOf:W.consultationOf,planFields:W.planFields,requireWorkflowReady:s=>W.requireReady(s,fail),normalizeCase,studentCase,caseForActor,guidanceReady,hashSession,validateCase,freshSession,newCase,revision,getSession,updateCase,reviewSession,writeCase,report};

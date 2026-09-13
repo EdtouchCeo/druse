@@ -25,14 +25,19 @@ async function adminApi(page:Page,role:'manager'|'teacher'|'student'='manager',c
 }
 async function confirm(page:Page){await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('button',{name:'확인하고 저장',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();await expect(page.getByText('운영 정보를 저장했습니다.',{exact:true})).toBeVisible()}
 
-test('manager-only registers role, student and assignment with explicit previews, without accessing counseling records',async({page})=>{
+test('manager registers student access and assigns school-approved staff without separate teacher grants',async({page})=>{
  const api=await adminApi(page)
  await page.goto('https://counseling.test:5178/counseling/?admin=1')
  await expect(page.getByRole('heading',{name:'학생과 상담 교사를 연결합니다.'})).toBeVisible()
  expect(api.calls.some(item=>item.path.endsWith('counseling-cases'))).toBe(false)
  await page.getByLabel('권한을 확인할 학교 계정').selectOption(teacherId)
- await page.getByLabel('상담 참여 허용',{exact:true}).check()
- await page.getByRole('button',{name:'권한 변경 확인'}).click()
+ await expect(page.getByText('학교 회원 승인으로 자동 이용 가능',{exact:true})).toBeVisible()
+ await expect(page.getByLabel('학생 상담 참여 허용',{exact:true})).toHaveCount(0)
+ await expect(page.getByRole('button',{name:'학생 권한 변경 확인'})).toHaveCount(0)
+ await expect(page.locator('.admin-stats').getByText('1명',{exact:true})).toBeVisible()
+ await page.getByLabel('권한을 확인할 학교 계정').selectOption(studentId)
+ await page.getByLabel('학생 상담 참여 허용',{exact:true}).check()
+ await page.getByRole('button',{name:'학생 권한 변경 확인'}).click()
  expect(api.calls.filter(item=>item.method==='POST')).toHaveLength(0)
  await confirm(page)
  await page.getByLabel('학생 학교 계정').selectOption(studentId)
@@ -44,7 +49,7 @@ test('manager-only registers role, student and assignment with explicit previews
  await expect(page.getByRole('cell',{name:'현재 담당',exact:true})).toBeVisible()
  const writes=api.calls.filter(item=>item.method==='POST')
  expect(writes.map(item=>item.body.action)).toEqual(['role','student','assign'])
- expect(writes[0]!.body).toEqual({action:'role',user_id:teacherId,role:'teacher',approved:true})
+ expect(writes[0]!.body).toEqual({action:'role',user_id:studentId,role:'student',approved:true})
  expect(writes[2]!.body).toEqual({action:'assign',student_id:fixedStudentId,teacher_user_id:teacherId,active:true})
  await expect(page.getByRole('button',{name:/삭제|관리자 승격/})).toHaveCount(0)
  await expect(page.getByRole('link',{name:'로컬 실행기 다운로드',exact:true})).toHaveAttribute('href','/counseling/downloads/daeryun-counseling-local.zip')
@@ -56,7 +61,8 @@ test('school approval and invalid student inputs prevent sending management writ
  const api=await adminApi(page)
  await page.goto('https://counseling.test:5178/counseling/')
  await page.getByLabel('권한을 확인할 학교 계정').selectOption(pendingId)
- await expect(page.getByLabel('상담 참여 허용',{exact:true})).toBeDisabled()
+ await expect(page.getByText('학교 회원 승인 후 자동 이용 가능',{exact:true})).toBeVisible()
+ await expect(page.getByLabel('학생 상담 참여 허용',{exact:true})).toHaveCount(0)
  await page.getByLabel('학생 학교 계정').selectOption(studentId)
  await page.getByLabel('학번',{exact:true}).fill('abc')
  await page.getByRole('button',{name:'학생 등록 확인'}).click()
@@ -72,7 +78,7 @@ test('student cannot open management even with a manager value in browser storag
  await page.goto('https://counseling.test:5178/counseling/?admin=1')
  await expect(page.getByRole('heading',{name:'아직 안내된 전략이 없습니다.'})).toBeVisible()
  await expect(page.getByRole('button',{name:'학생·담당 관리',exact:true})).toHaveCount(0)
- await expect(page.getByRole('heading',{name:'상담 참여 권한',exact:true})).toHaveCount(0)
+ await expect(page.getByRole('heading',{name:'이용 권한 확인',exact:true})).toHaveCount(0)
  expect(api.calls.some(item=>item.path.endsWith('counseling-admin'))).toBe(false)
 })
 

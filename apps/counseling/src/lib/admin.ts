@@ -10,7 +10,7 @@ export function validateAdminAction(input:AdminAction,data:AdminData):void{
  if(input.action==='assign'){
   const student=data.students.find(item=>item.id===input.student_id),teacher=data.users.find(item=>item.id===input.teacher_user_id)
   if(!uuid(input.student_id)||!student||!uuid(input.teacher_user_id)||!teacher||typeof input.active!=='boolean')throw new Error('등록 학생과 담당 교사를 선택해 주세요.')
-  if(input.active&&(!student.active||teacher.role!=='교사'||!teacher.approved||!data.roles.some(item=>item.user_id===teacher.id&&item.role==='teacher'&&item.approved)))throw new Error('배정에는 활성 학생과 상담 권한이 승인된 교사가 필요합니다.')
+  if(input.active&&(!student.active||teacher.role!=='교사'||teacher.approved!==true))throw new Error('배정에는 활성 학생과 학교 회원 승인이 완료된 교사가 필요합니다.')
   if(!input.active&&!data.assignments.some(item=>item.student_id===student.id&&item.teacher_user_id===teacher.id))throw new Error('현재 등록된 담당 관계를 선택해 주세요.')
   return
  }
@@ -18,6 +18,7 @@ export function validateAdminAction(input:AdminAction,data:AdminData):void{
  if(!uuid(input.user_id)||!user)throw new Error('등록된 학교 계정을 선택해 주세요.')
  if(input.action==='role'){
   if(!['teacher','student'].includes(input.role)||schoolCounselingRole(user)!==input.role)throw new Error('학교 계정의 교사·학생 구분과 상담 역할이 일치해야 합니다.')
+  if(input.role==='teacher')throw new Error('교직원은 학교 회원 승인으로 자동 이용합니다. 교사 별도 참여 권한은 변경하지 않습니다.')
   if(typeof input.approved!=='boolean'||(input.approved&&!user.approved))throw new Error('학교 회원 승인이 완료된 계정만 상담 참여를 허용할 수 있습니다.')
   return
  }

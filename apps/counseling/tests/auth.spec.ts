@@ -86,3 +86,41 @@ test('online login returns in the same tab while the original PC-connection wind
  await expect(page.getByRole('button',{name:'로그인 상태 다시 확인',exact:true})).toBeVisible()
  await expect(page.getByRole('button',{name:'이 PC 연결',exact:true})).toHaveCount(0)
 })
+
+for(const state of ['valid','expired','server-expired'] as const)test('manual entry automatically signs in with a '+state+' school session',async({page})=>{
+ const requests:{url:string;authorization:string|undefined}[]=[]
+ let refreshes=0,healthRequests=0
+ await page.addInitScript(state=>{
+  if(location.origin==='https://counseling.test:5178'&&location.pathname==='/')localStorage.setItem('dr_sess_v1',JSON.stringify({token:'synthetic-manual-token',refresh_token:'synthetic-manual-refresh',expires_at:Date.now()+(state==='expired'?-1000:3600000),user:{google_id:'synthetic-school-member',role:'교사',approved:true,name:'합성교직원'}}))
+ },state)
+ await page.route('https://counseling.test:5178/**',async route=>{
+  const req=route.request(),url=new URL(req.url()),authorization=req.headers().authorization
+  requests.push({url:req.url(),authorization})
+  const json=(data:unknown,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)})
+  if(url.pathname==='/')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><meta charset="utf-8"><title>대륜고 사용설명서</title><a href="/counseling/">학종 전략실 열기</a></html>'})
+  if(url.pathname.endsWith('/counseling-refresh')){
+   refreshes++;expect(req.method()).toBe('POST');expect(req.postDataJSON()).toEqual({refresh_token:'synthetic-manual-refresh'})
+   return json({access_token:'synthetic-refreshed-token',refresh_token:'synthetic-rotated-refresh',expires_in:3600})
+  }
+  if(url.pathname.endsWith('/counseling-session')){
+   healthRequests++
+   if(state==='server-expired'&&authorization==='Bearer synthetic-manual-token')return json({error:{code:'AUTH_REQUIRED'}},401)
+   expect(authorization).toBe('Bearer '+(state==='valid'?'synthetic-manual-token':'synthetic-refreshed-token'))
+   return json({user:{id:'synthetic-school-member',display_name:'합성교직원',role:'teacher',approved:true},students:[],ai:{server:false}})
+  }
+  if(url.pathname.endsWith('/counseling-cases'))return json({cases:[]})
+  url.protocol='http:';url.hostname='127.0.0.1'
+  return route.fulfill({response:await route.fetch({url:url.toString()})})
+ })
+ await page.goto('https://counseling.test:5178/')
+ await page.getByRole('link',{name:'학종 전략실 열기',exact:true}).click()
+ await expect(page.locator('.actor')).toContainText('합성교직원')
+ await expect(page.getByRole('button',{name:'새 전략',exact:true})).toBeVisible()
+ await expect(page.getByRole('link',{name:'로그인하고 전략실로 이동',exact:true})).toHaveCount(0)
+ expect(refreshes).toBe(state==='valid'?0:1)
+ expect(healthRequests).toBe(state==='server-expired'?2:1)
+ expect(requests.some(r=>/synthetic-|authorize|login_return/.test(r.url))).toBe(false)
+ const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('dr_sess_v1')!))
+ expect(saved.user.name).toBe('합성교직원')
+ expect(saved.token).toBe(state==='valid'?'synthetic-manual-token':'synthetic-refreshed-token')
+})

@@ -1,6 +1,6 @@
 {
   "format": "daeryun-counseling-integration",
-  "created_at": "2026-09-12T06:51:01.838386+00:00",
+  "created_at": "2026-09-13T03:56:27.769942+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -9,28 +9,28 @@
     },
     {
       "path": "README.md",
-      "size": 11811,
-      "sha256": "b2f9d7ec75e90153f898061f316ffc24760eb2368614d5c4804f9cc0b2cd47c6"
+      "size": 12310,
+      "sha256": "c7dee6f463e92464a7f660f0e9a0bedd285fd4cd6ce056c10c99396878a86ed0"
     },
     {
       "path": "VERIFICATION.md",
-      "size": 13690,
-      "sha256": "b268f4578903bd24556be66e9e7c5703597ae64041ed02bbd12d4abb60eea772"
+      "size": 13601,
+      "sha256": "f2b2e42b39ade9e021251db3efbde448b240f1e887b323eedbe65dba8825b96d"
     },
     {
-      "path": "dist/assets/AdminPanel-Cv4XXT77.js",
-      "size": 16463,
-      "sha256": "4d25897c0446387404414640f8b8342b1b3c4ae9d34afde81c32939d5d8dea53"
+      "path": "dist/assets/AdminPanel-KKlgPVAx.js",
+      "size": 16780,
+      "sha256": "c4f0cdbfac7a7a98a71346da67a2e769facd4414631d41fc65c3b66b76215c64"
     },
     {
-      "path": "dist/assets/cloudTransport-C1mKYzGz.js",
-      "size": 6614,
-      "sha256": "1b3335b57f331aea878390f1b8842ddfe6a584fefed44725db5ec3b0e05c560e"
+      "path": "dist/assets/cloudTransport-D6hIAvDH.js",
+      "size": 9160,
+      "sha256": "b02712a507f9e9c026067a4d03ac258fbbc5276db8702cc329ca7e7b55b9e609"
     },
     {
-      "path": "dist/assets/index-BwXqNUTf.js",
+      "path": "dist/assets/index-5Wz5jg0G.js",
       "size": 649351,
-      "sha256": "065dc8abda165d965e4f0fa9e3f9a77c3cd9f042dad8dab3b128466f88ae6503"
+      "sha256": "089e7e3fa6d08ac1bed48f6aa869876a5235ffc20a70c8ba21670bc3edf61adb"
     },
     {
       "path": "dist/assets/index-fi3tDOtL.css",
@@ -38,9 +38,9 @@
       "sha256": "36659c9897f19cd8368e594a76b7e8c34a517dbf660d525563cca9c8d5616bcf"
     },
     {
-      "path": "dist/assets/localTransport-COzMSBCo.js",
-      "size": 2630,
-      "sha256": "52fe4a2a542359aba54c0f69af344b0c524263d5193df38d85de3a586e9bf339"
+      "path": "dist/assets/localTransport-BybgX0KQ.js",
+      "size": 2635,
+      "sha256": "1d73b6d60ab85a0b10adb0dc9a37d97a637ef6cdf38c2efd51a21593503c46f7"
     },
     {
       "path": "dist/assets/school-logo-z178Sqr0.png",
@@ -50,12 +50,12 @@
     {
       "path": "dist/index.html",
       "size": 427,
-      "sha256": "9002bc9f71f62ee1ba106f2149abafc02c1d7350cedd2905e1e8095c4f925049"
+      "sha256": "8b5a5fc8ffc33c90dff1a0550fc25fdb5d99bea74a0322d6bfff1bf0dc9c9b03"
     },
     {
       "path": "index.html",
-      "size": 305,
-      "sha256": "906bc1eb6e18d1eb19c9eb61a9329b583120529d4721df164be13d8364005232"
+      "size": 303,
+      "sha256": "4a8a6a27b764ce7b68921ee9f2f88bcf619477c4d48b3df07842a82a4032a1ec"
     },
     {
       "path": "package-lock.json",
@@ -79,8 +79,8 @@
     },
     {
       "path": "src/App.vue",
-      "size": 69576,
-      "sha256": "5f918438a6de2eb622b6ab98610fdf8b5de566618f8f158910442b9f22fb9b9c"
+      "size": 69371,
+      "sha256": "5129cc68e35b02ce25a4acab10550fa2d9c8c516a407d4aa8b77a36822931ad9"
     },
     {
       "path": "src/assets/school-logo.png",
@@ -89,33 +89,33 @@
     },
     {
       "path": "src/components/AdminPanel.vue",
-      "size": 13643,
-      "sha256": "73209abc3ee7cc7d43ee4eaeff2b35b046f8daafb4cb470556d5ceb2a887e834"
+      "size": 13789,
+      "sha256": "8de6f1642990bca2e55707e98b556d6e7c31cde28e2497396b24bd4dd6e63abc"
     },
     {
       "path": "src/components/ConsultationEditor.vue",
-      "size": 5556,
-      "sha256": "ac9d34b170730b5b0e38893851505d5c4b010aefb6f7be267023e15aa5763fc9"
+      "size": 5529,
+      "sha256": "214e9b98fde17d49411e5bf8e42a97ffc445dfe8bc0398cbfeff8d7bc0f83dc8"
     },
     {
       "path": "src/components/ProfileEditor.vue",
-      "size": 4656,
-      "sha256": "d3a2c71377e607b7612cac68ab1a2399942f2f53f92212b771c8e45671dca383"
+      "size": 4625,
+      "sha256": "6c1e26c53fb53e059a22982114807d424f6ca5c0fd84c00e92fd82e10e41a5e0"
     },
     {
       "path": "src/components/SchoolContextCards.vue",
-      "size": 5913,
-      "sha256": "3cd59a3c9dc434f8425217f3ad36d24d4d70d97b2aaf760da0bb77c083e2dedc"
+      "size": 5891,
+      "sha256": "54e95fe970111efe95d678e0b9327f8dc78f0e18574f80c0a3ff18bd953df0ae"
     },
     {
       "path": "src/components/StrategyEditor.vue",
-      "size": 2379,
-      "sha256": "9a4599778e679f2550acd097b08903831fac3a55867154c68c5b6d1d17ec84f8"
+      "size": 2364,
+      "sha256": "dd58660ca48387fd4ba2aece3be698e3ac8265077c3f0fd9896db3132a1e7eb2"
     },
     {
       "path": "src/components/StudentUnderstanding.vue",
-      "size": 11400,
-      "sha256": "b18029ad2d357d0b56e072bbfd3d3cd3213776f96f4a950ff859cbbab65ae7fd"
+      "size": 11357,
+      "sha256": "ac4d06874b80724fdeaa2465acfce4e0ebc10dba763db86b605de168d6b709d3"
     },
     {
       "path": "src/data/school-context.json",
@@ -124,38 +124,43 @@
     },
     {
       "path": "src/lib/admin.ts",
-      "size": 3500,
-      "sha256": "6fcea493cd33ed4e486d18759358ec31dffdc42a8e781e41fb72b79f34f7809f"
+      "size": 3593,
+      "sha256": "1bd0527f3db61dd400aeb9f2a0a0fea836fd1d3681d4be69c95ddd3cb6af8fc2"
     },
     {
       "path": "src/lib/authBridge.ts",
-      "size": 1445,
-      "sha256": "8d092dd23efc711c01dcf0d89a32a0f9ddf1b496a5d3cdc66479f79038c65265"
+      "size": 1420,
+      "sha256": "d902490f759b057d3d9564ae3a33c2f4ad8061cfe7284117e46cc69c816b7ab7"
     },
     {
       "path": "src/lib/cloudTransport.ts",
-      "size": 8923,
-      "sha256": "a9910a3470f8aa0058be7c933b19e2e5955233d72dcb31767b6b2ed46a3c7d9c"
+      "size": 9042,
+      "sha256": "36736a94638fcfca42d156ef55ff865b42de3fb133bd1de6ac9d2a613de40a7e"
     },
     {
       "path": "src/lib/localTransport.ts",
-      "size": 3978,
-      "sha256": "d0985a9a2ab2bef8b664f6c1890d04b3af8ba5de700c851faf75f6a9c6421c9e"
+      "size": 3947,
+      "sha256": "13f0961a363df7c67da60d6d5dd375e20e496083189926d49046b45ee5ba0464"
     },
     {
       "path": "src/lib/model.ts",
-      "size": 8235,
-      "sha256": "0bed8ac9753feead69ef59f009df14de0d36a73f961f8455ce64ab839d6b8bbd"
+      "size": 8179,
+      "sha256": "a30a12985975d9cace2168ac157dc577edf00ffc2f99cd5e63b12963e74c446b"
     },
     {
       "path": "src/lib/profile.ts",
-      "size": 13499,
-      "sha256": "78586069cf8e6023f962dcd3dc140c57f8d3b1f1f7c5df5b00872caaaf14290b"
+      "size": 13417,
+      "sha256": "1c86168bd3b8ba2dba78f03de15a796974c0a40858aad96a6b54c8313ba07667"
     },
     {
       "path": "src/lib/schoolContext.ts",
-      "size": 4049,
-      "sha256": "843485a7aa992feacc76e616ed95ea7d023da148b964ca08d9b4b43c09eaf8f3"
+      "size": 4030,
+      "sha256": "7c27bf589d537d050222ddc8cf1ecb2b63e93ebaae8999f5c830ce1c5f48ced4"
+    },
+    {
+      "path": "src/lib/schoolSession.ts",
+      "size": 3920,
+      "sha256": "702fe3553de2752ffb844a73c464a6451de05bc0595795170f6c264fcdc1fd50"
     },
     {
       "path": "src/lib/strategyPreparation.ts",
@@ -169,8 +174,8 @@
     },
     {
       "path": "src/lib/types.ts",
-      "size": 5335,
-      "sha256": "f4ff8549aa408f9dedcca96de47dd23c06dd9076452510530163e00112204944"
+      "size": 5295,
+      "sha256": "c1cec6e4a2baac7152ee426d3ea4358d4d8990a65f2d983d6c66e4d7e65f9c7a"
     },
     {
       "path": "src/lib/workflow.ts",
@@ -184,48 +189,53 @@
     },
     {
       "path": "src/style.css",
-      "size": 48814,
-      "sha256": "522f205613dcc6510fc2d51abe2b7e41fdc1ca07bdb61ea2fa917d441c3aff64"
+      "size": 48712,
+      "sha256": "5abba4b3233b47820eae6ca1cfe6cd86e7163165b4e60266beffdbd7a6a95863"
     },
     {
       "path": "tests/admin.spec.ts",
-      "size": 6964,
-      "sha256": "db1ddffdeb475ab92e57860807cdc568ab47d73d7931908c20540023bc37ce3f"
+      "size": 7454,
+      "sha256": "7cea8c930551fb0386d93b82d7c83319a56fb8419bb6dff8eee0ccd246f246ef"
     },
     {
       "path": "tests/admin.test.ts",
-      "size": 3168,
-      "sha256": "d018394edd1bcd87657be5a610fbff2c5b2eb878c2e10e92859e0f8edd281b7c"
+      "size": 3926,
+      "sha256": "0e4004a50d66d9a96cb5b861bb5f52c9fc2ac3ead3a0c6cd335bf0f0f9491e22"
     },
     {
       "path": "tests/auth.spec.ts",
-      "size": 7138,
-      "sha256": "4fdeabcd7b46e9be3b460e7aea044f3631bd4adfd9f0db07d33ea7279146d630"
+      "size": 10046,
+      "sha256": "b45ed8083949370915031f7f91fa0b5fe65c47f8ab2e0a68aff980dac1fddbeb"
     },
     {
       "path": "tests/auth.test.ts",
-      "size": 2959,
-      "sha256": "a967438cd270b798ba4b4b45a2c66cade7477fa9ddc80c1e8c893281397d0400"
+      "size": 2922,
+      "sha256": "8b9e1098e9ace88caeea4b3dd5efe058924be43c6d8695bc7aaf263ed3c589e9"
     },
     {
       "path": "tests/cloud.spec.ts",
-      "size": 12737,
-      "sha256": "9bc5a4f163df59971ac0369acc8aa3a4ecbf3a9aa3781cabc92890ddcff05a14"
+      "size": 12623,
+      "sha256": "48f390eec417a50324484662d0e307fad8d59c4c805f0dc8d9e2bdea14db236f"
     },
     {
       "path": "tests/core.test.ts",
-      "size": 10651,
-      "sha256": "5dcd134aff7229d97a8e11f7ab1cd0d516d12e4a5e3a96ca6a05c9cb8af91735"
+      "size": 10624,
+      "sha256": "9e2bb6fd0c2ae62c7da3dca81bb7ed512e9657c7b808b4c578d40af8d4ec553f"
     },
     {
       "path": "tests/local.spec.ts",
-      "size": 11225,
-      "sha256": "97deb532be09249bf7526a183bd907d42e181600492b584453ad6ad94a72e0ff"
+      "size": 11096,
+      "sha256": "608c9cc3e6f9181df02f792f4e3cc7383f204e786f90f03c0fd8e697e2c77c7d"
     },
     {
       "path": "tests/profile.test.ts",
-      "size": 7782,
-      "sha256": "3c48c1a407a5ea6e21300843242a59298fc22cff1f37d958c7fd415c57fdd2d1"
+      "size": 7762,
+      "sha256": "e2a143c718fab9423029ae4db84d7a0aaac55af72f71c7fc1c07abec5fb5174d"
+    },
+    {
+      "path": "tests/schoolSession.test.ts",
+      "size": 6403,
+      "sha256": "7c663543e16b9cfbb4054902ec0187e585546ba675e39d3505c77659d0f1a60f"
     },
     {
       "path": "tests/strategyPreparation.test.ts",
@@ -234,13 +244,13 @@
     },
     {
       "path": "tests/ui.spec.ts",
-      "size": 28739,
-      "sha256": "1429672b11d35f750417b65cc99150c7c197c11cd217041b5665c6bec0f7fb1e"
+      "size": 28439,
+      "sha256": "563ef5ac253df7caeadc758a8dbd3ec99da64cb4d3bf05b87d7ea93f9675340b"
     },
     {
       "path": "tests/workflow.test.ts",
-      "size": 6468,
-      "sha256": "d339392443e11a1281447fab8fe1b8f450f47c879900ddce6a9b4bf6e06d17e7"
+      "size": 6404,
+      "sha256": "7d2039deaef59598334e3ae09a6e74f11ff8cec608da39fa79de6214409ca65e"
     },
     {
       "path": "tsconfig.json",
@@ -255,19 +265,19 @@
   ],
   "web_files": [
     {
-      "path": "assets/AdminPanel-Cv4XXT77.js",
-      "size": 16463,
-      "sha256": "4d25897c0446387404414640f8b8342b1b3c4ae9d34afde81c32939d5d8dea53"
+      "path": "assets/AdminPanel-KKlgPVAx.js",
+      "size": 16780,
+      "sha256": "c4f0cdbfac7a7a98a71346da67a2e769facd4414631d41fc65c3b66b76215c64"
     },
     {
-      "path": "assets/cloudTransport-C1mKYzGz.js",
-      "size": 6614,
-      "sha256": "1b3335b57f331aea878390f1b8842ddfe6a584fefed44725db5ec3b0e05c560e"
+      "path": "assets/cloudTransport-D6hIAvDH.js",
+      "size": 9160,
+      "sha256": "b02712a507f9e9c026067a4d03ac258fbbc5276db8702cc329ca7e7b55b9e609"
     },
     {
-      "path": "assets/index-BwXqNUTf.js",
+      "path": "assets/index-5Wz5jg0G.js",
       "size": 649351,
-      "sha256": "065dc8abda165d965e4f0fa9e3f9a77c3cd9f042dad8dab3b128466f88ae6503"
+      "sha256": "089e7e3fa6d08ac1bed48f6aa869876a5235ffc20a70c8ba21670bc3edf61adb"
     },
     {
       "path": "assets/index-fi3tDOtL.css",
@@ -275,9 +285,9 @@
       "sha256": "36659c9897f19cd8368e594a76b7e8c34a517dbf660d525563cca9c8d5616bcf"
     },
     {
-      "path": "assets/localTransport-COzMSBCo.js",
-      "size": 2630,
-      "sha256": "52fe4a2a542359aba54c0f69af344b0c524263d5193df38d85de3a586e9bf339"
+      "path": "assets/localTransport-BybgX0KQ.js",
+      "size": 2635,
+      "sha256": "1d73b6d60ab85a0b10adb0dc9a37d97a637ef6cdf38c2efd51a21593503c46f7"
     },
     {
       "path": "assets/school-logo-z178Sqr0.png",
@@ -287,7 +297,7 @@
     {
       "path": "index.html",
       "size": 427,
-      "sha256": "9002bc9f71f62ee1ba106f2149abafc02c1d7350cedd2905e1e8095c4f925049"
+      "sha256": "8b5a5fc8ffc33c90dff1a0550fc25fdb5d99bea74a0322d6bfff1bf0dc9c9b03"
     }
   ]
 }

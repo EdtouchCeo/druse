@@ -60,19 +60,25 @@ test('oversized management lists fail instead of returning an incomplete snapsho
  fixture({userCount:10001});const response=await admin(event());assert.equal(response.statusCode,503);assert.equal(parse(response).error.code,'ADMIN_LIST_LIMIT');
 });
 test('manager-only session exposes management access without students or server AI',async()=>{
- const f=fixture(),response=await session(event());assert.equal(response.statusCode,200);const data=parse(response);
+ const f=fixture({role:'학부모'}),response=await session(event());assert.equal(response.statusCode,200);const data=parse(response);
  assert.equal(data.user.role,'manager');assert.equal(data.user.can_manage,true);assert.deepEqual(data.students,[]);assert.equal(data.ai.server,false);
  assert.ok(!f.calls.some(c=>c.url.pathname.includes('counseling_assignments')));
  assert.equal((await cases(event())).statusCode,403);
 });
 test('teacher-manager retains teacher behavior while ordinary teacher cannot manage',async()=>{
- fixture({grants:['teacher','manager']});let data=parse(await session(event()));assert.equal(data.user.role,'teacher');assert.equal(data.user.can_manage,true);assert.equal(data.ai.server,true);
- fixture({grants:['teacher']});data=parse(await session(event()));assert.equal(data.user.role,'teacher');assert.equal(data.user.can_manage,false);
+ fixture({grants:['manager']});let data=parse(await session(event()));assert.equal(data.user.role,'teacher');assert.equal(data.user.can_manage,true);assert.equal(data.ai.server,true);
+ fixture({grants:[]});data=parse(await session(event()));assert.equal(data.user.role,'teacher');assert.equal(data.user.can_manage,false);
 });
 test('manager mutations use the authenticated profile ID and retain existing contract',async()=>{
- const f=fixture();const response=await admin(event('POST',{action:'role',user_id:targetId,role:'teacher',approved:true}));assert.equal(response.statusCode,200);
+ const f=fixture();const response=await admin(event('POST',{action:'role',user_id:targetId,role:'student',approved:true}));assert.equal(response.statusCode,200);
  const request=f.calls.find(c=>c.url.pathname.includes('/rpc/'));const body=JSON.parse(request.options.body);
- assert.equal(body.p_actor,profileId);assert.deepEqual(body.p_input,{action:'role',user_id:targetId,role:'teacher',approved:true});
+ assert.equal(body.p_actor,profileId);assert.deepEqual(body.p_input,{action:'role',user_id:targetId,role:'student',approved:true});
+});
+test('manual teacher role changes are rejected because school approval controls access',async()=>{
+ for(const approved of [true,false]){
+  const f=fixture();const response=await admin(event('POST',{action:'role',user_id:targetId,role:'teacher',approved}));
+  assert.equal(response.statusCode,400);assert.equal(parse(response).error.code,'TEACHER_ACCESS_AUTOMATIC');assert.ok(!f.calls.some(c=>c.url.pathname.includes('/rpc/')));
+ }
 });
 test('client cannot inject an actor or bootstrap manager through the API',async()=>{
  fixture();assert.equal((await admin(event('POST',{action:'role',user_id:targetId,role:'teacher',approved:true,p_actor:targetId}))).statusCode,400);

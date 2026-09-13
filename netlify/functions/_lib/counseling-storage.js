@@ -94,8 +94,9 @@ function createAdapter(store,supabase){
   return rows[0];
  }
  function granted(data,id,role){return data.roles.some(row=>row.user_id===id&&row.role===role&&row.approved===true);}
- function accessible(data,id,studentId){return data.students.some(s=>s.id===studentId&&s.active===true)&&granted(data,id,'teacher')&&data.assignments.some(a=>a.student_id===studentId&&a.teacher_user_id===id&&a.active===true);}
- async function authorize(data,id,role){await profile(id,role==='teacher'?'교사':role==='student'?'학생':undefined);if(!granted(data,id,role))fail(403,'ACCESS_DENIED','상담 역할 승인이 필요합니다.');}
+ // Call only after authorize(..., 'teacher') has verified fresh school approval.
+ function accessible(data,id,studentId){return data.students.some(s=>s.id===studentId&&s.active===true)&&data.assignments.some(a=>a.student_id===studentId&&a.teacher_user_id===id&&a.active===true);}
+ async function authorize(data,id,role){await profile(id,role==='teacher'?'교사':role==='student'?'학생':undefined);if(role!=='teacher'&&!granted(data,id,role))fail(403,'ACCESS_DENIED','상담 역할 승인이 필요합니다.');}
  function put(rows,match,value){const index=rows.findIndex(match);if(index<0)rows.push(value);else rows[index]=value;}
  async function bootstrapManager(me,schoolProfile){
   if(String(me?.email||'').toLowerCase()!==ADMIN_EMAIL||!me.email_confirmed_at||!uuid(me.id)||schoolProfile?.approved!==true||String(schoolProfile.google_id)!==me.id||!uuid(schoolProfile.id))return;

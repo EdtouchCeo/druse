@@ -61,6 +61,23 @@ test('manager and target school profiles are freshly rechecked before grants',as
  const f=fixture();f.profiles.get(ids.manager).approved=false;await assert.rejects(admin(f,{action:'role',user_id:ids.other,role:'student',approved:true}),code('ACCESS_DENIED'));
  f.profiles.get(ids.manager).approved=true;await assert.rejects(admin(f,{action:'role',user_id:ids.other,role:'teacher',approved:true}),code('ACCESS_DENIED'));assert.equal((await f.adapter.readConfig()).data.audit.length,0);
 });
+test('school-approved teacher can be assigned without a counseling role',async()=>{
+ const f=fixture();f.config.roles=f.config.roles.filter(r=>r.user_id!==ids.teacher);f.config.assignments=[];f.store.seed('configuration/v1',f.config);
+ await admin(f,{action:'assign',student_id:ids.student,teacher_user_id:ids.teacher,active:true});
+ const data=(await f.adapter.readConfig()).data;assert.equal(data.assignments[0].teacher_user_id,ids.teacher);assert.ok(!data.roles.some(r=>r.user_id===ids.teacher));
+ const c=sample();await write(f,c);assert.deepEqual((await get(f,c.id))[0].data,c);
+});
+test('school approval never creates manager access for an ordinary teacher',async()=>{
+ const f=fixture();await assert.rejects(f.adapter.query('rpc/counseling_administer',{method:'POST',data:{p_actor:ids.teacher,p_input:{action:'role',user_id:ids.teacher,role:'manager',approved:true}}}),code('ACCESS_DENIED'));
+ assert.equal((await f.adapter.readConfig()).data.audit.length,0);
+});
+test('assignment rejects unapproved teachers, students and parents without modifying configuration',async()=>{
+ for(const changed of [{approved:false},{approved:null},{role:'학생'},{role:'학부모'}]){
+  const f=fixture();Object.assign(f.profiles.get(ids.teacher),changed);
+  await assert.rejects(admin(f,{action:'assign',student_id:ids.student,teacher_user_id:ids.teacher,active:true}),code('ACCESS_DENIED'));
+  assert.deepEqual((await f.adapter.readConfig()).data,f.config);
+ }
+});
 test('student account keeps fixed ID across academic years and numbers stay unique',async()=>{
  const f=fixture();const result=await admin(f,{action:'student',user_id:ids.studentUser,student_id:ids.student,student_number:'20101',academic_year:2027,school_stage:'high',grade:2,name:'합성 학생'});assert.equal(result.student_id,ids.student);
  const data=(await f.adapter.readConfig()).data;assert.equal(data.students.length,1);assert.equal(data.numbers.length,2);
@@ -76,6 +93,15 @@ test('case creation publishes a head only after the immutable version and index'
  assert.ok(f.store.calls.filter(c=>c.method==='get').every(c=>c.options.consistency==='strong'));
  await assert.rejects(write(f,c),code('REVISION_CONFLICT'));
 });
+test('teacher saves and updates assigned cases without explicit service approval',async()=>{
+ for(const approved of [undefined,false]){
+  const f=fixture();f.config.roles=f.config.roles.filter(r=>r.user_id!==ids.teacher);
+  if(approved!==undefined)f.config.roles.push({user_id:ids.teacher,role:'teacher',approved});
+  f.store.seed('configuration/v1',f.config);
+  const c=sample();await write(f,c);c.revision=2;c.sessions[0].topic='학교 승인 교사의 전략 수정';await write(f,c,1);
+  assert.deepEqual((await get(f,c.id))[0].data,c);assert.equal((await f.adapter.readConfig()).data.roles.filter(r=>r.user_id===ids.teacher).length,approved===undefined?0:1);
+ }
+});
 test('concurrent edits have one winner and one 409 with immutable previous chain',async()=>{
  const f=fixture(),c=sample();await write(f,c);const edits=['first','second'].map(topic=>{const next=structuredClone(c);next.revision=2;next.sessions[0].topic=topic;return next;});
  const results=await Promise.allSettled(edits.map(next=>write(f,next,1)));assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.ok(results.some(r=>r.status==='rejected'&&r.reason.code==='REVISION_CONFLICT'));
@@ -89,6 +115,22 @@ test('head CAS failure leaves only unlinked data and does not expose the case',a
 test('revoked assignment between version write and publishing blocks the head',async()=>{
  const f=fixture(),c=sample();f.store.beforeSet=async key=>{if(key.includes('/versions/')){const config=f.store.entries.get('configuration/v1').data;config.assignments[0].active=false;f.store.seed('configuration/v1',config);}return null;};
  await assert.rejects(write(f,c),code('ACCESS_DENIED'));assert.deepEqual(await list(f),[]);
+});
+test('revoked school approval before publishing blocks implicit teacher saves',async()=>{
+ const f=fixture(),c=sample();f.config.roles=f.config.roles.filter(r=>r.user_id!==ids.teacher);f.store.seed('configuration/v1',f.config);
+ f.store.beforeSet=async key=>{if(key.includes('/versions/'))f.profiles.get(ids.teacher).approved=false;return null;};
+ await assert.rejects(write(f,c),code('ACCESS_DENIED'));assert.deepEqual(await get(f,c.id),[]);assert.deepEqual(await list(f),[]);
+});
+test('implicit teacher still needs an active student and current assignment to save',async()=>{
+ for(const mutation of [data=>{data.assignments=[]},data=>{data.assignments[0].active=false},data=>{data.students[0].active=false}]){
+  const f=fixture();f.config.roles=f.config.roles.filter(r=>r.user_id!==ids.teacher);mutation(f.config);f.store.seed('configuration/v1',f.config);
+  await assert.rejects(write(f,sample()),code('ACCESS_DENIED'));assert.equal(f.store.entries.size,1);
+ }
+});
+test('null approval and non-teacher membership cannot write despite stale teacher grant',async()=>{
+ for(const changed of [{approved:null},{role:'학생'},{role:'학부모'}]){
+  const f=fixture();Object.assign(f.profiles.get(ids.teacher),changed);await assert.rejects(write(f,sample()),code('ACCESS_DENIED'));assert.equal(f.store.entries.size,1);
+ }
 });
 test('school role change, unassigned student, and local-only payload cannot be saved',async()=>{
  const f=fixture(),c=sample();f.profiles.get(ids.teacher).approved=false;await assert.rejects(write(f,c),code('ACCESS_DENIED'));f.profiles.get(ids.teacher).approved=true;

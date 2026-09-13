@@ -25,7 +25,10 @@ exports.handler=C.wrap(async event=>{
   return C.json(200,{users,roles,students,numbers,assignments});
  }
  const b=C.body(event,6000);C.rejectPrivate(b);
- if(b.action==='role'){C.onlyKeys(b,['action','user_id','role','approved']);if(!C.uuid(b.user_id)||!['teacher','student','manager'].includes(b.role)||typeof b.approved!=='boolean')C.fail(400,'BAD_REQUEST','역할 입력을 확인해 주세요.');}
+ if(b.action==='role'){
+  C.onlyKeys(b,['action','user_id','role','approved']);if(!C.uuid(b.user_id)||!['teacher','student','manager'].includes(b.role)||typeof b.approved!=='boolean')C.fail(400,'BAD_REQUEST','역할 입력을 확인해 주세요.');
+  if(b.role==='teacher')C.fail(400,'TEACHER_ACCESS_AUTOMATIC','교직원은 학교 회원 승인으로 학종 전략을 이용합니다. 회원 관리에서 승인 상태를 변경해 주세요.');
+ }
  else if(b.action==='assign'){C.onlyKeys(b,['action','student_id','teacher_user_id','active']);if(!C.uuid(b.student_id)||!C.uuid(b.teacher_user_id)||typeof b.active!=='boolean')C.fail(400,'BAD_REQUEST','담당 배정 정보를 확인해 주세요.');}
  else if(b.action==='student'){C.onlyKeys(b,['action','user_id','student_id','student_number','academic_year','school_stage','grade','name']);if(!C.uuid(b.user_id)||(b.student_id&&!C.uuid(b.student_id))||!/^\d{4,8}$/.test(b.student_number||'')||!Number.isInteger(b.academic_year)||b.academic_year<2020||b.academic_year>2100||!['middle','high'].includes(b.school_stage)||![1,2,3].includes(b.grade)||typeof b.name!=='string'||b.name.length>80)C.fail(400,'BAD_REQUEST','학생·학년도별 학번을 확인해 주세요.');}
  else C.fail(400,'UNKNOWN_ACTION','지원하지 않는 관리 작업입니다.');

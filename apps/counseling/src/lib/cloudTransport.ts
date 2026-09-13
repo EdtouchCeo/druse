@@ -1,14 +1,23 @@
 import type {AdminAction,AdminData} from './admin'
 import {checked} from './transport'
-import {assertStandard,readSessionToken,sessionOf,isLoopback} from './model'
+import {assertStandard,sessionOf,isLoopback} from './model'
+import {SchoolSessionAuth} from './schoolSession'
 import type {Transport,Health,Student,CounselingCase,Backup,Job,AiSettings,Actor} from './types'
 const base='/.netlify/functions/'
 export class CloudTransport implements Transport {
  readonly mode='online' as const
+ private auth:SchoolSessionAuth|undefined
  async admin(){return this.request<AdminData>('counseling-admin')}
- async administer(input:AdminAction){if(input.action==='role'&&!['teacher','student'].includes(input.role))throw new Error('이 화면에서는 교사와 학생의 상담 권한만 변경할 수 있습니다.');return this.request<{ok?:boolean;student_id?:string}>('counseling-admin','POST',input)}
- private headers(){const token=readSessionToken(localStorage);if(!token)throw new Error('학교 계정 로그인이 필요합니다. 아래 로그인 버튼을 누르면 로그인 후 학종 전략실로 이동합니다.');return {'Content-Type':'application/json',Authorization:'Bearer '+token}}
- private async request<T>(path:string,method='GET',body?:unknown,signal?:AbortSignal):Promise<T>{const r=await checked(await fetch(base+path,{method,headers:this.headers(),...(body!==undefined?{body:JSON.stringify(body)}:{}),signal,cache:'no-store',credentials:'same-origin'}));return r.json() as Promise<T>}
+ async administer(input:AdminAction){if(input.action==='role'&&input.role!=='student')throw new Error('학생의 상담 참여 권한만 변경할 수 있습니다. 교직원은 학교 회원 승인으로 자동 이용합니다.');return this.request<{ok?:boolean;student_id?:string}>('counseling-admin','POST',input)}
+ private async authenticatedFetch(path:string,options:RequestInit={}):Promise<Response>{
+  const auth=this.auth??=new SchoolSessionAuth(localStorage)
+  let token=await auth.token()
+  const send=()=>fetch(base+path,{...options,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},cache:'no-store',credentials:'same-origin'})
+  let response=await send()
+  if(response.status===401){token=await auth.token(true,token);response=await send()}
+  return checked(response)
+ }
+ private async request<T>(path:string,method='GET',body?:unknown,signal?:AbortSignal):Promise<T>{const r=await this.authenticatedFetch(path,{method,...(body!==undefined?{body:JSON.stringify(body)}:{}),signal});return r.json() as Promise<T>}
  private path(id?:string,action?:string){const q=new URLSearchParams();if(id)q.set('id',id);if(action)q.set('action',action);return 'counseling-cases'+(q.size?'?'+q:'')}
  async health(signal?:AbortSignal):Promise<Health>{const data=await this.request<{user:Actor;ai:{server:boolean};students:Student[]}>('counseling-session','GET',undefined,signal);return {mode:'online',demo:false,teacher:data.user.role==='teacher'?data.user:null,user:data.user,students:data.students,ai:data.ai,ollama:{available:false,models:[]}}}
  authenticate(_token:string){return this.health()}
@@ -18,7 +27,7 @@ export class CloudTransport implements Transport {
  async save(value:CounselingCase){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id),'PUT',{case:value})).case}
  async next(value:CounselingCase){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id,'next'),'POST',{revision:value.revision})).case}
  async importBackup(bundle:Backup){assertStandard(bundle.case);return(await this.request<{case:CounselingCase}>(this.path(undefined,'import'),'POST',{bundle,student_id:bundle.case.student.student_id,student_confirmed:true})).case}
- private async blob(path:string){return(await checked(await fetch(base+path,{headers:this.headers(),cache:'no-store'}))).blob()}
+ private async blob(path:string){return(await this.authenticatedFetch(path)).blob()}
  exportBackup(id:string){return this.blob(this.path(id,'export'))}
  report(id:string,sessionId:string,audience:'student'|'teacher'='teacher'){return this.blob(this.path(id,'report')+'&session_id='+encodeURIComponent(sessionId)+'&audience='+audience)}
  private restricted():never {throw new Error('학생부 분석은 교사 PC의 로컬 상담실에서만 사용할 수 있습니다.')}
