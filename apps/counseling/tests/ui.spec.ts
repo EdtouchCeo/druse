@@ -73,12 +73,12 @@ test('desktop counseling, evidence, analysis, review, confirmation and next sess
  await page.getByRole('button',{name:'자료·분석',exact:true}).click()
  await page.getByRole('button',{name:'Ollama 근거 분석',exact:true}).click()
  for(const minutes of ['601','4','5.5']){
-  await page.getByLabel('학생의 주간 가용 시간',{exact:false}).fill(minutes)
+  await page.getByLabel('제안 시간 상한',{exact:false}).fill(minutes)
   await page.getByRole('button',{name:'분석 시작',exact:true}).click()
-  await expect(page.getByRole('alert')).toContainText('주간 가용 시간은 5~600분 사이의 정수로 입력하세요.')
+  await expect(page.getByRole('alert')).toContainText('5~600분 사이의 정수로 입력하세요.')
   expect(mock.requests.some(r=>r.path.endsWith('/analyze'))).toBe(false)
  }
- await page.getByLabel('학생의 주간 가용 시간',{exact:false}).fill('5')
+ await page.getByLabel('제안 시간 상한',{exact:false}).fill('5')
  await page.getByRole('button',{name:'분석 시작',exact:true}).click()
  await expect(page.getByRole('heading',{name:'현재의 배움'})).toBeVisible()
  const writesBefore=mock.requests.filter(r=>r.method==='PUT').length

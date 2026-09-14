@@ -5,7 +5,8 @@ export type NewStudentInput = {name:string;student_number:string;academic_year:n
 export type Actor = { id: string; display_name: string; approved: boolean; role?: 'teacher' | 'student' | 'manager'; can_manage?: boolean; student_id?: string }
 export type Health = { version?: string; mode: Mode; demo: boolean; csrf_token?: string; teacher: Actor | null; user?: Actor; storage_path?: string; students?: Student[]; ai?: {server:boolean}; ollama: {available:boolean;models:{name:string;vision?:boolean}[];message?:string} }
 export type Action = { id:string;text:string;due_date:string;status:'planned'|'in_progress'|'done'|'deferred' }
-export type RecordSection = {id:string;category:string;label:string;school_stage:string;academic_year:number|null;grade:number|null;semester:number|null;pages:number[];text:string;status:'present'|'empty'|'not_applicable'|'uncertain'}
+export type RecordMetadata = {academic_year:number|null;grade:number|null;semester:number|null;school_stage:'middle'|'high'|'unknown'}
+export type RecordSection = {id:string;category:string;label:string;school_stage:string;academic_year:number|null;grade:number|null;semester:number|null;pages:number[];text:string;status:'present'|'empty'|'not_applicable'|'uncertain';metadata_confirmation?:{source:string;confirmed_at:string;confirmed_by:string;original:RecordMetadata}}
 export type SchoolRecord = {id:string;filename:string;sha256:string;page_count:number;school_stage:string;sections:RecordSection[];warnings:string[];readable_pages:number[];unreadable_pages:number[]}
 export type Finding = {text:string;evidence_ids:string[];guidance:string}
 export type Analysis = {summary:string;strengths:Finding[];improvements:Finding[];questions:string[];actions:{text:string;reason:string;evidence_ids:string[]}[];limitations:string[];model:string;created_at:string}
@@ -31,6 +32,7 @@ export interface Transport {
   next(value:CounselingCase):Promise<CounselingCase>;importBackup(bundle:Backup):Promise<CounselingCase>
   exportBackup(id:string):Promise<Blob>;report(id:string,sessionId:string,audience?:'student'|'teacher'):Promise<Blob>
   upload(value:CounselingCase,sessionId:string,file:File,password:string,signal?:AbortSignal):Promise<CounselingCase>
+  updateRecordMetadata(value:CounselingCase,sessionId:string,recordId:string,sectionId:string,metadata:RecordMetadata):Promise<CounselingCase>
   analyze(value:CounselingCase,sessionId:string,model:string,goal:string,budget:number):Promise<Job>
   review(value:CounselingCase,sessionId:string,model?:string):Promise<Job|CounselingCase>
   prepare(value:CounselingCase,sessionId:string):Promise<CounselingCase>

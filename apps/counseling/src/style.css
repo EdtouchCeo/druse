@@ -222,6 +222,19 @@ input::placeholder,textarea::placeholder{opacity:1;color:#637083}
 }
 
 /* The final student document follows one reading order on screen and paper. */
+.upload-area.drag-active{border-color:var(--brand);background:#eaf1fc;outline:2px solid var(--brand);outline-offset:2px}
+.evidence-summary-copy{min-width:0}
+.record-period-row{display:block;line-height:1.7;overflow-wrap:anywhere}
+.record-period{padding:4px 0;border:0;background:none;color:var(--brand);font-size:13px;line-height:1.7;text-align:left;text-decoration:underline;text-underline-offset:3px;white-space:normal;min-height:32px;max-width:100%}
+.record-period:disabled{color:#475569;text-decoration:none}
+.evidence summary .record-period-row small{display:inline}
+.record-metadata{padding:18px 20px;border-top:1px solid var(--border);background:#fff}
+.record-metadata legend{font-size:16px;font-weight:700;margin-bottom:12px}
+.record-metadata-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.record-metadata-fields label,.record-metadata-fields input,.record-metadata-fields select{min-width:0;max-width:100%}
+.record-metadata .help{margin:12px 0}
+@media(max-width:760px){.record-metadata-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.evidence summary{gap:8px;flex-wrap:wrap}.record-metadata{padding:16px}.upload-area .selected-file{overflow-wrap:anywhere;max-width:100%}}
+@media(max-width:420px){.record-metadata-fields{grid-template-columns:minmax(0,1fr)}}
 .result-preview-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:20px 0;color:#475569;font-size:14px}
 .student-result{width:100%;max-width:900px;margin:0 auto 28px;background:#fff;color:#17212e}
 .result-heading{padding:22px 0 20px;border-bottom:2px solid var(--brand)}

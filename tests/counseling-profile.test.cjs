@@ -87,3 +87,24 @@ test('teacher AI receives stored profile and evidence-first instructions without
  const response=await ai(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose:'counseling'}));assert.equal(response.statusCode,200);assert.ok(prompt.includes('PRIVATE_PROFILE_OBSERVATION'));assert.ok(prompt.includes('"score":87.5'));assert.ok(prompt.includes('입력 근거에 따른 관찰 → 확인이 필요한 자료 → 교과 연결 → 다음 상담 질문 → 실행 제안'));assert.ok(prompt.includes('약점·역량 부족으로 판단하지 않는다'));assert.ok(prompt.includes('합격 가능성이나 합격 등급을 만들지 않는다'));assert.equal(m.writes().length,0);
  mock(c,true);let calls=0;const forbidden=createAi(async()=>{calls++;});assert.equal((await forbidden(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose:'counseling'}))).statusCode,403);assert.equal(calls,0);
 });
+
+for(const [label,metadata]of [['middle grade 3',{academic_year:2026,school_stage:'middle',grade:3}],['high grade 3',{academic_year:2026,school_stage:'high',grade:3}],['unknown metadata',{academic_year:null,school_stage:null,grade:null}]])test(`AI preserves server student stage separately from past grades: ${label}`,async()=>{
+ const c=legacySample();Object.assign(c.student,metadata,{name:'PRIVATE_IDENTITY_NAME',student_number:'30222'});
+ for(const key of ['academic_year','school_stage','grade'])if(c.student[key]===null)delete c.student[key];
+ c.sessions[0].profile.grades[0].academic_year=2024;const m=mock(c);
+ process.env.COUNSELING_SERVER_AI_ENABLED='true';process.env.GEMINI_API_KEY='synthetic-only';let sent;
+ const handler=createAi(async args=>{sent=args;return {ok:true,data:{candidates:[{content:{parts:[{text:'합성 학년 맥락 검증'}]}}]}};});
+ const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:c.revision,privacy:'standard',purpose:'counseling'}));
+ assert.equal(response.statusCode,200);const prompt=sent.payload.contents[0].parts[0].text,payload=JSON.parse(prompt.split('상담 자료:\n')[1]);
+ assert.deepEqual(payload.student,metadata);assert.equal(payload.profile.grades[0].academic_year,2024);
+ assert.deepEqual(Object.keys(payload.student).sort(),['academic_year','grade','school_stage']);
+ assert.ok(!prompt.includes('PRIVATE_IDENTITY_NAME'));assert.ok(!prompt.includes('30222'));
+ assert.ok(prompt.includes('역산하지 않는다'));assert.ok(prompt.includes('미정인 희망 전공을 확정하거나'));
+ assert.equal(m.writes().length,0);
+});
+
+test('AI refuses client-supplied student metadata before invoking provider',async()=>{
+ const c=legacySample();mock(c);let calls=0;const handler=createAi(async()=>{calls++;throw Error('must not call provider');});
+ const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:c.revision,privacy:'standard',purpose:'counseling',student:{academic_year:2030,school_stage:'high',grade:3}}));
+ assert.equal(response.statusCode,400);assert.equal(calls,0);
+});

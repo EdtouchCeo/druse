@@ -1,6 +1,6 @@
 {
   "format": "daeryun-counseling-integration",
-  "created_at": "2026-09-14T02:31:13.808032+00:00",
+  "created_at": "2026-09-14T04:20:30.075147+00:00",
   "files": [
     {
       "path": ".gitignore",
@@ -9,38 +9,38 @@
     },
     {
       "path": "README.md",
-      "size": 16593,
-      "sha256": "58f14ae57815ddeaea1d5d04d291768320fb5f96a0a068559e0c72fd3d404967"
+      "size": 17003,
+      "sha256": "799125f7835c2e0a29eb8e1816ba2dc10c672c9f93bb502021e1853f2d8ac2ce"
     },
     {
       "path": "VERIFICATION.md",
-      "size": 18268,
-      "sha256": "c7d9e058e086042d22347f8172f5a16470bbcb7584b1c10e841d34ee5d870532"
+      "size": 21459,
+      "sha256": "3fe65ac6a91a78275e1886730d5095081e23b03b7e1293d793aa2142fe71f4ce"
     },
     {
-      "path": "dist/assets/AdminPanel-BmFzNBTW.js",
+      "path": "dist/assets/AdminPanel-Bl71sP61.js",
       "size": 16779,
-      "sha256": "77a02640ab3847d61419542609e826b590a031f211581e5c8fc140edf9855280"
+      "sha256": "41a2f5be018225dd3241f126f51d4e5e6e93420f8bd7ec0d158215d86df49ef8"
     },
     {
-      "path": "dist/assets/cloudTransport-CdgdnOs2.js",
-      "size": 9257,
-      "sha256": "e42bbbf5a476552191aa6c34676d1cb2c06dd64cf4dde6bf1b03e465da88e906"
+      "path": "dist/assets/cloudTransport-BBx1Dcmg.js",
+      "size": 9643,
+      "sha256": "70624e66f84b9839fd9316cfab9b501e9e6719e76449141966f5b19cd26deeef"
     },
     {
-      "path": "dist/assets/index-BQRcIege.js",
-      "size": 658924,
-      "sha256": "2abe296476ad941b58d6cbea54a204a18651c447b01dd70b338e6d72b4ff5d4c"
+      "path": "dist/assets/index-Bd7QZ-r4.js",
+      "size": 665133,
+      "sha256": "20ddf974eec52c0419afb665b472c2a200b15aab0a22ef0d89c4cbc76f08d2ca"
     },
     {
-      "path": "dist/assets/index-Da-vr3TF.css",
-      "size": 58243,
-      "sha256": "8e0c51ecf1642634b6879a268c63f64cff29b3fd777eb5de5809bebc21587ce7"
+      "path": "dist/assets/index-DaEGMCSp.css",
+      "size": 59528,
+      "sha256": "ef568e3208fa6d06c1344e02c46be9ba8c4c7cddb29577bc93daf6107f2aa508"
     },
     {
-      "path": "dist/assets/localTransport-CJT2hI0W.js",
-      "size": 2635,
-      "sha256": "1b8124ec300cb143b7ace4717589dec2fe0e91206b3d5a0c50ec2bc6ba7d3ecb"
+      "path": "dist/assets/localTransport-ZXaJ2iqG.js",
+      "size": 2856,
+      "sha256": "f8aa7a364ef9979f2f83062c0893e2859e712e123759217e10d60d265a02c9a1"
     },
     {
       "path": "dist/assets/school-logo-z178Sqr0.png",
@@ -50,7 +50,7 @@
     {
       "path": "dist/index.html",
       "size": 427,
-      "sha256": "6e0fb18812d52c5f18d1e71531de5a06b1c79cdb8eb39c1ec53a98337a6350d9"
+      "sha256": "6b395174703d494dcb6dd9e24354afa11fbda5d918a29d05ad39290142f4ebe3"
     },
     {
       "path": "index.html",
@@ -69,8 +69,8 @@
     },
     {
       "path": "playwright.config.ts",
-      "size": 543,
-      "sha256": "6e81de7b81d96834d29355ecd64e4d271085eaef97bc8f4af2e894debd75904d"
+      "size": 568,
+      "sha256": "415deddb098626a4c0e05e70a784490be6fdc032581d8551cec6dd356f1d05f4"
     },
     {
       "path": "playwright.local.config.ts",
@@ -79,8 +79,8 @@
     },
     {
       "path": "src/App.vue",
-      "size": 74289,
-      "sha256": "4986cff95471490b0b5a3a4a039faf6a8264da213610b4fa4106efdb376f44d2"
+      "size": 77273,
+      "sha256": "565196e4a1a44a5d7149cc38f05aef88e29da78989fecc4f9728ba19d1e53f0b"
     },
     {
       "path": "src/assets/school-logo.png",
@@ -106,6 +106,11 @@
       "path": "src/components/ProfileEditor.vue",
       "size": 4484,
       "sha256": "c92d64724f9f6eb206ade3ec46c5117381caaf2e3e9dc401253d9d0f26abe912"
+    },
+    {
+      "path": "src/components/RecordEvidence.vue",
+      "size": 4187,
+      "sha256": "b169fcd617126eb49ceaa01ada8f2bde0cbe3861a69e3fb8af647ef825bad502"
     },
     {
       "path": "src/components/ResultText.vue",
@@ -149,8 +154,8 @@
     },
     {
       "path": "src/lib/cloudTransport.ts",
-      "size": 9324,
-      "sha256": "9cf62647955d9b8a69891ccff5df0e346c1781920f2fe9d51d18df48ab7dbf38"
+      "size": 9749,
+      "sha256": "dd37322584f5519387d9dd7130f0c62daaf77617b584b4a7c66a8450a57175fe"
     },
     {
       "path": "src/lib/inputExamples.ts",
@@ -159,8 +164,8 @@
     },
     {
       "path": "src/lib/localTransport.ts",
-      "size": 3978,
-      "sha256": "d0985a9a2ab2bef8b664f6c1890d04b3af8ba5de700c851faf75f6a9c6421c9e"
+      "size": 4353,
+      "sha256": "860981771f3bdd93ee43b667294a41e1034adebf86b1151b6bddbb7f142d3a9d"
     },
     {
       "path": "src/lib/model.ts",
@@ -199,8 +204,8 @@
     },
     {
       "path": "src/lib/types.ts",
-      "size": 5545,
-      "sha256": "c5cd377cdf3e21ffeb2466d4944ee09c58c122f6c51b2e2318217f01ec7b2c5a"
+      "size": 5924,
+      "sha256": "c23ca8d38d1d3ead39b4de8f9141094e6f2b557b44f36e409ef719e04829b00d"
     },
     {
       "path": "src/lib/workflow.ts",
@@ -214,8 +219,8 @@
     },
     {
       "path": "src/style.css",
-      "size": 59735,
-      "sha256": "ca756570ab62ee32e05f4e8fb09f17559b88fa4d7bd997edafe8894cc21257b4"
+      "size": 61038,
+      "sha256": "45aac1f3f26cc51b4dafb1fa36a2f0fa641d86efcd11d890fbb023aafd6f45aa"
     },
     {
       "path": "tests/admin.spec.ts",
@@ -226,6 +231,11 @@
       "path": "tests/admin.test.ts",
       "size": 3953,
       "sha256": "a6da41c421963a3379b0e1a47760315a2648143f265b3e8f385cea75427c70fd"
+    },
+    {
+      "path": "tests/aiStudentMetadata.test.ts",
+      "size": 1950,
+      "sha256": "e8067fd2a6aed9793dc418ca2b9449cfd9c3e16891f76107ea284017dc8f6ed4"
     },
     {
       "path": "tests/auth.spec.ts",
@@ -274,13 +284,18 @@
     },
     {
       "path": "tests/local.spec.ts",
-      "size": 11225,
-      "sha256": "ceca76296061b44277fddb27b193d28aec72c3a1b111a1a7d4fd96cc9fe5cad8"
+      "size": 12205,
+      "sha256": "dd2c366cdf6a3cb48fe9304e606ad38ebf81a853845df3bf88dc16970c2fe2e1"
     },
     {
       "path": "tests/profile.test.ts",
       "size": 8979,
       "sha256": "fb1957fa3dd26d68d8cc55de43ad966795c21f477ff9d5cdac1ad39de6c9964b"
+    },
+    {
+      "path": "tests/recordTools.spec.ts",
+      "size": 12113,
+      "sha256": "33dc1cca1eb8ba181e021cbb1023cf3612eab1d827434a6e0ed1fa2554fcefc1"
     },
     {
       "path": "tests/schoolContext.test.ts",
@@ -309,8 +324,8 @@
     },
     {
       "path": "tests/ui.spec.ts",
-      "size": 29136,
-      "sha256": "d537d6847744b11d88c9251aac59524be71a71457c9b0f870e130de571c24ba1"
+      "size": 29093,
+      "sha256": "d6b1b5f005535a50740d02c52a27cd7b7f657ca7f1cb65aa6b8ffd26d7792b42"
     },
     {
       "path": "tests/workflow.test.ts",
@@ -330,29 +345,29 @@
   ],
   "web_files": [
     {
-      "path": "assets/AdminPanel-BmFzNBTW.js",
+      "path": "assets/AdminPanel-Bl71sP61.js",
       "size": 16779,
-      "sha256": "77a02640ab3847d61419542609e826b590a031f211581e5c8fc140edf9855280"
+      "sha256": "41a2f5be018225dd3241f126f51d4e5e6e93420f8bd7ec0d158215d86df49ef8"
     },
     {
-      "path": "assets/cloudTransport-CdgdnOs2.js",
-      "size": 9257,
-      "sha256": "e42bbbf5a476552191aa6c34676d1cb2c06dd64cf4dde6bf1b03e465da88e906"
+      "path": "assets/cloudTransport-BBx1Dcmg.js",
+      "size": 9643,
+      "sha256": "70624e66f84b9839fd9316cfab9b501e9e6719e76449141966f5b19cd26deeef"
     },
     {
-      "path": "assets/index-BQRcIege.js",
-      "size": 658924,
-      "sha256": "2abe296476ad941b58d6cbea54a204a18651c447b01dd70b338e6d72b4ff5d4c"
+      "path": "assets/index-Bd7QZ-r4.js",
+      "size": 665133,
+      "sha256": "20ddf974eec52c0419afb665b472c2a200b15aab0a22ef0d89c4cbc76f08d2ca"
     },
     {
-      "path": "assets/index-Da-vr3TF.css",
-      "size": 58243,
-      "sha256": "8e0c51ecf1642634b6879a268c63f64cff29b3fd777eb5de5809bebc21587ce7"
+      "path": "assets/index-DaEGMCSp.css",
+      "size": 59528,
+      "sha256": "ef568e3208fa6d06c1344e02c46be9ba8c4c7cddb29577bc93daf6107f2aa508"
     },
     {
-      "path": "assets/localTransport-CJT2hI0W.js",
-      "size": 2635,
-      "sha256": "1b8124ec300cb143b7ace4717589dec2fe0e91206b3d5a0c50ec2bc6ba7d3ecb"
+      "path": "assets/localTransport-ZXaJ2iqG.js",
+      "size": 2856,
+      "sha256": "f8aa7a364ef9979f2f83062c0893e2859e712e123759217e10d60d265a02c9a1"
     },
     {
       "path": "assets/school-logo-z178Sqr0.png",
@@ -362,7 +377,7 @@
     {
       "path": "index.html",
       "size": 427,
-      "sha256": "6e0fb18812d52c5f18d1e71531de5a06b1c79cdb8eb39c1ec53a98337a6350d9"
+      "sha256": "6b395174703d494dcb6dd9e24354afa11fbda5d918a29d05ad39290142f4ebe3"
     }
   ]
 }
