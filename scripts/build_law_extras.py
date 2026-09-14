@@ -14,7 +14,8 @@ extract_folder.py는 input 폴더의 pdf/pptx/hwpx만 읽는다. 웹에서 수�
 설계 원칙
 - **항상 맨 뒤에 덧붙인다**: 앞선 청크의 순서가 보존되므로 build_embeddings.py의
   이어받기(.bin 크기 // 768)가 그대로 유효하다. 새 청크만 임베딩하면 된다.
-- **멱등**: 이미 붙어 있으면 먼저 떼어 내고 다시 붙인다(EXTRA_LABELS 기준).
+- **멱등**: 기존 문서는 원래 위치에서 갱신하고, 없는 문서만 맨 뒤에 붙인다.
+  뒤에 다른 자료가 추가된 상태에서도 기존 문서·청크 순서를 바꾸지 않는다.
 - 원문 무수정: 조문·답변 텍스트는 수집 JSON의 문자열을 그대로 옮긴다.
 """
 import io
@@ -31,6 +32,7 @@ MAX_CHARS = 900   # build_index.py와 동일 기준
 DECREE_JSON = os.path.join(SRC_DIR, 'hakpok_enforcement_decree.json')
 QA_JSON = os.path.join(SRC_DIR, 'ddeqna_qa.json')
 GUIDE_JSON = os.path.join(SRC_DIR, 'dge_teacher_protection_guide.json')
+LECTURE_JSON = os.path.join(SRC_DIR, 'external_lecture_reporting_exemptions.json')
 
 
 def split_lines(lines, cap=MAX_CHARS):
@@ -104,44 +106,46 @@ def section_chunks(path):
     return label, chunks
 
 
+def merge_extras(data, extras):
+    """문서 ID와 기존 위치를 보존한다. 본문 변경 시 전체 임베딩이 필요하다."""
+    docs = list(data['docs'])
+    chunks = list(data['chunks'])
+    for label, chs in extras:
+        if label not in docs:
+            di = len(docs)
+            docs.append(label)
+            chunks.extend([[di, ref, text] for ref, text in chs])
+            print('[추가] %s: 청크 %d개' % (label, len(chs)))
+            continue
+        di = docs.index(label)
+        old = [c for c in chunks if c[0] == di]
+        new = [[di, ref, text] for ref, text in chs]
+        if old == new:
+            print('[유지] %s: 청크 %d개' % (label, len(chs)))
+            continue
+        # 대상 문서가 처음 있던 자리에만 새 청크를 넣고 다른 문서는 건드리지 않는다.
+        at = next((i for i, c in enumerate(chunks) if c[0] == di), len(chunks))
+        chunks = chunks[:at] + new + [c for c in chunks[at:] if c[0] != di]
+        print('[변경] %s: 청크 %d → %d개 — 기존 본문 변경, 전체 임베딩 재생성 필요'
+              % (label, len(old), len(new)))
+    return dict(data, docs=docs, chunks=chunks)
+
+
 def main():
     with io.open(IDX, encoding='utf-8') as f:
         data = json.load(f)
-    docs = data['docs']
-    chunks = data['chunks']
+    base_count = len(data['chunks'])
 
     label_d, ch_d = decree_chunks(DECREE_JSON)
     label_q, ch_q, _site = qa_chunks(QA_JSON)
     label_g, ch_g = section_chunks(GUIDE_JSON)
-    extras = [(label_d, ch_d), (label_q, ch_q), (label_g, ch_g)]
-    extra_labels = [e[0] for e in extras]
-
-    # 멱등: 기존 덧붙임 문서 제거 (뒤쪽에만 있으므로 앞 청크 순서는 불변)
-    keep_docs, remap = [], {}
-    for i, name in enumerate(docs):
-        if name in extra_labels:
-            continue
-        remap[i] = len(keep_docs)
-        keep_docs.append(name)
-    kept = [[remap[c[0]], c[1], c[2]] for c in chunks if c[0] in remap]
-    removed = len(chunks) - len(kept)
-    if removed:
-        print('[재실행] 기존 덧붙임 청크 %d개 제거' % removed)
-
-    base_count = len(kept)
-    for label, chs in extras:
-        di = len(keep_docs)
-        keep_docs.append(label)
-        for ref, text in chs:
-            kept.append([di, ref, text])
-        print('[ok] %s: 청크 %d개' % (label, len(chs)))
-
-    data['docs'] = keep_docs
-    data['chunks'] = kept
+    label_l, ch_l = section_chunks(LECTURE_JSON)
+    extras = [(label_d, ch_d), (label_q, ch_q), (label_g, ch_g), (label_l, ch_l)]
+    data = merge_extras(data, extras)
     with io.open(IDX, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
-    print('OUT %s: %d docs, %d chunks (기존 %d + 덧붙임 %d), %d bytes'
-          % (IDX, len(keep_docs), len(kept), base_count, len(kept) - base_count,
+    print('OUT %s: %d docs, %d chunks (실행 전 %d, 증감 %+d), %d bytes'
+          % (IDX, len(data['docs']), len(data['chunks']), base_count, len(data['chunks']) - base_count,
              os.path.getsize(IDX)))
     return 0
 

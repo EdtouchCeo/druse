@@ -20,6 +20,8 @@ import sys
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(BASE, 'output', 'web', 'data', 'law_search.json')
 OUT = os.path.join(BASE, 'output', 'web', 'data', 'law_struct.json')
+GUIDANCE_SOURCES = [os.path.join(BASE, 'data', 'sources',
+                               'external_lecture_reporting_exemptions.json')]
 
 # 법령류 문서(조문 구조를 가진 것)만 — 안내자료·기재요령·별표·서식은 제외
 # name: docs 배열의 정확한 문서명 / aliases: 질문 감지용 별칭(공백·중점 제거 후 비교)
@@ -53,6 +55,27 @@ STATUTES = [
 ]
 
 ART_RE = re.compile(r'^제(\d+)조(?:의(\d+))?')
+
+
+def build_guidance(docs, chunks):
+    """해설은 조문 사전과 분리하고 공개 검색 청크의 이름·참조·본문만 복사한다."""
+    guidance = []
+    for path in GUIDANCE_SOURCES:
+        with io.open(path, encoding='utf-8') as f:
+            source = json.load(f)
+        label = source['source']['docLabel']
+        if label not in docs:
+            raise ValueError('해설 문서가 검색 인덱스에 없음: ' + label)
+        di = docs.index(label)
+        contexts = [{'label': label, 'ref': c[1], 'text': c[2]}
+                    for c in chunks if c[0] == di]
+        expected = [(sec['ref'], sec['text']) for sec in source['sections']]
+        if [(c['ref'], c['text']) for c in contexts] != expected:
+            raise ValueError('해설 원본과 검색 청크가 다름: ' + label)
+        if not contexts or len(contexts) > 5 or any(len(c['text']) > 1200 for c in contexts):
+            raise ValueError('해설 우선 주입 한도 초과: ' + label)
+        guidance.append(dict(source['guidance'], contexts=contexts))
+    return guidance
 
 # 실무 주제 → 관련 조문 매핑 — 교사가 법령명·조문 번호 없이 자연어로 물을 때
 # ("특별 휴가 중 겸직 되나요?") 결정 주입할 조문. 존재 검증을 통과한 조문만 수록된다.
@@ -173,7 +196,8 @@ def main():
             topics.append({'keywords': t['keywords'], 'refs': refs})
     print('[ok] 주제 매핑', len(topics), '개 · 참조 조문', sum(len(t['refs']) for t in topics), '개')
 
-    out = {'version': 2, 'laws': laws, 'topics': topics}
+    guidance = build_guidance(docs, chunks)
+    out = {'version': 3, 'laws': laws, 'topics': topics, 'guidance': guidance}
     # 검증: 모든 text가 원본 청크에서 왔는지 (구성상 자명하지만 재확인)
     chunk_texts = set()
     for c in chunks:
