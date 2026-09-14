@@ -57,3 +57,14 @@ export function finalizationIssues(session:Session):string[]{
  if(session.consultation?.status!=='completed')return ['학생 상담과 반영 기록을 완료한 뒤 최종 결과물을 검토해 주세요.']
  return consultationIssues(session.consultation)
 }
+
+/** Content gate is separate from workflow readiness so teachers can still edit incomplete final drafts. */
+export function guidanceIssues(session:Session):string[]{
+ const issues:string[]=[]
+ if(!session.topic.trim())issues.push('전략 제목을 입력해 주세요.')
+ const hasStrategy=Object.values(session.strategy||{}).some(value=>typeof value==='string'&&value.trim())
+ if(hasStrategy&&!session.strategy?.student_message.trim())issues.push('학생 안내 메시지를 입력해 주세요.')
+ if(!hasStrategy&&!session.teacher_opinion.trim())issues.push('교사의 의견을 입력해 주세요.')
+ if(!session.actions.some(action=>action.text.trim()))issues.push('학생이 할 실행과제를 1개 이상 작성해 주세요.')
+ return issues
+}

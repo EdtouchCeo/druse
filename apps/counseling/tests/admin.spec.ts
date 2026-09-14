@@ -52,8 +52,8 @@ test('manager registers student access and assigns school-approved staff without
  expect(writes[0]!.body).toEqual({action:'role',user_id:studentId,role:'student',approved:true})
  expect(writes[2]!.body).toEqual({action:'assign',student_id:fixedStudentId,teacher_user_id:teacherId,active:true})
  await expect(page.getByRole('button',{name:/삭제|관리자 승격/})).toHaveCount(0)
- await expect(page.getByRole('link',{name:'로컬 실행기 다운로드',exact:true})).toHaveAttribute('href','/counseling/downloads/daeryun-counseling-local.zip')
- await expect(page.getByRole('link',{name:'사용안내',exact:true})).toHaveAttribute('href','/counseling/guide.html')
+ await expect(page.getByRole('link',{name:'로컬 앱 내려받기',exact:true})).toHaveAttribute('href','/counseling/downloads/daeryun-counseling-local.zip')
+ await expect(page.getByRole('link',{name:'사용 안내',exact:true})).toHaveAttribute('href','/counseling/guide.html')
  await page.screenshot({path:'test-results/manager-register.png',fullPage:true})
 })
 
@@ -88,5 +88,5 @@ test('teacher-manager can open management and return to counseling',async({page}
  await page.getByRole('button',{name:'학생·담당 관리',exact:true}).click()
  await expect(page.getByRole('heading',{name:'학생과 상담 교사를 연결합니다.'})).toBeVisible()
  await page.getByRole('button',{name:'상담으로 돌아가기',exact:true}).click()
- await expect(page.getByRole('heading',{name:'학생 자료를 입력하고 전략 준비를 시작하세요.'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'첫 학생 전략을 시작하세요.'})).toBeVisible()
 })

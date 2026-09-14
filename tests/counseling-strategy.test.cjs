@@ -103,7 +103,8 @@ test('teacher can preview an unpublished student PDF without exposing internal n
 });
 test('student PDF preview preserves confirmed status and Korean strategy labels',async()=>{
  const c=confirmed();mock([c]);const response=await cases(event('GET',undefined,{id:c.id,action:'report',audience:'student'}));assert.equal(response.statusCode,200);assert.ok(response.body.includes('확정 · 학생 안내 전'));assert.ok(!response.body.includes('초안'));assert.ok(!response.body.includes('PRIVATE_CONFIRM_METADATA'));
- for(const label of ['대륜고 학종 전략 안내','전략 주제','희망 전공','진학 방향','강점','보완할 점','교과 학습 계획','탐구 계획','활동 계획','학기별 계획','학생에게 안내할 내용','학생 실행 과제','다음 전략 점검','인쇄 / PDF 저장'])assert.ok(response.body.includes(label),label);
+ for(const label of ['대륜고 학종 전략 안내','전략 주제','희망 전공','진학 방향','강점','보완할 점','교과 학습 계획','탐구 계획','활동 계획','학기별 계획','학생에게 안내할 내용','학생 실행 과제','인쇄 / PDF 저장'])assert.ok(response.body.includes(label),label);
+ assert.ok(!response.body.includes('다음 전략 점검'),'empty optional field is not printed');
  assert.ok(!response.body.includes('??'));
 });
 test('import retains strategy and historical evidence but always resets publication, review and confirmation',async()=>{

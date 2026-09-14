@@ -102,3 +102,121 @@
 @media(max-width:760px){.workflow-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;border-bottom:0;overflow:visible;padding-bottom:0}.workflow-tabs button{border:1px solid var(--border);border-radius:7px;background:var(--card);justify-content:flex-start;padding:9px 10px;min-height:42px;font-size:12px}.workflow-tabs button.active{border-color:#b8cce9;background:var(--brand-soft)}.workflow-tabs:has(>button:only-child){display:flex}.workflow-tabs:has(>button:only-child) button{border:0;background:transparent}}
 
 .new-student-mode{margin-bottom:20px;gap:8px}.new-student-mode>button{flex:1}@media(max-width:480px){.new-student-mode>button{font-size:12px;padding:9px 8px}.modal .field-grid.three{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.modal .field-grid.three>label:first-child{grid-column:1/-1}}
+
+/* Task-first interface: details belong in the manual or a disclosure, examples never fill data. */
+:root{--background:#fff;--muted:#475569;--shadow:none;--shadow-lg:none}
+body{font-size:16px}
+h1,h2,h3,h4,p,button,a,label{word-break:keep-all;overflow-wrap:anywhere}
+input,textarea,select{word-break:normal}
+input::placeholder,textarea::placeholder{opacity:1;color:#637083}
+.school-header{background:var(--brand)}
+.school-header .topbar{min-height:84px;padding-top:12px;padding-bottom:12px;background:var(--brand)}
+.school-logo{width:75px;height:50px}
+.school-header .brand strong{font-size:24px}
+.workspace-bar{background:#fff}
+.workspace-bar .online-resources{margin-left:auto;font-size:13px;border-left:0;padding-left:0}
+.workspace-bar .online-resources a{min-height:44px}
+.card{background:#fff;border:0;border-bottom:1px solid var(--border);border-radius:0;box-shadow:none;padding:24px 0}
+.main{background:#fff}
+.sidebar{background:#fff}
+.primary,.secondary,.text-button,.icon-button,input:not([type=checkbox]),textarea,select{border-radius:6px;transition:none}
+.welcome{display:block;width:100%;max-width:540px;padding:24px;margin:32px auto}
+.auth-card{padding:24px 0;border:0;box-shadow:none}
+.auth-card h2{font-size:28px;margin-bottom:12px}
+.auth-card>p,.auth-card p{font-size:16px;margin:0 0 20px}
+.auth-card .wide{min-height:48px}
+.auth-card .secondary{background:transparent;border-color:transparent;color:var(--brand)}
+.empty-main{margin:20px 0;min-height:250px;padding:32px 20px}
+.empty-main>svg{display:none}
+.empty-main h1{font-size:26px}
+.document-heading h1{font-size:28px}
+.document-actions{gap:8px}
+.document-actions .text-button,.document-actions .secondary{font-size:13px}
+.tabs{margin-bottom:20px}
+.understanding-dashboard{display:flex;flex-direction:column;gap:20px}
+.profile-editor-card{margin:0}
+.profile-section-title{margin-bottom:18px;gap:12px}
+.profile-section-title h2,.section-heading h2{font-size:20px}
+.profile-section-title small{display:block;margin-top:4px;font-size:13px}
+.input-field{min-width:0;margin-bottom:20px}
+.input-field>label{margin-bottom:7px;font-size:15px}
+.input-field>textarea{display:block;margin-top:0;font-size:15px;font-weight:400;min-height:76px;line-height:1.65}
+.field-example{margin-top:4px;font-size:13px;color:var(--muted);font-weight:400}
+.field-example>summary{display:list-item;width:fit-content;cursor:pointer;color:var(--brand);min-height:32px;line-height:32px}
+.field-example>p{margin:4px 0 10px;padding:10px 12px;border-left:2px solid var(--border);font-size:14px;line-height:1.7;white-space:pre-wrap}
+.profile-primary-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:8px}
+.profile-input-grid,.strategy-field-grid{gap:0 24px}
+.profile-summary-grid p,.profile-analysis-summary,.grade-trends p{font-size:15px;line-height:1.75}
+.profile-table-wrap{font-size:14px}
+.strategy-options-grid{display:block}
+.strategy-option.card{padding:16px 0;margin:0}
+.option-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.strategy-option h3{font-size:16px;margin:0;line-height:1.6}
+.option-heading>button{flex-shrink:0}
+.strategy-option details{margin:8px 0 0}
+.strategy-option details p,.strategy-option details li{font-size:14px;line-height:1.7}
+.option-evidence{background:transparent;border-left:2px solid var(--border);border-radius:0;margin:14px 0;padding:4px 12px}
+.strategy-option details h4{font-size:14px}
+.preparation-stage{display:flex;justify-content:space-between;align-items:center;gap:14px;background:none;border:0;padding:0;margin-bottom:16px}
+.preparation-stage-action{max-width:none;min-width:0;margin:0}
+.preparation-stage-action small{font-size:13px;margin-top:6px}
+.preparation-snapshot>summary,.review-criteria>summary{cursor:pointer;color:var(--brand);min-height:36px;line-height:1.7}
+.preparation-snapshot[open]>.profile-section-title{margin-top:16px}
+.preparation-summary-grid p,.snapshot-actions li{font-size:15px}
+.consultation-fields{gap:0 24px}
+.consultation-complete{padding-top:16px}
+.consultation-complete .help{margin-bottom:12px}
+.final-overview{padding-top:0;margin-bottom:14px}
+.consultation-reflection{background:none;border-radius:0;padding:0 0 14px}
+.consultation-reflection p{font-size:15px}
+.strategy-editor{padding-top:0}
+.strategy-read-grid p{font-size:16px;line-height:1.75}
+.side-panel>.card:first-child{padding-top:0}
+.side-panel .action-card{background:none;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:0 0 18px;margin-bottom:18px}
+.action-card textarea{font-size:15px}
+.side-panel .ai-card{font-size:14px}
+.ai-card p,.ai-card .check-label{font-size:14px}
+.teacher-notes summary{flex-wrap:wrap;font-size:14px}
+.teacher-notes summary span{font-size:12px}
+.review-panel .section-heading{margin-bottom:14px}
+.review-criteria{margin-bottom:14px;font-size:14px}
+.review-criteria p{padding:8px 0;max-width:780px}
+.review-result{background:none;border:0;border-left:2px solid var(--border);border-radius:0}
+.review-result li{font-size:14px}
+.final-delivery h2{font-size:20px}
+.final-delivery p{font-size:15px}
+.local-only h2{font-size:24px}
+.local-only p{font-size:16px}
+.school-task p,.school-task li,.school-activities p{font-size:14px;line-height:1.7}
+.school-task h4{font-size:16px}
+.school-task .help,.activity-grade{color:#374151}
+.school-task,.school-activities article{border-radius:0;background:none}
+.school-review-date{display:block;margin-top:16px;font-size:12px}
+.admin-heading h1{font-size:28px}
+@media(max-width:980px){.workspace-bar .online-resources{width:auto;border-top:0;justify-content:flex-end;margin-left:auto}.strategy-layout{grid-template-columns:minmax(0,1fr)}.side-panel{display:flex;flex-direction:column}}
+@media(max-width:760px){
+ .school-header .topbar{min-height:76px;padding:12px 16px}
+ .school-header .brand strong{font-size:22px}
+ .school-logo{width:66px;height:44px}
+ .workspace-bar{padding:4px 16px;gap:2px 10px}
+ .workspace-bar .top-actions{margin-left:auto}
+ .workspace-bar .online-resources{font-size:12px;gap:12px}
+ .workspace-bar .online-resources a{min-height:38px}
+ .welcome{margin:16px auto;padding:16px 22px}
+ .auth-card{padding:12px 0}.auth-card h2{font-size:26px}
+ .main{padding:20px 16px}.card{padding:20px 0}
+ .document-heading h1{font-size:26px}.document-actions{flex-wrap:wrap;justify-content:flex-start}
+ .profile-section-title{align-items:flex-start;flex-wrap:wrap}
+ .profile-section-title h2,.section-heading h2{font-size:20px}
+ .profile-input-grid,.strategy-field-grid,.consultation-fields,.profile-summary-grid{grid-template-columns:minmax(0,1fr)}
+ .profile-primary-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+ .profile-primary-actions>.primary{order:-1}
+ .strategy-option.card{padding:14px 0}.option-heading{align-items:flex-start;gap:12px}
+ .option-heading>button{font-size:13px;min-height:38px}
+ .input-field{margin-bottom:18px}
+ .preparation-stage{align-items:stretch;flex-direction:column}
+ .preparation-stage-action>.primary,.preparation-stage-action>.secondary{width:100%}
+ .workflow-tabs button{font-size:13px;border-radius:4px}
+ .field-example>summary{min-height:36px;line-height:36px}
+ .empty-main{padding:28px 8px}.empty-main h1{font-size:23px}
+}

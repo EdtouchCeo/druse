@@ -14,7 +14,7 @@ const school:SchoolContext={schema_version:'1.0',reviewed_on:'2026-09-11',source
 test('empty inputs produce three teacher preparation choices without invented deficits or achievements',()=>{
  const cards=prepareStrategies(profile(),student,school)
  assert.equal(cards.length,3)
- assert.ok(cards.every(card=>card.proposal.startsWith('교사가 선택할 방향:')))
+ assert.ok(cards.every(card=>!card.proposal.includes('교사가 선택할 방향:')))
  assert.ok(cards.every(card=>card.counselingQuestions.length>0&&card.verification.length>0))
  assert.ok(cards.some(card=>card.evidence.some(text=>text.includes('아직 입력되지 않았습니다'))))
  for(const card of cards)for(const key of Object.keys(card.strategyPatch||{}))assert.ok(!['strengths','gaps','student_message'].includes(key))
@@ -28,24 +28,23 @@ test('reported learning concerns support an error-example and feedback task, wit
  assert.ok(card.evidence.some(text=>text.includes('서술형 답안에서 근거를 빠뜨린다고 학생이 말함')))
  assert.match(card.strategyPatch!.subject_plan!,/오류 사례를 분류/)
  assert.match(card.strategyPatch!.subject_plan!,/교사 피드백/)
- assert.match(card.proposal,/원인을 확정하지/)
+ assert.match(card.verification.join('\n'),/원인을 확정하지/)
  assert.equal(cards.length,4)
 })
 
-test('zero additional time constrains every proposal, adoptable plan and action to existing classes',()=>{
+test('zero additional time constrains every adoptable plan and action to existing classes without repeated card instructions',()=>{
  const cards=prepareStrategies(profile({learning_concerns:'문제를 다시 설명하기 어려움',activities:'합성 모둠 기록',interests:'합성 관심 주제',selected_subjects:['공통국어1'],weekly_minutes:0}),student,school)
  assert.equal(cards.length,5)
  for(const card of cards){
-  assert.match(card.proposal,/추가 과제·시간을 요구하지 않고 기존 수업·활동 안에서/)
-  for(const text of Object.values(card.strategyPatch||{}))assert.match(text,/추가 과제·시간을 요구하지 않고 기존 수업·활동 안에서/)
+  for(const text of Object.values(card.strategyPatch||{}))assert.match(text,/기존 수업·활동 안에서만/)
   for(const text of card.actions||[])assert.match(text,/^기존 수업·활동 안에서:/)
  }
 })
 
 test('unknown available time is not treated as zero or a made-up allocation',()=>{
  const cards=prepareStrategies(profile({interests:'합성 관심',weekly_minutes:null}),student)
- assert.ok(cards.every(card=>card.proposal.includes('주간 가용 시간은 미확인')))
- assert.ok(cards.every(card=>(card.actions||[]).every(text=>text.startsWith('가용 시간 확인 후'))))
+ assert.match(cards.find(card=>card.id==='implementation-review')!.strategyPatch!.semester_plan!,/가용 시간 확인 필요/)
+ assert.equal(cards.filter(card=>card.proposal.includes('가용 시간 확인 필요')).length,1)
  assert.ok(cards.every(card=>!card.proposal.includes('0분')))
 })
 
@@ -75,7 +74,7 @@ test('school matching reuses exact year, grade, subject and optional semester wi
  const card=prepareStrategies(input,student,school,1).find(card=>card.id==='school-alignment')!
  assert.deepEqual(card.schoolTaskIds,['current'])
  assert.match(card.evidence.join('\n'),/후보 1개.*미확인/)
- assert.match(card.strategyPatch!.subject_plan!,/배정 과제로 자동 확정하지/)
+ assert.match(card.strategyPatch!.subject_plan!,/실제 수강·현행 과제와 조건을 확인한 뒤 참고/)
  assert.match(card.verification.join('\n'),/AI 및 자료 조건·채점표 발췌·출처·원문 충돌/)
  assert.deepEqual(prepareStrategies(input,{...student,academic_year:2027},school).find(card=>card.id==='school-alignment')!.schoolTaskIds,[])
  assert.deepEqual(prepareStrategies(profile(),student,school).find(card=>card.id==='school-alignment')!.schoolTaskIds,[])
@@ -92,8 +91,8 @@ test('activity claims and private teacher observations stay in evidence; future 
  const cards=prepareStrategies(profile({activities:'학생이 합성 모형을 만들었다고 설명함',teacher_observations:'교사 전용 관찰 메모 합성표식'}),student)
  const card=cards.find(item=>item.id==='activity-evidence')!
  assert.match(card.evidence.join('\n'),/학생이 합성 모형을 만들었다고 설명함/)
- assert.match(card.proposal,/입력만으로 확정하지/)
- assert.match(card.strategyPatch!.activity_plan!,/^교사 제안:/)
+ assert.match(card.strategyPatch!.activity_plan!,/참여·성과는 근거 확인 후/)
+ assert.match(card.strategyPatch!.activity_plan!,/^실행 초안:/)
  assert.doesNotMatch(JSON.stringify(cards.map(item=>item.strategyPatch)),/교사 전용 관찰 메모 합성표식/)
  assert.match(card.verification.join('\n'),/역할·작업 자료·피드백/)
 })
@@ -101,7 +100,9 @@ test('activity claims and private teacher observations stay in evidence; future 
 test('interest produces a preparation design without inventing school submissions or final student advice',()=>{
  const card=prepareStrategies(profile({interests:'학교 주변 물의 변화',target_major:'탐색 중'}),student).find(item=>item.id==='inquiry-design')!
  assert.match(card.strategyPatch!.inquiry_plan!,/학교 주변 물의 변화/)
- assert.match(card.strategyPatch!.inquiry_plan!,/질문 → 자료 비교·관찰 등 가능한 방법 선택 → 설명할 산출물 선택 → 교사 피드백/)
+ assert.match(card.strategyPatch!.inquiry_plan!,/질문 → 방법 → 산출물 → 피드백/)
+ assert.match(card.strategyPatch!.inquiry_plan!,/방법 예시: 자료 비교 또는 관찰/)
+ assert.match(card.strategyPatch!.inquiry_plan!,/산출물 예시: 비교표 또는 설명문/)
  assert.match(card.verification.join('\n'),/분량·발표 시간·제출일은 만들지/)
  assert.equal(card.strategyPatch!.student_message,undefined)
 })
@@ -121,4 +122,23 @@ test('invalid live time edits cannot be adopted as plans or actions',()=>{
   assert.ok(cards.every(card=>!card.strategyPatch&&!card.actions))
   assert.ok(cards.every(card=>card.verification[0]!.includes('입력 범위를 수정')))
  }
+})
+
+test('positive study habits alone do not trigger error correction or invented learning difficulties',()=>{
+ const card=prepareStrategies(profile({study_habits:'수업 내용을 당일에 정리하고 친구에게 설명함'}),student).find(row=>row.id==='learning-support')!
+ assert.match(card.title,/이어가기/)
+ assert.match(card.strategyPatch!.subject_plan!,/수업 내용을 당일에 정리하고 친구에게 설명함/)
+ assert.doesNotMatch(card.proposal+'\n'+card.strategyPatch!.subject_plan+'\n'+card.actions!.join('\n'),/오류|오답|교정|어려움이 드러난/)
+ assert.match(card.strategyPatch!.subject_plan!,/효과가 확인된 방법/)
+})
+
+test('learning and inquiry drafts use the selected evidence without asserting an accomplished result',()=>{
+ const one=prepareStrategies(profile({learning_concerns:'서술형 근거 설명이 고민',interests:'강수량과 학교 주변 물의 변화'}),student)
+ const two=prepareStrategies(profile({learning_concerns:'분수 계산 순서가 고민',interests:'학교 도서관 이용 변화'}),student)
+ assert.notEqual(one.find(row=>row.id==='learning-support')!.strategyPatch!.subject_plan,two.find(row=>row.id==='learning-support')!.strategyPatch!.subject_plan)
+ assert.match(one.find(row=>row.id==='learning-support')!.strategyPatch!.subject_plan!,/서술형 근거 설명이 고민/)
+ assert.match(two.find(row=>row.id==='learning-support')!.strategyPatch!.subject_plan!,/분수 계산 순서가 고민/)
+ assert.match(one.find(row=>row.id==='inquiry-design')!.strategyPatch!.inquiry_plan!,/강수량과 학교 주변 물의 변화/)
+ assert.match(two.find(row=>row.id==='inquiry-design')!.strategyPatch!.inquiry_plan!,/학교 도서관 이용 변화/)
+ assert.ok(one.every(row=>!row.strategyPatch?.strengths&&!row.strategyPatch?.gaps&&!row.strategyPatch?.student_message))
 })

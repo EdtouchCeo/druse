@@ -72,10 +72,11 @@ export function missingProfile(profile:StudentProfile):string[]{const missing=[]
 export function profileDraft(profile:StudentProfile):Partial<Strategy>{
  const next:Partial<Strategy>={}
  if(profile.target_major.trim())next.target_major=profile.target_major.trim()
- if(profile.interests.trim()){next.target_path=`입력한 관심: ${profile.interests.trim()}\n교사는 관련 수업과 활동에서 탐색할 방향을 준비하고 상담에서 학생의 관심과 대조합니다.`;next.inquiry_plan=`교사 준비안: 관심 주제 “${quote(profile.interests)}”를 실제 수업 개념과 연결할 탐구 질문 후보 하나로 좁힙니다. 수업 범위와 허용 조건을 확인해 방법 → 산출물 → 피드백을 계획하고 상담에서 학생과 실행 범위를 조정합니다.`}
- if(profile.selected_subjects.length)next.subject_plan=`입력한 이수 과목: ${profile.selected_subjects.join(', ')}\n교사 준비안: 실제 수업의 개념 하나를 골라 설명·연습·점검으로 이어갈 교과 학습 계획을 세웁니다. 과제의 연도·학기·마감·허용 조건은 원문과 확인한 뒤 반영합니다.`
- if(profile.activities.trim())next.activity_plan=`입력한 활동 경험: ${profile.activities.trim()}\n교사 준비안: 기존 활동의 역할·결과물·피드백을 근거로 이어갈 활동 하나를 검토합니다. 상담에서 학생의 실제 역할과 참여 여건을 확인해 최종 범위를 정합니다.`
- if(profile.weekly_minutes!==null)next.semester_plan=profile.weekly_minutes===0?'추가 가용 시간은 0분으로 입력했습니다. 기존 수업과 활동 안에서 실행·점검할 계획을 준비하며, 추가 활동을 전제하지 않습니다.':`주간 가용 시간은 ${profile.weekly_minutes}분으로 입력했습니다. 교사는 이번 학기에 실행할 과제 하나와 점검 기준을 준비하고, 상담에서 일정과 부담을 확인해 최종 점검일과 이후 학기 계획을 조정합니다.`
+ if(profile.interests.trim()){next.target_path=`관심 질문: ${profile.interests.trim()}`;next.inquiry_plan=`탐구 질문 후보: ${quote(profile.interests)}\n실행 초안: 실제 수업에서 다룬 관련 자료의 설명과 근거를 비교합니다.\n산출물: 공통점·차이점과 근거를 정리한 비교표.\n점검 기준: 비교 기준과 선택한 근거를 설명할 수 있는지 확인합니다.\n사용 자료·수업 범위·허용 조건·점검일은 교사와 확인할 사항입니다.`}
+ if(profile.selected_subjects.length)next.subject_plan=`대상 과목: ${profile.selected_subjects.join(', ')}\n실행 초안: 현재 단원의 개념을 수업 사례와 연결해 설명합니다.\n산출물: 개념과 사례의 관계를 적은 짧은 설명.\n점검 기준: 설명의 근거가 수업 자료와 일치하는지 확인합니다.\n실제 단원·과제 조건·점검일은 담당 교사와 확인할 사항입니다.`
+ if(profile.activities.trim())next.activity_plan=`입력한 활동 경험: ${profile.activities.trim()}\n실행 초안: 기존 활동의 역할·산출물·피드백을 활동 일지에 구분해 정리합니다.\n점검 기준: 자신의 역할을 자료로 설명하고 다음에 바꿀 점을 확인합니다.\n실제 역할과 남길 자료는 학생과 확인할 사항입니다.`
+ if(profile.weekly_minutes!==null)next.semester_plan=profile.weekly_minutes===0?'추가 가용 시간 0분: 기존 수업·활동 안에서 실행하고 점검합니다. 추가 활동은 배정하지 않습니다.':`주간 가용 시간 ${profile.weekly_minutes}분 안에서 우선 과제 하나를 선택합니다. 산출물의 근거 설명을 점검한 뒤 다음 범위를 정합니다. 점검일은 학생과 확인할 사항입니다.`
+ else if(Object.keys(next).length)next.semester_plan='추가 가용 시간 미확인: 기존 수업 안에서 가능한 범위를 먼저 확인합니다. 추가 과제 배정과 점검일은 학생과 협의합니다.'
  if(profile.weekly_minutes===0){for(const key of ['subject_plan','inquiry_plan','activity_plan'] as const)if(next[key])next[key]+='\n추가 가용 시간 0분: 기존 수업·활동 안에서 가능한 범위로 제한합니다.'}
  return next
 }
