@@ -28,6 +28,12 @@ function mock({person=profile,grants=['teacher'],assigned=true,stored=legacySamp
   else if(p.includes('counseling_student_numbers?'))data=[student];
   else if(p.includes('counseling_cases?'))data=current?[{data:current,student_id:current.student.student_id}]:[];
   else if(p.includes('rpc/counseling_write_case')){if(rpcConflict)return new Response(JSON.stringify({code:'40001'}),{status:409});current=JSON.parse(opts.body).p_case;data=current;}
+  else if(p.includes('rpc/counseling_delete_case')){
+   const b=JSON.parse(opts.body);
+   if(!assigned||current?.teacher.id!==b.p_actor)return Response.json({code:'42501'},{status:403});
+   if(rpcConflict||!current||current.id!==b.p_id||current.revision!==b.p_expected)return Response.json({code:'40001'},{status:409});
+   current=null;data={deleted:true,id:b.p_id};
+  }
   else if(p.endsWith('/logs'))data=[];
   else throw new Error('Unexpected external request '+p);
   return new Response(JSON.stringify(data),{status:200,headers:{'Content-Type':'application/json'}});
@@ -36,6 +42,37 @@ function mock({person=profile,grants=['teacher'],assigned=true,stored=legacySamp
 }
 test.beforeEach(()=>{process.env.COUNSELING_STORAGE='supabase';process.env.SUPABASE_URL='https://synthetic.invalid';process.env.SUPABASE_SERVICE_KEY='synthetic-service-key';process.env.COUNSELING_SERVER_AI_ENABLED='false';delete process.env.LLM_MODEL;delete process.env.GEMINI_API_KEY;});
 test.afterEach(()=>{delete global.fetch;});
+
+test('owner deletes a selected strategy using a revision-aware service RPC',async()=>{
+ const c=legacySample(),m=mock({stored:c});const r=await cases(event('DELETE',{revision:c.revision},{id:c.id}));
+ assert.equal(r.statusCode,200);assert.deepEqual(parse(r),{deleted:true,id:c.id});assert.equal(m.current(),null);
+ const request=m.calls.find(call=>call.url.includes('rpc/counseling_delete_case'));
+ assert.deepEqual(JSON.parse(request.opts.body),{p_actor:ids.teacher,p_id:c.id,p_expected:c.revision});
+ assert.equal((await cases(event('GET',undefined,{id:c.id}))).statusCode,404);
+});
+
+test('strategy deletion rejects another author, revoked assignment, students and managers',async()=>{
+ const c=legacySample(),other=structuredClone(c);other.teacher.id=ids.other;
+ for(const settings of [{stored:other},{stored:c,assigned:false},{stored:c,person:{...profile,id:ids.studentUser,role:'학생'},grants:['student']},{stored:c,person:{...profile,role:'학부모'},grants:['manager']}]){
+  const m=mock(settings),r=await cases(event('DELETE',{revision:c.revision},{id:c.id}));assert.ok([403,404].includes(r.statusCode));assert.deepEqual(m.current(),settings.stored);
+  if(settings.person)assert.ok(!m.calls.some(call=>call.url.includes('rpc/')));
+ }
+});
+
+test('strategy deletion rejects stale revisions, unknown fields and unsupported actions',async()=>{
+ const c=legacySample();
+ for(const [body,query,status]of [[{revision:0},{id:c.id},400],[{revision:'1'},{id:c.id},400],[{revision:1,actor:ids.other},{id:c.id},400],[{revision:1},{id:c.id,action:'confirm'},400],[{revision:1},{},404]]){
+  const m=mock({stored:c});assert.equal((await cases(event('DELETE',body,query))).statusCode,status);assert.ok(!m.calls.some(call=>call.url.includes('rpc/')));
+ }
+ const m=mock({stored:c,rpcConflict:true});assert.equal((await cases(event('DELETE',{revision:1},{id:c.id}))).statusCode,409);assert.deepEqual(m.current(),c);
+});
+
+test('deletion migration locks the case and removes only its versions with service-only execution',()=>{
+ const sql=fs.readFileSync(path.join(__dirname,'../supabase/migrations/202609140001_counseling_case_deletion.sql'),'utf8');
+ assert.ok(sql.includes('where id=p_id for update;'));assert.ok(sql.includes("old.created_by<>p_actor"));assert.ok(sql.includes('counseling_actor_can_read(p_actor,old.student_id)'));assert.ok(sql.includes("old.revision<>p_expected"));
+ assert.ok(sql.includes('delete from public.counseling_case_versions where case_id=p_id;'));assert.ok(sql.includes('delete from public.counseling_cases where id=p_id;'));
+ assert.ok(sql.includes('from public,anon,authenticated;'));assert.ok(sql.includes('to service_role;'));assert.ok(!/delete from public\.(?:users|counseling_students|counseling_assignments)\b/.test(sql));
+});
 test('session rejects missing token before any request',async()=>{const m=mock();const e=event();e.headers={};assert.equal((await session(e)).statusCode,401);assert.equal(m.calls.length,0);});
 test('unapproved school members never gain teacher access',async()=>{for(const approved of [null,false]){mock({person:{...profile,approved},grants:[]});const r=await session(event());assert.equal(r.statusCode,403);assert.equal(parse(r).error.code,'NOT_APPROVED');}});
 test('approved school teachers need no separate counseling grant',async()=>{mock({grants:[]});const r=await session(event());assert.equal(r.statusCode,200);assert.equal(parse(r).user.role,'teacher');assert.equal(parse(r).user.can_manage,false);assert.equal(parse(r).students[0].student_id,ids.student);});

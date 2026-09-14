@@ -8,7 +8,7 @@
 
 운영 함수의 npm 모듈 누락을 방지하기 위해 runtime은 `_lib/vendor/netlify-blobs.cjs`의 정적 상대경로를 사용한다. 설치된 SDK 11.0.3과 실제 참조 의존성만 esbuild로 묶으며 환경값을 삽입하지 않는다. 같은 폴더의 manifest에 버전·패키지 무결성·생성 파일 SHA256, `LICENSES.txt`에 배포 라이선스를 보존한다. `scripts/build-counseling-blobs-vendor.cjs`로 재생성하고, Node 내장 외의 외부 의존성이 남으면 생성을 거절한다. 빌드 점검 플러그인은 기존 npm SDK를 사용한다.
 
-권한·학생 등록·학번 이력·배정·권한 이력은 하나의 설정 문서에서 ETag 조건부 쓰기로 함께 변경한다. 상담은 변경 불가 버전을 먼저 저장하고 조건부 head 변경으로 공개한다. 충돌한 쓰기는 409이며 연결되지 않은 버전·목록 표식은 조회 결과에 나타나지 않는다. 학교 승인과 배정은 변경 전 다시 확인한다. 설정과 상담 head 사이에 SQL과 같은 다중 문서 트랜잭션이 있는 것은 아니며, 접근 요청마다 현재 권한을 검사한다. 설정 문서가 10 MiB를 넘으면 기존 자료를 보존하고 관리 변경을 거절한다.
+권한·학생 등록·학번 이력·배정·권한 이력은 하나의 설정 문서에서 ETag 조건부 쓰기로 함께 변경한다. 상담은 기존 버전 내용을 덮어쓰지 않고 새 버전을 먼저 저장한 뒤 조건부 head 변경으로 공개한다. 명시적인 Case 삭제는 아래 DELETE 계약에 따라 전체 버전 이력도 제거한다. 충돌한 쓰기는 409이며 연결되지 않은 버전·목록 표식은 조회 결과에 나타나지 않는다. 학교 승인과 배정은 변경 전 다시 확인한다. 설정과 상담 head 사이에 SQL과 같은 다중 문서 트랜잭션이 있는 것은 아니며, 접근 요청마다 현재 권한을 검사한다. 설정 문서가 10 MiB를 넘으면 기존 자료를 보존하고 관리 변경을 거절한다.
 
 저장소 객체를 공개 URL로 제공하지 않는다. 승인된 계정만 상담 API에서 허용 범위의 자료를 읽으며, Netlify 운영 계정의 저장소 접근은 별도 관리 권한이다. site-wide 저장소는 배포 간 공유되므로 운영 사이트의 미리보기 배포도 같은 자료에 접근할 수 있는 신뢰된 서버 코드로 취급해야 한다. [Netlify Blobs 저장소·접근 범위](https://docs.netlify.com/build/data-and-storage/netlify-blobs/).
 
@@ -53,6 +53,8 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 
 `POST /.netlify/functions/counseling-refresh`는 `{refresh_token}`을 받아 기존 학교 인증 서버에서 갱신하고 `{access_token,refresh_token,expires_in}`만 반환한다. 모든 응답은 `no-store`다. 유효하지 않은 갱신 토큰은 401, 일시적인 인증 서버 오류는 503이며 역할을 발급하거나 변경하지 않는다. 온라인 앱은 사용설명서의 `dr_sess_v1`을 재사용하고 만료 임박 시 자동 갱신한다. API가 401을 반환하면 한 번만 갱신·재시도하며, 다른 계정으로 변경되거나 로그아웃한 세션을 되살리지 않는다.
 
+프런트는 세션 조회의 `COUNSELING_NOT_APPROVED` 403을 로그인 실패로 표시하지 않는다. 학교 로그인 확인과 전략실 참여 승인 필요를 별도로 안내한다. `NOT_APPROVED`·`PROFILE_REQUIRED`도 각각 학교 승인·회원 등록 안내로 구분한다. 403·503·네트워크 오류에는 로그인 버튼 대신 이용 상태 재확인을 제공하며 저장된 자격 증명을 지우거나 OAuth로 자동 이동하지 않는다. 연결 확인 중에는 로그인 버튼을 먼저 노출하지 않고, 실제 미로그인·401일 때만 기존 로그인 경로를 제공한다.
+
 ## 교사의 학생 직접 추가
 
 `POST /.netlify/functions/counseling-students`는 승인된 교사만 호출한다. 입력은 `{name,student_number,academic_year,school_stage,grade}`, 응답은 `200 {student:{student_id,name,student_number,academic_year,school_stage,grade,account_linked:false}}`다. 이름은 공백 제거 후 1~80자, 학번은 숫자 4~8자리, 학년도는 2020~2100, 학교급은 `middle` 또는 `high`, 학년은 1~3이다.
@@ -73,6 +75,7 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 | GET `?id=UUID` | 없음 | `{case:Case}` |
 | POST | `{student:{student_id},teacher?:{display_name}}` | `{case:Case}`. 배정 교사만, 학생·교사 정보는 서버가 채움 |
 | PUT `?id=UUID` | `{case:Case}` | `{case:Case}`. 기존 revision 필요. 수정한 미확정 회차의 검토·확정 무효화 |
+| DELETE `?id=UUID` | `{revision}` | `200 {deleted:true,id:UUID}`. 현재 담당 중인 작성 교사만 해당 전략 전체와 버전 이력을 삭제 |
 | POST `?action=next&id=UUID` | `{revision}` | `{case:Case}`. 전략과 미완료 과제를 새 과제 ID로 이어받으며 기본 주제는 전략 개정. 이전 주제·학생 안내 요약은 교사 context에 보존. 새 회차 검토·확정·안내는 초기화 |
 | POST `?action=prepare&id=UUID` | `{revision,session_id}` | `{case:Case}`. 현재 배정과 revision을 재확인해 교사의 사전 전략을 한 번 저장하고 상담 시작. 최소 주제·전략 계획 필요 |
 | POST `?action=review&id=UUID` | `{revision,session_id}` | `{case:Case,review}`. 동기 문체·필수항목 점검. 교사가 확정 전 직접 확인 |
@@ -82,11 +85,21 @@ profile이 완전히 비어 있으면 기존 해시를 유지한다. 값이 있�
 | GET `?action=export&id=UUID` | 없음 | JSON 첨부 `{format:"daeryun-counseling",version:1,case:Case}` |
 | GET `?action=report&id=UUID&session_id=UUID&audience=student` | 없음 | 인증된 HTML. audience는 student 또는 teacher. 학생 요청은 항상 학생용. 담당 교사는 공개 전 학생용 PDF도 확인 가능하되 버전 2는 사전 준비·상담 완료·현재 해시의 교사 확정 후에만 허용. 교사용 초안과 legacy 미리보기는 유지 |
 
+DELETE는 최신 Case의 1 이상의 정수 `revision`만 본문으로 받으며 `action`, `session_id`, 임의 작성자·학생 ID는 받지 않는다. 승인된 teacher만 호출할 수 있고 저장소 RPC `counseling_delete_case(p_actor,p_id,p_expected)`에서 작성자와 현재 학생 배정을 다시 검사한다. 학생, 관리자 역할만 있는 계정, 다른 작성 교사, 배정이 해제된 교사는 삭제할 수 없다. 잘못된 revision 형식은 400, 권한 없음은 403, 현재 버전과 다른 값 또는 동시 수정 충돌은 `REVISION_CONFLICT` 409다. 충돌하면 삭제하지 않으며 최신 자료를 다시 확인한 뒤 삭제 여부를 결정한다.
+
+삭제 범위는 지정한 Case의 모든 회차·확정 이력·학생 공개 안내와 저장소 버전 이력이다. 같은 학생의 다른 전략, 학생 등록 정보·학번 이력·로그인 계정·담당 배정은 유지된다. 삭제된 전략은 교사와 학생의 목록에서 제외되며 상세·JSON 다운로드·보고서는 404다.
+
+기본 Blobs 저장소는 head를 ETag 조건부 쓰기로 삭제 표식으로 바꾼 뒤 해당 Case의 모든 버전 객체와 목록 표식을 제거한다. 삭제 표식에는 Case·학생·삭제 교사의 고정 ID, revision, 삭제 시각만 남으며 상담 본문과 버전 참조는 없다. 이 표식으로 삭제 도중 진행 중이던 수정 요청의 재생성을 막고, 뒤늦게 생성된 수정 버전도 제거한다. 버전 정리가 실패하면 성공 대신 503을 반환하며 전략은 이미 조회에서 숨겨질 수 있다. 이때 같은 ID와 **처음 요청한 revision**으로 DELETE를 재시도하면 정리를 이어서 완료한다. 재시도에서도 현재 승인·작성자·배정을 확인하며 다른 revision은 409다. Blobs에서 완료된 삭제의 같은 요청을 다시 보내도 200이다.
+
+삭제 창을 닫거나 앱을 새로 열어도 정리를 재개할 수 있도록, 모든 버전이 제거될 때까지 저장소 내부의 학생별 목록 표식을 보존한다. 이후 작성 교사의 일반 목록·상세 조회가 삭제 표식을 발견하면 현재 학교 승인과 담당 배정을 다시 확인하고 정리를 자동 재시도한다. 클라이언트가 삭제 ID나 이전 revision을 기억할 필요는 없다. 한 조회에서 최대 5개 Case, 총 100개 버전 객체를 정리하며 나머지는 다음 조회로 이어진다. 자동 정리가 실패해도 다른 전략 목록은 정상 응답하고 삭제된 본문은 반환하지 않는다. 학생, 다른 교사, 승인·배정이 철회된 계정의 조회는 정리를 수행하지 않는다.
+
+선택 SQL 저장소는 행 잠금과 revision 검사 후 같은 트랜잭션에서 해당 `counseling_case_versions`와 `counseling_cases` 행을 삭제한다. RPC 실행은 `service_role`만 허용한다. SQL에서는 삭제 표식을 남기지 않으므로 이미 삭제된 ID의 반복 DELETE는 409이며 GET의 404로 부재를 확인할 수 있다.
+
 확정과 학생 안내는 별도다. 학생 list/get/export/report는 guidance가 있고 확정 해시가 유효한 회차만 반환한다. 공개 회차가 없으면 목록에서 제외하고 상세·백업·출력은 404다. current_session_id는 마지막 공개 회차를 가리킨다. 학생의 `student_question`, `context`, `evidence_notes`, `teacher_opinion`은 빈 문자열, record·analysis·review·confirmed는 null이며 imported_history·imported_from과 교사 내부 메타는 제거한다. 학생 응답은 전략·실행 과제·주제·날짜·다음 점검일 중심의 허용 목록으로 생성한다. 과거 수기 기록도 자동 공개하지 않는다.
 
 교사의 `audience=student` 출력은 공개 여부와 별개로 내부 메모를 제거하며 확정한 초안은 확정 상태로 표시한다. PDF 생성만으로 온라인 공개 상태가 바뀌지 않는다. 학생의 `audience=teacher` 요청으로 내부 내용을 읽을 수 없다. 상담 작성·전략 개정·검토·확정·공개·반입은 승인 교사와 현재 담당 관계가 필요하다. 반입은 전략을 이어받되 guidance·review·confirmed를 항상 초기화한다. 직접 PUT으로 학생·교사·privacy·버전·검토·확정·공개 이력을 바꿀 수 없다.
 
-선택 SQL 저장소를 사용하려면 `202609110001_counseling.sql`부터 `202609130002_teacher_created_students.sql`까지 순서대로 적용·검증해야 한다. 기존 초안/과거 버전 JSON에는 교사 메모가 있으므로 raw cases/versions의 anon·authenticated SELECT와 기존 읽기 정책을 제거하고 service_role API로만 읽는다. 새 설치 migration도 같은 정책이다. 추가 migration은 기존 users·학교 Auth·다른 등록 테이블 권한을 바꾸지 않으며 적용하지 않은 SQL 전환은 지원하지 않는다. 현재 기본 Blobs 운영에는 이 DDL을 적용하지 않는다.
+선택 SQL 저장소를 사용하려면 `202609110001_counseling.sql`부터 `202609130002_teacher_created_students.sql`까지 순서대로 적용·검증한 뒤, 삭제 기능에 필요한 [`202609140001_counseling_case_deletion.sql`](supabase/migrations/202609140001_counseling_case_deletion.sql)을 적용해야 한다. 이번 삭제 기능 변경에서는 migration 파일만 추가했으며 실제 DB 적용·운영 배포는 수행하지 않았다. 기존 초안/과거 버전 JSON에는 교사 메모가 있으므로 raw cases/versions의 anon·authenticated SELECT와 기존 읽기 정책을 제거하고 service_role API로만 읽는다. 새 설치 migration도 같은 정책이다. 추가 migration은 기존 users·학교 Auth·다른 등록 테이블 권한을 바꾸지 않으며 적용하지 않은 SQL 전환은 지원하지 않는다. 현재 기본 Blobs 운영에는 이 DDL을 적용하지 않는다.
 
 ## 일반 AI
 

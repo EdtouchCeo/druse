@@ -14,11 +14,12 @@ export class LocalTransport implements Transport {
  async get(id:string){return(await this.request<{case:CounselingCase}>('/cases/'+encodeURIComponent(id))).case}
  async create(student:Student,teacher:string){return(await this.request<{case:CounselingCase}>('/cases','POST',{student,teacher:{display_name:teacher}})).case}
  async save(value:CounselingCase){return(await this.request<{case:CounselingCase}>('/cases/'+encodeURIComponent(value.id),'PUT',{case:value})).case}
+ async deleteCase(value:CounselingCase){await this.request('/cases/'+encodeURIComponent(value.id),'DELETE',{revision:value.revision})}
  async next(value:CounselingCase){return(await this.request<{case:CounselingCase}>('/cases/'+encodeURIComponent(value.id)+'/sessions','POST',{revision:value.revision})).case}
  async importBackup(bundle:Backup){return(await this.request<{case:CounselingCase}>('/import','POST',{bundle})).case}
  private async blob(path:string){return(await checked(await fetch('/api'+path,{credentials:'same-origin',cache:'no-store'}))).blob()}
  exportBackup(id:string){return this.blob('/cases/'+encodeURIComponent(id)+'/export')}
- report(id:string,sessionId:string,audience:'student'|'teacher'='teacher'){return this.blob('/cases/'+encodeURIComponent(id)+'/report.pdf?session_id='+encodeURIComponent(sessionId)+'&audience='+audience)}
+ report(id:string,sessionId:string,audience:'student'|'teacher'|'analysis'='teacher'){return this.blob('/cases/'+encodeURIComponent(id)+'/report.pdf?session_id='+encodeURIComponent(sessionId)+'&audience='+audience)}
  async upload(value:CounselingCase,sessionId:string,file:File,password:string,signal?:AbortSignal){return(await this.request<{case:CounselingCase}>('/cases/'+encodeURIComponent(value.id)+'/record','POST',{revision:value.revision,session_id:sessionId,filename:file.name,pdf_base64:await pdfBase64(file),...(password?{password}:{})},signal)).case}
  async analyze(value:CounselingCase,sessionId:string,model:string,goal:string,budget:number){return(await this.request<{job:Job}>('/cases/'+encodeURIComponent(value.id)+'/analyze','POST',{revision:value.revision,session_id:sessionId,model,goal,time_budget_minutes:budget})).job}
  async updateRecordMetadata(value:CounselingCase,sessionId:string,recordId:string,sectionId:string,metadata:RecordMetadata){return(await this.request<{case:CounselingCase}>('/cases/'+encodeURIComponent(value.id)+'/record-metadata','POST',{revision:value.revision,session_id:sessionId,record_id:recordId,section_id:sectionId,metadata,source_checked:true})).case}

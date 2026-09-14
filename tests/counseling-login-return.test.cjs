@@ -17,7 +17,7 @@ const pending=at=>JSON.stringify({path:'/counseling/',at:at??NOW});
 const stored=()=>JSON.stringify({token:access,refresh_token:'synthetic-refresh',expires_at:NOW-1000,user:{...profile,name:'캐시 표시 이름'}});
 
 function storage(initial={}){const values=new Map(Object.entries(initial));return {getItem:key=>values.has(key)?values.get(key):null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key),snapshot:()=>Object.fromEntries(values)};}
-function browser({url='https://daeryun.life/',local={},session={},reply}={}){
+function browser({url='https://daeryun.life/',local={},session={},reply,returnReply}={}){
  const localStorage=storage(local),sessionStorage=storage(session),calls=[],navigation=[],replacements=[],tabs=[],alerts=[],events=[],elements=new Map();
  let current=new URL(url),inFlight=0;
  const location={get href(){return current.href;},set href(value){current=new URL(value,current);navigation.push({kind:'href',url:current.href});},get search(){return current.search;},get hash(){return current.hash;},get pathname(){return current.pathname;},get origin(){return current.origin;},replace(value){current=new URL(value,current);navigation.push({kind:'replace',url:current.href});}};
@@ -29,9 +29,9 @@ function browser({url='https://daeryun.life/',local={},session={},reply}={}){
  const fetch=async(input,options={})=>{
   const request={url:new URL(input,'https://daeryun.life'),method:options.method||'GET',body:options.body?JSON.parse(options.body):undefined,authorization:options.headers?.Authorization};
   calls.push(request);events.push('fetch:'+request.url.pathname);inFlight++;
-  try{if(request.url.pathname.endsWith('/save-log'))return Response.json({ok:true});if(!reply)throw Error('unexpected synthetic request');return await reply(request,calls);}finally{inFlight--;}
+  try{if(request.url.pathname.endsWith('/save-log'))return Response.json({ok:true});if(request.url.pathname==='/.netlify/functions/counseling-session')return returnReply?await returnReply(request,calls):Response.json({user:{id:authId,role:'teacher',approved:true}});if(!reply)throw Error('unexpected synthetic request');return await reply(request,calls);}finally{inFlight--;}
  };
- const sandbox={window,document,history,localStorage,sessionStorage,fetch,Date:ClockDate,URL,URLSearchParams,TextEncoder,Uint8Array,Event:class Event{constructor(type){this.type=type;}},alert:value=>alerts.push(value),switchTab:name=>tabs.push(name),refreshActiveTabGate(){},crypto:{getRandomValues:array=>array.fill(7),subtle:{digest:async(_name,data)=>Uint8Array.from(crypto.createHash('sha256').update(data).digest()).buffer}},atob:value=>Buffer.from(value,'base64').toString('binary'),btoa:value=>Buffer.from(value,'binary').toString('base64'),setTimeout,clearTimeout};
+ const sandbox={window,document,history,localStorage,sessionStorage,fetch,Date:ClockDate,URL,URLSearchParams,TextEncoder,Uint8Array,AbortSignal,Event:class Event{constructor(type){this.type=type;}},alert:value=>alerts.push(value),switchTab:name=>tabs.push(name),refreshActiveTabGate(){},crypto:{getRandomValues:array=>array.fill(7),subtle:{digest:async(_name,data)=>Uint8Array.from(crypto.createHash('sha256').update(data).digest()).buffer}},atob:value=>Buffer.from(value,'base64').toString('binary'),btoa:value=>Buffer.from(value,'binary').toString('base64'),setTimeout,clearTimeout};
  vm.runInNewContext(authSource,sandbox,{filename:'actual-school-auth.js',timeout:1000});
  return {window,location,localStorage,sessionStorage,calls,navigation,replacements,tabs,alerts,events,element,async settle(){for(let i=0;i<10;i++)await new Promise(setImmediate);assert.equal(inFlight,0,'synthetic requests settled');}};
 }
@@ -107,4 +107,92 @@ test('callback profile network failure stays at registration without consuming a
 test('cached profile service errors and failed PKCE exchange do not manufacture a successful login',async()=>{
  const cached=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},reply:async()=>Response.json({error:'unavailable'},{status:503})});await cached.settle();assert.deepEqual(cached.navigation,[]);assert.equal(cached.alerts.length,1);assert.notEqual(cached.sessionStorage.getItem(RETURN),null);
  const pkce=browser({url:'https://daeryun.life/?code=synthetic-code',local:{pkce_v:'synthetic-verifier'},session:{[RETURN]:pending()},reply:async()=>Response.json({error:'invalid_code'},{status:400})});await pkce.settle();assert.deepEqual(pkce.navigation,[]);assert.equal(pkce.localStorage.getItem(SESSION),null);assert.notEqual(pkce.sessionStorage.getItem(RETURN),null);assert.equal(pkce.localStorage.getItem('pkce_v'),null);
+});
+
+test('a valid school login with denied strategy participation stays signed in without a redirect or OAuth loop',async()=>{
+ const student={...profile,role:'학생',name:'합성 학생'};
+ const b=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},
+  reply:async request=>{assert.ok(getUser(request));return Response.json([student]);},
+  returnReply:async request=>{assert.equal(request.method,'GET');assert.equal(request.authorization,'Bearer '+access);return Response.json({error:{code:'COUNSELING_NOT_APPROVED',message:'상담 참여 승인이 필요합니다.'}},{status:403});}});
+ await b.settle();assert.deepEqual(b.navigation,[]);assert.deepEqual(b.tabs,['strategy']);
+ assert.equal(b.sessionStorage.getItem(RETURN),null);assert.equal(JSON.parse(b.localStorage.getItem(SESSION)).token,access);
+ assert.match(b.alerts[0],/학교 로그인은 확인/);assert.match(b.alerts[0],/참여 승인/);
+ assert.match(b.alerts[0],/담당 선생님에게 학생 참여 승인 여부/);
+ assert.equal(b.calls.filter(request=>grant(request)==='refresh_token').length,0);
+ b.window.startLogin();await b.settle();assert.deepEqual(b.navigation,[]);
+ assert.equal(b.calls.filter(request=>request.url.pathname.endsWith('/counseling-session')).length,1);
+});
+
+test('OAuth success also checks strategy participation before consuming the return destination',async()=>{
+ const b=browser({url:'https://daeryun.life/#access_token='+access,session:{[RETURN]:pending()},reply:successfulProfile,
+  returnReply:async()=>Response.json({error:{code:'PARTICIPATION_REQUIRED',message:'담당 교사의 참여 승인이 필요합니다.'}},{status:403})});
+ await b.settle();assert.deepEqual(b.navigation,[]);assert.deepEqual(b.tabs,['strategy']);
+ assert.equal(b.sessionStorage.getItem(RETURN),null);assert.equal(JSON.parse(b.localStorage.getItem(SESSION)).token,access);
+});
+
+test('strategy 401 refreshes once and verifies the refreshed token before returning',async()=>{
+ let checks=0;
+ const b=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},
+  reply:async request=>getUser(request)?Response.json([profile]):Response.json({access_token:fresh,refresh_token:'synthetic-rotated',expires_in:3600}),
+  returnReply:async request=>{checks++;assert.equal(request.authorization,'Bearer '+(checks===1?access:fresh));return checks===1?Response.json({error:{code:'AUTH_REQUIRED'}},{status:401}):Response.json({user:{id:authId,role:'teacher',approved:true}});}});
+ await b.settle();assertReturned(b);assert.equal(checks,2);assert.equal(b.calls.filter(request=>grant(request)==='refresh_token').length,1);
+});
+
+test('a second strategy 401 requests explicit login and never restarts OAuth automatically',async()=>{
+ const b=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},
+  reply:async request=>getUser(request)?Response.json([profile]):Response.json({access_token:fresh,refresh_token:'synthetic-rotated',expires_in:3600}),
+  returnReply:async()=>Response.json({error:{code:'AUTH_REQUIRED'}},{status:401})});
+ await b.settle();assert.deepEqual(b.navigation,[]);assert.equal(b.localStorage.getItem(SESSION),null);assert.match(b.alerts[0],/유효기간/);
+ assert.notEqual(b.sessionStorage.getItem(RETURN),null);assert.equal(b.calls.filter(request=>grant(request)==='refresh_token').length,1);
+});
+
+test('strategy service failure preserves the shared login and permits an explicit retry',async()=>{
+ let checks=0;
+ const b=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},reply:successfulProfile,
+  returnReply:async()=>++checks===1?Response.json({error:{code:'SERVICE_UNAVAILABLE'}},{status:503}):Response.json({user:{id:authId,role:'teacher',approved:true}})});
+ await b.settle();assert.deepEqual(b.navigation,[]);assert.equal(JSON.parse(b.localStorage.getItem(SESSION)).token,access);
+ assert.notEqual(b.sessionStorage.getItem(RETURN),null);assert.match(b.alerts[0],/연결을 확인하지 못/);
+ b.window.startLogin();await b.settle();assertReturned(b);assert.equal(checks,2);
+});
+
+test('malformed strategy success never consumes a return or changes the shared school login',async()=>{
+ const b=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},reply:successfulProfile,returnReply:async()=>Response.json({})});
+ await b.settle();assert.deepEqual(b.navigation,[]);assert.equal(JSON.parse(b.localStorage.getItem(SESSION)).token,access);
+ assert.notEqual(b.sessionStorage.getItem(RETURN),null);assert.equal(b.alerts.length,1);
+});
+
+test('school refresh and ensureToken cannot restore a logged-out or replaced session',async()=>{
+ for(const replacement of [null,JSON.stringify({token:'synthetic-other-account',refresh_token:'synthetic-other-refresh',user:{...profile,id:'synthetic-other-user'}})]){
+  let release;const response=new Promise(resolve=>{release=resolve;});
+  const b=browser({local:{[SESSION]:stored()},reply:async request=>{assert.equal(grant(request),'refresh_token');return response;}});
+  const pendingToken=b.window.ensureToken();
+  if(replacement===null)b.localStorage.removeItem(SESSION);else b.localStorage.setItem(SESSION,replacement);
+  release(Response.json({access_token:fresh,refresh_token:'synthetic-rotated',expires_in:3600}));
+  assert.equal(await pendingToken,null);await b.settle();assert.equal(b.localStorage.getItem(SESSION),replacement);
+ }
+});
+
+test('logout while checking strategy participation prevents the delayed redirect',async()=>{
+ let release;const response=new Promise(resolve=>{release=resolve;});
+ const b=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},reply:successfulProfile,returnReply:async()=>response});
+ for(let i=0;i<5;i++)await new Promise(setImmediate);
+ b.window.doLogout();release(Response.json({user:{id:authId,role:'teacher',approved:true}}));
+ await b.settle();assert.deepEqual(b.navigation,[]);assert.equal(b.localStorage.getItem(SESSION),null);assert.equal(b.sessionStorage.getItem(RETURN),null);
+});
+
+test('a transient refresh service error preserves cached credentials instead of starting another OAuth login',async()=>{
+ const b=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},
+  reply:async request=>getUser(request)?Response.json({error:'expired'},{status:401}):Response.json({error:'unavailable'},{status:503})});
+ await b.settle();assert.deepEqual(b.navigation,[]);assert.equal(JSON.parse(b.localStorage.getItem(SESSION)).token,access);
+ assert.notEqual(b.sessionStorage.getItem(RETURN),null);assert.equal(b.alerts.length,1);
+});
+
+test('return-login refresh cannot clear an account that changed while the old refresh was in flight',async()=>{
+ let release;const response=new Promise(resolve=>{release=resolve;});
+ const b=browser({url:'https://daeryun.life/?login_return=%2Fcounseling%2F#login',local:{[SESSION]:stored()},
+  reply:async request=>getUser(request)?Response.json({error:'expired'},{status:401}):response});
+ for(let i=0;i<5;i++)await new Promise(setImmediate);
+ const replacement=JSON.stringify({token:'synthetic-new-account',refresh_token:'synthetic-new-refresh',user:{...profile,id:'synthetic-new-user'}});
+ b.localStorage.setItem(SESSION,replacement);release(Response.json({access_token:fresh,refresh_token:'synthetic-rotated',expires_in:3600}));
+ await b.settle();assert.deepEqual(b.navigation,[]);assert.equal(b.localStorage.getItem(SESSION),replacement);assert.equal(b.sessionStorage.getItem(RETURN),null);
 });

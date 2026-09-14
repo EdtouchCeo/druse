@@ -97,7 +97,7 @@ test('student sees only published strategy and tasks, no teacher notes or tools,
  await expect(page.getByText('학생에게 숨겨야 하는 내부 반응 기록',{exact:true})).toHaveCount(0)
  await expect(page.getByText('학생에게 숨겨야 하는 사전 판단',{exact:true})).toHaveCount(0)
  for(const label of ['교사의 의견','학생의 질문','일반 AI 설정']) await expect(page.getByLabel(label,{exact:true})).toHaveCount(0)
- for(const label of ['자료·분석','교사 전략 수립','학생 상담·반영','최종 결과물','새 전략','회차 추가','전략 백업 저장','학생부 PDF 근거','학생에게 전략 안내','교사 검토용 PDF']) await expect(page.getByRole('button',{name:label,exact:true})).toHaveCount(0)
+ for(const label of ['자료·분석','교사 전략 수립','학생 상담·반영','분석·전략 보고서','새 전략','회차 추가','전략 백업 저장','학생부 PDF 근거','학생에게 전략 안내','교사 검토용 PDF']) await expect(page.getByRole('button',{name:label,exact:true})).toHaveCount(0)
  await expect(page.locator('input[type=file],textarea,fieldset')).toHaveCount(0)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
  await page.screenshot({path:'test-results/strategy-student-mobile.png',fullPage:true})
@@ -260,7 +260,7 @@ test('an accountless student uses PDF delivery without an online publication but
  const value=freshCase();value.sessions[0]!.confirmed={by:'synthetic-teacher'}
  await manualStudentApi(page,{assigned:[{...value.student,account_linked:false}],existing:value})
  await page.goto('https://counseling.test:5178/counseling/')
- await page.getByRole('button',{name:'최종 결과물',exact:true}).click()
+ await page.getByRole('button',{name:'분석·전략 보고서',exact:true}).click()
  await expect(page.locator('.final-delivery')).toContainText('학생 계정 없이 추가한 학생입니다. 최종 확정 후 학생 안내 PDF로 전달해 주세요.')
  await expect(page.getByRole('button',{name:'학생에게 전략 안내',exact:true})).toHaveCount(0)
  await expect(page.locator('.final-delivery').getByRole('button',{name:'학생 안내 PDF 저장',exact:true})).toBeEnabled()

@@ -50,7 +50,7 @@ export async function pdfBase64(file:File):Promise<string> {
  return btoa(binary)
 }
 export function safeFilename(name:string):string {return name.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,80)||'상담기록'}
-export function reportFilename(studentNumber:string,date:string,audience:'student'|'teacher'):string{return safeFilename('학종전략_'+studentNumber+'_'+date+'_'+(audience==='student'?'학생안내':'교사검토')+'.pdf')}
+export function reportFilename(studentNumber:string,date:string,audience:'student'|'teacher'|'analysis'):string{if(audience==='analysis')return safeFilename('학생부분석보고서_'+studentNumber+'_'+date+'.pdf');return safeFilename('학종전략_'+studentNumber+'_'+date+'_'+(audience==='student'?'학생안내':'교사검토')+'.pdf')}
 export function download(blob:Blob,filename:string):void {const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=safeFilename(filename);a.click();setTimeout(()=>URL.revokeObjectURL(url),30000)}
 export function readSessionToken(storage:Pick<Storage,'getItem'>):string|null {try{const s=JSON.parse(storage.getItem('dr_sess_v1')||'null');return s&&typeof s.token==='string'&&s.token?s.token:null}catch{return null}}
 export function readableError(error:unknown):string {if(error instanceof DOMException&&error.name==='AbortError')return '요청을 취소했습니다.';return error instanceof Error?error.message:'요청을 처리하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.'}

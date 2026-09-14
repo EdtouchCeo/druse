@@ -7,6 +7,22 @@ import {checked,ApiError,isRevisionConflict} from '../src/lib/transport'
 import type {CounselingCase,Backup} from '../src/lib/types'
 const example=():CounselingCase=>({schema_version:1,id:'case-1',revision:3,privacy:'local_only',created_at:'2026-09-11',updated_at:'2026-09-11',origin:'synthetic',student:{student_id:'student-1',student_number:'10101',academic_year:2026,school_stage:'high',grade:1,name:'합성학생'},teacher:{display_name:'합성교사'},current_session_id:'session-a',sessions:[{id:'session-a',date:'2026-09-11',topic:'질문과 다음 행동',student_question:'궁금한 점',context:'',evidence_notes:'',teacher_opinion:'함께 확인할 점',actions:[],next_date:'',record:null,analysis:null,review:null,confirmed:null},{id:'session-b',date:'2026-09-18',topic:'다음 상담',student_question:'',context:'',evidence_notes:'',teacher_opinion:'',actions:[],next_date:'',record:null,analysis:null,review:null,confirmed:null}]})
 const bundle=(value=example()):Backup=>({format:'daeryun-counseling',version:1,case:value})
+test('deletion sends only the selected case revision with local CSRF or school authentication',async()=>{
+ const original=globalThis.fetch,storage=globalThis.localStorage,calls:{url:string;options:RequestInit}[]=[]
+ Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>JSON.stringify({token:'synthetic-token'})}})
+ globalThis.fetch=(async(input,options={})=>{calls.push({url:String(input),options});return new Response(JSON.stringify(String(input).endsWith('/health')?{csrf_token:'delete-csrf'}:{deleted:true}))}) as typeof fetch
+ try{
+  const value=example(),local=new LocalTransport();await local.health();await local.deleteCase(value)
+  assert.equal(calls[1]!.url,'/api/cases/case-1');assert.equal(calls[1]!.options.method,'DELETE')
+  assert.equal((calls[1]!.options.headers as Record<string,string>)['X-Counseling-Token'],'delete-csrf')
+  assert.deepEqual(JSON.parse(String(calls[1]!.options.body)),{revision:3})
+  const cloud=new CloudTransport();await assert.rejects(cloud.deleteCase(value),/온라인/);assert.equal(calls.length,2)
+  value.privacy='standard';await cloud.deleteCase(value)
+  assert.equal(calls[2]!.url,'/.netlify/functions/counseling-cases?id=case-1');assert.equal(calls[2]!.options.method,'DELETE')
+  assert.equal((calls[2]!.options.headers as Record<string,string>).Authorization,'Bearer synthetic-token')
+  assert.deepEqual(JSON.parse(String(calls[2]!.options.body)),{revision:3})
+ }finally{globalThis.fetch=original;Object.defineProperty(globalThis,'localStorage',{configurable:true,value:storage})}
+})
 test('only loopback hosts activate local processing',()=>{for(const host of ['localhost','127.0.0.1','[::1]'])assert.equal(modeForHost(host),'local');for(const host of ['daeryun.life','localhost.example.com','127.0.0.1.evil.test','192.168.1.2'])assert.equal(modeForHost(host),'online')})
 test('existing daeryun session uses token, not role or alternate access_token',()=>{assert.equal(readSessionToken({getItem:()=>JSON.stringify({token:'expected',access_token:'wrong',user:{role:'teacher'}})}),'expected');assert.equal(readSessionToken({getItem:()=>JSON.stringify({access_token:'wrong'})}),null);assert.equal(readSessionToken({getItem:()=>'{'}),null)})
 test('private backup is rejected before online import, even if privacy label changes',()=>{assert.throws(()=>parseBackup(JSON.stringify(bundle()),'online'),/온라인/);const value=example();value.privacy='standard';value.sessions[0]!.analysis={} as never;assert.throws(()=>parseBackup(JSON.stringify(bundle(value)),'online'),/온라인/);assert.throws(()=>assertStandard(value),/온라인/)})

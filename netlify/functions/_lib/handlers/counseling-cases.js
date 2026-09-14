@@ -3,7 +3,7 @@ const C=require('../counseling');
 exports.handler=C.wrap(async event=>{
  const actor=await C.auth(event),q=event.queryStringParameters||{},action=q.action||'',id=q.id;
  if(event.httpMethod==='GET'){
-  if(!id){if(action)C.fail(400,'BAD_REQUEST','상담 ID를 확인해 주세요.');const students=await C.studentsFor(actor);if(!students.length)return C.json(200,{cases:[]});const rows=await C.db(`counseling_cases?student_id=in.(${students.map(s=>s.student_id).join(',')})&select=data&order=updated_at.desc&limit=200`);return C.json(200,{cases:rows.map(r=>C.caseForActor(r.data,actor)).filter(Boolean)});}
+  if(!id){if(action)C.fail(400,'BAD_REQUEST','상담 ID를 확인해 주세요.');const students=await C.studentsFor(actor);if(!students.length)return C.json(200,{cases:[]});const rows=await C.db(`counseling_cases?student_id=in.(${students.map(s=>s.student_id).join(',')})&select=data&order=updated_at.desc&limit=200`,{actor_id:actor.id});return C.json(200,{cases:rows.map(r=>C.caseForActor(r.data,actor)).filter(Boolean)});}
   const c=await C.readCase(actor,id);
   if(action==='export'){const r=C.json(200,{format:'daeryun-counseling',version:1,case:c});r.headers['Content-Disposition']=`attachment; filename="counseling-${c.id}.json"`;return r;}
   if(action==='report'){
@@ -21,8 +21,16 @@ exports.handler=C.wrap(async event=>{
   if(action)C.fail(400,'UNKNOWN_ACTION','지원하지 않는 요청입니다.');return C.json(200,{case:c});
  }
  if(actor.role!=='teacher')C.fail(403,'TEACHER_REQUIRED','상담 작성은 담당 교사만 할 수 있습니다.');
- if(!['POST','PUT'].includes(event.httpMethod))C.fail(405,'METHOD_NOT_ALLOWED','지원하지 않는 요청 방식입니다.');
+ if(!['POST','PUT','DELETE'].includes(event.httpMethod))C.fail(405,'METHOD_NOT_ALLOWED','지원하지 않는 요청 방식입니다.');
  const b=C.body(event);C.rejectPrivate(b);
+ if(event.httpMethod==='DELETE'){
+  if(action)C.fail(400,'UNKNOWN_ACTION','지원하지 않는 요청입니다.');
+  C.onlyKeys(b,['revision']);if(!C.uuid(id))C.fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');
+  if(!Number.isInteger(b.revision)||b.revision<1)C.fail(400,'BAD_REQUEST','삭제할 전략의 버전을 확인해 주세요.');
+  // The storage RPC checks the author, fresh assignment and expected revision.
+  // It can also finish a failed Blobs purge after the tombstone hides the case.
+  return C.json(200,await C.db('rpc/counseling_delete_case',{method:'POST',data:{p_actor:actor.id,p_id:id,p_expected:b.revision}}));
+ }
  if(event.httpMethod==='POST'&&action==='import'){
   C.onlyKeys(b,['bundle','student_id','student_confirmed']);if(b.student_confirmed!==true)C.fail(400,'STUDENT_CONFIRMATION','상담 학생을 먼저 확인해 주세요.');
   C.onlyKeys(b.bundle,['format','version','case']);if(b.bundle?.format!=='daeryun-counseling'||b.bundle.version!==1)C.fail(400,'INVALID_BUNDLE','지원하는 상담 백업 파일이 아닙니다.');C.validateCase(b.bundle.case);

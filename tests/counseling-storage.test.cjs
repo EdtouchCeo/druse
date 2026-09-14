@@ -13,6 +13,7 @@ class MemoryStore{
   this.seed(key,JSON.parse(payload));return {modified:true,etag:this.entries.get(key).etag};
  }
  async *list({prefix}){const keys=[...this.entries.keys()].filter(key=>key.startsWith(prefix)).sort();for(let i=0;i<keys.length;i+=2)yield {blobs:keys.slice(i,i+2).map(key=>({key})),directories:[]};}
+ async delete(key){this.calls.push({method:'delete',key});this.entries.delete(key);}
 }
 function fixture({seed=true}={}){
  const store=new MemoryStore();
@@ -30,9 +31,121 @@ function fixture({seed=true}={}){
 function sample(){const c=C.newCase({student_id:ids.student,name:'합성 학생',student_number:'10101',academic_year:2026,school_stage:'high',grade:1},{id:ids.teacher,display_name:'합성 교사'});c.sessions[0].topic='합성 상담';return c;}
 const write=(f,c,expected=0)=>f.adapter.query('rpc/counseling_write_case',{method:'POST',data:{p_actor:ids.teacher,p_case:c,p_expected:expected,p_action:expected?'update':'create'}});
 const admin=(f,input)=>f.adapter.query('rpc/counseling_administer',{method:'POST',data:{p_actor:ids.manager,p_input:input}});
-const get=(f,id)=>f.adapter.query(`counseling_cases?id=eq.${id}&select=data,student_id&limit=1`);
-const list=f=>f.adapter.query(`counseling_cases?student_id=in.(${ids.student})&select=data&order=updated_at.desc&limit=200`);
+const get=(f,id,actor_id)=>f.adapter.query(`counseling_cases?id=eq.${id}&select=data,student_id&limit=1`,{actor_id});
+const list=(f,actor_id)=>f.adapter.query(`counseling_cases?student_id=in.(${ids.student})&select=data&order=updated_at.desc&limit=200`,{actor_id});
 const code=expected=>error=>error instanceof S.StorageError&&error.code===expected;
+const remove=(f,c,expected=c.revision,actor=ids.teacher)=>f.adapter.query('rpc/counseling_delete_case',{method:'POST',data:{p_actor:actor,p_id:c.id,p_expected:expected}});
+
+test('case deletion removes all history and publication while keeping the student and other strategies',async()=>{
+ const f=fixture(),c=sample(),other=sample();await write(f,c);await write(f,other);
+ for(let revision=2;revision<=4;revision++){c.revision=revision;c.sessions[0].guidance={published_at:C.now(),published_by:ids.teacher};await write(f,c,revision-1);}
+ assert.deepEqual(await remove(f,c),{deleted:true,id:c.id});assert.deepEqual(await get(f,c.id),[]);
+ assert.deepEqual((await list(f)).map(row=>row.data.id),[other.id]);assert.deepEqual((await f.adapter.readConfig()).data,f.config);
+ assert.ok(![...f.store.entries.keys()].some(key=>key.startsWith(`cases/${c.id}/versions/`)));
+ assert.ok(!f.store.entries.has(`student-cases/${ids.student}/${c.id}`));
+ const tombstone=f.store.entries.get(`cases/${c.id}/head`).data;
+ assert.equal(tombstone.deleted,true);assert.equal(tombstone.revision,5);assert.equal(tombstone.data,undefined);assert.equal(tombstone.version_key,undefined);
+ const attempted=structuredClone(c);attempted.revision=6;await assert.rejects(write(f,attempted,5),code('REVISION_CONFLICT'));
+ attempted.revision=1;await assert.rejects(write(f,attempted,0),code('REVISION_CONFLICT'));
+});
+
+test('case deletion requires current teacher approval, assignment and authorship',async()=>{
+ for(const mutate of [f=>{f.profiles.get(ids.teacher).approved=false},f=>{f.profiles.get(ids.teacher).role='학생'},f=>{f.config.assignments[0].active=false},f=>{f.config.students[0].active=false},f=>{f.config.assignments=[]}]){
+  const f=fixture(),c=sample();await write(f,c);mutate(f);f.store.seed('configuration/v1',f.config);
+  await assert.rejects(remove(f,c),code('ACCESS_DENIED'));assert.equal((await get(f,c.id))[0].data.id,c.id);assert.ok(!f.store.calls.some(call=>call.method==='delete'));
+ }
+ const f=fixture(),c=sample();await write(f,c);
+ f.config.assignments.push({student_id:ids.student,teacher_user_id:ids.manager,active:true});f.store.seed('configuration/v1',f.config);
+ for(const actor of [ids.manager,ids.studentUser])await assert.rejects(remove(f,c,1,actor),code('ACCESS_DENIED'));
+ assert.deepEqual((await get(f,c.id))[0].data,c);
+});
+
+test('stale deletion leaves the current version and history intact',async()=>{
+ const f=fixture(),c=sample();await write(f,c);c.revision=2;await write(f,c,1);
+ await assert.rejects(remove(f,c,1),code('REVISION_CONFLICT'));assert.deepEqual((await get(f,c.id))[0].data,c);assert.ok(!f.store.calls.some(call=>call.method==='delete'));
+});
+
+test('an edit winning the head race prevents deletion and history cleanup',async()=>{
+ const f=fixture(),c=sample();await write(f,c);const edited=structuredClone(c);edited.revision=2;edited.sessions[0].topic='새 버전';
+ f.store.beforeSet=async(key,payload)=>{if(key.endsWith('/head')&&JSON.parse(payload).deleted){f.store.beforeSet=null;await write(f,edited,1);}return null;};
+ await assert.rejects(remove(f,c),code('REVISION_CONFLICT'));assert.deepEqual((await get(f,c.id))[0].data,edited);assert.ok(!f.store.calls.some(call=>call.method==='delete'));
+});
+
+test('a late in-flight edit cannot resurrect a deleted case or leave its contents behind',async()=>{
+ const f=fixture(),c=sample();await write(f,c);const edited=structuredClone(c);edited.revision=2;
+ f.store.beforeSet=async key=>{if(key.includes('/versions/')){f.store.beforeSet=null;await remove(f,c);}return null;};
+ await assert.rejects(write(f,edited,1),code('REVISION_CONFLICT'));assert.deepEqual(await get(f,c.id),[]);assert.deepEqual(await list(f),[]);
+ assert.ok(![...f.store.entries.keys()].some(key=>key.startsWith(`cases/${c.id}/versions/`)));
+});
+
+test('deletion rechecks school approval immediately before publishing its tombstone',async()=>{
+ const f=fixture(),c=sample();await write(f,c);const read=f.store.getWithMetadata.bind(f.store);
+ f.store.getWithMetadata=async(key,options)=>{const result=await read(key,options);if(key.includes('/versions/'))f.profiles.get(ids.teacher).approved=false;return result;};
+ await assert.rejects(remove(f,c),code('ACCESS_DENIED'));assert.equal(f.store.entries.get(`cases/${c.id}/head`).data.deleted,undefined);assert.ok(!f.store.calls.some(call=>call.method==='delete'));
+});
+
+test('history cleanup failures never claim successful deletion and can be retried without resurrection',async()=>{
+ const f=fixture(),c=sample();await write(f,c);const purge=f.store.delete.bind(f.store);f.store.delete=async()=>{throw Error('synthetic storage failure');};
+ await assert.rejects(remove(f,c),/synthetic storage failure/);assert.deepEqual(await get(f,c.id),[]);assert.deepEqual(await list(f),[]);
+ f.store.delete=purge;assert.deepEqual(await remove(f,c),{deleted:true,id:c.id});assert.ok(![...f.store.entries.keys()].some(key=>key.startsWith(`cases/${c.id}/versions/`)));
+});
+
+test('HTTP deletion retries a failed Blobs purge with the original revision and renewed authorization',async t=>{
+ const f=fixture(),c=sample(),other=sample();await write(f,c);await write(f,other);
+ const handler=require('../netlify/functions/_lib/handlers/counseling-cases').handler;
+ const original={query:S.query,fetch:global.fetch,env:Object.fromEntries(['COUNSELING_STORAGE','SUPABASE_URL','SUPABASE_SERVICE_KEY'].map(key=>[key,process.env[key]]))};
+ t.after(()=>{S.query=original.query;global.fetch=original.fetch;for(const [key,value]of Object.entries(original.env))if(value===undefined)delete process.env[key];else process.env[key]=value;});
+ process.env.COUNSELING_STORAGE='blobs';process.env.SUPABASE_URL='https://synthetic.invalid';process.env.SUPABASE_SERVICE_KEY='synthetic-only';
+ S.query=(path,options)=>f.adapter.query(path,options);
+ let actor=ids.teacher;
+ global.fetch=async raw=>{const url=new URL(raw);assert.equal(url.origin,'https://synthetic.invalid');if(url.pathname==='/auth/v1/user')return Response.json({id:ids.auth});assert.equal(url.pathname,'/rest/v1/users');return Response.json([{...f.profiles.get(actor),google_id:ids.auth,name:'합성 교사'}]);};
+ const request=(method='DELETE',revision=c.revision)=>({httpMethod:method==='LIST'?'GET':method,headers:{authorization:'Bearer synthetic-only'},queryStringParameters:method==='LIST'?{}:{id:c.id},body:JSON.stringify({revision})});
+ const purge=f.store.delete.bind(f.store);f.store.delete=async()=>{throw Error('synthetic purge failure');};
+ assert.equal((await handler(request())).statusCode,503);assert.equal((await handler(request('GET'))).statusCode,404);
+ const duringFailure=await handler(request('LIST'));assert.equal(duringFailure.statusCode,200);assert.deepEqual(JSON.parse(duringFailure.body).cases.map(row=>row.id),[other.id]);
+ assert.equal((await handler(request('DELETE',c.revision+1))).statusCode,409);
+ actor=ids.manager;assert.equal((await handler(request())).statusCode,403);actor=ids.teacher;
+ f.config.assignments[0].active=false;f.store.seed('configuration/v1',f.config);assert.equal((await handler(request())).statusCode,403);
+ f.config.assignments[0].active=true;f.store.seed('configuration/v1',f.config);f.profiles.get(ids.teacher).approved=false;assert.equal((await handler(request())).statusCode,403);
+ f.profiles.get(ids.teacher).approved=true;f.store.delete=purge;
+ // Reloading the ordinary list recovers cleanup without a selected card,
+ // deletion dialog or client-held original revision.
+ const reloaded=await handler(request('LIST'));assert.equal(reloaded.statusCode,200);assert.deepEqual(JSON.parse(reloaded.body).cases.map(row=>row.id),[other.id]);
+ assert.ok(![...f.store.entries.keys()].some(key=>key.startsWith(`cases/${c.id}/versions/`)));assert.ok(!f.store.entries.has(`student-cases/${ids.student}/${c.id}`));
+ const response=await handler(request());assert.equal(response.statusCode,200);assert.deepEqual(JSON.parse(response.body),{deleted:true,id:c.id});
+ assert.ok(![...f.store.entries.keys()].some(key=>key.startsWith(`cases/${c.id}/versions/`)));
+ assert.equal((await handler(request())).statusCode,200);
+});
+
+test('automatic deletion recovery requires the original teacher and current school approval and assignment',async()=>{
+ const f=fixture(),c=sample();await write(f,c);const purge=f.store.delete.bind(f.store);f.store.delete=async()=>{throw Error('synthetic purge failure');};await assert.rejects(remove(f,c));f.store.delete=purge;
+ f.config.assignments.push({student_id:ids.student,teacher_user_id:ids.manager,active:true});f.store.seed('configuration/v1',f.config);
+ for(const actor of [undefined,ids.studentUser,ids.manager]){assert.deepEqual(await list(f,actor),[]);assert.deepEqual(await get(f,c.id,actor),[]);}
+ f.config.assignments[0].active=false;f.store.seed('configuration/v1',f.config);assert.deepEqual(await get(f,c.id,ids.teacher),[]);
+ f.config.assignments[0].active=true;f.store.seed('configuration/v1',f.config);f.profiles.get(ids.teacher).approved=false;assert.deepEqual(await list(f,ids.teacher),[]);
+ f.profiles.get(ids.teacher).approved=true;f.profiles.get(ids.teacher).role='학생';assert.deepEqual(await list(f,ids.teacher),[]);
+ assert.ok(!f.store.calls.some(call=>call.method==='delete'));assert.ok(f.store.entries.has(`student-cases/${ids.student}/${c.id}`));
+ f.profiles.get(ids.teacher).role='교사';assert.deepEqual(await get(f,c.id,ids.teacher),[]);
+ assert.ok(!f.store.entries.has(`student-cases/${ids.student}/${c.id}`));assert.ok(![...f.store.entries.keys()].some(key=>key.startsWith(`cases/${c.id}/versions/`)));
+});
+
+test('automatic purge caps histories per request and continues on the next ordinary list',async()=>{
+ const f=fixture(),cases=Array.from({length:6},sample);for(const c of cases)await write(f,c);
+ const purge=f.store.delete.bind(f.store);f.store.delete=async()=>{throw Error('synthetic purge failure');};for(const c of cases)await assert.rejects(remove(f,c));f.store.delete=purge;
+ assert.deepEqual(await list(f,ids.teacher),[]);
+ assert.equal([...f.store.entries.keys()].filter(key=>key.startsWith(`student-cases/${ids.student}/`)).length,1);
+ assert.equal(f.store.calls.filter(call=>call.method==='delete'&&call.key.includes('/versions/')).length,5);
+ assert.deepEqual(await list(f,ids.teacher),[]);assert.ok(![...f.store.entries.keys()].some(key=>key.includes('/versions/')||key.startsWith('student-cases/')));
+});
+
+test('automatic purge limits version removals and keeps discovery until all historical bodies are removed',async()=>{
+ const f=fixture(),c=sample();await write(f,c);
+ for(let index=0;index<105;index++)f.store.seed(`cases/${c.id}/versions/orphan-${index}`,{data:{topic:'synthetic historic body'}});
+ const purge=f.store.delete.bind(f.store);f.store.delete=async()=>{throw Error('synthetic purge failure');};await assert.rejects(remove(f,c));f.store.delete=purge;
+ assert.deepEqual(await list(f,ids.teacher),[]);assert.equal(f.store.calls.filter(call=>call.method==='delete'&&call.key.includes('/versions/')).length,100);
+ assert.ok(f.store.entries.has(`student-cases/${ids.student}/${c.id}`));assert.equal([...f.store.entries.keys()].filter(key=>key.includes('/versions/')).length,6);
+ assert.deepEqual(await list(f,ids.teacher),[]);assert.ok(!f.store.entries.has(`student-cases/${ids.student}/${c.id}`));assert.ok(![...f.store.entries.keys()].some(key=>key.includes('/versions/')));
+});
 test('storage choice is explicit: default blobs, optional SQL, no unknown fallback',()=>{const prior=process.env.COUNSELING_STORAGE;delete process.env.COUNSELING_STORAGE;assert.equal(S.mode(),'blobs');process.env.COUNSELING_STORAGE='supabase';assert.equal(S.mode(),'supabase');process.env.COUNSELING_STORAGE='unknown';assert.throws(()=>S.mode(),code('STORAGE_CONFIG'));if(prior===undefined)delete process.env.COUNSELING_STORAGE;else process.env.COUNSELING_STORAGE=prior;});
 test('strict transport rejects conditional-write 503 before SDK false success',async()=>{
  for(const status of [400,401,403,404,429,500,503])await assert.rejects(S.strictFetch(async()=>new Response('',{status}))('https://synthetic.invalid',{method:'PUT'}),code('STORAGE_UNAVAILABLE'));

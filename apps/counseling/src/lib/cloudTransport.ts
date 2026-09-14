@@ -27,11 +27,12 @@ export class CloudTransport implements Transport {
  async addStudent(input:NewStudentInput){return(await this.request<{student:Student}>('counseling-students','POST',validateNewStudent(input))).student}
  async create(student:Student,teacher:string){return(await this.request<{case:CounselingCase}>(this.path(),'POST',{student:{student_id:student.student_id},teacher:{display_name:teacher}})).case}
  async save(value:CounselingCase){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id),'PUT',{case:value})).case}
+ async deleteCase(value:CounselingCase){assertStandard(value);await this.request(this.path(value.id),'DELETE',{revision:value.revision})}
  async next(value:CounselingCase){assertStandard(value);return(await this.request<{case:CounselingCase}>(this.path(value.id,'next'),'POST',{revision:value.revision})).case}
  async importBackup(bundle:Backup){assertStandard(bundle.case);return(await this.request<{case:CounselingCase}>(this.path(undefined,'import'),'POST',{bundle,student_id:bundle.case.student.student_id,student_confirmed:true})).case}
  private async blob(path:string){return(await this.authenticatedFetch(path)).blob()}
  exportBackup(id:string){return this.blob(this.path(id,'export'))}
- report(id:string,sessionId:string,audience:'student'|'teacher'='teacher'){return this.blob(this.path(id,'report')+'&session_id='+encodeURIComponent(sessionId)+'&audience='+audience)}
+ report(id:string,sessionId:string,audience:'student'|'teacher'|'analysis'='teacher'){if(audience==='analysis')return Promise.reject(new Error('학생부 분석 보고서는 이 PC의 로컬 전략실에서 저장해 주세요.'));return this.blob(this.path(id,'report')+'&session_id='+encodeURIComponent(sessionId)+'&audience='+audience)}
  private restricted():never {throw new Error('학생부 분석은 교사 PC의 로컬 상담실에서만 사용할 수 있습니다.')}
  async upload():Promise<CounselingCase>{return this.restricted()}
  async updateRecordMetadata():Promise<CounselingCase>{return this.restricted()}

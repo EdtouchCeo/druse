@@ -54,7 +54,7 @@ export function preparationIssues(session:Session):string[]{
 export function finalizationIssues(session:Session):string[]{
  if(session.workflow_version!==2)return []
  if(!session.preparation)return ['교사 전략을 먼저 준비 완료한 뒤 학생 상담을 진행해 주세요.']
- if(session.consultation?.status!=='completed')return ['학생 상담과 반영 기록을 완료한 뒤 최종 결과물을 검토해 주세요.']
+ if(session.consultation?.status!=='completed')return ['학생 상담과 반영 기록을 완료한 뒤 전략 보고서를 검토해 주세요.']
  return consultationIssues(session.consultation)
 }
 

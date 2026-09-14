@@ -15163,6 +15163,9 @@ function switchSpTab(id,btn){
   }
   function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
   function clearSession()  { localStorage.removeItem(SESSION_KEY); }
+  function sameCredentials(a, b) {
+    return Boolean(a && b && a.token === b.token && a.refresh_token === b.refresh_token);
+  }
   window.clearSession = clearSession;
 
   // A same-tab, single-use destination. Never accept an arbitrary redirect URL.
@@ -15200,32 +15203,90 @@ function switchSpTab(id,btn){
     return true;
   }
 
+  function changedStrategySession() {
+    clearLoginReturn();
+    _returnLoginBusy = false;
+    var current = getSession();
+    if (current) applyAuth(current); else showLoginBtn();
+    gotoStrategyTab();
+    alert('로그인 계정이 변경되었습니다. 현재 계정으로 전략실을 다시 열어 주세요.');
+  }
+
+  // School membership and strategy participation are separate checks. A valid
+  // school login must not bounce straight back into a strategy-access denial.
+  function checkStrategyReturn(session, mayRefresh) {
+    if (!sameCredentials(getSession(), session)) { changedStrategySession(); return Promise.resolve(); }
+    return fetch('/.netlify/functions/counseling-session', {
+      method: 'GET', headers: { 'Authorization': 'Bearer ' + session.token }, cache: 'no-store',
+      signal: AbortSignal.timeout(12000)
+    }).then(function(r) {
+      if (!sameCredentials(getSession(), session)) { changedStrategySession(); return; }
+      if (r.status === 401) {
+        if (mayRefresh && session.refresh_token) {
+          return refreshSession(true).then(function(fresh) {
+            if (fresh) return checkStrategyReturn(fresh, false);
+            if (!sameCredentials(getSession(), session)) { changedStrategySession(); return; }
+            clearSession(); _returnLoginBusy = false; showLoginBtn(); gotoStrategyTab();
+            alert('학교 로그인 유효기간이 지났습니다. 로그인 버튼으로 다시 로그인해 주세요.');
+          });
+        }
+        clearSession(); _returnLoginBusy = false; showLoginBtn(); gotoStrategyTab();
+        alert('학교 로그인 유효기간이 지났습니다. 로그인 버튼으로 다시 로그인해 주세요.');
+        return;
+      }
+      if (r.status === 403) {
+        return r.json().catch(function() { return {}; }).then(function(data) {
+          if (!sameCredentials(getSession(), session)) { changedStrategySession(); return; }
+          clearLoginReturn(); _returnLoginBusy = false; gotoStrategyTab();
+          var message = data && data.error && typeof data.error.message === 'string'
+            ? data.error.message.slice(0, 400) : '학종 전략실 이용 권한을 담당 교사에게 확인해 주세요.';
+          var code = data && data.error && data.error.code;
+          if (code === 'COUNSELING_NOT_APPROVED') message += ' 담당 선생님에게 학생 참여 승인 여부를 확인해 주세요.';
+          else if (code === 'NOT_APPROVED') message = '학교 회원 승인 대기 중입니다. 학교 관리자에게 회원 승인 여부를 확인해 주세요.';
+          else if (code === 'PROFILE_REQUIRED') message = '학교 회원 정보가 아직 등록되지 않았습니다. 사용설명서의 회원가입 화면에서 회원 정보를 등록해 주세요.';
+          alert('학교 로그인은 확인되었습니다. ' + message);
+        });
+      }
+      if (!r.ok) throw new Error('strategy_check_failed');
+      return r.json().then(function(data) {
+        if (!sameCredentials(getSession(), session)) { changedStrategySession(); return; }
+        if (!data || !data.user || !data.user.id || data.user.approved !== true
+            || ['teacher', 'student', 'manager'].indexOf(data.user.role) === -1) throw new Error('strategy_check_failed');
+        _returnLoginBusy = false;
+        returnToStrategy();
+      });
+    });
+  }
+
   // Recheck cached credentials before returning; a stale token must not send
   // the user back to the strategy login screen over and over.
   function resumeStrategyLogin(session) {
     if (_returnLoginBusy) return;
     _returnLoginBusy = true;
-    function retryLogin() {
+    function retryLogin(expected) {
+      if (!sameCredentials(getSession(), expected)) { changedStrategySession(); return; }
       clearSession();
       _returnLoginBusy = false;
       window.startLogin();
     }
     function verify(current, mayRefresh) {
-      if (!current || !current.token) { retryLogin(); return Promise.resolve(); }
+      if (!current || !current.token) { retryLogin(current); return Promise.resolve(); }
       return fetch('/.netlify/functions/get-user', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + current.token },
-        body: JSON.stringify({})
+        body: JSON.stringify({}), signal: AbortSignal.timeout(12000)
       }).then(function(r) {
+        if (!sameCredentials(getSession(), current)) { changedStrategySession(); return; }
         if (r.status === 401 || r.status === 403) {
           if (mayRefresh && current.refresh_token) {
-            return refreshSession().then(function(fresh) { return fresh ? verify(fresh, false) : retryLogin(); });
+            return refreshSession(true).then(function(fresh) { return fresh ? verify(fresh, false) : retryLogin(current); });
           }
-          retryLogin(); return;
+          retryLogin(current); return;
         }
         if (!r.ok) throw new Error('login_check_failed');
         return r.json().then(function(profiles) {
+          if (!sameCredentials(getSession(), current)) { changedStrategySession(); return; }
           if (!Array.isArray(profiles) || !profiles[0] || !profiles[0].id) {
-            retryLogin(); return;
+            retryLogin(current); return;
           }
           current.user = profiles[0];
           saveSession(current);
@@ -15242,16 +15303,21 @@ function switchSpTab(id,btn){
   }
 
   // refresh_token으로 access token 갱신 → 갱신된 세션 반환(실패 시 null)
-  function refreshSession() {
+  function refreshSession(strict) {
     var s = getSession();
     if (!s || !s.refresh_token) return Promise.resolve(null);
     return fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
-      body: JSON.stringify({ refresh_token: s.refresh_token })
+      body: JSON.stringify({ refresh_token: s.refresh_token }), signal: AbortSignal.timeout(12000)
     })
-    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(r) {
+      if (r.status === 400 || r.status === 401 || r.status === 403) return null;
+      if (!r.ok) throw new Error('refresh_unavailable');
+      return r.json();
+    })
     .then(function(data) {
+      if (!sameCredentials(getSession(), s)) return null;
       if (!data || !data.access_token) return null;
       s.token = data.access_token;
       if (data.refresh_token) s.refresh_token = data.refresh_token;
@@ -15259,7 +15325,7 @@ function switchSpTab(id,btn){
       saveSession(s);
       return s;
     })
-    .catch(function() { return null; });
+    .catch(function(error) { if (strict) throw error; return null; });
   }
   window.refreshSession = refreshSession;
 
@@ -15268,7 +15334,10 @@ function switchSpTab(id,btn){
     var s = getSession();
     if (!s) return Promise.resolve(null);
     if (s.refresh_token && (!s.expires_at || Date.now() > s.expires_at - 60000)) {
-      return refreshSession().then(function(ns) { return (ns && ns.token) ? ns.token : s.token; });
+      return refreshSession().then(function(ns) {
+        if (ns && ns.token) return ns.token;
+        return sameCredentials(getSession(), s) ? s.token : null;
+      });
     }
     return Promise.resolve(s.token);
   };
@@ -15425,7 +15494,21 @@ function switchSpTab(id,btn){
     });
   }
 
-  function finishLogin(session) { applyAuth(session); if (!returnToStrategy()) gotoSchoolTab(); }
+  function finishLogin(session) {
+    applyAuth(session);
+    if (!hasLoginReturn()) { gotoSchoolTab(); return; }
+    _returnLoginBusy = true;
+    checkStrategyReturn(session, true).catch(function() {
+      _returnLoginBusy = false;
+      gotoStrategyTab();
+      alert('전략실 연결을 확인하지 못했습니다. 잠시 후 전략실 열기를 다시 눌러 주세요.');
+    });
+  }
+
+  function gotoStrategyTab() {
+    var btn = document.getElementById('tab-btn-strategy');
+    if (btn && typeof switchTab === 'function') switchTab('strategy', btn);
+  }
 
   function gotoSchoolTab() {
     var btn = document.querySelector('.tab-btn[onclick*="school"]');

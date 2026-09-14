@@ -167,7 +167,7 @@ function createAdapter(store,supabase){
  async function head(id){
   if(!uuid(id))fail(400,'BAD_REQUEST','상담 ID를 확인해 주세요.');
   const entry=await read(`cases/${id}/head`);
-  if(entry&&(entry.data.id!==id||!uuid(entry.data.student_id)||!Number.isInteger(entry.data.revision)||!String(entry.data.version_key).startsWith(`cases/${id}/versions/`)))unavailable();
+  if(entry&&(entry.data.id!==id||!uuid(entry.data.student_id)||!Number.isInteger(entry.data.revision)||(entry.data.deleted===true?!uuid(entry.data.deleted_by):!String(entry.data.version_key).startsWith(`cases/${id}/versions/`))))unavailable();
   return entry;
  }
  async function fromHead(entry){
@@ -179,7 +179,7 @@ function createAdapter(store,supabase){
   const c=p_case,id=c?.id,studentId=c?.student?.student_id;
   if(!uuid(id)||!uuid(studentId)||!Number.isInteger(p_expected)||p_expected<0||c.revision!==p_expected+1||c.schema_version!==1||c.privacy!=='standard'||!Array.isArray(c.sessions)||!c.sessions.length||c.sessions.some(s=>!s||s.record!=null||s.analysis!=null))fail(400,'INVALID_CASE','일반 상담 저장 형식을 확인해 주세요.');
   const previous=await head(id);
-  if((previous?previous.data.revision:0)!==p_expected)conflict();
+  if(previous?.data.deleted||(previous?previous.data.revision:0)!==p_expected)conflict();
   const settings=(await config()).data;
   await authorize(settings,p_actor,'teacher');
   if(!accessible(settings,p_actor,studentId))fail(403,'ACCESS_DENIED','현재 담당 학생의 상담만 저장할 수 있습니다.');
@@ -189,6 +189,7 @@ function createAdapter(store,supabase){
   }else if(c.teacher?.id!==p_actor)fail(403,'IDENTITY_MISMATCH','인증된 상담 교사만 기록할 수 있습니다.');
   const versionKey=`cases/${id}/versions/${c.revision}-${crypto.randomUUID()}`;
   const version={case_id:id,revision:c.revision,data:c,actor_id:p_actor,action:p_action,created_at:now(),previous_key:previous?.data.version_key||null};
+  try{
   if(!await write(versionKey,version,null))conflict();
   if(!previous){
    // Derived discovery entries are written before publishing the head. If this
@@ -202,6 +203,48 @@ function createAdapter(store,supabase){
   const next={schema_version:1,id,student_id:studentId,revision:c.revision,version_key:versionKey,version_hash:hash(version),updated_at:c.updated_at};
   if(!await write(`cases/${id}/head`,next,previous?.etag))conflict();
   return c;
+  }catch(error){
+   // An edit that was already in flight when deletion committed must not leave
+   // a late version behind after the deletion's history sweep has finished.
+   if((await head(id))?.data.deleted===true)await store.delete(versionKey);
+   throw error;
+  }
+ }
+ async function deleteCase({p_actor,p_id,p_expected}){
+  if(!uuid(p_id)||!Number.isInteger(p_expected)||p_expected<1)fail(400,'BAD_REQUEST','삭제할 전략과 버전을 확인해 주세요.');
+  const settings=(await config()).data;await authorize(settings,p_actor,'teacher');
+  const previous=await head(p_id);
+  if(!previous)fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');
+  const studentId=previous.data.student_id;
+  if(!accessible(settings,p_actor,studentId))fail(403,'ACCESS_DENIED','현재 담당 학생의 전략만 삭제할 수 있습니다.');
+  const owner=previous.data.deleted===true?previous.data.deleted_by:(await fromHead(previous)).data.teacher?.id;
+  if(owner!==p_actor)fail(403,'ACCESS_DENIED','작성한 교사만 이 전략을 삭제할 수 있습니다.');
+  if(previous.data.revision!==p_expected+(previous.data.deleted===true?1:0))conflict();
+  if(previous.data.deleted!==true){
+   const latest=(await config()).data;await authorize(latest,p_actor,'teacher');
+   if(!accessible(latest,p_actor,studentId))fail(403,'ACCESS_DENIED','담당 배정이 변경되어 삭제하지 않았습니다.');
+   // Blobs DELETE has no conditional ETag. Keep only this content-free marker
+   // so a stale writer can never recreate the case after history is removed.
+   const deleted={schema_version:1,id:p_id,student_id:studentId,revision:p_expected+1,deleted:true,deleted_by:p_actor,deleted_at:now()};
+   if(!await write(`cases/${p_id}/head`,deleted,previous.etag))conflict();
+  }
+  await purgeDeletedCase(p_id,studentId);
+  return {deleted:true,id:p_id};
+ }
+ async function purgeDeletedCase(id,studentId,budget){
+  const prefix=`cases/${id}/versions/`;
+  for await(const page of store.list({prefix,paginate:true})){
+   for(const blob of page.blobs){
+    if(budget&&budget.versions<=0)return false;
+    if(typeof blob.key!=='string'||!blob.key.startsWith(prefix))unavailable();
+    if(budget)budget.versions--;
+    await store.delete(blob.key);
+   }
+  }
+  // Keep discovery until every historical body is gone. Ordinary later reads
+  // can find this tombstone even after the deletion dialog has been closed.
+  await store.delete(`student-cases/${studentId}/${id}`);
+  return true;
  }
  const tables={
   counseling_roles:{key:'roles',fields:['user_id','role','approved'],filter:['user_id','role','approved']},
@@ -230,7 +273,7 @@ function createAdapter(store,supabase){
   const number=(key,fallback)=>{if(!params.has(key))return fallback;const raw=params.get(key);if(!/^\d+$/.test(raw)||Number(raw)>10000)fail(400,'UNSUPPORTED_STORAGE_QUERY','조회 범위를 확인해 주세요.');return Number(raw);};
   return {table,spec,fields,filters,orders,limit:number('limit',10000),offset:number('offset',0)};
  }
- async function caseRows(filters){
+ async function caseRows(filters,actorId){
   const byId=filters.find(f=>f.field==='id'),byStudent=filters.find(f=>f.field==='student_id');
   if(!byId&&!byStudent)fail(400,'UNSUPPORTED_STORAGE_QUERY','학생 또는 상담 ID가 필요합니다.');
   const ids=new Set(byId?.values||[]);
@@ -241,23 +284,39 @@ function createAdapter(store,supabase){
     }
    }
   }
-  const result=[],pending=[...ids];
+  const result=[],pending=[...ids],recovery={cases:5,versions:100};
   for(let start=0;start<pending.length;start+=12){
    const batch=await Promise.all(pending.slice(start,start+12).map(async id=>{
     const entry=await head(id);if(!entry||(byStudent&&!byStudent.values.includes(entry.data.student_id)))return null;
+    if(entry.data.deleted===true){
+     // actorId comes only from the authenticated server handler, never a query
+     // parameter. Recheck the original deleting teacher's current access.
+     if(actorId===entry.data.deleted_by&&recovery.cases>0){
+      recovery.cases--;
+      try{
+       const settings=(await config()).data;await authorize(settings,actorId,'teacher');
+       if(accessible(settings,actorId,entry.data.student_id))await purgeDeletedCase(id,entry.data.student_id,recovery);
+      }catch{
+       // Cleanup is best effort during reads; unrelated strategies stay usable.
+       // Its discovery entry remains available for a subsequent recovery pass.
+      }
+     }
+     return null;
+    }
     const version=await fromHead(entry);return {id,student_id:entry.data.student_id,data:version.data,updated_at:entry.data.updated_at};
    }));
    result.push(...batch.filter(Boolean));
   }
   return result;
  }
- async function query(path,{method='GET',data}={}){
+ async function query(path,{method='GET',data,actor_id}={}){
   if(path==='rpc/counseling_administer'&&method==='POST')return administer(data);
   if(path==='rpc/counseling_create_student'&&method==='POST')return createStudent(data);
   if(path==='rpc/counseling_write_case'&&method==='POST')return writeCase(data);
+  if(path==='rpc/counseling_delete_case'&&method==='POST')return deleteCase(data);
   if(method!=='GET')fail(400,'UNSUPPORTED_STORAGE_QUERY','상담 변경은 지정된 API로 처리해 주세요.');
   const request=parse(path);
-  let rows=request.table==='counseling_cases'?await caseRows(request.filters):(await config()).data[request.spec.key];
+  let rows=request.table==='counseling_cases'?await caseRows(request.filters,actor_id):(await config()).data[request.spec.key];
   rows=rows.filter(row=>request.filters.every(f=>f.values.includes(String(row[f.field]))));
   rows=[...rows].sort((a,b)=>{for(const {field,direction}of request.orders){const left=a[field],right=b[field];if(left===right)continue;return(left<right?-1:1)*(direction==='desc'?-1:1);}return 0;});
   return rows.slice(request.offset,request.offset+request.limit).map(row=>Object.fromEntries(request.fields.map(field=>[field,row[field]])));

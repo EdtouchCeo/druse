@@ -10,7 +10,7 @@ async function shot(page:any,name:string){const dir=path.resolve('../../_workspa
 test('teacher preview uses the current post-consultation result without changing or publishing it',async({page})=>{
  const value=finalCase(true),api=await intuitiveApi(page,{value}),before=JSON.stringify(api.value)
  await page.goto('/counseling/')
- await page.getByRole('button',{name:'최종 결과물',exact:true}).click()
+ await page.getByRole('button',{name:'분석·전략 보고서',exact:true}).click()
  await expect(page.getByLabel('다음 점검일',{exact:true})).toBeVisible()
  await expect(page.locator('.teacher-notes').getByLabel('다음 점검일',{exact:true})).toHaveCount(0)
  await page.getByRole('button',{name:'학생 결과물 미리보기',exact:true}).focus()
