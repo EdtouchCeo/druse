@@ -125,9 +125,14 @@ def merge_extras(data, extras):
             continue
         # 대상 문서가 처음 있던 자리에만 새 청크를 넣고 다른 문서는 건드리지 않는다.
         at = next((i for i, c in enumerate(chunks) if c[0] == di), len(chunks))
+        previous_chunks = chunks
         chunks = chunks[:at] + new + [c for c in chunks[at:] if c[0] != di]
-        print('[변경] %s: 청크 %d → %d개 — 기존 본문 변경, 전체 임베딩 재생성 필요'
-              % (label, len(old), len(new)))
+        if len(chunks) > len(previous_chunks) and chunks[:len(previous_chunks)] == previous_chunks:
+            print('[추가] %s: 기존 문서 뒤에 청크 %d개 추가'
+                  % (label, len(new) - len(old)))
+        else:
+            print('[변경] %s: 청크 %d → %d개 — 기존 본문 또는 순서 변경, 전체 임베딩 재생성 필요'
+                  % (label, len(old), len(new)))
     return dict(data, docs=docs, chunks=chunks)
 
 
