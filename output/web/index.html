@@ -16887,8 +16887,23 @@ function switchSpTab(id,btn){
   // 순수 조립 — ① 「법령명(별칭 최장 일치)+제N조(의M)」 ② 없으면 실무 주제 매핑(특별휴가·겸직 등)으로 조문 전문 주입. 미매칭 [] (무영향).
   function buildLawContexts(struct, question, budgetChars){
     if (typeof budgetChars !== 'number') budgetChars = 7000;
-    if (!struct || !Array.isArray(struct.laws) || !struct.laws.length) return [];
+    if (!struct || !Array.isArray(struct.laws)) return [];
     var qn = lawNorm(question || '');
+    var out = [], budget = budgetChars;
+    // 공식 해석을 정리한 안내는 조문과 구분하고, 검색에서 누락되지 않게 먼저 제공한다.
+    (struct.guidance || []).forEach(function(guidance){
+      var matchesKeyword = guidance.keywords.some(function(keyword){ return qn.indexOf(lawNorm(keyword)) >= 0; });
+      // 각 그룹에서 하나 이상 일치해야 한다. 예: 강연 + 신고, 출강 + 면제.
+      var matchesGroups = guidance.keywordGroups && guidance.keywordGroups.length && guidance.keywordGroups.every(function(group){
+        return group.some(function(keyword){ return qn.indexOf(lawNorm(keyword)) >= 0; });
+      });
+      if (!matchesKeyword && !matchesGroups) return;
+      guidance.contexts.forEach(function(context){
+        if (!context.text || context.text.length > budget || out.length >= 5) return;
+        out.push({ label: context.label, ref: context.ref, text: context.text });
+        budget -= context.text.length;
+      });
+    });
     var best = null, bestLen = 0;
     for (var i=0;i<struct.laws.length;i++){
       var law = struct.laws[i];
@@ -16925,8 +16940,6 @@ function switchSpTab(id,btn){
         }
       }
     }
-    if (!picks.length) return [];
-    var out = [], budget = budgetChars;
     picks = picks.slice(0, 6);
     for (var k=0;k<picks.length;k++){
       if (budget <= 0) break;
@@ -16939,6 +16952,16 @@ function switchSpTab(id,btn){
       budget -= art.text.length;
     }
     return out;
+  }
+
+  function mergeLawContexts(injected, retrieved){
+    var seen = {};
+    return injected.concat(retrieved).filter(function(context){
+      var key = JSON.stringify([context.label, context.ref, context.text]);
+      if (seen[key]) return false;
+      seen[key] = 1;
+      return true;
+    }).slice(0, 8);
   }
 
   window.chatAsk = function(which){
@@ -17016,10 +17039,7 @@ function switchSpTab(id,btn){
           try {
             var injectedL = buildLawContexts(struct, q);
             if (injectedL.length) {
-              var seenL = {};
-              (ctx || []).forEach(function(c){ seenL[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)] = 1; });
-              var freshL = injectedL.filter(function(c){ return !seenL[c.label + '|' + c.ref + '|' + String(c.text || '').slice(0, 80)]; });
-              ctx = freshL.concat(ctx || []).slice(0, 10);
+              ctx = mergeLawContexts(injectedL, ctx || []);
             }
           } catch (e) { /* struct 부재·파싱 실패 → 조용히 기존 흐름 유지 */ }
           return doAsk();
