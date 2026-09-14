@@ -72,9 +72,18 @@ def build_guidance(docs, chunks):
         expected = [(sec['ref'], sec['text']) for sec in source['sections']]
         if [(c['ref'], c['text']) for c in contexts] != expected:
             raise ValueError('해설 원본과 검색 청크가 다름: ' + label)
+        config = dict(source['guidance'])
+        context_refs = config.pop('contextRefs', None)
+        if context_refs is not None:
+            by_ref = {c['ref']: c for c in contexts}
+            if len(by_ref) != len(contexts) or len(set(context_refs)) != len(context_refs):
+                raise ValueError('해설 선택 참조 중복: ' + label)
+            if any(ref not in by_ref for ref in context_refs):
+                raise ValueError('해설 선택 참조가 검색 인덱스에 없음: ' + label)
+            contexts = [by_ref[ref] for ref in context_refs]
         if not contexts or len(contexts) > 5 or any(len(c['text']) > 1200 for c in contexts):
             raise ValueError('해설 우선 주입 한도 초과: ' + label)
-        guidance.append(dict(source['guidance'], contexts=contexts))
+        guidance.append(dict(config, contexts=contexts))
     return guidance
 
 # 실무 주제 → 관련 조문 매핑 — 교사가 법령명·조문 번호 없이 자연어로 물을 때
