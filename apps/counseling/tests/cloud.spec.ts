@@ -90,7 +90,7 @@ test('student sees only published strategy and tasks, no teacher notes or tools,
  await page.setViewportSize({width:390,height:844})
  await page.goto('https://counseling.test:5178/counseling/')
  await expect(page.getByRole('heading',{name:'나의 학종 전략'})).toBeVisible()
- await expect(page.getByRole('heading',{name:'실행과제',exact:true})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'이번 실행과제',exact:true})).toBeVisible()
  await expect(page.getByText('비교 기준 하나를 정합니다.',{exact:true})).toHaveCount(0)
  await expect(page.getByText('학생에게 노출하지 않을 학습 고민',{exact:true})).toHaveCount(0)
  await expect(page.getByRole('heading',{name:'학생 기본자료',exact:true})).toHaveCount(0)

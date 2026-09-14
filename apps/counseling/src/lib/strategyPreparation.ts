@@ -55,7 +55,7 @@ export function prepareStrategies(
  if(profile.learning_concerns.trim()||profile.study_habits.trim()){
   const concerns=profile.learning_concerns.trim()
   const evidenceFocus=concerns?`“${excerpt(concerns)}”`: `공부 방법 “${excerpt(profile.study_habits)}”`
-  const plan=concerns?`실행 초안: ${evidenceFocus}와 관련된 현재 단원의 답안·설명 사례를 고릅니다. 실제 자료에서 확인된 경우에만 개념·풀이 과정·근거 표현으로 오류 사례를 분류합니다. 같은 내용을 다시 설명하고 전후 답안과 교사 피드백을 비교합니다.`:`실행 초안: ${evidenceFocus}를 활용한 최근 학습 자료를 고릅니다. 도움이 된 방법과 적용하기 어려웠던 상황을 확인하고, 효과가 확인된 방법을 다음 수업에도 이어갑니다.`
+  const plan=concerns?`실행 초안: ${evidenceFocus}와 관련된 현재 단원의 답안·설명 사례를 고릅니다. 실제 자료에서 확인된 경우에만 개념·풀이 과정·근거 표현으로 오류 사례를 분류합니다. 같은 내용을 다시 설명하고 전후 답안과 교사 피드백을 비교합니다.\n남길 결과(제안): 기존 답안에서 다시 설명한 부분과 근거를 표시한 수정본.\n점검 기준(제안): 바꾼 설명이 근거와 연결되는지, 받은 피드백을 반영했는지 확인합니다.`:`실행 초안: ${evidenceFocus}를 활용한 최근 학습 자료를 고릅니다. 도움이 된 방법과 적용하기 어려웠던 상황을 확인하고, 효과가 확인된 방법을 다음 수업에도 이어갑니다.\n남길 결과(제안): 사용한 공부 방법과 도움이 된 점을 표시한 기존 학습 자료.\n점검 기준(제안): 자료의 내용을 스스로 설명할 수 있는지, 같은 방법을 이어갈 수 있는지 확인합니다.`
   cards.push({
    id:'learning-support',title:concerns?'학습 고민을 답안·피드백으로 점검':'효과 있는 공부 방법 이어가기',
    evidence:[...observation('학습 고민',profile.learning_concerns),...observation('공부 방법',profile.study_habits)],
@@ -73,7 +73,7 @@ export function prepareStrategies(
   student.school_stage==='middle'?['고등학교 계획 자료는 진학 후 학습을 살펴보는 탐색 참고입니다. 현재 중학교 과제로 연결하지 않습니다.']:
   [`입력 학년도·학년·이수 과목${semester===null?'':`·${semester}학기`}에 맞는 학교 계획 후보 ${selected.length}개입니다. 실제 배정·현행 시행은 미확인입니다.`]
  const coursePlan=profile.selected_subjects.length?{
-  subject_plan:propose(`실행 초안: ${profile.selected_subjects.join(', ')}의 현재 단원과 배정 과제를 확인합니다. 점검할 개념 → 활용할 자료 → 남길 결과 → 피드백 기준을 정합니다. 학교 계획은 실제 수강·현행 과제와 조건을 확인한 뒤 참고합니다.`),
+  subject_plan:propose(`실행 초안: ${profile.selected_subjects.join(', ')}의 현재 단원과 배정 과제를 확인합니다. 배운 개념을 수업 사례와 연결해 설명하고, 수업 자료에서 그 근거를 표시합니다.\n남길 결과(제안): 개념·사례·근거를 함께 남긴 설명. 실제 과제에 맞는 형식은 확인 필요합니다.\n점검 기준(제안): 개념과 사례의 연결을 자신의 말로 설명하는지, 근거와 교사 피드백이 설명에 반영됐는지 확인합니다.\n학교 계획은 실제 수강·현행 과제와 조건을 확인한 뒤 참고합니다. 특정 학교 자료를 고르기 전에는 과제명·산출물·일정을 확정하지 않습니다.`),
  }:undefined
  cards.push({
   id:'school-alignment',title:'이수 과목에서 준비할 내용 고르기',
@@ -87,13 +87,13 @@ export function prepareStrategies(
   ],
   counselingQuestions:['선택한 내용이 현재 배우는 단원과 과제에 맞나요?'],
   strategyPatch:coursePlan,
-  actions:profile.selected_subjects.length?[action(`${profile.selected_subjects.join(', ')}의 현재 단원·과제 조건을 확인하고 점검할 학습 자료 정하기`)]:[],
+  actions:profile.selected_subjects.length?[action(`제안 · ${profile.selected_subjects.join(', ')}의 배정 범위를 확인한 뒤, 배운 개념과 수업 사례를 연결해 설명하고 근거를 수업 자료에 표시하기`)]:[],
   schoolTaskIds:selected.map(task=>task.id),
  })
 
  const inquiryEvidence=[...observation('관심 주제',profile.interests),...observation('관심 전공·계열',profile.target_major),...observation('읽기 경험',profile.reading)]
  const inquiryPlan=inquiryEvidence.length?{
-  inquiry_plan:propose(`실행 초안: ${profile.interests.trim()?`관심 주제 “${excerpt(profile.interests)}”`:profile.target_major.trim()?`관심 전공·계열 “${excerpt(profile.target_major)}”`:`읽기 경험 “${excerpt(profile.reading)}”`}에서 현재 수업과 연결할 질문을 정합니다. 질문 → 방법 → 산출물 → 피드백을 정합니다. 방법 예시: 자료 비교 또는 관찰. 산출물 예시: 비교표 또는 설명문. 구체 질문·자료와 제출 조건은 확인 필요합니다.`),
+  inquiry_plan:propose(`실행 초안: ${profile.interests.trim()?`관심 주제 “${excerpt(profile.interests)}”`:profile.target_major.trim()?`관심 전공·계열 “${excerpt(profile.target_major)}”`:`읽기 경험 “${excerpt(profile.reading)}”`}와 연결되는 부분을 현재 수업 자료에서 고르고, 직접 설명하고 싶은 질문으로 좁힙니다. 질문 → 방법 → 산출물 → 피드백을 연결하는 초안입니다.\n방법 예시: 자료 비교 또는 관찰. 산출물 예시: 비교표 또는 설명문. 실제 질문·수업에 맞춰 선택합니다.\n할 일(제안): 고른 자료에서 질문에 답하는 근거와 아직 설명하기 어려운 부분을 구분해 표시합니다.\n점검 기준(제안): 자료의 근거로 질문에 답할 수 있는지, 교사 피드백 뒤 설명이 달라졌는지 확인합니다.\n구체 질문·자료와 제출 조건은 확인 필요합니다.`),
  }:undefined
  cards.push({
   id:'inquiry-design',title:'관심을 탐구 질문으로 바꾸기',
@@ -103,7 +103,7 @@ export function prepareStrategies(
   verification:['입력한 관심과 읽기 경험의 실제 내용, 현재 수업과 연결되는 개념을 확인합니다.','자료의 출처·이용 조건과 질문을 확인할 수 있는 방법인지 검토합니다. 미기재된 보고서 분량·발표 시간·제출일은 만들지 않습니다.'],
   counselingQuestions:['이 주제에서 직접 확인하거나 설명하고 싶은 점은 무엇인가요?'],
   strategyPatch:inquiryPlan,
-  actions:inquiryEvidence.length?[action('관심과 수업을 연결한 질문·방법·산출물·피드백 기준의 초안을 교사와 정하기')]:[],
+  actions:inquiryEvidence.length?[action(`제안 · ${profile.interests.trim()?`관심 “${excerpt(profile.interests)}”`:profile.target_major.trim()?`관심 전공·계열 “${excerpt(profile.target_major)}”`:'입력한 읽기 경험'}와 연결되는 수업 자료에서 질문에 답하는 근거와 확인할 부분을 구분해 표시하기 (질문·범위 확인 후)`)]:[],
  })
 
  if(profile.activities.trim()||profile.teacher_observations.trim()){
@@ -114,8 +114,8 @@ export function prepareStrategies(
    proposal:'역할·작업 자료·피드백 확인 → 다음에 보완하거나 공유할 내용 선택',
    verification:['활동명이나 교사 관찰만으로 수행 사실을 확정하지 않고 역할·작업 자료·피드백을 대조합니다.','이미 수행한 내용과 교사의 향후 제안을 구분하며, 학교 활동의 대상 학년·운영·참여 가능 여부를 확인합니다.'],
    counselingQuestions:['직접 맡은 역할과 만든 자료는 무엇이며, 다음에 더 해 보고 싶은 부분은 무엇인가요?'],
-   strategyPatch:{activity_plan:propose('실행 초안: 활동의 역할·작업 자료·받은 피드백을 확인합니다. 이미 한 내용과 앞으로 할 내용을 나누고, 다음에 보완하거나 설명·공유할 결과를 정합니다. 참여·성과는 근거 확인 후 기록합니다.')},
-   actions:[action('기존 활동의 역할·산출물·피드백 근거를 확인하고 앞으로 제안할 내용을 구분하기')],
+   strategyPatch:{activity_plan:propose('실행 초안: 기존 작업 자료에서 자신이 맡은 부분과 받은 피드백을 찾아 표시합니다. 그중 설명하거나 보완할 부분을 고르고, 고친 내용과 이유를 남깁니다.\n남길 결과(제안): 역할·근거·수정 이유를 표시한 기존 작업 자료. 이미 한 내용과 앞으로 할 내용은 구분합니다.\n점검 기준(제안): 자신의 역할을 자료로 설명할 수 있는지, 받은 피드백과 수정 이유가 연결되는지 확인합니다. 참여·성과는 근거 확인 후 기록합니다.')},
+   actions:[action('제안 · 기존 활동 자료에서 맡은 부분과 받은 피드백을 표시하고, 확인 후 고친 부분과 이유 남기기')],
   })
  }
 

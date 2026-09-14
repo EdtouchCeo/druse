@@ -220,3 +220,35 @@ input::placeholder,textarea::placeholder{opacity:1;color:#637083}
  .field-example>summary{min-height:36px;line-height:36px}
  .empty-main{padding:28px 8px}.empty-main h1{font-size:23px}
 }
+
+/* The final student document follows one reading order on screen and paper. */
+.result-preview-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:20px 0;color:#475569;font-size:14px}
+.student-result{width:100%;max-width:900px;margin:0 auto 28px;background:#fff;color:#17212e}
+.result-heading{padding:22px 0 20px;border-bottom:2px solid var(--brand)}
+.result-heading h2{font-size:20px;line-height:1.5;margin:0 0 12px;color:var(--brand)}
+.result-title{margin:0;font-size:26px;line-height:1.5;font-weight:700;word-break:keep-all;overflow-wrap:anywhere}
+.student-result .result-sections{display:block}
+.student-result .result-sections>section{padding:22px 0;margin:0;border:0;border-bottom:1px solid #d8dee8;border-radius:0;background:transparent;box-shadow:none}
+.student-result .result-sections h3{font-size:20px;line-height:1.5;margin:0 0 12px;color:#17212e}
+.student-result .result-prose p{font-size:16px;line-height:1.85;margin:0 0 8px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;color:#17212e}
+.student-result .result-prose p.result-source{font-size:13px;line-height:1.7;color:#475569;margin-top:10px}
+.student-result .result-prose p.result-gap{height:8px;margin:0}
+.result-actions ol{padding-left:24px;margin:0}
+.result-actions li{padding-left:5px;margin:0 0 20px}
+.result-actions li:last-child{margin-bottom:0}
+.result-actions li::marker{font-weight:700;color:var(--brand)}
+.student-result .result-action-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;margin:8px 0 0;color:#475569}
+.student-result .result-next-date{margin:20px 0 0;font-size:16px;font-weight:600;color:#17212e}
+.result-field+.result-field{margin-top:18px}
+.result-schedule{margin-top:20px;grid-template-columns:minmax(0,1fr)}
+.result-schedule label,.result-schedule input{min-width:0;max-width:100%}
+.result-field h4{font-size:16px;line-height:1.6;margin:0 0 6px;color:#17212e}
+.student-workspace .document-heading{margin-bottom:12px;gap:10px}
+.student-workspace .document-heading h1{font-size:20px;line-height:1.5;margin:3px 0}
+.student-workspace .session-bar{margin-bottom:0}
+.student-workspace .result-heading{padding:14px 0}
+.student-workspace .result-heading h2{font-size:16px;margin-bottom:6px}
+.student-workspace .result-title{font-size:23px;line-height:1.45}
+.student-workspace .result-sections>section{padding:16px 0}
+@media(max-width:760px){.student-service .topbar{min-height:64px;padding:10px 16px}.student-service .school-logo{width:54px;height:36px}.student-service .brand strong{font-size:20px}.student-workspace .main{padding-top:12px}.student-workspace .mobile-list{margin:10px 16px 0;min-height:36px;padding:7px 10px}.student-workspace .document-heading{gap:8px;margin-bottom:10px}.student-workspace .document-heading h1{font-size:18px}.student-workspace .document-actions button{min-height:40px;padding:8px 12px}.student-workspace .session-list button{min-height:36px;padding:6px 8px}.student-workspace .result-title{font-size:21px}.student-workspace .result-heading{padding:12px 0}.student-workspace .result-sections>section{padding:14px 0}}
+@media(max-width:760px){.result-preview-bar{align-items:flex-start;flex-direction:column;gap:8px}.result-heading{padding-top:16px}.result-title{font-size:23px}.student-result .result-sections>section{padding:20px 0}.student-result .result-sections h3{font-size:19px}.student-result .result-prose p{line-height:1.8}}

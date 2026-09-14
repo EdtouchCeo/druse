@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {emptyProfile,normalizeProfile,profileIssues,hasGradeData,gradeTrends,profileQuestions,missingProfile,adoptProfile} from '../src/lib/profile'
+import {emptyProfile,normalizeProfile,profileIssues,hasGradeData,gradeTrends,profileQuestions,missingProfile,adoptProfile,profileDraft} from '../src/lib/profile'
 import {emptyStrategy,normalizeCase,studentView} from '../src/lib/model'
 import {schoolMatches,adoptSchoolTask,taskReference,type SchoolContext,type SchoolAssessment} from '../src/lib/schoolContext'
 import type {GradeRecord,CounselingCase,Student} from '../src/lib/types'
@@ -18,3 +18,20 @@ test('school tasks prioritize selected actual subjects and exact year/grade; mid
 test('school task adoption retains original timing/conditions/source and cannot overwrite a teacher plan',()=>{const reference=taskReference(task);assert.match(reference,/5월 중/);assert.match(reference,/수업 중 작성/);assert.match(reference,/채점표 발췌\(필수 조건과 구분\): 발표 시간 8~12분/);assert.match(reference,/\/subjects\/0\/tasks\/0/);assert.ok(!reference.includes('2026-05-'));const draft=adoptSchoolTask(task,emptyStrategy());assert.match(draft.subject_plan,/현행/);assert.match(draft.inquiry_plan,/필수 참여로 확정하지 않고/);assert.ok(adoptSchoolTask(task,{...emptyStrategy(),subject_plan:'기존 계획'}).subject_plan.startsWith('기존 계획\n\n'))})
 
  test('an unfinished grade row survives a backup and stays missing evidence until actual data is entered',()=>{const partial=grade({subject:'',grade_scale:'unknown',rank_grade:null,score:null,achievement:''});const restored=normalizeProfile(JSON.parse(JSON.stringify({...emptyProfile(),grades:[partial]})));assert.equal(restored.grades.length,1);assert.equal(hasGradeData(restored.grades[0]!),false);assert.ok(missingProfile(restored).includes('과목별 성적과 등급 체계'));assert.equal(profileQuestions(restored).length,0);restored.grades[0]!.subject='수학';restored.grades[0]!.score=0;assert.equal(hasGradeData(restored.grades[0]!),true)})
+
+test('profile draft proposes evidence and outputs without claiming a chosen school task, completed activity or agreed format',()=>{
+ const input={...emptyProfile(),interests:'합성 관심 주제',selected_subjects:['통합과학1'],activities:'학생이 합성 관찰 기록을 만들었다고 말함',teacher_observations:'비공개 교사 메모 표식',weekly_minutes:0}
+ const draft=profileDraft(input)
+ assert.match(draft.target_path!,/^관심 주제:/)
+ assert.match(draft.inquiry_plan!,/탐구 질문·학교 과제.*확인할 사항/)
+ for(const text of [draft.inquiry_plan!,draft.subject_plan!,draft.activity_plan!]){
+  assert.match(text,/산출물 후보\(예시\):/)
+  assert.match(text,/점검 기준\(제안\):/)
+  assert.match(text,/근거/)
+  assert.match(text,/기존 수업·활동 안에서/)
+ }
+ assert.match(draft.activity_plan!,/활동 경험\(근거 확인 필요\)/)
+ assert.match(draft.activity_plan!,/새 활동 일지나 제출 의무를 부여하지/)
+ assert.doesNotMatch(JSON.stringify(draft),/비공개 교사 메모 표식|참여를 완료했습니다|상담에서 합의했습니다/)
+ assert.deepEqual(profileDraft(emptyProfile()),{})
+})

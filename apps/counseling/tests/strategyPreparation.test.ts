@@ -142,3 +142,18 @@ test('learning and inquiry drafts use the selected evidence without asserting an
  assert.match(two.find(row=>row.id==='inquiry-design')!.strategyPatch!.inquiry_plan!,/학교 도서관 이용 변화/)
  assert.ok(one.every(row=>!row.strategyPatch?.strengths&&!row.strategyPatch?.gaps&&!row.strategyPatch?.student_message))
 })
+
+test('adoptable preparation plans carry a checkable result and inquiry actions use the actual interest as a proposal',()=>{
+ const cards=prepareStrategies(profile({interests:'강수량과 물의 변화',selected_subjects:['공통국어1'],activities:'합성 경험',learning_concerns:'근거 설명을 점검하고 싶음'}),student,school)
+ for(const card of cards.filter(row=>row.id!=='implementation-review')){
+  const text=Object.values(card.strategyPatch||{}).join('\n')
+  assert.match(text,/남길 결과|산출물 예시/)
+  assert.match(text,/점검 기준\(제안\):/)
+  assert.match(text,/근거/)
+ }
+ const inquiry=cards.find(row=>row.id==='inquiry-design')!
+ assert.match(inquiry.actions![0]!,/^제안 · 관심 “강수량과 물의 변화”/)
+ assert.match(inquiry.actions![0]!,/근거와 확인할 부분을 구분해 표시/)
+ assert.match(inquiry.actions![0]!,/질문·범위 확인 후/)
+ assert.doesNotMatch(inquiry.actions![0]!,/초안을 교사와 정하기|상담에서 합의/)
+})

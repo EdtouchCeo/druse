@@ -127,6 +127,9 @@ function reviewSession(s) {
  if(/교사 (?:제안|준비안)|(?:질문|방법|산출물|점검일|범위|기준)(?:을|를).{0,12}(?:정합니다|선택합니다|확인합니다)/.test(prose))notes.push('준비 단계의 문장이 남아 있는지 확인해 주세요. 최종 안내에는 상담에서 정한 학생의 행동·산출물·점검 시점을 구체적으로 적고, 아직 정하지 않은 사항은 미정으로 구분합니다. 학교 과제의 조건과 제한은 보존합니다.');
  const lines=prose.split('\n').map(line=>line.trim()).filter(line=>line.length>=25);
  if(new Set(lines).size!==lines.length)notes.push('같은 설명이 반복됩니다. 학생이 읽을 최종 문장에서 반복을 줄일 수 있는지 검토하되, 과제별 조건·직접 인용·수치는 임의로 삭제하지 마세요.');
+ if(!s.next_date&&!s.actions.some(action=>action.due_date))notes.push('실행 과제의 기한과 다음 점검 시점이 모두 미정입니다. 학생과 정할 수 있는 시점을 확인하거나 미정인 이유를 안내해 주세요. 날짜를 임의로 정할 필요는 없습니다.');
+ if(Array.from(strategy.student_message).length>450)notes.push('학생 안내가 길어 핵심 행동을 찾기 어려울 수 있습니다. 먼저 할 일과 점검을 짧게 안내하고 상세 설명은 계획 항목에서 읽을 수 있게 나눌지 검토해 주세요. 조건·직접 인용은 보존합니다.');
+ if(/학교 계획 참고:|학교 활동 참고:|활동 실행 초안:/.test(prose))notes.push('학교 자료를 연결했다는 이유만으로 현재 과제나 활동 참여가 확정된 것은 아닙니다. 대상·시기·참여 가능 여부와 원문 조건을 확인한 뒤 학생과 합의한 실행 범위를 안내해 주세요.');
  notes.push('규칙에 따른 점검 의견입니다. AI 모델의 문체 평가나 교사의 내용 확인을 대신하지 않습니다.','전략의 근거와 직접 인용을 보존하고, 계획을 이미 수행한 성과로 표현하지 않았는지 확인해 주세요. 학생 안내 문장의 핵심·구체성·반복 여부는 교사가 최종 확인합니다.');
  return {state:incomplete?'needs_revision':'pending',method:'manual',content_hash:hashSession(s),notes,created_at:now()};
 }
@@ -138,7 +141,24 @@ function report(c,s,{audience='teacher',confirmedPreview=false}={}) {
  const actionText=actions=>actions.filter(a=>a.text.trim()).map(a=>a.text+(a.due_date?` (${a.due_date})`:'')+` · ${statuses[a.status]||a.status}`).join('\n');
  const fields=[['전략 주제',s.topic],...(student?[['학생에게 안내할 내용',strategy.student_message]]:[]),['희망 전공',strategy.target_major],['진학 방향',strategy.target_path],['강점',strategy.strengths],['보완할 점',strategy.gaps],['교과 학습 계획',strategy.subject_plan],['탐구 계획',strategy.inquiry_plan],['활동 계획',strategy.activity_plan],['학기별 계획',strategy.semester_plan],...(!student?[['학생에게 안내할 내용',strategy.student_message]]:[]),['학생 실행 과제',actionText(s.actions)],['다음 전략 점검',s.next_date]];
  const present=([,value])=>String(value??'').trim().length>0;
- const prose=value=>String(value??'').split('\n').map(line=>/^\s*(?:출처:|자료 ID:|원문 위치:)/.test(line)?`<span class="source-line">${e(line)}</span>`:e(line)).join('\n');
+ // References are editable text with no trustworthy end marker. Style each line
+ // in place, preserving conditions, source pointers and teacher-written context.
+ const prose=value=>{
+  const lines=String(value??'').split('\n').map(line=>/^\s*(?:출처:|자료 ID:|원문 위치:)/.test(line)?`<span class="source-line">${e(line)}</span>`:/^\s*(?:학교 계획 참고:|학교 활동 참고:)/.test(line)?`<strong class="school-reference">${e(line)}</strong>`:/^\s*(?:조건:|AI 관련 원문:|원문 대상:|원문 시기:|적용 상태:)/.test(line)?`<span class="school-condition">${e(line)}</span>`:e(line));
+  // Keep author-entered lines intact across pages. Oversized lines can still
+  // fragment naturally; never apply a fixed height or clipped overflow.
+  return lines.length===1?lines[0]:`<span class="prose-lines">${lines.map(line=>`<span class="prose-line">${line||'<br>'}</span>`).join('\n')}</span>`;
+ };
+ const section=([label,value],level=2)=>`<section><h${level}>${e(label)}</h${level}><p>${prose(value)}</p></section>`;
+ let studentHtml='';
+ if(student){
+  if(strategy.student_message.trim())studentHtml+=section(['학생에게 전하는 안내',strategy.student_message]);
+  const actions=s.actions.filter(a=>a.text.trim());
+  studentHtml+='<section class="next-actions"><h2>이번 실행 과제</h2>'+(actions.length?actions.map((a,i)=>`<div class="action"><p>${i+1}. ${prose(a.text)}</p><p class="action-meta">기한: ${e(a.due_date||'미정')} · 상태: ${e(statuses[a.status]||a.status)}</p></div>`).join(''):'<p>실행 과제: 미정</p>')+'</section>'+section(['다음 점검',s.next_date||'미정']);
+  for(const [heading,group] of [['선택한 방향과 근거',[['목표 전공·관심 분야',strategy.target_major],['희망 진로·진학 방향',strategy.target_path],['근거에서 확인한 강점',strategy.strengths],['보완할 점과 필요한 도움',strategy.gaps]]],['교과·탐구·활동 계획',[['교과 학습 계획',strategy.subject_plan],['탐구 계획',strategy.inquiry_plan],['활동 계획',strategy.activity_plan],['학기별 실행 계획',strategy.semester_plan]]]]){
+   const available=group.filter(present);if(available.length)studentHtml+=`<h2>${heading}</h2>`+available.map(field=>section(field,3)).join('');
+  }
+ }
  if(!student)fields.push(['교사 내부 참고 · 학생 질문',s.student_question],['교사 내부 참고 · 상황',s.context],['교사 내부 참고 · 근거',s.evidence_notes],['교사 내부 참고 · 의견',s.teacher_opinion]);
  let profileHtml='',workflowHtml='';
  if(!student){
@@ -154,6 +174,8 @@ function report(c,s,{audience='teacher',confirmedPreview=false}={}) {
   workflowHtml+='<h2>2. 학생 상담과 반영 사항 · 교사용</h2>'+[['상담 상태',labels[consultation.status]],['상담 날짜',consultation.date],['학생 반응',consultation.student_response],['합의한 방향',consultation.agreed_direction],['전략 조정 사항',consultation.adjustments],['상담 요약',consultation.summary]].filter(present).map(([label,value])=>`<section><h3>${e(label)}</h3><p>${prose(value)}</p></section>`).join('')+`<h2>3. ${s.confirmed?'상담을 반영한 최종 전략':W.ready(s)?'상담을 반영한 최종 전략 초안':'상담 후 완성할 전략 초안'}</h2>`;
  }
  const status=s.guidance?'학생 안내':s.confirmed||confirmedPreview?'확정 · 학생 안내 전':'초안 · 학생 안내 전';
- return `<!doctype html><html lang="ko"><meta charset="utf-8"><title>대륜고 학종 전략 안내</title><style>body{font-family:"Malgun Gothic",sans-serif;max-width:820px;margin:32px auto;line-height:1.7}p{white-space:pre-wrap;overflow-wrap:anywhere;widows:2;orphans:2}h2{font-size:18px}h2,h3{break-after:avoid-page}section{break-inside:auto}.source-line{font-size:0.85em;color:#475569}table{border-collapse:collapse;width:100%;table-layout:fixed}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #bbb;padding:6px;overflow-wrap:anywhere}@page{size:A4;margin:18mm}@media print{button{display:none}}</style><button onclick="window.print()">인쇄 / PDF 저장</button><h1>대륜고 학종 전략 안내 · ${status}</h1><p>${e(c.student.academic_year)}학년도 ${e(c.student.student_number)} ${e(c.student.name)} · ${e(s.date)}</p>${profileHtml}${workflowHtml}${fields.filter(present).map(([k,v])=>`<section><h2>${e(k)}</h2><p>${prose(v)}</p></section>`).join('')}<p>전략 버전 ${c.revision} · ${e(c.teacher.display_name)} · ${s.guidance?'학생 안내 '+e(s.guidance.published_at):student?'학생 안내용 미리보기':s.confirmed?'교사 확인 '+e(s.confirmed.at):'교사 최종 확인 전'}</p></html>`;
+ const studentHeader=student?`<p class="document-meta">${e(status)} · 작성일 ${e(s.date)}${c.teacher.display_name?' · 담당 교사 '+e(c.teacher.display_name):''}</p>${s.topic?`<p class="document-topic">${e(s.topic)}</p>`:''}`:'';
+ const lineStyle='<style>.prose-lines{display:block;white-space:normal}.prose-line{display:block;white-space:pre-wrap;break-inside:avoid-page;overflow-wrap:anywhere}</style>';
+ return `<!doctype html><html lang="ko"><meta charset="utf-8"><title>대륜고 학종 전략 안내</title><style>body{font-family:"Malgun Gothic",sans-serif;max-width:820px;margin:32px auto;line-height:1.7;color:#212b38}p{white-space:pre-wrap;overflow-wrap:anywhere;widows:2;orphans:2}h1{font-size:25px;line-height:1.4}h2{font-size:18px}h3{font-size:16px}h2,h3{break-after:avoid-page}section{break-inside:auto}.source-line{font-size:0.85em;color:#475569}.school-reference{font-weight:700}.school-condition{font-weight:600}.document-meta,.action-meta{font-size:13px;color:#475569}.document-meta{margin:4px 0}.document-topic{font-size:19px;font-weight:600;margin:16px 0}.action{break-inside:avoid-page}.action p{margin:6px 0}.action-meta{margin-top:0}.next-actions{border-left:3px solid #294d77;padding-left:14px}table{border-collapse:collapse;width:100%;table-layout:fixed}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #bbb;padding:6px;overflow-wrap:anywhere}@page{size:A4;margin:18mm}@media print{button{display:none}body{margin:0}h1{font-size:21px}h2{font-size:16px}h3{font-size:14px}body{font-size:11pt;line-height:1.55}.document-meta,.action-meta{font-size:9pt}}</style>${lineStyle}<button onclick="window.print()">인쇄 / PDF 저장</button><h1>대륜고 학종 전략 안내${student?'':' · '+status}</h1><p class="document-meta">${e(c.student.academic_year)}학년도${c.student.student_number?' · 학번 '+e(c.student.student_number):''}${c.student.name?' · '+e(c.student.name):''}${student?'':' · '+e(s.date)}</p>${studentHeader}${student?studentHtml:profileHtml+workflowHtml+fields.filter(present).map(field=>section(field)).join('')}<p class="document-meta">전략 버전 ${c.revision}${student?'':' · '+e(c.teacher.display_name)} · ${s.guidance?'학생 안내 '+e(s.guidance.published_at):student?'학생 안내용':s.confirmed?'교사 확인 '+e(s.confirmed.at):'교사 최종 확인 전'}</p></html>`;
 }
 module.exports={HttpError,fail,uuid,newId,now,json,wrap,body,onlyKeys,config,db,identity,profileFor,auth,studentsFor,requireStudent,readCase,rejectPrivate,strategyFields,strategyOf,profileOf:P.profileOf,consultationOf:W.consultationOf,planFields:W.planFields,requireWorkflowReady:s=>W.requireReady(s,fail),normalizeCase,studentCase,caseForActor,guidanceReady,hashSession,validateCase,freshSession,newCase,revision,getSession,updateCase,reviewSession,writeCase,report};
