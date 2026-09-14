@@ -141,6 +141,10 @@ exports.handler = async (event) => {
     if (cand && cand.content && cand.content.parts) {
       answer = cand.content.parts.map((p) => p.text || '').join('').trim();
     }
+    if (answer && dataset === 'law' && contexts.some((c) => c.label.includes('외부강의등 신고면제 기관 범위')) &&
+        !(answer.includes('국민권익위원회') && answer.includes('해석') && answer.includes('안내'))) {
+      answer = '아래는 국민권익위원회 해석을 정리한 안내를 근거로 한 답변입니다.\n\n' + answer;
+    }
     if (!answer) {
       const blocked = cand && cand.finishReason ? (' (' + cand.finishReason + ')') : '';
       answer = '답변을 생성하지 못했습니다.' + blocked;
