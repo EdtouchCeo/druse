@@ -22,7 +22,7 @@ const unavailable=computed(()=>props.busy||!props.loaded)
   <div class="case-download-options">
    <div v-if="local"><button class="secondary" :disabled="unavailable||!!analysisIssue" @click="emit('download','analysis')"><FileText :size="18"/>학생부 분석 PDF</button><small>{{analysisIssue||'학생부 분석만으로 정리한 보고서'}}</small></div>
    <div><button class="secondary" :disabled="unavailable||!!studentIssue" @click="emit('download','student')"><FileText :size="18"/>학생 안내 PDF</button><small>{{studentIssue||'학생에게 전달할 학습·진로 전략'}}</small></div>
-   <div><button class="secondary" :disabled="unavailable||!session" @click="emit('download','teacher')"><FileText :size="18"/>교사 검토용 PDF</button><small>교사 기록과 검토 내용을 포함한 보고서</small></div>
+   <div><button class="secondary" :disabled="unavailable||!session" @click="emit('download','teacher')"><FileText :size="18"/>학생부 분석 자료 PDF</button><small>학생부 분석과 학습·진로 전략을 함께 정리한 자료</small></div>
    <div><button class="secondary" :disabled="unavailable" @click="emit('download','backup')"><Download :size="18"/>전략 백업(JSON)</button><small>모든 회차의 저장 기록 · 전략 백업 가져오기로 복원</small></div>
   </div>
   <p v-if="!local" class="help">PDF 버튼을 누르면 새 창이 열립니다. 인쇄 화면에서 PDF로 저장하세요.</p>

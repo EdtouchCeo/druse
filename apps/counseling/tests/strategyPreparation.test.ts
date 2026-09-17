@@ -41,11 +41,11 @@ test('zero additional time constrains every adoptable plan and action to existin
  }
 })
 
-test('unknown available time is not treated as zero or a made-up allocation',()=>{
+test('strategy preparation leaves scheduling to the student and does not wait for available time',()=>{
  const cards=prepareStrategies(profile({interests:'합성 관심',weekly_minutes:null}),student)
- assert.match(cards.find(card=>card.id==='implementation-review')!.strategyPatch!.semester_plan!,/가용 시간 확인 필요/)
- assert.equal(cards.filter(card=>card.proposal.includes('가용 시간 확인 필요')).length,1)
- assert.ok(cards.every(card=>!card.proposal.includes('0분')))
+ assert.match(cards.find(card=>card.id==='implementation-review')!.strategyPatch!.semester_plan!,/시간 계획은 학생 본인이/)
+ assert.doesNotMatch(JSON.stringify(cards),/가용 시간 확인 필요|0분|가용 시간이 아직 입력/)
+ assert.deepEqual(cards,prepareStrategies(profile({interests:'합성 관심',weekly_minutes:90}),student))
 })
 
 test('same-scale grade observations do not choose a support priority or change proposals',()=>{

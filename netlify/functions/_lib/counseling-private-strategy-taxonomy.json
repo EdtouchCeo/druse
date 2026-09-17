@@ -1,0 +1,485 @@
+{
+    "version":  1,
+    "fields":  {
+                   "humanities":  "인문",
+                   "social_science":  "사회과학",
+                   "business":  "경제·경영",
+                   "science":  "자연과학",
+                   "engineering":  "공학",
+                   "computing":  "컴퓨터·인공지능",
+                   "health":  "의약·보건",
+                   "education":  "교육",
+                   "arts":  "예술·디자인",
+                   "interdisciplinary":  "융합",
+                   "undecided":  "탐색 중"
+               },
+    "competencies":  {
+                         "achievement":  "교과 개념 이해와 성취",
+                         "learning_attitude":  "학습 태도와 꾸준한 준비",
+                         "inquiry":  "질문과 탐구의 깊이",
+                         "course_selection":  "관심에 따른 과목 선택",
+                         "major_learning":  "관련 교과 학습",
+                         "career_exploration":  "진로 탐색과 비교",
+                         "collaboration":  "협업",
+                         "care":  "나눔과 배려",
+                         "responsibility":  "책임과 규칙 준수",
+                         "leadership":  "기획과 참여 조율",
+                         "reflection":  "성찰과 수정",
+                         "communication":  "근거를 갖춘 설명과 소통",
+                         "data_visualization":  "자료의 시각적 표현",
+                         "textual_evidence":  "텍스트 근거 해석",
+                         "coding_debugging":  "코드 구현과 오류 수정",
+                         "compare_perspectives":  "여러 관점 비교",
+                         "model_limitations":  "모형의 조건과 한계 검토",
+                         "variable_control":  "변인과 비교 조건 통제",
+                         "mathematical_reasoning":  "수학적 추론",
+                         "experiment_design":  "탐구·실험 방법 설계",
+                         "quantitative_analysis":  "수치와 자료 분석",
+                         "counterexample":  "반례 검토",
+                         "question_refinement":  "탐구 질문 구체화",
+                         "concept_explanation":  "개념을 자신의 말로 설명",
+                         "source_evaluation":  "자료 출처와 신뢰도 평가"
+                     },
+    "subjects":  [
+                     "국어",
+                     "공통국어1",
+                     "공통국어2",
+                     "문학",
+                     "독서",
+                     "화법과 언어",
+                     "독서와 작문",
+                     "수학",
+                     "공통수학1",
+                     "공통수학2",
+                     "대수",
+                     "미적분Ⅰ",
+                     "미적분Ⅱ",
+                     "기하",
+                     "확률과 통계",
+                     "인공지능 수학",
+                     "경제 수학",
+                     "영어",
+                     "공통영어1",
+                     "공통영어2",
+                     "영어Ⅰ",
+                     "영어Ⅱ",
+                     "사회",
+                     "통합사회1",
+                     "통합사회2",
+                     "한국사1",
+                     "한국사2",
+                     "역사",
+                     "세계사",
+                     "정치",
+                     "법과 사회",
+                     "사회와 문화",
+                     "경제",
+                     "국제경제",
+                     "윤리",
+                     "심리학",
+                     "과학",
+                     "통합과학1",
+                     "통합과학2",
+                     "과학탐구실험1",
+                     "과학탐구실험2",
+                     "물리학",
+                     "화학",
+                     "생명과학",
+                     "지구과학",
+                     "역학과 에너지",
+                     "전자기와 양자",
+                     "물질과 에너지",
+                     "화학 반응의 세계",
+                     "세포와 물질대사",
+                     "생물의 유전",
+                     "지구시스템과학",
+                     "행성우주과학",
+                     "정보",
+                     "공학",
+                     "프로그래밍",
+                     "인공지능 기초",
+                     "데이터 과학",
+                     "기술·가정",
+                     "음악",
+                     "미술",
+                     "체육",
+                     "제2외국어",
+                     "한문"
+                 ],
+    "school_opportunities":  {
+                                 "literature_review":  "문헌 읽기와 비교",
+                                 "data_comparison":  "자료 수집과 비교 분석",
+                                 "experiment":  "변인을 고려한 실험",
+                                 "debate":  "근거 기반 토론",
+                                 "presentation":  "설명과 발표",
+                                 "infographic":  "인포그래픽 표현",
+                                 "coding":  "프로그래밍 구현",
+                                 "mathematical_model":  "수학적 모델링",
+                                 "creative_work":  "창작과 비평",
+                                 "community_project":  "공동체 문제 해결"
+                             },
+    "departments":  {
+                        "medicine":  {
+                                         "name":  "의학",
+                                         "field":  "health",
+                                         "aliases":  [
+                                                         "의예과",
+                                                         "의학과",
+                                                         "의학부",
+                                                         "의대"
+                                                     ],
+                                         "label":  "의학"
+                                     },
+                        "biomedical":  {
+                                           "name":  "의생명·바이오공학",
+                                           "field":  "engineering",
+                                           "aliases":  [
+                                                           "의생명공학",
+                                                           "의공학",
+                                                           "바이오공학",
+                                                           "생명공학"
+                                                       ],
+                                           "label":  "의생명·바이오공학"
+                                       },
+                        "biology":  {
+                                        "name":  "생명과학",
+                                        "field":  "science",
+                                        "aliases":  [
+                                                        "생명과학과",
+                                                        "생물학과",
+                                                        "생명과학부"
+                                                    ],
+                                        "label":  "생명과학"
+                                    },
+                        "nursing":  {
+                                        "name":  "간호학",
+                                        "field":  "health",
+                                        "aliases":  [
+                                                        "간호학과",
+                                                        "간호학부"
+                                                    ],
+                                        "label":  "간호학"
+                                    },
+                        "pharmacy":  {
+                                         "name":  "약학",
+                                         "field":  "health",
+                                         "aliases":  [
+                                                         "약학과",
+                                                         "약학부",
+                                                         "약대"
+                                                     ],
+                                         "label":  "약학"
+                                     },
+                        "computer_science":  {
+                                                 "name":  "컴퓨터과학·컴퓨터공학",
+                                                 "field":  "computing",
+                                                 "aliases":  [
+                                                                 "컴퓨터공학과",
+                                                                 "컴퓨터과학과",
+                                                                 "컴퓨터학과",
+                                                                 "소프트웨어학과",
+                                                                 "소프트웨어학부",
+                                                                 "전산학부"
+                                                             ],
+                                                 "label":  "컴퓨터과학·컴퓨터공학"
+                                             },
+                        "ai":  {
+                                   "name":  "인공지능",
+                                   "field":  "computing",
+                                   "aliases":  [
+                                                   "인공지능학과",
+                                                   "인공지능학부",
+                                                   "AI학과"
+                                               ],
+                                   "label":  "인공지능"
+                               },
+                        "electrical":  {
+                                           "name":  "전기·전자공학",
+                                           "field":  "engineering",
+                                           "aliases":  [
+                                                           "전기공학과",
+                                                           "전자공학과",
+                                                           "전기전자공학부",
+                                                           "전자전기공학부"
+                                                       ],
+                                           "label":  "전기·전자공학"
+                                       },
+                        "mechanical":  {
+                                           "name":  "기계공학",
+                                           "field":  "engineering",
+                                           "aliases":  [
+                                                           "기계공학과",
+                                                           "기계공학부"
+                                                       ],
+                                           "label":  "기계공학"
+                                       },
+                        "chemical":  {
+                                         "name":  "화학공학",
+                                         "field":  "engineering",
+                                         "aliases":  [
+                                                         "화학공학과",
+                                                         "화공생명공학과",
+                                                         "화학공학부"
+                                                     ],
+                                         "label":  "화학공학"
+                                     },
+                        "materials":  {
+                                          "name":  "재료·신소재공학",
+                                          "field":  "engineering",
+                                          "aliases":  [
+                                                          "재료공학과",
+                                                          "신소재공학과",
+                                                          "신소재공학부",
+                                                          "재료공학부"
+                                                      ],
+                                          "label":  "재료·신소재공학"
+                                      },
+                        "civil":  {
+                                      "name":  "건설·토목·건축공학",
+                                      "field":  "engineering",
+                                      "aliases":  [
+                                                      "건설환경공학과",
+                                                      "토목공학과",
+                                                      "건축공학과",
+                                                      "사회기반시스템공학부"
+                                                  ],
+                                      "label":  "건설·토목·건축공학"
+                                  },
+                        "environment":  {
+                                            "name":  "환경학·환경공학",
+                                            "field":  "engineering",
+                                            "aliases":  [
+                                                            "환경공학과",
+                                                            "환경학과",
+                                                            "환경과학과"
+                                                        ],
+                                            "label":  "환경학·환경공학"
+                                        },
+                        "math":  {
+                                     "name":  "수학",
+                                     "field":  "science",
+                                     "aliases":  [
+                                                     "수학과",
+                                                     "수리과학부"
+                                                 ],
+                                     "label":  "수학"
+                                 },
+                        "statistics":  {
+                                           "name":  "통계학",
+                                           "field":  "science",
+                                           "aliases":  [
+                                                           "통계학과",
+                                                           "응용통계학과"
+                                                       ],
+                                           "label":  "통계학"
+                                       },
+                        "physics":  {
+                                        "name":  "물리학",
+                                        "field":  "science",
+                                        "aliases":  [
+                                                        "물리학과",
+                                                        "물리학부",
+                                                        "물리천문학부"
+                                                    ],
+                                        "label":  "물리학"
+                                    },
+                        "chemistry":  {
+                                          "name":  "화학",
+                                          "field":  "science",
+                                          "aliases":  [
+                                                          "화학과",
+                                                          "화학부"
+                                                      ],
+                                          "label":  "화학"
+                                      },
+                        "economics":  {
+                                          "name":  "경제학",
+                                          "field":  "business",
+                                          "aliases":  [
+                                                          "경제학과",
+                                                          "경제학부",
+                                                          "농경제사회학부"
+                                                      ],
+                                          "label":  "경제학"
+                                      },
+                        "business":  {
+                                         "name":  "경영학",
+                                         "field":  "business",
+                                         "aliases":  [
+                                                         "경영학과",
+                                                         "경영학부"
+                                                     ],
+                                         "label":  "경영학"
+                                     },
+                        "education":  {
+                                          "name":  "교육학·교과교육",
+                                          "field":  "education",
+                                          "aliases":  [
+                                                          "교육학과",
+                                                          "교육학부",
+                                                          "사범대학",
+                                                          "교과교육"
+                                                      ],
+                                          "label":  "교육학·교과교육"
+                                      },
+                        "psychology":  {
+                                           "name":  "심리학",
+                                           "field":  "social_science",
+                                           "aliases":  [
+                                                           "심리학과",
+                                                           "심리학부"
+                                                       ],
+                                           "label":  "심리학"
+                                       },
+                        "law":  {
+                                    "name":  "법학",
+                                    "field":  "social_science",
+                                    "aliases":  [
+                                                    "법학과",
+                                                    "법학부"
+                                                ],
+                                    "label":  "법학"
+                                },
+                        "politics":  {
+                                         "name":  "정치·외교학",
+                                         "field":  "social_science",
+                                         "aliases":  [
+                                                         "정치외교학과",
+                                                         "정치외교학부",
+                                                         "정치국제학과"
+                                                     ],
+                                         "label":  "정치·외교학"
+                                     },
+                        "sociology":  {
+                                          "name":  "사회학",
+                                          "field":  "social_science",
+                                          "aliases":  [
+                                                          "사회학과"
+                                                      ],
+                                          "label":  "사회학"
+                                      },
+                        "languages":  {
+                                          "name":  "어문학",
+                                          "field":  "humanities",
+                                          "aliases":  [
+                                                          "국어국문학과",
+                                                          "영어영문학과",
+                                                          "언어학과",
+                                                          "어문계열"
+                                                      ],
+                                          "label":  "어문학"
+                                      },
+                        "history":  {
+                                        "name":  "역사학",
+                                        "field":  "humanities",
+                                        "aliases":  [
+                                                        "사학과",
+                                                        "역사학과",
+                                                        "국사학과"
+                                                    ],
+                                        "label":  "역사학"
+                                    },
+                        "media":  {
+                                      "name":  "언론·미디어",
+                                      "field":  "social_science",
+                                      "aliases":  [
+                                                      "미디어학부",
+                                                      "미디어커뮤니케이션학과",
+                                                      "미디어커뮤니케이션학부",
+                                                      "언론정보학과",
+                                                      "언론정보학부"
+                                                  ],
+                                      "label":  "언론·미디어"
+                                  },
+                        "design":  {
+                                       "name":  "디자인",
+                                       "field":  "arts",
+                                       "aliases":  [
+                                                       "디자인학과",
+                                                       "디자인학부",
+                                                       "디자인과",
+                                                       "시각디자인학과"
+                                                   ],
+                                       "label":  "디자인"
+                                   },
+                        "undecided":  {
+                                          "name":  "전공 탐색",
+                                          "field":  "undecided",
+                                          "aliases":  [
+                                                          "미정",
+                                                          "탐색 중",
+                                                          "자유전공",
+                                                          "자율전공"
+                                                      ],
+                                          "label":  "전공 탐색"
+                                      }
+                    },
+    "sections":  {
+                     "admissions":  [
+                                        {
+                                            "id":  "target_basis",
+                                            "title":  "대학·학과·학종 전형의 준비 기준"
+                                        },
+                                        {
+                                            "id":  "learner_alignment",
+                                            "title":  "현재 학습 기반과 목표의 연결"
+                                        },
+                                        {
+                                            "id":  "academic_preparation",
+                                            "title":  "과목 선택과 학업 준비"
+                                        },
+                                        {
+                                            "id":  "experience_preparation",
+                                            "title":  "탐구·공동체·면접 준비"
+                                        },
+                                        {
+                                            "id":  "next_decisions",
+                                            "title":  "준비 우선순위와 다음 선택"
+                                        }
+                                    ],
+                     "inquiry":  [
+                                     {
+                                         "id":  "inquiry_question",
+                                         "title":  "탐구 질문과 선정 이유"
+                                     },
+                                     {
+                                         "id":  "concept_learning",
+                                         "title":  "교과 개념과 기초 학습"
+                                     },
+                                     {
+                                         "id":  "inquiry_method",
+                                         "title":  "탐구 방법과 판단 기준"
+                                     },
+                                     {
+                                         "id":  "school_connection",
+                                         "title":  "학교 학습 기회와 실행 방법"
+                                     },
+                                     {
+                                         "id":  "reflection_extension",
+                                         "title":  "성찰·수정과 다음 질문"
+                                     }
+                                 ]
+                 },
+    "section_ids":  {
+                        "inquiry":  [
+                                        "inquiry_question",
+                                        "concept_learning",
+                                        "inquiry_method",
+                                        "school_connection",
+                                        "reflection_extension"
+                                    ],
+                        "admissions":  [
+                                           "target_basis",
+                                           "learner_alignment",
+                                           "academic_preparation",
+                                           "experience_preparation",
+                                           "next_decisions"
+                                       ]
+                    },
+    "school_constraints":  {
+                               "source_limited":  "자료 활용 범위 제한",
+                               "in_class_only":  "수업 시간 안에서 수행",
+                               "ai_prohibited":  "연결한 과제의 AI 활용 금지",
+                               "unknown":  "세부 과제 조건 추가 확인"
+                           }
+}

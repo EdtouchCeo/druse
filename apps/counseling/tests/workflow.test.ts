@@ -7,15 +7,15 @@ import {CloudTransport} from '../src/lib/cloudTransport'
 import type {CounselingCase,Session} from '../src/lib/types'
 const session=():Session=>({id:'synthetic-session',date:'2026-09-12',topic:'자료 비교 계획',student_question:'',context:'',evidence_notes:'',teacher_opinion:'',strategy:emptyStrategy(),actions:[],next_date:'',record:null,analysis:null,review:null,confirmed:null})
 const example=():CounselingCase=>({id:'synthetic-case',schema_version:1,revision:3,privacy:'standard',created_at:'2026-09-12',updated_at:'2026-09-12',origin:'synthetic',student:{student_id:'synthetic-student',student_number:'10101',academic_year:2026,school_stage:'high',grade:1},teacher:{display_name:'합성교사'},current_session_id:'synthetic-session',sessions:[session()]})
-test('legacy remains legacy; a new workflow needs a real plan, preparation and completed consultation',()=>{
+test('partial inputs remain usable without preparation or completed consultation; saved history stays intact',()=>{
  const legacy=normalizeCase(example()).sessions[0]!
  assert.equal(legacy.workflow_version,undefined);assert.deepEqual(finalizationIssues(legacy),[])
  legacy.workflow_version=2;legacy.strategy!.target_major='관심 분야'
  assert.ok(preparationIssues(legacy).some(issue=>issue.includes('계획')))
  legacy.strategy!.subject_plan='교사 준비 계획';assert.deepEqual(preparationIssues(legacy),[])
- assert.match(finalizationIssues(legacy)[0]!,/준비/)
+ assert.deepEqual(finalizationIssues(legacy),[])
  legacy.preparation={prepared_at:'2026-09-12T00:00:00Z',prepared_by:'demo',topic:legacy.topic,strategy:{...legacy.strategy!},actions:[]}
- assert.match(finalizationIssues(legacy)[0]!,/상담/)
+ assert.deepEqual(finalizationIssues(legacy),[])
  legacy.consultation={...emptyConsultation(),status:'completed',date:'2026-09-12',student_response:'부담 범위에 대한 실제 반응',agreed_direction:'수업 중 자료 두 개를 비교'}
  assert.deepEqual(finalizationIssues(legacy),[])
  legacy.strategy!.subject_plan='상담 후 수정한 계획';assert.equal(legacy.preparation.strategy.subject_plan,'교사 준비 계획')

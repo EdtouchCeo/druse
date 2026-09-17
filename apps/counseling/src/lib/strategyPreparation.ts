@@ -19,10 +19,9 @@ export type StrategyPreparationCard = {
 const excerpt=(value:string)=>value.trim().length>240?value.trim().slice(0,240)+'… (입력 발췌)':value.trim()
 const observation=(label:string,value:string)=>value.trim()?[`${label} · 교사 입력: ${excerpt(value)}`]:[]
 
-function timeScope(profile:StudentProfile):string {
- if(profile.weekly_minutes===0)return '기존 수업·활동 안에서만 진행합니다. 추가 시간은 배정하지 않습니다.'
- if(profile.weekly_minutes===null)return '가용 시간 확인 필요. 일정과 휴식을 확인한 뒤 범위를 정합니다.'
- return `주간 가용 시간 ${profile.weekly_minutes}분 이내에서 일정·휴식을 고려해 범위를 정합니다. 전체 시간을 자동 배정하지 않습니다.`
+function executionScope(profile:StudentProfile):string {
+ const scheduling='구체적인 시간 계획은 학생 본인이 세웁니다.'
+ return profile.weekly_minutes===0?`기존 수업·활동 안에서만 진행합니다. ${scheduling}`:scheduling
 }
 
 function gradeEvidence(profile:StudentProfile):string[] {
@@ -46,7 +45,7 @@ export function prepareStrategies(
  semester:1|2|null=null,
 ):StrategyPreparationCard[] {
  const cards:StrategyPreparationCard[]=[]
- const scope=timeScope(profile)
+ const scope=executionScope(profile)
  const propose=(text:string)=>profile.weekly_minutes===0?`${text}\n${scope}`:text
  const action=(text:string)=>profile.weekly_minutes===0?`기존 수업·활동 안에서: ${text}`:text
  const selected=school?schoolMatches(school,student,profile.selected_subjects,'',semester).selected:[]
@@ -121,13 +120,13 @@ export function prepareStrategies(
 
  cards.push({
   id:'implementation-review',title:'먼저 할 일과 점검 방법 정하기',
-  evidence:[profile.weekly_minutes===null?'주간 가용 시간이 아직 입력되지 않았습니다.':`주간 가용 시간 · 교사 입력: ${profile.weekly_minutes}분`],
-  source:['교사 입력 · 주간 가용 시간'],
-  proposal:`먼저 할 일 → 확인할 결과 → 점검일(확인 필요). ${scope}`,
-  verification:['학생의 학교 일정·기존 과제·휴식과 계획의 실행 부담을 확인합니다.','교사의 초기 제안, 상담에서 확인한 내용, 반영한 변경과 최종 검토 결과를 구분해 남깁니다.'],
-  counselingQuestions:['먼저 할 일과 점검 방식이 실제 시간 여건에 맞나요?'],
-  strategyPatch:{semester_plan:`실행 초안: 선택한 계획에서 먼저 할 일과 확인할 결과를 정합니다. 점검일은 상담 후 정합니다.\n${scope}`},
-  actions:[action('선택한 계획의 첫 실행과제·확인할 결과·점검일 정하기')],
+  evidence:['교사가 선택한 전략의 실행 행동·산출물·확인 기준을 검토합니다.'],
+  source:['계획 검토 기준'],
+  proposal:`먼저 할 일 → 확인할 결과 → 교사 피드백. ${scope}`,
+  verification:['선택한 과제가 기존 수업·활동과 연결되고 확인할 결과가 구체적인지 검토합니다.','교사의 초기 제안, 상담에서 확인한 내용, 반영한 변경과 최종 검토 결과를 구분해 남깁니다.'],
+  counselingQuestions:['제안된 방향과 확인할 결과 중 먼저 시도할 것은 무엇인가요?'],
+  strategyPatch:{semester_plan:`실행 초안: 선택한 계획에서 먼저 할 일과 확인할 결과를 정합니다. 교사 피드백으로 다음 방향을 점검합니다.\n${scope}`},
+  actions:[action('선택한 계획의 첫 실행과제·확인할 결과·피드백 기준 정하기')],
  })
 
  // Do not offer adoptable proposals while live edits violate the shared profile contract.

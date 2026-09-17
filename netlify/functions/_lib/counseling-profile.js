@@ -1,14 +1,28 @@
 'use strict';
 const textFields=['target_major','interests','learning_concerns','study_habits','activities','reading','attendance_notes','teacher_observations'];
 const gradeFields=['id','subject','academic_year','semester','grade_scale','rank_grade','score','achievement'];
+const admissionTextFields={university:200,major:200,admission_type:100,admission_name:200};
+const admissionFields=['id',...Object.keys(admissionTextFields),'admission_year'];
+function admissionTargetsOf(value){return Array.isArray(value)?value.map(row=>({id:typeof row.id==='string'?row.id.trim():row.id,...Object.fromEntries(Object.keys(admissionTextFields).map(key=>[key,typeof row[key]==='string'?row[key].trim():''])),admission_year:row.admission_year??null})):[];}
+function hasAdmissionTarget(row){return Object.keys(admissionTextFields).some(key=>Boolean(row[key]?.trim()))||row.admission_year!==null&&row.admission_year!==undefined;}
 function profileOf(session){
  const value=session.profile||{};
- return {...Object.fromEntries(textFields.map(key=>[key,typeof value[key]==='string'?value[key].trim():''])),selected_subjects:Array.isArray(value.selected_subjects)?value.selected_subjects.map(subject=>typeof subject==='string'?subject.trim():subject):[],weekly_minutes:value.weekly_minutes??null,grades:Array.isArray(value.grades)?value.grades.map(row=>Object.fromEntries(gradeFields.map(key=>[key,['id','subject','achievement'].includes(key)&&typeof row[key]==='string'?row[key].trim():row[key]]))):[]};
+ return {...Object.fromEntries(textFields.map(key=>[key,typeof value[key]==='string'?value[key].trim():''])),selected_subjects:Array.isArray(value.selected_subjects)?value.selected_subjects.map(subject=>typeof subject==='string'?subject.trim():subject):[],weekly_minutes:value.weekly_minutes??null,grades:Array.isArray(value.grades)?value.grades.map(row=>Object.fromEntries(gradeFields.map(key=>[key,['id','subject','achievement'].includes(key)&&typeof row[key]==='string'?row[key].trim():row[key]]))):[],admission_targets:admissionTargetsOf(value.admission_targets)};
 }
-function hasData(profile){return textFields.some(key=>profile[key]!=='')||profile.selected_subjects.length>0||profile.weekly_minutes!==null||profile.grades.length>0;}
+function profileForHash(session){const profile=profileOf(session),targets=profile.admission_targets.filter(hasAdmissionTarget);delete profile.admission_targets;if(targets.length)profile.admission_targets=targets;return profile;}
+function hasData(profile){return textFields.some(key=>profile[key]!=='')||profile.selected_subjects.length>0||profile.weekly_minutes!==null||profile.grades.length>0||(profile.admission_targets||[]).some(hasAdmissionTarget);}
 function validateProfile(value,{onlyKeys,fail,uuid}){
  if(value===undefined)return;
- onlyKeys(value,[...textFields,'selected_subjects','weekly_minutes','grades']);
+ onlyKeys(value,[...textFields,'selected_subjects','weekly_minutes','grades','admission_targets']);
+ if(value.admission_targets!==undefined&&(!Array.isArray(value.admission_targets)||value.admission_targets.length>12))fail(400,'INVALID_ADMISSION_TARGETS','희망 대학·전공은 최대 12개 항목으로 입력해 주세요.');
+ const targetIds=new Set();
+ for(const row of value.admission_targets||[]){
+  onlyKeys(row,admissionFields);
+  if(typeof row.id!=='string'||row.id.length>80||!uuid(row.id.trim())||targetIds.has(row.id.trim().toLowerCase()))fail(400,'INVALID_ADMISSION_TARGETS','희망 대학·전공 항목의 식별자나 중복을 확인해 주세요.');
+  targetIds.add(row.id.trim().toLowerCase());
+  for(const [key,limit] of Object.entries(admissionTextFields))if(row[key]!==undefined&&(typeof row[key]!=='string'||row[key].length>limit||row[key].includes('\0')))fail(400,'INVALID_ADMISSION_TARGETS','희망 대학·전공·전형의 글자 수와 읽을 수 없는 문자를 확인해 주세요.');
+  if(row.admission_year!==undefined&&row.admission_year!==null&&(!Number.isInteger(row.admission_year)||row.admission_year<1990||row.admission_year>2100))fail(400,'INVALID_ADMISSION_TARGETS','대입 학년도는 1990~2100 범위의 정수로 입력하거나 비워 두세요.');
+ }
  for(const key of textFields)if(value[key]!==undefined&&(typeof value[key]!=='string'||value[key].length>6000||value[key].includes('\0')))fail(400,'INVALID_PROFILE','학생 자료의 서술 항목은 읽을 수 없는 문자 없이 6,000자 이내 문자열로 입력해 주세요.');
  if(value.selected_subjects!==undefined&&(!Array.isArray(value.selected_subjects)||value.selected_subjects.length>20||value.selected_subjects.some(subject=>typeof subject!=='string'||!subject.trim()||subject.length>100||subject.includes('\0'))))fail(400,'INVALID_PROFILE','선택 과목은 빈 이름이나 읽을 수 없는 문자 없이 과목당 100자, 20개 이내로 입력해 주세요.');
  if(value.selected_subjects&&new Set(value.selected_subjects.map(subject=>subject.trim())).size!==value.selected_subjects.length)fail(400,'INVALID_PROFILE','선택 과목의 중복을 확인해 주세요.');
@@ -24,4 +38,4 @@ function validateProfile(value,{onlyKeys,fail,uuid}){
   ids.add(grade.id.trim());
  }
 }
-module.exports={textFields,gradeFields,profileOf,hasData,validateProfile};
+module.exports={textFields,gradeFields,admissionFields,profileOf,profileForHash,hasData,hasAdmissionTarget,validateProfile};

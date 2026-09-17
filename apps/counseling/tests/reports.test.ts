@@ -26,6 +26,6 @@ test('analysis PDF routes to the selected local session and cannot request the c
   assert.equal(calls[0],'/api/cases/case%2Fid/report.pdf?session_id=session%20id&audience=analysis')
   await assert.rejects(new CloudTransport().report('case/id','session id','analysis'),/로컬/)
   assert.equal(calls.length,1)
-  assert.equal(reportFilename('10101','2026-09-14','analysis'),'학생부분석보고서_10101_2026-09-14.pdf')
+  assert.equal(reportFilename('10101','2026-09-14','analysis'),'학생부_분석_자료_10101_2026-09-14.pdf')
  }finally{globalThis.fetch=original}
 })

@@ -1,21 +1,22 @@
 import type { Analysis, Backup, CounselingCase, Mode, Session, Strategy } from './types'
-import {normalizeProfile} from './profile'
+import {normalizeProfile,hasAdmissionTarget} from './profile'
 import {normalizeWorkflow} from './workflow'
-export function applyAnalysis(strategy:Strategy,analysis:Analysis):Strategy {const next={...strategy};if(!next.strengths.trim())next.strengths=analysis.strengths.map(f=>[f.text,f.guidance].filter(Boolean).join('\n')).join('\n\n');if(!next.gaps.trim())next.gaps=analysis.improvements.map(f=>[f.text,f.guidance].filter(Boolean).join('\n')).join('\n\n');return next}
+import {findingDirections} from './analysisPresentation'
+export function applyAnalysis(strategy:Strategy,analysis:Analysis):Strategy {const next={...strategy};if(!next.strengths.trim())next.strengths=findingDirections(analysis.strengths);if(!next.gaps.trim())next.gaps=findingDirections(analysis.improvements);return next}
 export const strategyFields = [
  {key:'target_major',label:'목표 전공',hint:'관심 전공이나 아직 탐색 중인 계열을 적습니다.'},
  {key:'target_path',label:'진로 방향',hint:'학생이 관심을 갖는 문제와 진로를 탐색할 방향을 적습니다.'},
  {key:'strengths',label:'강점',hint:'확인한 학습 행동과 근거를 중심으로 적습니다.'},
  {key:'gaps',label:'보완점',hint:'확인된 어려움과 필요한 도움을 구분하고, 불확실한 내용은 질문으로 남깁니다.'},
- {key:'subject_plan',label:'교과 계획',hint:'실제 이수 과목과 과제의 연도·학기·마감·허용 조건을 확인해 학습과 점검 기준을 적습니다.'},
- {key:'inquiry_plan',label:'탐구 계획',hint:'질문 → 방법 → 산출물 → 피드백 순서로 수업 범위에 맞는 탐구를 계획합니다.'},
- {key:'activity_plan',label:'활동 계획',hint:'학교에서 실제 참여할 수 있는 활동과 학생의 역할을 확인해 적습니다.'},
- {key:'semester_plan',label:'학기별 계획',hint:'학기별 목표와 점검 시점, 다음 단계로 넘어갈 조건을 적습니다.'},
- {key:'student_message',label:'학생 안내 메시지',hint:'학생이 지금 할 일과 함께 점검할 내용을 직접 안내합니다.'},
+ {key:'subject_plan',label:'교과 계획',hint:'앞으로 배울 과목에서 어떤 개념을 어떻게 익힐지 적습니다. 현재 수강 중인 과목과 선택 후보를 구분합니다.'},
+ {key:'inquiry_plan',label:'탐구 계획',hint:'주제별 핵심 질문, 기록과의 연결, 선수 개념, 방법, 자료, 예상 산출물과 확장 방향을 적습니다.'},
+ {key:'activity_plan',label:'창체·봉사·독서·행동특성 전략',hint:'자율·자치, 동아리, 진로, 봉사, 독서, 행동특성을 구분합니다. 각 영역의 현재 근거, 준비 방향, 준비할 자료·결과물, 필요한 도움, 연결할 교과·탐구를 적습니다. 자료가 없는 영역은 확인할 사항과 준비 제안을 구분합니다.'},
+ {key:'semester_plan',label:'학기별 계획',hint:'현재 남은 학기부터 졸업까지 과목·학습 방법·탐구질문·자료·준비 결과·필요한 도움과 다음 단계의 연결을 설명합니다.'},
+ {key:'student_message',label:'학생 안내 메시지',hint:'학생이 준비할 자료·개념, 주제 선택 기준, 교사에게 요청할 도움을 구체적으로 안내합니다.'},
 ] as const satisfies readonly {key:keyof Strategy;label:string;hint:string}[]
 export function emptyStrategy():Strategy{return {target_major:'',target_path:'',strengths:'',gaps:'',subject_plan:'',inquiry_plan:'',activity_plan:'',semester_plan:'',student_message:''}}
 export function normalizeCase(value:CounselingCase):CounselingCase {const copy=clone(value);for(const session of copy.sessions){session.profile=normalizeProfile(session.profile);const input=session.strategy;session.strategy=emptyStrategy();for(const {key} of strategyFields)if(typeof input?.[key]==='string')session.strategy[key]=input[key];session.guidance=session.guidance||null;normalizeWorkflow(session)}return copy}
-export function studentView(value:CounselingCase):CounselingCase|null {const copy=clone(value);for(const s of copy.sessions){delete s.profile;delete s.preparation;delete s.consultation;delete s.workflow_version;delete s.imported_history}const normalized=normalizeCase(copy);delete normalized.imported_from;normalized.sessions=normalized.sessions.filter(s=>Boolean(s.guidance?.published_at&&s.guidance?.published_by));if(!normalized.sessions.length)return null;for(const s of normalized.sessions){delete s.profile;delete s.preparation;delete s.consultation;delete s.workflow_version;delete s.imported_history;s.student_question='';s.context='';s.evidence_notes='';s.teacher_opinion='';s.record=null;s.analysis=null;s.review=null;s.confirmed=null}normalized.current_session_id=normalized.sessions.some(s=>s.id===normalized.current_session_id)?normalized.current_session_id:normalized.sessions.at(-1)!.id;return normalized}
+export function studentView(value:CounselingCase):CounselingCase|null {const copy=clone(value);for(const s of copy.sessions){s.student_admission_targets=normalizeProfile({admission_targets:s.profile?.admission_targets||s.student_admission_targets||[]}).admission_targets.filter(hasAdmissionTarget);delete s.profile;delete s.preparation;delete s.preparation_reports;delete s.consultation;delete s.workflow_version;delete s.imported_history}const normalized=normalizeCase(copy);delete normalized.imported_from;normalized.sessions=normalized.sessions.filter(s=>Boolean(s.guidance?.published_at&&s.guidance?.published_by));if(!normalized.sessions.length)return null;for(const s of normalized.sessions){delete s.profile;delete s.preparation;delete s.preparation_reports;delete s.consultation;delete s.workflow_version;delete s.imported_history;s.student_question='';s.context='';s.evidence_notes='';s.teacher_opinion='';s.record=null;s.analysis=null;s.review=null;s.confirmed=null}normalized.current_session_id=normalized.sessions.some(s=>s.id===normalized.current_session_id)?normalized.current_session_id:normalized.sessions.at(-1)!.id;return normalized}
 export function draftBackup(value:CounselingCase,sessionId:string):Backup {
  const copy=clone(value),current=sessionOf(copy,sessionId)
  current.review=null;current.confirmed=null;current.guidance=null
@@ -28,7 +29,7 @@ export function modeForHost(host:string):Mode { return isLoopback(host) ? 'local
 export const clone = <T>(value:T):T => JSON.parse(JSON.stringify(value)) as T
 export const stamp = (value:unknown):string => JSON.stringify(value)
 export function sessionOf(value:CounselingCase,id:string):Session { const found=value.sessions.find(s=>s.id===id);if(!found)throw new Error('상담 회차를 찾을 수 없습니다. 목록을 다시 불러와 주세요.');return found }
-export function hasPrivateMaterial(value:CounselingCase):boolean { return value.privacy==='local_only'||value.sessions.some(s=>Boolean(s.record||s.analysis)) }
+export function hasPrivateMaterial(value:CounselingCase):boolean { return value.privacy==='local_only'||value.sessions.some(s=>Boolean(s.record||s.analysis)||Object.prototype.hasOwnProperty.call(s,'preparation_reports')) }
 export function assertStandard(value:CounselingCase):void { if(hasPrivateMaterial(value))throw new Error('학생부를 사용한 로컬 상담은 온라인으로 전송할 수 없습니다. 로컬 상담실에서 열어 주세요.') }
 export function parseBackup(text:string,mode:Mode):Backup {
  if(new TextEncoder().encode(text).length>30_000_000)throw new Error('백업 파일은 30MB 이내로 선택해 주세요.')
@@ -50,7 +51,7 @@ export async function pdfBase64(file:File):Promise<string> {
  return btoa(binary)
 }
 export function safeFilename(name:string):string {return name.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,80)||'상담기록'}
-export function reportFilename(studentNumber:string,date:string,audience:'student'|'teacher'|'analysis'):string{if(audience==='analysis')return safeFilename('학생부분석보고서_'+studentNumber+'_'+date+'.pdf');return safeFilename('학종전략_'+studentNumber+'_'+date+'_'+(audience==='student'?'학생안내':'교사검토')+'.pdf')}
+export function reportFilename(studentNumber:string,date:string,audience:'student'|'teacher'|'analysis'):string{return safeFilename((audience==='student'?'학습_진로_전략_보고서_':'학생부_분석_자료_')+studentNumber+'_'+date+'.pdf')}
 export function download(blob:Blob,filename:string):void {const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=safeFilename(filename);a.click();setTimeout(()=>URL.revokeObjectURL(url),30000)}
 export function readSessionToken(storage:Pick<Storage,'getItem'>):string|null {try{const s=JSON.parse(storage.getItem('dr_sess_v1')||'null');return s&&typeof s.token==='string'&&s.token?s.token:null}catch{return null}}
 export function readableError(error:unknown):string {if(error instanceof DOMException&&error.name==='AbortError')return '요청을 취소했습니다.';return error instanceof Error?error.message:'요청을 처리하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.'}

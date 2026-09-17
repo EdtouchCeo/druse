@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "stage": "admissions",
+  "section_id": "academic_preparation",
+  "target": {
+    "university_id": "snu",
+    "department_id": "computer_science",
+    "field": "computing",
+    "admission_year": 2028
+  },
+  "learner": {
+    "grade": 1,
+    "school_stage": "high",
+    "strengths": ["inquiry", "coding_debugging"],
+    "needs": ["source_evaluation"],
+    "interests": ["computing"],
+    "subjects": ["수학", "정보"],
+    "school_opportunities": ["coding", "data_comparison"],
+    "school_constraints": ["ai_prohibited"]
+  }
+}

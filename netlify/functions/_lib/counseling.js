@@ -2,6 +2,7 @@
 const crypto = require('crypto');
 const storage = require('./counseling-storage');
 const P = require('./counseling-profile');
+const {displayText,consumerLine}=require('./counseling-report-content');
 const W = require('./counseling-workflow');
 class HttpError extends Error { constructor(status, code, message) { super(message); this.status=status; this.code=code; } }
 const fail = (status,code,message) => { throw new HttpError(status,code,message); };
@@ -57,11 +58,13 @@ async function studentsFor(actor) {
 }
 async function requireStudent(actor,id) { if(!uuid(id))fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');const students=await studentsFor(actor);const s=students.find(s=>s.student_id===id);if(!s)fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');return s; }
 async function readCase(actor,id) { if(!uuid(id))fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');const rows=await db(`counseling_cases?id=eq.${id}&select=data,student_id&limit=1`,{actor_id:actor.id});if(!rows?.length)fail(404,'NOT_FOUND','상담 자료를 찾을 수 없습니다.');await requireStudent(actor,rows[0].student_id);const result=caseForActor(rows[0].data,actor);if(!result)fail(404,'NOT_FOUND','안내된 전략을 찾을 수 없습니다.');return result; }
+const localStrategyKeys=['preparation_reports','evidence_map','school_connections','external_context_token'];
 function rejectPrivate(value) {
  if(value===null||value===undefined)return;
  if(Array.isArray(value)){value.forEach(rejectPrivate);return;}
  if(typeof value!=='object')return;
  for(const [k,v]of Object.entries(value)){
+  if(localStrategyKeys.includes(k))fail(400,'LOCAL_ONLY','학생부 분석과 연결된 전략 자료는 교사 PC의 로컬 앱에서만 보관합니다.');
   if((k==='privacy'&&v!=='standard')||(k==='local_only'&&v)||(k==='premium'&&v)||(['record','analysis','pdf_base64','dataBase64','extracted_text','source_pdf'].includes(k)&&v!==null&&v!==undefined&&v!==''))fail(400,'LOCAL_ONLY','학생부와 프리미엄 자료는 교사 PC의 로컬 앱에서만 처리합니다.');
   rejectPrivate(v);
  }
@@ -70,16 +73,20 @@ const textFields=['topic','student_question','context','evidence_notes','teacher
 const strategyFields=['target_major','target_path','strengths','gaps','subject_plan','inquiry_plan','activity_plan','semester_plan','student_message'];
 function strategyOf(s) {return Object.fromEntries(strategyFields.map(k=>[k,typeof s.strategy?.[k]==='string'?s.strategy[k]:'']));}
 function normalizeCase(c) {const copy=structuredClone(c);copy.sessions=copy.sessions.map(s=>({...s,strategy:strategyOf(s),profile:P.profileOf(s),guidance:s.guidance??null,preparation:s.preparation??null,consultation:W.consultationOf(s)}));return copy;}
-function sessionContent(s) {const strategy=strategyOf(s),profile=P.profileOf(s),consultation=W.consultationOf(s);return {id:s.id,date:s.date,...Object.fromEntries(textFields.map(k=>[k,s[k]||''])),actions:s.actions||[],...(Object.values(strategy).some(Boolean)?{strategy}:{}),...(P.hasData(profile)?{profile}:{}),...(s.workflow_version===2?{workflow_version:2}:{}),...(s.preparation?{preparation:s.preparation}:{}),...(W.hasConsultation(consultation)?{consultation}:{})}; }
+function sessionContent(s) {const strategy=strategyOf(s),profile=P.profileForHash(s),consultation=W.consultationOf(s);return {id:s.id,date:s.date,...Object.fromEntries(textFields.map(k=>[k,s[k]||''])),actions:s.actions||[],...(Object.values(strategy).some(Boolean)?{strategy}:{}),...(P.hasData(profile)?{profile}:{}),...(s.workflow_version===2?{workflow_version:2}:{}),...(s.preparation?{preparation:s.preparation}:{}),...(W.hasConsultation(consultation)?{consultation}:{})}; }
 function hashSession(s) { return crypto.createHash('sha256').update(JSON.stringify(sessionContent(s))).digest('hex'); }
+function publicAdmissionProfile(s) {
+ const targets=P.profileOf(s).admission_targets.filter(P.hasAdmissionTarget);
+ return targets.length?{profile:{admission_targets:targets}}:{};
+}
 function studentCase(c,{includeDrafts=false}={}) {
- const sessions=c.sessions.filter(s=>includeDrafts||(W.ready(s)&&s.guidance&&typeof s.guidance.published_at==='string'&&uuid(s.guidance.published_by)&&s.confirmed?.content_hash===hashSession(s))).map(s=>({id:s.id,date:s.date,topic:s.topic,strategy:strategyOf(s),student_question:'',context:'',evidence_notes:'',teacher_opinion:'',actions:(s.actions||[]).map(a=>({id:a.id,text:a.text,due_date:a.due_date,status:a.status})),next_date:s.next_date||'',record:null,analysis:null,review:null,confirmed:null,guidance:s.guidance?{published_at:s.guidance.published_at,published_by:s.guidance.published_by}:null}));
+ const sessions=c.sessions.filter(s=>includeDrafts||(W.ready(s)&&s.guidance&&typeof s.guidance.published_at==='string'&&uuid(s.guidance.published_by)&&s.confirmed?.content_hash===hashSession(s))).map(s=>({id:s.id,date:s.date,topic:s.topic,strategy:strategyOf(s),...publicAdmissionProfile(s),student_question:'',context:'',evidence_notes:'',teacher_opinion:'',actions:(s.actions||[]).map(a=>({id:a.id,text:a.text,due_date:a.due_date,status:a.status})),next_date:s.next_date||'',record:null,analysis:null,review:null,confirmed:null,guidance:s.guidance?{published_at:s.guidance.published_at,published_by:s.guidance.published_by}:null}));
  if(!sessions.length)return null;
  const student=Object.fromEntries(['student_id','name','student_number','academic_year','school_stage','grade'].filter(k=>c.student[k]!==undefined).map(k=>[k,c.student[k]]));
  return {schema_version:1,id:c.id,revision:c.revision,privacy:'standard',created_at:c.created_at,updated_at:c.updated_at,origin:'teacher',student,teacher:{display_name:c.teacher.display_name||''},current_session_id:sessions.at(-1).id,sessions};
 }
 function caseForActor(c,actor) {rejectPrivate(c);return actor.role==='student'?studentCase(c):normalizeCase(c);}
-function guidanceReady(s) {return strategyOf(s).student_message.trim().length>0&&s.actions.some(a=>a.text.trim());}
+function guidanceReady(s) {const strategy=strategyOf(s);return strategy.student_message.trim().length>0&&W.planFields.some(k=>strategy[k].trim());}
 function validateStrategy(value){onlyKeys(value,strategyFields);for(const k of strategyFields)if(typeof value[k]!=='string'||value[k].length>12000)fail(400,'INVALID_STRATEGY','전략 항목을 문자열 12,000자 이내로 작성해 주세요.');}
 function validateActions(actions){
  if(!Array.isArray(actions)||actions.length>30)fail(400,'INVALID_ACTION','다음 할 일을 30개 이내로 작성해 주세요.');
@@ -114,21 +121,30 @@ function updateCase(stored,incoming) {
  incoming.sessions.forEach((s,i)=>{const old=stored.sessions[i];if(!old||old.id!==s.id)fail(400,'IMMUTABLE_HISTORY','기존 회차를 보존해 주세요.');for(const k of ['review','confirmed','imported_history','guidance','preparation','workflow_version'])if(JSON.stringify(['guidance','preparation'].includes(k)?(s[k]??null):s[k])!==JSON.stringify(['guidance','preparation'].includes(k)?(old[k]??null):old[k]))fail(400,'PROTECTED_REVIEW','검토·확정·학생 안내·사전 전략 정보는 해당 절차에서만 변경할 수 있습니다.');if(hashSession(old)!==hashSession(s)){if(old.confirmed)fail(409,'CONFIRMED_SESSION','확정 전략은 보존하고 다음 회차를 만들어 주세요.');out.sessions[i]={...structuredClone(s),strategy:strategyOf(s),profile:P.profileOf(s),consultation:W.consultationOf(s),review:null,confirmed:null,guidance:null};}});
  return out;
 }
+function reviewProse(s,strategy){
+ const lines=[s.topic,...Object.values(strategy)];
+ if(!Object.values(strategy).some(value=>value.trim()))lines.push(s.teacher_opinion);
+ if(s.analysis&&typeof s.analysis==='object'){
+  lines.push(s.analysis.summary);
+  for(const key of ['strengths','improvements','actions'])for(const row of s.analysis[key]||[]){if(!row||typeof row!=='object')continue;for(const field of key==='actions'?['text','reason','expected_output','review_criteria','teacher_support']:['text','guidance'])lines.push(row[field]);}
+  for(const key of ['questions','limitations'])lines.push(...s.analysis[key]||[]);
+ }
+ return lines.filter(value=>typeof value==='string'&&value.trim()).join('\n');
+}
 function reviewSession(s) {
  const notes=[],strategy=strategyOf(s),hasStrategy=Object.values(strategy).some(v=>v.trim());
  if(!s.topic.trim())notes.push('전략 주제를 작성해 주세요.');
  if(hasStrategy?!strategy.student_message.trim():!s.teacher_opinion.trim())notes.push(hasStrategy?'학생에게 전할 안내 문장을 작성해 주세요.':'교사의 상담 의견을 작성해 주세요.');
- if(!s.actions.some(a=>a.text.trim()))notes.push('학생이 할 실행과제를 한 가지 이상 작성해 주세요.');
- if(!W.ready(s))notes.push(s.preparation?'학생 상담을 완료하고 합의한 방향을 최종 전략에 반영해 주세요.':'교사의 사전 전략을 준비한 뒤 학생 상담을 진행해 주세요.');
+ if(hasStrategy&&!W.planFields.some(k=>strategy[k].trim()))notes.push('교과·탐구·활동·학년별 전략 중 하나 이상을 구체적으로 작성해 주세요.');
+ if(!W.ready(s))notes.push('상담 완료로 표시하려면 상담 날짜·학생 반응·합의한 방향을 기록해 주세요.');
  const incomplete=notes.length>0;
- const prose=[...textFields.filter(k=>k!=='next_date').map(k=>s[k]),...Object.values(strategy),...W.consultationFields.map(k=>W.consultationOf(s)[k]),...s.actions.map(a=>a.text)].join('\n');
+ const prose=reviewProse(s,strategy);
  if(/(?:매우 중요|다양한|효과적으로|시사하는 바가 크|혁명적)/.test(prose))notes.push('추상적이거나 과장된 표현은 확인한 행동이나 조건으로 다듬을 수 있는지 검토해 주세요. 직접 인용과 사실은 보존해 주세요.');
  if(/합격.{0,24}(?:가능성|확률|유리|확실|보장)|(?:무조건|반드시|틀림없이).{0,12}합격/.test(prose))notes.push('합격 가능성·확률·보장을 말하는 문장이 있습니다. 제공 자료만으로 예측한 판단인지 확인하고, 확인한 사실과 진로 탐색 방향을 구분해 주세요. 직접 인용이라면 원문을 바꾸지 말고 맥락을 확인합니다.');
- if(/교사 (?:제안|준비안)|(?:질문|방법|산출물|점검일|범위|기준)(?:을|를).{0,12}(?:정합니다|선택합니다|확인합니다)/.test(prose))notes.push('준비 단계의 문장이 남아 있는지 확인해 주세요. 최종 안내에는 상담에서 정한 학생의 행동·산출물·점검 시점을 구체적으로 적고, 아직 정하지 않은 사항은 미정으로 구분합니다. 학교 과제의 조건과 제한은 보존합니다.');
+ if(/교사 (?:제안|준비안)|(?:질문|방법|산출물|점검일|범위|기준)(?:을|를).{0,12}(?:정합니다|선택합니다|확인합니다)/.test(prose))notes.push('준비 단계의 문장이 남아 있는지 확인해 주세요. 최종 안내에는 학생이 준비할 내용·방법·산출물을 구체적으로 적고, 학교 과제의 조건과 제한은 보존합니다.');
  const lines=prose.split('\n').map(line=>line.trim()).filter(line=>line.length>=25);
  if(new Set(lines).size!==lines.length)notes.push('같은 설명이 반복됩니다. 학생이 읽을 최종 문장에서 반복을 줄일 수 있는지 검토하되, 과제별 조건·직접 인용·수치는 임의로 삭제하지 마세요.');
- if(!s.next_date&&!s.actions.some(action=>action.due_date))notes.push('실행 과제의 기한과 다음 점검 시점이 모두 미정입니다. 학생과 정할 수 있는 시점을 확인하거나 미정인 이유를 안내해 주세요. 날짜를 임의로 정할 필요는 없습니다.');
- if(Array.from(strategy.student_message).length>450)notes.push('학생 안내가 길어 핵심 행동을 찾기 어려울 수 있습니다. 먼저 할 일과 점검을 짧게 안내하고 상세 설명은 계획 항목에서 읽을 수 있게 나눌지 검토해 주세요. 조건·직접 인용은 보존합니다.');
+ if(strategy.student_message.split('\n').some(line=>Array.from(line.trim()).length>450))notes.push('학생 안내에 긴 문단이 있습니다. 내용을 줄이기보다 소제목·줄바꿈·목록으로 준비할 자료와 방법을 구분해 읽을 수 있게 정리해 주세요. 조건·직접 인용은 보존합니다.');
  if(/학교 계획 참고:|학교 활동 참고:|활동 실행 초안:/.test(prose))notes.push('학교 자료를 연결했다는 이유만으로 현재 과제나 활동 참여가 확정된 것은 아닙니다. 대상·시기·참여 가능 여부와 원문 조건을 확인한 뒤 학생과 합의한 실행 범위를 안내해 주세요.');
  notes.push('규칙에 따른 점검 의견입니다. AI 모델의 문체 평가나 교사의 내용 확인을 대신하지 않습니다.','전략의 근거와 직접 인용을 보존하고, 계획을 이미 수행한 성과로 표현하지 않았는지 확인해 주세요. 학생 안내 문장의 핵심·구체성·반복 여부는 교사가 최종 확인합니다.');
  return {state:incomplete?'needs_revision':'pending',method:'manual',content_hash:hashSession(s),notes,created_at:now()};
@@ -137,45 +153,49 @@ async function writeCase(actor,c,expected,action) {c.updated_at=now();c.revision
 function escapeHtml(s) {return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function report(c,s,{audience='teacher',confirmedPreview=false}={}) {
  const e=escapeHtml,strategy=strategyOf(s),student=audience==='student';
- const statuses={planned:'예정',in_progress:'진행 중',done:'완료',deferred:'보류'};
- const actionText=actions=>actions.filter(a=>a.text.trim()).map(a=>a.text+(a.due_date?` (${a.due_date})`:'')+` · ${statuses[a.status]||a.status}`).join('\n');
- const fields=[['전략 주제',s.topic],...(student?[['학생에게 안내할 내용',strategy.student_message]]:[]),['희망 전공',strategy.target_major],['진학 방향',strategy.target_path],['강점',strategy.strengths],['보완할 점',strategy.gaps],['교과 학습 계획',strategy.subject_plan],['탐구 계획',strategy.inquiry_plan],['활동 계획',strategy.activity_plan],['학기별 계획',strategy.semester_plan],...(!student?[['학생에게 안내할 내용',strategy.student_message]]:[]),['학생 실행 과제',actionText(s.actions)],['다음 전략 점검',s.next_date]];
- const present=([,value])=>String(value??'').trim().length>0;
- // References are editable text with no trustworthy end marker. Style each line
- // in place, preserving conditions, source pointers and teacher-written context.
- const prose=value=>{
-  const lines=String(value??'').split('\n').map(line=>/^\s*(?:출처:|자료 ID:|원문 위치:)/.test(line)?`<span class="source-line">${e(line)}</span>`:/^\s*(?:학교 계획 참고:|학교 활동 참고:)/.test(line)?`<strong class="school-reference">${e(line)}</strong>`:/^\s*(?:조건:|AI 관련 원문:|원문 대상:|원문 시기:|적용 상태:)/.test(line)?`<span class="school-condition">${e(line)}</span>`:e(line));
-  // Keep author-entered lines intact across pages. Oversized lines can still
-  // fragment naturally; never apply a fixed height or clipped overflow.
-  return lines.length===1?lines[0]:`<span class="prose-lines">${lines.map(line=>`<span class="prose-line">${line||'<br>'}</span>`).join('\n')}</span>`;
+ const name=c.student.name?.trim()||c.student.student_number||'학생';
+ const title=`${name} ${student?'학습·진로 전략 보고서':'학생부 분석 자료'}`;
+ // Render authored strategy structure without interpreting HTML or losing lines.
+ const inline=value=>e(value).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'$1');
+ const line=value=>{
+  const field=value.match(/^(\s*(?:현재 근거|준비 방향|준비할 자료·결과물|필요한 도움|연결할 교과·탐구):)(.*)$/);
+  if(field)return `<strong>${inline(field[1])}</strong>${inline(field[2])}`;
+  return /^\s*(?:출처:|자료 ID:|원문 위치:)/.test(value)?`<span class="source-line">${inline(value)}</span>`:/^\s*(?:학교 계획 참고:|학교 활동 참고:)/.test(value)?`<strong class="school-reference">${inline(value)}</strong>`:/^\s*(?:조건:|AI 관련 원문:|원문 대상:|원문 시기:|적용 상태:)/.test(value)?`<span class="school-condition">${inline(value)}</span>`:inline(value);
  };
- const section=([label,value],level=2)=>`<section><h${level}>${e(label)}</h${level}><p>${prose(value)}</p></section>`;
- let studentHtml='';
- if(student){
-  if(strategy.student_message.trim())studentHtml+=section(['학생에게 전하는 안내',strategy.student_message]);
-  const actions=s.actions.filter(a=>a.text.trim());
-  studentHtml+='<section class="next-actions"><h2>이번 실행 과제</h2>'+(actions.length?actions.map((a,i)=>`<div class="action"><p>${i+1}. ${prose(a.text)}</p><p class="action-meta">기한: ${e(a.due_date||'미정')} · 상태: ${e(statuses[a.status]||a.status)}</p></div>`).join(''):'<p>실행 과제: 미정</p>')+'</section>'+section(['다음 점검',s.next_date||'미정']);
-  for(const [heading,group] of [['선택한 방향과 근거',[['목표 전공·관심 분야',strategy.target_major],['희망 진로·진학 방향',strategy.target_path],['근거에서 확인한 강점',strategy.strengths],['보완할 점과 필요한 도움',strategy.gaps]]],['교과·탐구·활동 계획',[['교과 학습 계획',strategy.subject_plan],['탐구 계획',strategy.inquiry_plan],['활동 계획',strategy.activity_plan],['학기별 실행 계획',strategy.semester_plan]]]]){
-   const available=group.filter(present);if(available.length)studentHtml+=`<h2>${heading}</h2>`+available.map(field=>section(field,3)).join('');
+ const cells=value=>value.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(v=>v.trim());
+ const divider=value=>value.includes('|')&&cells(value).every(v=>/^:?-{3,}:?$/.test(v));
+ const structured=value=>{
+  const lines=displayText(String(value??'')).split('\n').map(consumerLine).filter(line=>line!==null);let html='',plain=[];
+  const flush=()=>{if(plain.length){html+='<p class="prose-lines">'+plain.map(v=>`<span class="prose-line">${line(v)||'<br>'}</span>`).join('\n')+'</p>';plain=[];}};
+  for(let i=0;i<lines.length;i++){
+   if(lines[i].includes('|')&&i+1<lines.length&&divider(lines[i+1])){
+    flush();const headers=cells(lines[i]);i+=2;const rows=[];
+    while(i<lines.length&&lines[i].includes('|')&&lines[i].trim()){rows.push(cells(lines[i]));i++;}i--;
+    const width=Math.max(headers.length,...rows.map(row=>row.length));
+    html+='<table><thead><tr>'+Array.from({length:width},(_,j)=>`<th scope="col">${inline(headers[j]||'')}</th>`).join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+Array.from({length:width},(_,j)=>`<td>${line(row[j]||'')}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+   }else if(/^\s*영역:\s*(?:자율·자치활동|동아리활동|진로활동|봉사활동|독서활동|행동특성 및 종합의견)\s*$/.test(lines[i])){flush();html+='<h4>'+inline(lines[i])+'</h4>';}
+   else if(/^\s*#{1,6}\s+/.test(lines[i])){flush();html+='<h4>'+inline(lines[i].replace(/^\s*#{1,6}\s+/,''))+'</h4>';}
+   else if(/^\s*[-*]\s+/.test(lines[i])){flush();html+='<p class="bullet">• '+line(lines[i].replace(/^\s*[-*]\s+/,''))+'</p>';}
+   else plain.push(lines[i]);
   }
- }
- if(!student)fields.push(['교사 내부 참고 · 학생 질문',s.student_question],['교사 내부 참고 · 상황',s.context],['교사 내부 참고 · 근거',s.evidence_notes],['교사 내부 참고 · 의견',s.teacher_opinion]);
- let profileHtml='',workflowHtml='';
+  flush();return html;
+ };
+ const present=([,value])=>String(value??'').trim().length>0;
+ const section=([label,value],level=3)=>`<section><h${level}>${e(label)}</h${level}>${structured(value)}</section>`;
+ let content='';
+ const targets=P.profileOf(s).admission_targets.filter(P.hasAdmissionTarget);
+ if(targets.length)content+='<section class="admission-targets"><h2>검토할 희망 대학·전공</h2><table><thead><tr><th scope="col">대학</th><th scope="col">전공</th><th scope="col">전형</th><th scope="col">대입학년도</th></tr></thead><tbody>'+targets.map(target=>'<tr>'+[target.university,target.major,[target.admission_type,target.admission_name].filter(Boolean).join(' · '),target.admission_year?target.admission_year+'학년도':''].map(value=>`<td>${e(value)}</td>`).join('')+'</tr>').join('')+'</tbody></table></section>';
+ if(strategy.student_message.trim())content+=section(['학생에게 전하는 안내',strategy.student_message],2);
+ const groups=[['학생부 분석과 진로 방향', [['목표 전공·관심 분야',strategy.target_major],['희망 진로·진학 방향',strategy.target_path],['강점과 이어갈 방향',strategy.strengths],['보완할 점과 필요한 도움',strategy.gaps]]],['학습·탐구 전략', [['교과 학습 계획',strategy.subject_plan],['탐구 계획',strategy.inquiry_plan],['창체·봉사·독서·행동특성 전략',strategy.activity_plan],['학년·학기별 성장 전략',strategy.semester_plan]]]];
+ for(const [heading,fields] of groups){const available=fields.filter(present);if(available.length)content+=`<h2>${heading}</h2>`+available.map(field=>section(field)).join('');}
+ const actions=!student&&!Object.values(strategy).some(value=>value.trim())?(s.actions||[]).filter(action=>action.text.trim()):[];
+ if(actions.length)content+='<section class="preparation-items"><h2>학생이 준비할 내용</h2><table><thead><tr><th scope="col">순서</th><th scope="col">준비할 내용</th></tr></thead><tbody>'+actions.map((action,index)=>`<tr><td>${index+1}</td><td>${structured(action.text)}</td></tr>`).join('')+'</tbody></table></section>';
  if(!student){
   const profile=P.profileOf(s),scales={'5':'5등급','9':'9등급',achievement:'성취도',unknown:'미확인'};
-  const summary=[['입력한 희망 전공',profile.target_major],['관심 분야',profile.interests],['학습 고민',profile.learning_concerns],['학습 습관',profile.study_habits],['활동',profile.activities],['독서',profile.reading],['출결 참고',profile.attendance_notes],['교사 관찰',profile.teacher_observations],['선택 과목',profile.selected_subjects.join(', ')],['주간 학습 시간',profile.weekly_minutes===null?'':`${profile.weekly_minutes}분`]].filter(present);
-  if(summary.length||profile.grades.length)profileHtml='<h2>교사용 학생 입력 자료</h2>'+summary.map(([label,value])=>`<section><h3>${e(label)}</h3><p>${prose(value)}</p></section>`).join('')+(profile.grades.length?`<h3>입력 성적표</h3><table><thead><tr><th>학년도·학기</th><th>과목</th><th>척도</th><th>등급</th><th>점수</th><th>성취도</th></tr></thead><tbody>${profile.grades.map(grade=>`<tr><td>${e(grade.academic_year)} · ${e(grade.semester)}</td><td>${e(grade.subject||'과목 미입력')}</td><td>${e(scales[grade.grade_scale])}</td><td>${e(grade.rank_grade??'미입력')}</td><td>${e(grade.score??'미입력')}</td><td>${e(grade.achievement||'미입력')}</td></tr>`).join('')}</tbody></table>`:'');
+  if(profile.grades.length)content+='<section><h2>교과 성적 자료</h2><table><thead><tr><th>학년도·학기</th><th>과목</th><th>척도</th><th>등급</th><th>점수</th><th>성취도</th></tr></thead><tbody>'+profile.grades.map(grade=>`<tr><td>${e(grade.academic_year)} · ${e(grade.semester)}</td><td>${e(grade.subject||'과목 미입력')}</td><td>${e(scales[grade.grade_scale])}</td><td>${e(grade.rank_grade??'')}</td><td>${e(grade.score??'')}</td><td>${e(grade.achievement||'')}</td></tr>`).join('')+'</tbody></table></section>';
  }
- if(!student&&s.workflow_version===2){
-  const prepared=s.preparation,consultation=W.consultationOf(s),labels={not_started:'상담 전',in_progress:'상담 진행 중',completed:'상담 완료'};
-  workflowHtml='<h2>1. 교사의 사전 전략</h2>';
-  if(prepared){const draft=strategyOf(prepared);workflowHtml+=`<p>${s.imported_history?.preparation_imported?'가져온 사전 전략 참고본 · 현재 교사의 준비 이력으로 확인된 자료가 아닙니다.':'사전 전략 준비'} · ${e(prepared.prepared_at)}</p>`+[['사전 전략 주제',prepared.topic],['희망 전공',draft.target_major],['진학 방향',draft.target_path],['강점',draft.strengths],['보완할 점',draft.gaps],['교과 학습 계획',draft.subject_plan],['탐구 계획',draft.inquiry_plan],['활동 계획',draft.activity_plan],['학기별 계획',draft.semester_plan],['사전 학생 안내안',draft.student_message],['사전 실행 과제',actionText(prepared.actions)]].filter(present).map(([label,value])=>`<section><h3>${e(label)}</h3><p>${prose(value)}</p></section>`).join('');}
-  else workflowHtml+='<p>사전 전략 초안을 작성 중입니다. 준비 후 학생 상담을 진행합니다.</p>';
-  workflowHtml+='<h2>2. 학생 상담과 반영 사항 · 교사용</h2>'+[['상담 상태',labels[consultation.status]],['상담 날짜',consultation.date],['학생 반응',consultation.student_response],['합의한 방향',consultation.agreed_direction],['전략 조정 사항',consultation.adjustments],['상담 요약',consultation.summary]].filter(present).map(([label,value])=>`<section><h3>${e(label)}</h3><p>${prose(value)}</p></section>`).join('')+`<h2>3. ${s.confirmed?'상담을 반영한 최종 전략':W.ready(s)?'상담을 반영한 최종 전략 초안':'상담 후 완성할 전략 초안'}</h2>`;
- }
- const status=s.guidance?'학생 안내':s.confirmed||confirmedPreview?'확정 · 학생 안내 전':'초안 · 학생 안내 전';
- const studentHeader=student?`<p class="document-meta">${e(status)} · 작성일 ${e(s.date)}${c.teacher.display_name?' · 담당 교사 '+e(c.teacher.display_name):''}</p>${s.topic?`<p class="document-topic">${e(s.topic)}</p>`:''}`:'';
- const lineStyle='<style>.prose-lines{display:block;white-space:normal}.prose-line{display:block;white-space:pre-wrap;break-inside:avoid-page;overflow-wrap:anywhere}</style>';
- return `<!doctype html><html lang="ko"><meta charset="utf-8"><title>대륜고 학종 전략 안내</title><style>body{font-family:"Malgun Gothic",sans-serif;max-width:820px;margin:32px auto;line-height:1.7;color:#212b38}p{white-space:pre-wrap;overflow-wrap:anywhere;widows:2;orphans:2}h1{font-size:25px;line-height:1.4}h2{font-size:18px}h3{font-size:16px}h2,h3{break-after:avoid-page}section{break-inside:auto}.source-line{font-size:0.85em;color:#475569}.school-reference{font-weight:700}.school-condition{font-weight:600}.document-meta,.action-meta{font-size:13px;color:#475569}.document-meta{margin:4px 0}.document-topic{font-size:19px;font-weight:600;margin:16px 0}.action{break-inside:avoid-page}.action p{margin:6px 0}.action-meta{margin-top:0}.next-actions{border-left:3px solid #294d77;padding-left:14px}table{border-collapse:collapse;width:100%;table-layout:fixed}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #bbb;padding:6px;overflow-wrap:anywhere}@page{size:A4;margin:18mm}@media print{button{display:none}body{margin:0}h1{font-size:21px}h2{font-size:16px}h3{font-size:14px}body{font-size:11pt;line-height:1.55}.document-meta,.action-meta{font-size:9pt}}</style>${lineStyle}<button onclick="window.print()">인쇄 / PDF 저장</button><h1>대륜고 학종 전략 안내${student?'':' · '+status}</h1><p class="document-meta">${e(c.student.academic_year)}학년도${c.student.student_number?' · 학번 '+e(c.student.student_number):''}${c.student.name?' · '+e(c.student.name):''}${student?'':' · '+e(s.date)}</p>${studentHeader}${student?studentHtml:profileHtml+workflowHtml+fields.filter(present).map(field=>section(field)).join('')}<p class="document-meta">전략 버전 ${c.revision}${student?'':' · '+e(c.teacher.display_name)} · ${s.guidance?'학생 안내 '+e(s.guidance.published_at):student?'학생 안내용':s.confirmed?'교사 확인 '+e(s.confirmed.at):'교사 최종 확인 전'}</p></html>`;
+ const status=s.confirmed||confirmedPreview?'': ' · 검토용 초안';
+ const meta=[`${c.student.academic_year}학년도`,c.student.student_number&&`학번 ${c.student.student_number}`,`작성일 ${s.date}`,c.teacher.display_name&&`담당 교사 ${c.teacher.display_name}`].filter(Boolean).join(' · ');
+ return `<!doctype html><html lang="ko"><meta charset="utf-8"><title>${e(title)}</title><style>body{font-family:"Malgun Gothic",sans-serif;max-width:880px;margin:32px auto;line-height:1.75;color:#212b38}p{overflow-wrap:anywhere;widows:2;orphans:2}h1{font-size:25px;line-height:1.4}h2{font-size:20px;border-bottom:2px solid #315478;padding-bottom:8px;margin-top:30px}h3{font-size:17px;margin-top:22px}h4{font-size:15px;margin:16px 0 6px}h2,h3,h4{break-after:avoid-page}section{break-inside:auto}.source-line{font-size:0.88em;color:#475569}.school-reference,.school-condition{font-weight:600}.document-meta{font-size:13px;color:#475569;margin:4px 0}.document-topic{font-size:20px;font-weight:600;margin:18px 0}.prose-lines{display:block;white-space:normal}.prose-line{display:block;white-space:pre-wrap;break-inside:avoid-page;overflow-wrap:anywhere}.bullet{padding-left:12px}.preparation-items th:first-child{width:40px}table{border-collapse:collapse;width:100%;table-layout:fixed;margin:14px 0;font-size:.91em;line-height:1.55}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #c5d1dd;padding:9px;overflow-wrap:anywhere;vertical-align:top}th{text-align:left;background:#eff3f8}td p{margin:0}button{padding:10px 16px;margin:24px 0}@page{size:A4;margin:18mm}@media print{button{display:none}body{margin:0;font-size:10.5pt;line-height:1.65}h1{font-size:22px}h2{font-size:18px}h3{font-size:15px}h4{font-size:13px}.document-meta{font-size:9pt}}</style><h1>${e(title)}</h1><p class="document-meta">${e(meta+status)}</p>${s.topic?`<p class="document-topic">${e(s.topic)}</p>`:''}${content}<button onclick="window.print()">인쇄 / PDF 저장</button></html>`;
 }
 module.exports={HttpError,fail,uuid,newId,now,json,wrap,body,onlyKeys,config,db,identity,profileFor,auth,studentsFor,requireStudent,readCase,rejectPrivate,strategyFields,strategyOf,profileOf:P.profileOf,consultationOf:W.consultationOf,planFields:W.planFields,requireWorkflowReady:s=>W.requireReady(s,fail),normalizeCase,studentCase,caseForActor,guidanceReady,hashSession,validateCase,freshSession,newCase,revision,getSession,updateCase,reviewSession,writeCase,report};

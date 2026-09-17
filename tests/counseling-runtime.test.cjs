@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 process.env.NODE_ENV='test';
 const {getStore,setEnvironmentContext}=require('../netlify/functions/_lib/vendor/netlify-blobs.cjs');
 const S=require('../netlify/functions/_lib/counseling-storage');
-const {getCounselingAiConfig}=require('../netlify/functions/_lib/counseling-ai-config');
+const {getCounselingAiConfig,getPrivateStrategyAiConfig}=require('../netlify/functions/_lib/counseling-ai-config');
 const originalFetch=global.fetch;
 const runtime={siteID:'synthetic-site',token:'synthetic-only',edgeURL:'https://cache.synthetic.invalid',uncachedEdgeURL:'https://origin.synthetic.invalid'};
 test('vendored SDK matches provenance hash and loads without any npm dependencies',()=>{
@@ -20,7 +20,7 @@ test('vendored SDK matches provenance hash and loads without any npm dependencie
 });
 test.beforeEach(()=>{
  process.env.COUNSELING_STORAGE='blobs';process.env.SUPABASE_URL='https://school.synthetic.invalid';process.env.SUPABASE_SERVICE_KEY='synthetic-only';
- for(const key of ['GEMINI_API_KEY','VERTEX_PROJECT','VERTEX_SA_KEY','LLM_MODEL','COUNSELING_SERVER_AI_ENABLED'])delete process.env[key];
+ for(const key of ['GEMINI_API_KEY','VERTEX_PROJECT','VERTEX_SA_KEY','LLM_MODEL','COUNSELING_STRATEGY_MODEL','COUNSELING_SERVER_AI_ENABLED'])delete process.env[key];
  setEnvironmentContext(runtime);
 });
 test.afterEach(()=>{global.fetch=originalFetch;delete process.env.NETLIFY_BLOBS_CONTEXT;});
@@ -56,7 +56,7 @@ test('native health entry preserves automatic strong context and exposes no prof
  };
  const entry=(await import('../netlify/functions/counseling-health.mjs')).default;
  const response=await entry(new Request('https://site.synthetic.invalid/.netlify/functions/counseling-health'));
- assert.equal(response.status,200);const value=await response.json();assert.equal(value.version,'0.6.3');assert.equal(value.storage_ready,true);assert.equal(value.school_auth_ready,true);assert.equal(value.server_ai_configured,false);
+ assert.equal(response.status,200);const value=await response.json();assert.equal(value.version,'0.9.0');assert.equal(value.storage_ready,true);assert.equal(value.school_auth_ready,true);assert.equal(value.server_ai_configured,false);
  assert.equal(requests.length,2);assert.ok(requests.every(r=>!r.method||r.method.toUpperCase()==='GET'));
  assert.ok(!JSON.stringify(value).includes('synthetic'));assert.equal(response.headers.get('cache-control'),'no-store');
 });
@@ -90,4 +90,12 @@ test('server AI defaults reuse site credentials while explicit false always disa
  delete process.env.COUNSELING_SERVER_AI_ENABLED;delete process.env.GEMINI_API_KEY;
  process.env.VERTEX_PROJECT='synthetic-only';assert.equal(getCounselingAiConfig().enabled,false);
  process.env.VERTEX_SA_KEY='synthetic-only';process.env.LLM_MODEL='synthetic-model';assert.deepEqual(getCounselingAiConfig(),{enabled:true,model:'synthetic-model'});
+});
+test('private strategy model is configured independently of legacy site AI',()=>{
+ assert.deepEqual(getPrivateStrategyAiConfig(),{enabled:false,model:'gemini-3.6-flash'});
+ process.env.GEMINI_API_KEY='synthetic-only';process.env.LLM_MODEL='legacy-model';
+ assert.deepEqual(getPrivateStrategyAiConfig(),{enabled:true,model:'gemini-3.6-flash'});
+ process.env.COUNSELING_STRATEGY_MODEL='strategy-model';assert.equal(getPrivateStrategyAiConfig().model,'strategy-model');
+ assert.equal(getCounselingAiConfig().model,'legacy-model');
+ process.env.COUNSELING_SERVER_AI_ENABLED='false';assert.equal(getPrivateStrategyAiConfig().enabled,false);
 });

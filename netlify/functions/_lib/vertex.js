@@ -26,21 +26,21 @@ try {
 
 // 워밍 컨테이너 동안 유지되는 모듈 상태: 액세스 토큰 캐시 + 오류 벤치
 let tokenCache = { token: '', exp: 0 };
-let benchedUntil = 0;
+const benchedUntil = new Map();
 
-function vertexEnabled() {
-  return !!SA && Date.now() >= benchedUntil;
+function vertexEnabled(scope = 'default') {
+  return !!SA && Date.now() >= (benchedUntil.get(scope) || 0);
 }
 
 // Vertex 오류 시 잠시 벤치 — 인증·경로류(401/403/404)는 10분, 일시 오류는 60초.
 // 벤치 동안은 API 키 경로만 사용해 사용자 요청이 Vertex 재시도로 지연되지 않게 한다.
-function bench(status) {
+function bench(status, scope = 'default') {
   const authIssue = status === 401 || status === 403 || status === 404;
-  benchedUntil = Date.now() + (authIssue ? 10 * 60_000 : 60_000);
+  benchedUntil.set(scope, Date.now() + (authIssue ? 10 * 60_000 : 60_000));
 }
 
 // 서비스 계정 JWT → OAuth2 액세스 토큰 (외부 패키지 없이 Node crypto로 서명)
-async function getToken() {
+async function getToken(signal) {
   const now = Date.now();
   if (tokenCache.token && now < tokenCache.exp - 60_000) return tokenCache.token;
   const iat = Math.floor(now / 1000);
@@ -57,6 +57,7 @@ async function getToken() {
   const sig = crypto.createSign('RSA-SHA256').update(unsigned).sign(SA.private_key).toString('base64url');
   const resp = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
+    ...(signal ? { signal } : {}),
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body:
       'grant_type=' + encodeURIComponent('urn:ietf:params:oauth:grant-type:jwt-bearer') +
@@ -79,13 +80,14 @@ async function getToken() {
  * 토큰 문제는 캐시를 버리고 다시 받으면 대개 즉시 해소되므로, 벤치는 재발급 후에도
  * 실패할 때만 건다. 반환: { ok, status, data }
  */
-async function vertexFetch(url, body) {
+async function vertexFetch(url, body, scope = 'default', signal) {
   let last = { ok: false, status: 0, data: null };
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const token = await getToken();
+      const token = await getToken(signal);
       const resp = await fetch(url, {
         method: 'POST',
+        ...(signal ? { signal } : {}),
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
         body: JSON.stringify(body),
       });
@@ -98,6 +100,7 @@ async function vertexFetch(url, body) {
       }
     } catch (e) {
       last = { ok: false, status: (e && e.status) || 0, data: null };
+      if (signal?.aborted) return { ok: false, status: 504, data: null };
       if (attempt === 0) {
         tokenCache = { token: '', exp: 0 };
         continue;
@@ -105,14 +108,14 @@ async function vertexFetch(url, body) {
     }
     break;
   }
-  bench(last.status);
+  bench(last.status, scope);
   return last;
 }
 
-function vertexModelUrl(model, method) {
+function vertexModelUrl(model, method, location = VERTEX_LOCATION) {
   return (
-    'https://' + VERTEX_LOCATION + '-aiplatform.googleapis.com/v1/projects/' + VERTEX_PROJECT +
-    '/locations/' + VERTEX_LOCATION + '/publishers/google/models/' + encodeURIComponent(model) + ':' + method
+    'https://' + (location === 'global' ? '' : location + '-') + 'aiplatform.googleapis.com/v1/projects/' + VERTEX_PROJECT +
+    '/locations/' + location + '/publishers/google/models/' + encodeURIComponent(model) + ':' + method
   );
 }
 
@@ -121,10 +124,12 @@ function vertexModelUrl(model, method) {
  * generativelanguage와 Vertex가 동일 shape이므로 그대로 전달한다.
  * 반환: { ok, status, data, via: 'vertex'|'key' } — 호출부의 기존 resp.ok/data 처리와 1:1 대응.
  */
-async function callGemini({ apiKey, model, payload }) {
-  if (vertexEnabled()) {
-    const v = await vertexFetch(vertexModelUrl(model, 'generateContent'), payload);
+async function callGemini({ apiKey, model, payload, location, signal }) {
+  const scope = location ? 'generation:' + location + ':' + model : 'default';
+  if (vertexEnabled(scope)) {
+    const v = await vertexFetch(vertexModelUrl(model, 'generateContent', location), payload, scope, signal);
     if (v.ok) return { ok: true, status: v.status, data: v.data, via: 'vertex' };
+    if (signal?.aborted) return { ok: false, status: 504, data: null, via: 'vertex' };
     // 폴백으로 계속 — Vertex 실패가 사용자 요청을 실패시키지 않는다
   }
   const url =
@@ -132,6 +137,7 @@ async function callGemini({ apiKey, model, payload }) {
     ':generateContent?key=' + apiKey;
   const resp = await fetch(url, {
     method: 'POST',
+    ...(signal ? { signal } : {}),
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });

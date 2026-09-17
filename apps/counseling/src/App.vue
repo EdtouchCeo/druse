@@ -2,26 +2,27 @@
 import {computed,onMounted,onBeforeUnmount,ref,shallowRef,nextTick,watch,defineAsyncComponent} from 'vue'
 import {BookOpen,Search,Plus,FileText,Download,Upload,Save,ChevronRight,ArrowLeft,CalendarDays,ShieldCheck,Monitor,Cloud,LoaderCircle,RefreshCw,Settings,MessageSquare,Check,Trash2,X,ExternalLink,ClipboardCheck,Sparkles,AlertCircle,FolderOpen} from 'lucide-vue-next'
 import {createTransport,isRevisionConflict,ApiError} from './lib/transport'
-import {connectionUrl,schoolLoginUrl,validatedLocalOrigin,receivedTeacherToken,approvedTeacherToken,AUTH_MESSAGE} from './lib/authBridge'
+import {connectionUrl,schoolLoginUrl,validatedLocalOrigin,receivedTeacherToken,approvedTeacherToken,receivedConnectionResult,rememberConnection,consumeConnection,AUTH_MESSAGE,AUTH_RESULT,AUTH_ORIGIN} from './lib/authBridge'
 import {clone,stamp,sessionOf,parseBackup,draftBackup,download,readableError,reportFilename,normalizeCase,studentView,applyAnalysis,modeForHost} from './lib/model'
 import type {Transport,Health,CounselingCase,Student,Backup,Job,Fixture,AiSettings,RecordMetadata,ReportAudience} from './lib/types'
 import schoolLogo from './assets/school-logo.png'
 import StrategyEditor from './components/StrategyEditor.vue'
 import StudentResult from './components/StudentResult.vue'
 import AnalysisReport from './components/AnalysisReport.vue'
+import PreparationDashboard from './components/PreparationDashboard.vue'
+import StructuredAnalysis from './components/StructuredAnalysis.vue'
+import ResultText from './components/ResultText.vue'
 import CaseActionsDialog from './components/CaseActionsDialog.vue'
 import ConnectionStatus from './components/ConnectionStatus.vue'
 import {analysisReportIssue} from './lib/reports'
 import RecordEvidence from './components/RecordEvidence.vue'
 import StudentUnderstanding from './components/StudentUnderstanding.vue'
 import ConsultationEditor from './components/ConsultationEditor.vue'
-import FieldExample from './components/FieldExample.vue'
-import {actionExample} from './lib/inputExamples'
-import {preparationIssues,finalizationIssues,normalizeConsultation,guidanceIssues} from './lib/workflow'
+import {finalizationIssues,normalizeConsultation,guidanceIssues} from './lib/workflow'
 import type {StrategyPreparationCard} from './lib/strategyPreparation'
 import SchoolContextCards from './components/SchoolContextCards.vue'
 import schoolContextData from './data/school-context.json'
-import {adoptSchoolTask,taskReference,adoptSchoolActivity,activityReference,schoolActivityAction,type SchoolContext,type SchoolAssessment,type SchoolActivity} from './lib/schoolContext'
+import {adoptSchoolTask,taskReference,adoptSchoolActivity,activityReference,type SchoolContext,type SchoolAssessment,type SchoolActivity} from './lib/schoolContext'
 const schoolContext=schoolContextData as unknown as SchoolContext
 import {adoptProfile,normalizeProfile} from './lib/profile'
 import {validateNewStudent} from './lib/students'
@@ -29,14 +30,14 @@ const AdminPanel=defineAsyncComponent(()=>import('./components/AdminPanel.vue'))
 const adminOpen=ref(new URLSearchParams(location.search).get('admin')==='1'),adminBusy=ref(false)
 const transport=shallowRef<Transport|null>(null),health=ref<Health|null>(null),cases=ref<CounselingCase[]>([])
 const checkingConnection=ref(true),accessFailure=ref<{status:number;code:string}|null>(null)
-const draft=ref<CounselingCase|null>(null),savedStamp=ref(''),selectedSessionId=ref(''),search=ref(''),tab=ref<'understanding'|'counseling'|'consultation'|'record'|'analysis'|'review'>('understanding')
+const draft=ref<CounselingCase|null>(null),savedStamp=ref(''),selectedSessionId=ref(''),search=ref(''),tab=ref<'understanding'|'counseling'|'consultation'|'record'|'analysis'|'review'|'dashboard'>('understanding')
 const requestCancellable=ref(false),busy=ref(''),error=ref(''),notice=ref(''),conflict=ref(false),activeJob=ref<Job|null>(null),sidebarOpen=ref(false),authToken=ref('')
 const studentPreview=ref(false),reportKind=ref<'analysis'|'strategy'>('strategy')
 const strategyReportActive=computed(()=>reportKind.value==='strategy')
 const newOpen=ref(false),importBundle=ref<Backup|null>(null),importAcknowledged=ref(false),reviewAcknowledged=ref(false)
 const caseAction=ref<'download'|'delete'|null>(null),actionCase=ref<CounselingCase|null>(null),actionSessionId=ref(''),actionLoaded=ref(false),deleteAcknowledged=ref(false)
 const actionHasDraft=computed(()=>Boolean(dirty.value&&draft.value?.id===actionCase.value?.id))
-const model=ref(''),pdfPassword=ref(''),selectedPdf=shallowRef<File|null>(null),fixtures=ref<Fixture[]>([]),evidenceId=ref(''),budget=ref(90)
+const model=ref(''),pdfPassword=ref(''),selectedPdf=shallowRef<File|null>(null),fixtures=ref<Fixture[]>([]),evidenceId=ref('')
 const settingsOpen=ref(false),aiDraft=ref(''),externalConsent=ref(false),settings=ref<AiSettings>({provider:'server',model:'',apiKey:'',ollamaUrl:'http://127.0.0.1:11434'})
 const pdfInput=ref<HTMLInputElement|null>(null),jsonInput=ref<HTMLInputElement|null>(null)
 const pdfDragDepth=ref(0)
@@ -50,44 +51,78 @@ const strategyHubHref=computed(()=>manualHref.value+'#strategy')
 const guideHref=computed(()=>(localMode.value?'https://daeryun.life':'')+'/counseling/guide.html')
 const ready=computed(()=>Boolean(health.value&&(health.value.demo||health.value.teacher||health.value.user)))
 const teacher=computed(()=>Boolean(health.value?.demo||health.value?.teacher))
+const approvedConnectionTeacher=computed(()=>health.value?.teacher?.approved===true)
 const canManage=computed(()=>!localMode.value&&health.value?.user?.can_manage===true)
 const session=computed(()=>draft.value?.sessions.find(s=>s.id===selectedSessionId.value)||null)
 const dirty=computed(()=>Boolean(draft.value&&stamp(draft.value)!==savedStamp.value))
 const locked=computed(()=>!teacher.value||Boolean(session.value?.confirmed||session.value?.guidance)||Boolean(busy.value))
 const strategy=computed(()=>session.value?.strategy)
 const dataTab=computed(()=>['understanding','record','analysis'].includes(tab.value))
-const preparation=computed(()=>session.value?.preparation)
-const prepareIssues=computed(()=>session.value?preparationIssues(session.value):[])
 const finalIssues=computed(()=>session.value?finalizationIssues(session.value):[])
 const finalReady=computed(()=>finalIssues.value.length===0)
 const contentIssues=computed(()=>session.value&&!session.value.confirmed?guidanceIssues(session.value):[])
-const planLocked=computed(()=>locked.value||Boolean(preparation.value&&!finalReady.value))
-const importedPreparation=computed(()=>Boolean(session.value?.imported_history?.preparation_imported))
-const displayedStrategy=computed(()=>tab.value==='counseling'&&preparation.value?preparation.value.strategy:strategy.value)
-const displayedTopic=computed(()=>tab.value==='counseling'&&preparation.value?preparation.value.topic:session.value?.topic||'')
-const displayedActions=computed(()=>tab.value==='counseling'&&preparation.value?preparation.value.actions:session.value?.actions||[])
+const planLocked=computed(()=>locked.value)
+const displayedStrategy=computed(()=>strategy.value)
+const displayedTopic=computed(()=>session.value?.topic||'')
 const studentPdfReady=computed(()=>!teacher.value||finalReady.value&&((!localMode.value&&session.value?.workflow_version!==2)||Boolean(session.value?.confirmed&&!dirty.value)))
-watch(()=>[draft.value?.id,selectedSessionId.value,tab.value],()=>{studentPreview.value=false;if(tab.value==='review')reportKind.value=localMode.value&&!finalReady.value?'analysis':'strategy'})
+watch(()=>[draft.value?.id,selectedSessionId.value,tab.value],()=>{studentPreview.value=tab.value==='review';if(tab.value==='review')reportKind.value=localMode.value&&!Object.values(strategy.value||{}).some(value=>value.trim())?'analysis':'strategy'})
 watch([()=>draft.value?.id,()=>selectedSessionId.value],()=>{pdfSelectionSequence++;selectedPdf.value=null;pdfPassword.value='';pdfDragDepth.value=0})
 const showStudentResult=computed(()=>!teacher.value||tab.value==='review'&&strategyReportActive.value&&finalReady.value&&(studentPreview.value||Boolean(session.value?.confirmed)))
-const strategyReadOnly=computed(()=>!teacher.value||Boolean(session.value?.confirmed||session.value?.guidance)||Boolean(tab.value==='counseling'&&preparation.value))
+const strategyReadOnly=computed(()=>!teacher.value||Boolean(session.value?.confirmed||session.value?.guidance))
 const published=computed(()=>Boolean(session.value?.guidance))
 const visibleCases=computed(()=>cases.value.filter(c=>[c.student.student_number,c.student.name,...c.sessions.flatMap(s=>[s.topic,s.strategy?.target_major,s.strategy?.target_path])].join(' ').includes(search.value.trim())))
 const availableStudents=computed(()=>health.value?.students||[])
 const studentAccountLinked=computed(()=>(availableStudents.value.find(student=>student.student_id===draft.value?.student.student_id)?.account_linked??draft.value?.student.account_linked)!==false)
 const record=computed(()=>session.value?.record),analysis=computed(()=>session.value?.analysis)
+const preparationHash=ref('')
+let preparationHashSequence=0
+async function refreshPreparationHash(){
+ const seq=++preparationHashSequence,id=draft.value?.id,sid=selectedSessionId.value
+ preparationHash.value=''
+ if(!id||!sid||!transport.value?.preparationStatus||dirty.value)return
+ try{const result=await transport.value.preparationStatus(id,sid);if(seq===preparationHashSequence&&!dirty.value)preparationHash.value=result.source_hash}catch{if(seq===preparationHashSequence)preparationHash.value=''}
+}
+watch(()=>[draft.value?.id,draft.value?.revision,selectedSessionId.value,dirty.value],()=>{void refreshPreparationHash()})
+async function generatePreparation(stage:'admissions'|'inquiry',targetId:string){
+ if(!session.value||locked.value||!transport.value?.generatePreparation)return
+ await execute('개인정보를 제외한 학습 정보를 준비하고 있습니다.',async()=>{
+  const value=await persist();tab.value='dashboard'
+  await waitJob(await transport.value!.generatePreparation!(value,selectedSessionId.value,stage,targetId))
+  await refreshPreparationHash();tab.value='dashboard'
+ },true)
+}
+async function downloadPreparation(kind:'analysis'|'admissions'|'inquiry',targetId=''){
+ if(kind==='analysis'){await exportPdf('analysis');return}
+ if(!draft.value||!transport.value?.preparationPdf)return
+ await execute('상세 대시보드를 A4 PDF로 정리하고 있습니다.',async()=>{
+  const value=await persist(),blob=await transport.value!.preparationPdf!(value.id,selectedSessionId.value,kind,targetId)
+  download(blob,`${value.student.name||'학생'} ${kind==='admissions'?'대학·학과별 학종 준비 전략':'질문 중심 학습 전략'}.pdf`)
+ })
+}
+
 const analysisReportCase=computed(()=>cases.value.find(item=>item.id===draft.value?.id))
 const analysisReportSession=computed(()=>analysisReportCase.value?.sessions.find(item=>item.id===selectedSessionId.value))
 const analysisReportProblem=computed(()=>analysisReportIssue(analysisReportSession.value))
 const analysisReportReady=computed(()=>localMode.value&&teacher.value&&!analysisReportProblem.value)
-async function openAnalysisReport(){tab.value='review';await nextTick();reportKind.value='analysis';await nextTick();document.querySelector<HTMLElement>('.analysis-report')?.focus({preventScroll:true})}
+async function openAnalysisReport(){tab.value='review';await nextTick();if(localMode.value){tab.value='dashboard';return}reportKind.value='analysis';await nextTick();document.querySelector<HTMLElement>('.analysis-report')?.focus({preventScroll:true})}
 const review=computed(()=>dirty.value?null:session.value?.review)
 const reviewConfirmable=computed(()=>Boolean(review.value&&['passed','pending'].includes(review.value.state)&&!dirty.value&&finalReady.value&&!contentIssues.value.length))
 const currentSessionIndex=computed(()=>draft.value?.sessions.findIndex(s=>s.id===selectedSessionId.value)??-1)
 const validImportStudent=computed(()=>localMode.value||availableStudents.value.some(s=>s.student_id===importBundle.value?.case.student.student_id))
-const jobStage=computed(()=>({queued:'분석 준비',loading:'모델 불러오기',reading_image:'PDF 이미지 판독',analyzing:'근거 분석',validating_evidence:'원문 대조',checking_evidence:'근거 다시 확인',style_review:'문체 검토',completed:'완료',cancelled:'취소',failed:'분석 중단'} as Record<string,string>)[activeJob.value?.stage||'']||'')
-const connectTarget=validatedLocalOrigin(new URLSearchParams(location.search).get('connect_local'))
-const connectionSent=ref(false)
+const jobStage=computed(()=>({queued:'준비',drafting_strategy:'학습·진로 전략 작성',loading:'모델 불러오기',reading_image:'PDF 이미지 판독',analyzing:'근거 분석',validating_evidence:'원문 대조',checking_evidence:'근거 다시 확인',style_review:'문체 검토',completed:'완료',cancelled:'취소',failed:'분석 중단'} as Record<string,string>)[activeJob.value?.stage||'']||'')
+const connectionParams=new URLSearchParams(location.search)
+let rememberedConnection:string|null=null
+if(modeForHost(location.hostname)==='online'){try{rememberedConnection=consumeConnection(sessionStorage)}catch{/* Login context may be unavailable in restricted browsers. */}}
+const connectTarget=connectionParams.has('connect_local')?validatedLocalOrigin(connectionParams.get('connect_local')):rememberedConnection
+const loginReturnOnly=modeForHost(location.hostname)==='online'&&!connectionParams.has('connect_local')&&(Boolean(rememberedConnection)||connectionParams.get('connection_login')==='1')
+const connectionOnly=modeForHost(location.hostname)==='online'&&(connectionParams.has('connect_local')||loginReturnOnly)
+if(loginReturnOnly){const url=new URL(location.href);url.searchParams.set('connection_login','1');history.replaceState(null,'',url)}
+const connectionState=ref<'idle'|'pending'|'connected'>('idle')
+const connectionProblem=ref('')
+let connectionAttempted=false
+let connectionTimer:ReturnType<typeof setTimeout>|undefined
+let loginRefreshTimer:ReturnType<typeof setTimeout>|undefined
+let loginPopup:Window|null=null
 let connectionPopup:Window|null=null
 let controller:AbortController|null=null
 let returnFocus:HTMLElement|null=null
@@ -97,7 +132,7 @@ async function toggleStudentPreview(){studentPreview.value=!studentPreview.value
 watch(()=>session.value?.confirmed,async(value,previous)=>{if(value&&!previous&&teacher.value&&tab.value==='review')await focusStudentResult()})
 function modalKeyboard(event:KeyboardEvent){const modal=document.querySelector<HTMLElement>('.modal');if(!modal)return;if(event.key==='Escape'&&!busy.value){newOpen.value=false;importBundle.value=null;settingsOpen.value=false;closeCaseAction();return}if(event.key!=='Tab')return;const elements=Array.from(modal.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href],textarea:not(:disabled)'));const first=elements[0],last=elements.at(-1);if(!first||!modal.contains(document.activeElement)){event.preventDefault();(first||modal).focus();return}if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus()}}
 function healthIdentity(value:Health|null):string{return value?.demo?'demo':value?.teacher?.id||value?.user?.id||''}
-function clearStudentState(){caseAction.value=null;actionCase.value=null;actionSessionId.value='';actionLoaded.value=false;deleteAcknowledged.value=false;budget.value=90;model.value='';cases.value=[];draft.value=null;savedStamp.value='';selectedSessionId.value='';search.value='';aiDraft.value='';reviewAcknowledged.value=false;selectedPdf.value=null;pdfPassword.value='';fixtures.value=[];evidenceId.value='';importBundle.value=null;importAcknowledged.value=false;newOpen.value=false;settingsOpen.value=false;sidebarOpen.value=false;activeJob.value=null;conflict.value=false;externalConsent.value=false;newTeacher.value='';onlineStudentId.value='';newStudentMode.value='assigned';addedStudentId.value='';newStudent.value={student_id:'',student_number:'',academic_year:new Date().getFullYear(),school_stage:'high',grade:1,name:''};tab.value='understanding'}
+function clearStudentState(){caseAction.value=null;actionCase.value=null;actionSessionId.value='';actionLoaded.value=false;deleteAcknowledged.value=false;model.value='';cases.value=[];draft.value=null;savedStamp.value='';selectedSessionId.value='';search.value='';aiDraft.value='';reviewAcknowledged.value=false;selectedPdf.value=null;pdfPassword.value='';fixtures.value=[];evidenceId.value='';importBundle.value=null;importAcknowledged.value=false;newOpen.value=false;settingsOpen.value=false;sidebarOpen.value=false;activeJob.value=null;conflict.value=false;externalConsent.value=false;newTeacher.value='';onlineStudentId.value='';newStudentMode.value='assigned';addedStudentId.value='';newStudent.value={student_id:'',student_number:'',academic_year:new Date().getFullYear(),school_stage:'high',grade:1,name:''};tab.value='understanding'}
 async function refreshConnection(){await execute('로컬 연결을 다시 확인하고 있습니다.',async()=>{const nextHealth=await transport.value!.health();if(healthIdentity(nextHealth)!==healthIdentity(health.value))clearStudentState();health.value=nextHealth;if(!health.value.ollama.models.some(item=>item.name===model.value))model.value=health.value.ollama.models[0]?.name||'';notice.value='현재 모델 연결 상태를 확인했습니다.'})}
 function setCase(input:CounselingCase,sessionId?:string){const value=teacher.value?normalizeCase(input):studentView(input);if(!value){draft.value=null;savedStamp.value='';return}draft.value=clone(value);savedStamp.value=stamp(value);selectedSessionId.value=sessionId&&value.sessions.some(s=>s.id===sessionId)?sessionId:value.current_session_id;reviewAcknowledged.value=false;conflict.value=false;selectedPdf.value=null;if(!teacher.value)tab.value='counseling';const index=cases.value.findIndex(c=>c.id===value.id);if(index>=0)cases.value[index]=clone(value);else cases.value.unshift(clone(value))}
 async function execute(label:string,fn:()=>Promise<void>,canCancel=false){if(busy.value)return;busy.value=label;requestCancellable.value=canCancel;error.value='';notice.value='';controller=new AbortController();try{await fn()}catch(e){error.value=readableError(e);conflict.value=isRevisionConflict(e)}finally{busy.value='';requestCancellable.value=false;controller=null;activeJob.value=null}}
@@ -109,6 +144,7 @@ async function initialize(){
    try{
     transport.value=await createTransport()
     health.value=await transport.value.health(AbortSignal.any([controller!.signal,AbortSignal.timeout(15000)]))
+    if(connectionOnly){adminOpen.value=false;return}
     if(ready.value){
      if(health.value.user?.role==='manager'){cases.value=[];draft.value=null;adminOpen.value=true}
      else cases.value=(await transport.value.list(AbortSignal.any([controller!.signal,AbortSignal.timeout(15000)]))).map(c=>teacher.value?normalizeCase(c):studentView(c)).filter((c):c is CounselingCase=>Boolean(c))
@@ -130,15 +166,80 @@ async function initialize(){
     throw e
    }
   })
- }finally{checkingConnection.value=false}
+ }finally{checkingConnection.value=false;if(loginReturnOnly&&approvedConnectionTeacher.value){await nextTick();closeLoginWindow()}}
 }
 function openAdmin(){if(!canManage.value||busy.value||!mayLeave())return;if(dirty.value&&draft.value){const original=cases.value.find(item=>item.id===draft.value!.id);if(original)setCase(original)}adminOpen.value=true}
 async function closeAdmin(){if(adminBusy.value)return;adminOpen.value=false;await initialize()}
 async function authenticate(){await completeAuthentication(authToken.value)}
-async function completeAuthentication(token:string){if(busy.value)return;clearStudentState();health.value=null;await execute('교사 계정을 확인하고 있습니다.',async()=>{health.value=await transport.value!.authenticate(token);authToken.value='';cases.value=await transport.value!.list();newTeacher.value=health.value.teacher?.display_name||'';fixtures.value=await transport.value!.fixtures();model.value=health.value.ollama.models[0]?.name||'';if(cases.value.length)setCase(cases.value[0]!);notice.value='교사 계정을 확인했습니다. 이 PC의 전략실을 사용할 수 있습니다.'})}
-function openTeacherConnection(){try{if(!localMode.value||ready.value)return;connectionPopup=window.open(connectionUrl(location.origin),'daeryun-counseling-auth','popup,width=620,height=780');if(!connectionPopup)throw new Error('로그인 창을 열지 못했습니다. 팝업 허용 후 다시 연결해 주세요.');notice.value='대륜고 로그인 창에서 교사 계정으로 이 PC 연결을 확인해 주세요.'}catch(e){error.value=readableError(e)}}
-async function receiveTeacherConnection(event:MessageEvent){const token=receivedTeacherToken(event,connectionPopup);if(!token||!localMode.value||ready.value||busy.value)return;connectionPopup=null;await completeAuthentication(token)}
-function sendTeacherConnection(){try{if(localMode.value||!connectTarget||!window.opener||connectionSent.value)return;const token=approvedTeacherToken(health.value,localStorage);if(!token)throw new Error('승인된 교사 계정으로 로그인한 뒤 연결해 주세요.');window.opener.postMessage({type:AUTH_MESSAGE,token},connectTarget);connectionSent.value=true;notice.value='교사 연결 요청을 보냈습니다. 로컬 전략실에서 연결 결과를 확인해 주세요.'}catch(e){error.value=readableError(e)}}
+async function completeAuthentication(token:string){
+ if(busy.value)return false
+ clearStudentState();health.value=null
+ await execute('교사 계정을 확인하고 있습니다.',async()=>{
+  health.value=await transport.value!.authenticate(token)
+  if(!health.value.teacher?.approved)throw new Error('승인된 교사 계정을 확인하지 못했습니다. 다시 연결해 주세요.')
+  authToken.value='';cases.value=await transport.value!.list();newTeacher.value=health.value.teacher.display_name||'';fixtures.value=await transport.value!.fixtures();model.value=health.value.ollama.models[0]?.name||''
+  if(cases.value.length)setCase(cases.value[0]!)
+  notice.value='교사 계정이 연결되었습니다. 이 화면에서 학생 자료·분석·전략 작성을 이어가세요.'
+ })
+ if(error.value){clearStudentState();health.value=null;return false}
+ return true
+}
+function openTeacherConnection(){try{if(!localMode.value||ready.value)return;if(connectionPopup&&!connectionPopup.closed){connectionPopup.focus();return}connectionPopup=window.open(connectionUrl(location.origin),'daeryun-counseling-auth','popup,width=620,height=780');if(!connectionPopup)throw new Error('로그인 창을 열지 못했습니다. 팝업 허용 후 다시 연결해 주세요.');notice.value='교사 계정 확인이 끝나면 이 작업 화면으로 돌아옵니다.'}catch(e){error.value=readableError(e)}}
+async function receiveTeacherConnection(event:MessageEvent){
+ if(connectionOnly){
+  const result=receivedConnectionResult(event,window.opener,connectTarget)
+  if(!result||!connectionAttempted||connectionState.value==='connected')return
+  clearTimeout(connectionTimer)
+  if(result==='connected'){connectionState.value='connected';connectionProblem.value='';await nextTick();returnToWorkspace()}
+  else{connectionState.value='idle';connectionProblem.value='PC에서 교사 계정을 확인하지 못했습니다. 원래 작업 화면의 안내를 확인한 뒤 다시 연결해 주세요.'}
+  return
+ }
+ const token=receivedTeacherToken(event,connectionPopup)
+ if(!token||!localMode.value||ready.value||busy.value)return
+ const popup=connectionPopup
+ const connected=await completeAuthentication(token)
+ try{popup?.postMessage({type:AUTH_RESULT,status:connected?'connected':'failed'},AUTH_ORIGIN)}catch{/* The teacher may have closed the popup while connecting. */}
+ if(connected){connectionPopup=null;window.focus()}
+}
+function sendTeacherConnection(){
+ if(!connectionOnly||connectionState.value!=='idle')return
+ connectionProblem.value=''
+ try{
+  if(!connectTarget)throw new Error('연결 주소를 확인할 수 없습니다. PC 전략실에서 계정 연결을 다시 시작해 주세요.')
+  if(!window.opener||window.opener.closed)throw new Error('원래 PC 작업 화면과 연결이 끊겼습니다. PC 전략실로 돌아가 ‘대륜고 계정으로 연결’을 다시 눌러 주세요.')
+  const token=approvedTeacherToken(health.value,localStorage)
+  if(!token)throw new Error('승인된 교사 계정으로 로그인한 뒤 연결해 주세요.')
+  window.opener.postMessage({type:AUTH_MESSAGE,token},connectTarget)
+  connectionAttempted=true
+  connectionState.value='pending'
+  connectionTimer=setTimeout(()=>{connectionState.value='idle';connectionProblem.value='연결 결과를 확인하지 못했습니다. PC 작업 화면을 확인하고, 아직 연결되지 않았다면 다시 시도해 주세요.'},20000)
+ }catch(e){connectionProblem.value=readableError(e)}
+}
+function startConnectionLogin(event:MouseEvent){
+ event.preventDefault();connectionProblem.value=''
+ try{
+  if(loginPopup&&!loginPopup.closed){loginPopup.focus();return}
+  if(!connectTarget)throw new Error('PC 전략실에서 계정 연결을 다시 시작해 주세요.')
+  loginPopup=window.open('about:blank','daeryun-counseling-login','popup,width=620,height=780')
+  if(!loginPopup)throw new Error('로그인 창을 열지 못했습니다. 팝업 허용 후 다시 시도해 주세요.')
+  if(!rememberConnection(loginPopup.sessionStorage,connectTarget)){loginPopup.close();throw new Error('로그인 연결 정보를 보관하지 못했습니다. 브라우저의 사이트 저장 설정을 확인해 주세요.')}
+  // OAuth may isolate its window. The stable connection window keeps its PC opener.
+  loginPopup.opener=null
+  loginPopup.location.replace(new URL(schoolLoginUrl(),location.origin).href)
+ }catch(e){connectionProblem.value=readableError(e)}
+}
+function closeLoginWindow(){try{window.close()}catch{/* The completion-only view remains if closing is blocked. */}}
+function refreshConnectionLogin(event:Event){
+ if(!connectionOnly||loginReturnOnly||connectionState.value!=='idle')return
+ if(event.type==='storage'&&(event as StorageEvent).key!=='dr_sess_v1'&&(event as StorageEvent).key!==null)return
+ clearTimeout(loginRefreshTimer)
+ const refresh=()=>{if(connectionState.value!=='idle')return;if(busy.value){loginRefreshTimer=setTimeout(refresh,250);return}void initialize()}
+ loginRefreshTimer=setTimeout(refresh,250)
+}
+function returnToWorkspace(){
+ if(!window.opener||window.opener.closed){connectionProblem.value='원래 PC 작업 화면이 닫혔습니다. PC 전략실을 다시 열어 주세요.';return}
+ try{window.opener.focus();window.close()}catch{/* Keep the completion panel and return button if the browser cannot close it. */}
+}
 async function persist(){if(!draft.value)throw new Error('상담을 먼저 선택해 주세요.');if(dirty.value){for(const item of draft.value.sessions){normalizeProfile(item.profile);normalizeConsultation(item.consultation)};if(session.value?.confirmed||session.value?.guidance)throw new Error('확정한 상담은 다음 회차에 이어서 작성해 주세요.');const id=selectedSessionId.value;setCase(await transport.value!.save(clone(draft.value)),id)}return draft.value!}
 function mayLeave(){return !dirty.value||window.confirm('저장하지 않은 작성 내용이 있습니다. 이 화면의 변경을 버리고 이동할까요?')}
 function caseLabel(value:CounselingCase){return [value.student.student_number,value.student.name].filter(Boolean).join(' ')}
@@ -222,8 +323,6 @@ async function createCase(){
  })
 }
 async function nextSession(){if(!teacher.value)return;await execute('다음 전략 회차를 만들고 있습니다.',async()=>{const value=await persist();setCase(await transport.value!.next(value));tab.value='understanding';notice.value='이전 전략을 보존하고 새 회차를 만들었습니다.'})}
-function addAction(){session.value?.actions.push({id:crypto.randomUUID(),text:'',due_date:'',status:'planned'})}
-function removeAction(id:string){if(session.value)session.value.actions=session.value.actions.filter(a=>a.id!==id)}
 async function exportJson(){if(!draft.value||!teacher.value)return;await execute('상담 백업을 준비하고 있습니다.',async()=>{if(dirty.value){const bundle=draftBackup(draft.value!,selectedSessionId.value);const value=bundle.case;download(new Blob([JSON.stringify(bundle,null,2)],{type:'application/json;charset=utf-8'}),'상담_'+value.student.student_number+'_작성중.json');notice.value='작성 내용을 백업했습니다. 필수값을 편집 중인 상담은 사본에서 진행 중으로 보관합니다. 불러오면 새 사본으로 검토합니다.'}else{download(await transport.value!.exportBackup(draft.value!.id),'상담_'+draft.value!.student.student_number+'_백업.json');notice.value='상담 백업을 내려받았습니다.'}})}
 async function exportPdf(audience:'student'|'teacher'|'analysis'='student'){
  if(!draft.value)return
@@ -276,9 +375,8 @@ async function saveRecordMetadata(sectionId:string,metadata:RecordMetadata):Prom
 }
 async function upload(){if(!selectedPdf.value)return;const file=selectedPdf.value;await execute('학생부 PDF에서 항목과 근거를 읽고 있습니다.',async()=>{const value=await persist();const id=selectedSessionId.value;setCase(await transport.value!.upload(value,id,file,pdfPassword.value,controller?.signal),id);pdfPassword.value='';tab.value='record';notice.value='추출 항목과 판독 상태를 확인해 주세요.'},true)}
 async function waitJob(job:Job){activeJob.value=job;while(['queued','running'].includes(activeJob.value.state)){await new Promise<void>((resolve,reject)=>{const signal=controller?.signal;if(signal?.aborted){reject(new DOMException('Cancelled','AbortError'));return}const timer=setTimeout(()=>{signal?.removeEventListener('abort',abort);resolve()},900);const abort=()=>{clearTimeout(timer);reject(new DOMException('Cancelled','AbortError'))};signal?.addEventListener('abort',abort,{once:true})});activeJob.value=await transport.value!.job(job.id,controller?.signal)}const outcome=activeJob.value;setCase(await transport.value!.get(draft.value!.id),selectedSessionId.value);if(outcome.state==='failed'||outcome.state==='needs_revision')throw new Error(outcome.message||'작업을 완료하지 못했습니다. 모델 상태와 입력을 확인해 주세요.');notice.value=outcome.message||(outcome.state==='cancelled'?'작업을 취소했습니다.':'작업 결과를 확인해 주세요.')}
-async function analyze(){await execute('Ollama 분석을 준비하고 있습니다.',async()=>{if(!model.value)throw new Error('설치된 로컬 모델을 선택해 주세요.');if(!Number.isInteger(budget.value)||budget.value<5||budget.value>600)throw new Error('제안 시간 상한은 5~600분 사이의 정수로 입력하세요.');const value=await persist();await waitJob(await transport.value!.analyze(value,selectedSessionId.value,model.value,session.value!.topic,budget.value));tab.value='analysis'})}
-async function prepareStrategy(){if(!session.value||prepareIssues.value.length||locked.value)return;await execute('상담 전 교사 전략을 보존하고 있습니다.',async()=>{const value=await persist();const id=selectedSessionId.value;setCase(await transport.value!.prepare(value,id),id);tab.value='consultation';notice.value='상담 전 전략을 보존했습니다. 학생의 실제 반응과 합의 내용을 기록하세요.'})}
-async function completeConsultation(){if(!session.value?.preparation||locked.value)return;await execute('상담 반영 기록을 저장하고 있습니다.',async()=>{const current=session.value!;const completed=normalizeConsultation({...current.consultation,status:'completed'});current.consultation=completed;await persist();tab.value='review';notice.value='상담 반영 기록을 저장했습니다. 최종 전략과 실행과제를 수정한 뒤 검토·확정하세요.'})}
+async function analyze(){await execute('Ollama 분석을 준비하고 있습니다.',async()=>{if(!model.value)throw new Error('설치된 로컬 모델을 선택해 주세요.');const value=await persist();await waitJob(await transport.value!.analyze(value,selectedSessionId.value,model.value,session.value!.topic));tab.value='dashboard'})}
+async function completeConsultation(){if(!session.value||locked.value)return;await execute('상담 반영 기록을 저장하고 있습니다.',async()=>{const current=session.value!;const completed=normalizeConsultation({...current.consultation,status:'completed'});current.consultation=completed;await persist();tab.value='counseling';notice.value='상담 내용을 저장했습니다. 전략 생성 버튼으로 이 내용을 반영한 전략을 만들 수 있습니다.'})}
 function adoptPreparationCard(card:StrategyPreparationCard){
  if(!teacher.value||planLocked.value||!session.value||!strategy.value)return
  let changed=false
@@ -287,13 +385,14 @@ function adoptPreparationCard(card:StrategyPreparationCard){
   const field=key as keyof typeof strategy.value
   if(typeof value==='string'&&value.trim()&&!strategy.value[field]?.trim()){strategy.value[field]=value;changed=true}
  }
- for(const text of card.actions||[])if(text.trim()&&!session.value.actions.some(a=>a.text.trim()===text.trim())){session.value.actions.push({id:crypto.randomUUID(),text,due_date:'',status:'planned'});changed=true}
+
  if(changed&&!session.value.topic.trim())session.value.topic='학생 자료를 바탕으로 한 학기 전략'
- tab.value=preparation.value?'review':'counseling'
- notice.value=changed?'선택한 제안을 빈 계획 항목과 실행과제에 반영했습니다. 교사 판단에 맞게 편집하고 저장하세요.':'이미 작성한 계획이 있습니다. 전략 화면에서 직접 수정하세요.'
+ tab.value='counseling'
+ notice.value=changed?'선택한 제안을 빈 전략 항목에 반영했습니다. 교사 판단에 맞게 편집하고 저장하세요.':'이미 작성한 계획이 있습니다. 전략 화면에서 직접 수정하세요.'
 }
+async function generateStrategy(){tab.value='dashboard';notice.value='대학·학과를 선택해 학종 준비 전략을 먼저 생성하세요.'}
 async function reviewCase(useModel:boolean){if(!finalReady.value){error.value=finalIssues.value[0]||'';return}await execute('전략 내용과 문체를 점검하고 있습니다.',async()=>{const value=await persist();const result=await transport.value!.review(value,selectedSessionId.value,useModel?model.value:undefined);if('sessions'in result)setCase(result,selectedSessionId.value);else await waitJob(result);tab.value='review';reviewAcknowledged.value=false})}
-async function publishStrategy(){if(!teacher.value||localMode.value||!studentAccountLinked.value||!transport.value?.publish||!draft.value||!session.value?.confirmed||published.value||dirty.value||!finalReady.value)return;if(!window.confirm('학생 안내 전략과 실행과제를 이 학생의 계정에 공개합니다. 교사 참고 메모는 공개하지 않습니다. 공개한 내용은 보존되며 변경은 새 회차에서 진행합니다. 학생에게 안내할까요?'))return;await execute('학생에게 전략을 안내하고 있습니다.',async()=>{setCase(await transport.value!.publish!(draft.value!,selectedSessionId.value),selectedSessionId.value);notice.value='학생에게 전략을 안내했습니다. 학생 계정에서 전략과 실행과제를 확인할 수 있습니다.'})}
+async function publishStrategy(){if(!teacher.value||localMode.value||!studentAccountLinked.value||!transport.value?.publish||!draft.value||!session.value?.confirmed||published.value||dirty.value||!finalReady.value)return;if(!window.confirm('학습·진로 전략을 이 학생의 계정에 공개합니다. 교사 참고 메모는 공개하지 않습니다. 공개한 내용은 보존되며 변경은 새 회차에서 진행합니다. 학생에게 안내할까요?'))return;await execute('학생에게 전략을 안내하고 있습니다.',async()=>{setCase(await transport.value!.publish!(draft.value!,selectedSessionId.value),selectedSessionId.value);notice.value='학생에게 전략을 안내했습니다. 학생 계정에서 학습·진로 전략을 확인할 수 있습니다.'})}
 async function confirmCase(){if(!reviewAcknowledged.value||!reviewConfirmable.value||!finalReady.value)return;await execute('확인한 상담 버전을 확정하고 있습니다.',async()=>{setCase(await transport.value!.confirm(draft.value!,selectedSessionId.value),selectedSessionId.value);notice.value=health.value?.demo?'합성 시연 회차를 확정했습니다. 실제 교사의 검토 기록이 아닙니다.':'확인한 전략 회차를 확정했습니다. 다음 전략은 새 회차에서 개정합니다.'})}
 async function cancel(){if(activeJob.value){try{activeJob.value=await transport.value!.cancel(activeJob.value.id);notice.value='취소 요청을 보냈습니다. 작업 종료 상태를 확인합니다.'}catch(e){error.value=readableError(e)}}else controller?.abort()}
 async function showEvidence(id:string){evidenceId.value=id;tab.value='record';await nextTick();const element=document.getElementById('evidence-'+id);if(element){(element as HTMLDetailsElement).open=true;element.scrollIntoView({behavior:'smooth',block:'center'})}}
@@ -309,7 +408,7 @@ function referenceSchoolTask(task:SchoolAssessment){
   const notes=session.value.evidence_notes.includes(task.source_ref.source_id+' · '+task.source_ref.json_pointer)?session.value.evidence_notes:[session.value.evidence_notes,reference].filter(Boolean).join('\n\n')
   if(notes.length>12000)throw new Error('교사 근거 메모가 길어 자료를 추가할 수 없습니다. 메모를 정리한 뒤 다시 선택해 주세요.')
   session.value.strategy=next;session.value.evidence_notes=notes
-  tab.value=preparation.value?'review':'counseling';notice.value='학교 과제와 핵심 조건을 반영했습니다. 계획을 확인하고 저장하세요.'
+  tab.value='counseling';notice.value='학교 과제와 핵심 조건을 반영했습니다. 계획을 확인하고 저장하세요.'
  }catch(e){error.value=readableError(e)}
 }
 function referenceSchoolActivity(activity:SchoolActivity,semester:number|null){
@@ -317,23 +416,19 @@ function referenceSchoolActivity(activity:SchoolActivity,semester:number|null){
  try{
   const weekly_minutes=session.value.profile?.weekly_minutes??null
   const next=adoptSchoolActivity(activity,strategy.value,{student:draft.value.student,semester,weekly_minutes})
-  const text=schoolActivityAction(activity,{weekly_minutes})
-  const add=!session.value.actions.some(action=>action.text===text)
-  if(add&&session.value.actions.length>=30)throw new Error('실행과제는 30개까지 추가할 수 있습니다.')
   const reference=activityReference(activity)
   const notes=session.value.evidence_notes.includes(activity.source_ref.source_id+' · '+activity.source_ref.json_pointer)?session.value.evidence_notes:[session.value.evidence_notes,reference].filter(Boolean).join('\n\n')
   if(notes.length>12000)throw new Error('교사 근거 메모가 길어 자료를 추가할 수 없습니다. 메모를 정리한 뒤 다시 선택해 주세요.')
   session.value.strategy=next;session.value.evidence_notes=notes
-  if(add)session.value.actions.push({id:crypto.randomUUID(),text,due_date:'',status:'planned'})
-  tab.value=preparation.value?'review':'counseling';notice.value='프로그램을 활동 계획과 실행과제 초안에 추가했습니다. 참여 조건을 확인하고 저장하세요.'
+  tab.value='counseling';notice.value='프로그램을 활동 전략에 추가했습니다. 참여 조건을 확인하고 저장하세요.'
  }catch(e){error.value=readableError(e)}
 }
-function prepareFromProfile(){if(!teacher.value||planLocked.value||!session.value?.profile||!strategy.value)return;try{const profile=normalizeProfile(session.value.profile);session.value.strategy=adoptProfile(profile,strategy.value);if(!session.value.topic.trim())session.value.topic='학생 자료를 바탕으로 한 학기 전략';tab.value=preparation.value?'review':'counseling';notice.value='입력 자료에서 교사가 검토할 계획을 준비했습니다. 사전 전략을 작성한 뒤 학생 상담으로 이어가세요.'}catch(e){error.value=readableError(e)}}
-function adoptFindings(){if(!localMode.value||planLocked.value||!strategy.value||!analysis.value||!session.value)return;session.value.strategy=applyAnalysis(strategy.value,analysis.value);tab.value=preparation.value?'review':'counseling';notice.value='빈 강점·보완점 항목에 분석 초안을 반영했습니다. 교사가 근거를 확인하고 편집한 뒤 저장해 주세요.'}
-function addAnalysisAction(text:string){if(!planLocked.value&&session.value){session.value.actions.push({id:crypto.randomUUID(),text,due_date:'',status:'planned'});tab.value=preparation.value?'review':'counseling';notice.value='실행과제 초안에 추가했습니다. 내용과 기한을 확인한 뒤 저장해 주세요.'}}
+function prepareFromProfile(){if(!teacher.value||planLocked.value||!session.value?.profile||!strategy.value)return;try{const profile=normalizeProfile(session.value.profile);session.value.strategy=adoptProfile(profile,strategy.value);if(!session.value.topic.trim())session.value.topic='학생 자료를 바탕으로 한 학기 전략';tab.value='counseling';notice.value='입력 자료에서 교사가 검토할 계획을 준비했습니다. 상담 내용과 학생부 분석을 더해 구체적인 전략으로 발전시키세요.'}catch(e){error.value=readableError(e)}}
+function adoptFindings(){if(!localMode.value||planLocked.value||!strategy.value||!analysis.value||!session.value)return;session.value.strategy=applyAnalysis(strategy.value,analysis.value);tab.value='counseling';notice.value='빈 강점·보완점 항목에 분석 초안을 반영했습니다. 교사가 근거를 확인하고 편집한 뒤 저장해 주세요.'}
+function addAnalysisAction(text:string){if(!planLocked.value&&session.value?.strategy){const current=session.value.strategy.inquiry_plan;session.value.strategy.inquiry_plan=[current,text].filter(Boolean).join('\n\n');tab.value='counseling';notice.value='탐구·준비 방향에 담았습니다. 학생의 관심과 상담 내용에 맞게 다듬으세요.'}}
 function beforeUnload(event:BeforeUnloadEvent){if(dirty.value||busy.value||adminBusy.value){event.preventDefault();event.returnValue=''}}
-onMounted(()=>{document.title='학종 전략실';void initialize();window.addEventListener('beforeunload',beforeUnload);window.addEventListener('keydown',modalKeyboard);window.addEventListener('message',receiveTeacherConnection)})
-onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunload',beforeUnload);window.removeEventListener('keydown',modalKeyboard);window.removeEventListener('message',receiveTeacherConnection)})
+onMounted(()=>{document.title=connectionOnly?'교사 계정 연결 · 학종 전략실':'학종 전략실';void initialize();window.addEventListener('beforeunload',beforeUnload);window.addEventListener('keydown',modalKeyboard);window.addEventListener('message',receiveTeacherConnection);window.addEventListener('storage',refreshConnectionLogin);window.addEventListener('focus',refreshConnectionLogin)})
+onBeforeUnmount(()=>{clearTimeout(connectionTimer);clearTimeout(loginRefreshTimer);controller?.abort();window.removeEventListener('beforeunload',beforeUnload);window.removeEventListener('keydown',modalKeyboard);window.removeEventListener('message',receiveTeacherConnection);window.removeEventListener('storage',refreshConnectionLogin);window.removeEventListener('focus',refreshConnectionLogin)})
 </script>
 
 <template>
@@ -347,7 +442,8 @@ onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunloa
   </a>
 
  </div>
- <div class="workspace-bar">
+ <div v-if="connectionOnly" class="workspace-bar connection-bar"><span><ShieldCheck :size="17"/>교사 계정 확인</span><span>{{loginReturnOnly?'로그인이 끝나면 이 창이 닫힙니다.':'연결 후 원래 작업 화면으로 돌아갑니다.'}}</span></div>
+ <div v-else class="workspace-bar">
   <nav class="service-nav" aria-label="서비스 경로"><a :href="manualHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer"><BookOpen :size="15"/>사용 설명서</a><ChevronRight :size="14" aria-hidden="true"/><a :href="strategyHubHref" :target="localMode?'_blank':undefined" rel="noopener noreferrer">학종 전략</a><ChevronRight :size="14" aria-hidden="true"/><span aria-current="page">학종 전략실</span></nav>
   <div class="top-actions"><span class="mode-chip"><Monitor v-if="localMode" :size="15"/><Cloud v-else :size="15"/>{{localMode?'이 PC에서 처리':'학생 전략 안내'}}</span><span v-if="health?.demo" class="badge warning">합성자료 시연</span><span v-else-if="ready" class="actor">{{health?.teacher?.display_name||health?.user?.display_name}} {{teacher?'교사':''}}</span><button v-if="canManage&&!adminOpen" class="text-button" :disabled="!!busy||adminBusy" @click="openAdmin"><ShieldCheck :size="17"/>학생·담당 관리</button><button v-if="ready&&!localMode&&teacher" class="icon-button" aria-label="일반 AI 설정" @click="settingsOpen=true"><Settings :size="20"/></button></div>
   <nav class="online-resources" aria-label="전략실 설치와 안내"><a v-if="transport?.mode==='online'&&(teacher||canManage)" href="/counseling/downloads/daeryun-counseling-local.zip" download><Download :size="15"/>로컬 앱 내려받기</a><a :href="guideHref" target="_blank" rel="noopener noreferrer">사용 안내</a></nav>
@@ -358,10 +454,28 @@ onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunloa
 <div v-if="notice" class="message success" role="status"><Check :size="18"/><span>{{notice}}</span><button class="icon-button" aria-label="알림 닫기" @click="notice=''"><X :size="16"/></button></div>
 <div v-if="busy" class="jobbar" role="status" aria-live="polite"><LoaderCircle class="spin" :size="19"/><span>{{activeJob?.message||busy}}<small v-if="jobStage">{{jobStage}}</small></span><button v-if="activeJob||requestCancellable" class="secondary compact" @click="cancel">{{activeJob?'분석 취소':'요청 취소'}}</button></div>
 
-<section v-if="!localMode&&connectTarget" class="card connect-panel"><div><span class="eyebrow">교사 PC 연결</span><h2>이 PC의 전략실과 교사 계정을 연결합니다.</h2><p>연결할 주소: <code>{{connectTarget}}</code></p><p>교사 인증만 전달합니다. 학생부와 교사 기록은 이 창으로 보내지 않습니다.</p><p v-if="ready&&!teacher" class="help">승인된 교사 계정에서만 PC를 연결할 수 있습니다.</p></div><button v-if="ready&&teacher" class="primary" :disabled="connectionSent||!health?.teacher?.approved" @click="sendTeacherConnection">{{connectionSent?'연결 요청 전달됨':'이 PC 연결'}} <Monitor :size="17"/></button><p v-else-if="!ready&&!checkingConnection&&!accessFailure" class="help">아래에서 대륜고 로그인을 먼저 확인해 주세요.</p></section>
-<main v-if="checkingConnection||(!ready&&accessFailure)" id="main" class="welcome"><ConnectionStatus :checking="checkingConnection" :issue="accessFailure" @retry="initialize"/></main>
+<main v-if="connectionOnly" id="main" class="welcome connection-welcome">
+ <ConnectionStatus v-if="checkingConnection||accessFailure" :checking="checkingConnection" :issue="accessFailure" @retry="initialize"/>
+ <section v-else class="card auth-card connection-card" :aria-busy="connectionState==='pending'">
+  <template v-if="loginReturnOnly"><ShieldCheck :size="32"/><h1>{{health?.teacher?.approved?'교사 로그인이 확인되었습니다.':'교사 로그인을 확인해 주세요.'}}</h1><p>{{health?.teacher?.approved?'PC 연결 창에서 계정을 확인하고 이 PC 연결을 눌러 주세요.':'승인된 교사 계정으로 로그인한 뒤 PC 연결 창에서 다시 확인해 주세요.'}}</p><button class="primary wide" @click="closeLoginWindow">로그인 창 닫기</button><small>이 창이 자동으로 닫히지 않으면 직접 닫아도 됩니다.</small></template>
+  <template v-else-if="connectionState==='connected'"><ShieldCheck :size="32"/><h1>교사 계정이 연결되었습니다.</h1><p>원래 PC 전략실에서 작업을 이어가세요.</p><button class="primary wide" @click="returnToWorkspace">작업 화면으로 돌아가기 <ChevronRight :size="17"/></button><small>이 창이 자동으로 닫히지 않으면 직접 닫아도 됩니다.</small></template>
+  <template v-else-if="!connectTarget"><h1>PC 연결을 다시 시작해 주세요.</h1><p>연결 주소를 확인할 수 없습니다. 원래 PC 전략실에서 ‘대륜고 계정으로 연결’을 눌러 주세요.</p></template>
+  <template v-else>
+   <span class="eyebrow">교사 PC 연결</span><h1>{{ready?'이 계정으로 PC 전략실을 연결합니다.':'교사 계정으로 로그인하세요.'}}</h1>
+   <p>계정 확인이 끝나면 이 창이 닫히고, 원래 화면에서 학생 자료·분석·전략 작성을 이어갑니다.</p>
+   <template v-if="ready&&teacher"><div class="connection-account"><ShieldCheck :size="20"/><strong>{{health?.teacher?.display_name}} 교사</strong></div><button class="primary wide" :disabled="connectionState==='pending'||!health?.teacher?.approved" @click="sendTeacherConnection"><LoaderCircle v-if="connectionState==='pending'" class="spin" :size="17"/><Monitor v-else :size="17"/>{{connectionState==='pending'?'연결 확인 중':'이 PC 연결'}}</button></template>
+   <p v-else-if="ready" class="inline-note warning">승인된 교사 계정에서만 PC를 연결할 수 있습니다. 학교 사이트에서 교사 계정으로 로그인한 뒤 다시 확인해 주세요.</p>
+   <template v-else><a :href="schoolLoginUrl()" class="primary wide" @click="startConnectionLogin">로그인하고 전략실로 이동 <ChevronRight :size="16"/></a><small>로그인 창은 완료되면 닫힙니다. 이 화면에서 계정을 자동으로 확인합니다.</small></template>
+   <button v-if="connectionState==='idle'" class="secondary wide" :disabled="!!busy" @click="initialize">로그인 상태 다시 확인</button>
+   <p class="help connection-privacy">학생 자료와 작성 내용은 PC 전략실에 그대로 보관됩니다. 이 연결은 교사 계정만 확인하며 웹의 학생 자료를 합치지 않습니다.</p>
+   <details class="connection-details"><summary>연결할 PC 주소</summary><code>{{connectTarget}}</code></details>
+  </template>
+  <p v-if="connectionProblem" class="inline-note warning" role="alert">{{connectionProblem}}</p>
+ </section>
+</main>
+<main v-else-if="checkingConnection||(!ready&&accessFailure)" id="main" class="welcome"><ConnectionStatus :checking="checkingConnection" :issue="accessFailure" @retry="initialize"/></main>
 <main v-else-if="!ready" id="main" class="welcome">
- <section class="card auth-card"><h2>{{localMode?'교사 계정 연결':'학종 전략실 로그인'}}</h2><template v-if="localMode"><p>교사 계정으로 이 PC의 전략실을 엽니다.</p><button class="primary wide" :disabled="busy!==''" @click="openTeacherConnection">대륜고 계정으로 연결 <ExternalLink :size="17"/></button><details class="advanced-auth"><summary>고급 연결 · 인증 토큰 직접 입력</summary><label>교사 인증 토큰<input v-model="authToken" type="password" autocomplete="off" placeholder="대륜고 로그인 연결 토큰"></label><button class="primary wide" :disabled="busy!==''||!authToken.trim()" @click="authenticate">교사 계정 확인</button></details></template><template v-else><p>학교 계정으로 시작합니다.</p><a :href="schoolLoginUrl()" :target="connectTarget?'_blank':undefined" rel="noopener noreferrer" class="primary wide">로그인하고 전략실로 이동 <ChevronRight :size="16"/></a><button class="secondary wide" :disabled="busy!==''" @click="initialize">로그인 상태 다시 확인</button><small v-if="connectTarget">로그인은 새 탭에서 진행합니다. 로그인 후 이 연결 창에서 ‘로그인 상태 다시 확인’을 누른 뒤 ‘이 PC 연결’을 확인해 주세요.</small></template></section>
+ <section class="card auth-card"><h2>{{localMode?'교사 계정 연결':'학종 전략실 로그인'}}</h2><template v-if="localMode"><p>교사 계정으로 이 PC의 전략실을 엽니다.</p><button class="primary wide" :disabled="busy!==''" @click="openTeacherConnection">대륜고 계정으로 연결 <ExternalLink :size="17"/></button><details class="advanced-auth"><summary>고급 연결 · 인증 토큰 직접 입력</summary><label>교사 인증 토큰<input v-model="authToken" type="password" autocomplete="off" placeholder="대륜고 로그인 연결 토큰"></label><button class="primary wide" :disabled="busy!==''||!authToken.trim()" @click="authenticate">교사 계정 확인</button></details></template><template v-else><p>학교 계정으로 시작합니다.</p><a :href="schoolLoginUrl()" rel="noopener noreferrer" class="primary wide">로그인하고 전략실로 이동 <ChevronRight :size="16"/></a><button class="secondary wide" :disabled="busy!==''" @click="initialize">로그인 상태 다시 확인</button></template></section>
 </main>
 
 <AdminPanel v-else-if="canManage&&adminOpen&&transport" :api="transport" :can-return="health?.user?.role!=='manager'" @busy="adminBusy=$event" @close="closeAdmin"/>
@@ -375,61 +489,65 @@ onBeforeUnmount(()=>{controller?.abort();window.removeEventListener('beforeunloa
 <main id="main" class="main">
  <div v-if="!draft" class="empty-main card"><MessageSquare :size="40"/><h1>{{teacher?'첫 학생 전략을 시작하세요.':'아직 안내된 전략이 없습니다.'}}</h1><p>{{teacher?'학생을 추가하거나 담당 학생을 선택하세요.':'선생님이 안내한 전략이 여기에 표시됩니다.'}}</p><button v-if="teacher" class="primary" @click="openNew"><Plus :size="18"/>학생 선택·자료 입력</button></div>
  <template v-else-if="session">
-  <div class="document-heading"><div><span class="eyebrow">{{draft.student.academic_year}}학년도 · {{draft.student.school_stage==='middle'?'중학교':'고등학교'}} {{draft.student.grade}}학년</span><h1>{{draft.student.student_number}} <span>{{draft.student.name||'학생 전략'}}</span></h1><p>{{draft.teacher.display_name||'담당 교사'}}<template v-if="teacher"> · 전략 {{draft.sessions.length}}회차</template><template v-else-if="session.guidance"> · 안내 {{session.guidance.published_at.slice(0,10)}}</template></p></div><div class="document-actions"><span v-if="teacher" class="save-state" :class="{pending:dirty}">{{dirty?'저장 전 변경 있음':'저장된 기록'}}</span><button v-if="teacher" class="secondary" :disabled="!!busy" @click="exportJson"><Download :size="17"/>전략 백업 저장</button><button class="secondary" :disabled="!!busy||!studentPdfReady" @click="exportPdf('student')"><FileText :size="17"/>학생 안내 PDF 저장</button><button v-if="teacher" class="text-button" :disabled="!!busy" @click="exportPdf('teacher')">교사 검토용 PDF</button><button v-if="teacher&&!session.confirmed" class="primary" :disabled="!!busy||!dirty" @click="save"><Save :size="17"/>저장</button></div></div>
+  <div class="document-heading"><div><span class="eyebrow">{{draft.student.academic_year}}학년도 · {{draft.student.school_stage==='middle'?'중학교':'고등학교'}} {{draft.student.grade}}학년</span><h1>{{draft.student.student_number}} <span>{{draft.student.name||'학생 전략'}}</span></h1><p>{{draft.teacher.display_name||'담당 교사'}}<template v-if="teacher"> · 전략 {{draft.sessions.length}}회차</template><template v-else-if="session.guidance"> · 안내 {{session.guidance.published_at.slice(0,10)}}</template></p></div><div class="document-actions"><span v-if="teacher" class="save-state" :class="{pending:dirty}">{{dirty?'저장 전 변경 있음':'저장된 기록'}}</span><button v-if="teacher" class="secondary" :disabled="!!busy" @click="exportJson"><Download :size="17"/>전략 백업 저장</button><button class="secondary" :disabled="!!busy||!studentPdfReady" @click="exportPdf('student')"><FileText :size="17"/>학생 안내 PDF 저장</button><button v-if="teacher" class="text-button" :disabled="!!busy" @click="exportPdf('teacher')">학생부 분석 자료 PDF</button><button v-if="teacher&&!session.confirmed" class="primary" :disabled="!!busy||!dirty" @click="save"><Save :size="17"/>저장</button></div></div>
   <div class="session-bar"><div class="session-list" aria-label="전략 회차"><button v-for="(item,index) in draft.sessions" :key="item.id" :class="{active:item.id===selectedSessionId}" @click="selectSession(item.id)"><span>{{index+1}}회</span>{{item.date}}<Check v-if="item.confirmed" :size="14"/></button></div><button v-if="teacher" class="text-button" :disabled="!!busy" @click="nextSession"><Plus :size="16"/>회차 추가</button></div>
   <div v-if="teacher" class="context-strip"><span><CalendarDays :size="16"/>{{currentSessionIndex+1}}차 전략</span><span v-if="published" class="badge success">학생 안내 완료</span><span v-else-if="session.confirmed" class="badge success">{{health?.demo?'합성 시연 확정':'교사 확인 완료'}}</span><span v-else class="badge">전략 초안</span></div>
   <div v-if="teacher&&session.confirmed" class="inline-note"><ShieldCheck :size="18"/><span>확정한 전략입니다. 수정은 새 회차에서 진행하세요.</span><button v-if="teacher" class="text-button" :disabled="!!busy" @click="nextSession">다음 회차 만들기</button></div>
-  <nav v-if="teacher" class="tabs workflow-tabs" aria-label="전략 작업"><template v-if="teacher"><button :class="{active:dataTab}" @click="tab='understanding'"><span aria-hidden="true">01</span>자료·분석</button><button :class="{active:tab==='counseling'}" @click="tab='counseling'"><span aria-hidden="true">02</span>교사 전략 수립<Check v-if="preparation" :size="14"/></button><button :class="{active:tab==='consultation'}" @click="tab='consultation'"><span aria-hidden="true">03</span>학생 상담·반영<Check v-if="session.consultation?.status==='completed'" :size="14"/></button><button :class="{active:tab==='review'}" @click="tab='review'"><span aria-hidden="true">04</span>분석·전략 보고서<Check v-if="session.confirmed" :size="14"/></button></template></nav>
-  <nav v-if="teacher&&dataTab" class="data-tools" aria-label="자료 분석 도구"><button :class="{active:tab==='understanding'}" @click="tab='understanding'"><BookOpen :size="16"/>학생 기본자료</button><button :class="{active:tab==='record'}" @click="tab='record'"><FileText :size="16"/>학생부 PDF 근거</button><button v-if="localMode" :class="{active:tab==='analysis'}" @click="tab='analysis'"><Sparkles :size="16"/>Ollama 근거 분석</button></nav>
+  <nav v-if="teacher&&localMode" class="tabs workflow-tabs" aria-label="전략 작업"><button :class="{active:dataTab}" @click="tab='understanding'"><BookOpen :size="17"/>학생 자료·로컬 분석</button><button :class="{active:tab==='consultation'}" @click="tab='consultation'"><MessageSquare :size="17"/>교사 관찰·상담 <small>선택</small></button><button :class="{active:tab==='dashboard'}" @click="tab='dashboard';refreshPreparationHash()"><FileText :size="17"/>결과 대시보드</button><button class="text-button" @click="tab='counseling'">기존 전략 기록</button></nav>
+  <nav v-if="teacher&&!localMode" class="tabs workflow-tabs" aria-label="전략 작업"><button :class="{active:dataTab}" @click="tab='understanding'"><span aria-hidden="true">01</span>자료·분석</button><button :class="{active:['counseling','consultation'].includes(tab)}" @click="tab='counseling'"><span aria-hidden="true">02</span>상담·전략 수립</button><button :class="{active:tab==='review'}" @click="tab='review'"><span aria-hidden="true">03</span>분석·전략 보고서</button></nav>
+  <PreparationDashboard v-if="teacher&&localMode&&tab==='dashboard'" :case-value="draft" :session="session" :busy="!!busy" :current-source-hash="dirty?'':preparationHash" @generate="generatePreparation" @download="downloadPreparation" @analyze="tab='analysis'" @settings="tab='analysis'"/>
+
+  <section v-if="teacher&&dataTab" class="teacher-click-guide" aria-label="교사 작업 안내"><div><strong>학생부의 근거를 읽고, 앞으로의 준비 방향을 찾습니다.</strong><p>학생부와 기본자료는 있는 내용부터 입력하세요. 상담 내용은 다음 단계에서 더할 수 있습니다.</p></div><div class="button-row"><button v-if="tab==='understanding'&&localMode" class="primary compact" @click="tab='record'">학생부 PDF 불러오기 <ChevronRight :size="16"/></button><button class="secondary compact" @click="tab='review'">현재 자료로 보고서 보기</button></div></section>
+  <nav v-if="teacher&&dataTab" class="data-tools" aria-label="자료 분석 도구"><button :class="{active:tab==='understanding'}" @click="tab='understanding'"><BookOpen :size="16"/>학생 기본자료</button><button :class="{active:tab==='record'}" @click="tab='record'"><FileText :size="16"/>학생부 PDF 근거</button><button v-if="localMode" :class="{active:tab==='analysis'}" @click="tab='analysis'"><Sparkles :size="16"/>학생부 상세 분석</button></nav>
 
   <StudentUnderstanding v-if="teacher&&tab==='understanding'&&session.profile" :session="session" :student="draft.student" :locked="locked" :plan-locked="planLocked" :local-mode="localMode" :school-context="schoolContext" @adopt="prepareFromProfile" @select-plan="adoptPreparationCard" @strategy="tab='counseling'" @record="tab='record'" @analysis="tab='analysis'" @evidence="showEvidence"><template #school-context><SchoolContextCards :data="schoolContext" :student="draft.student" :subjects="session.profile.selected_subjects" :locked="planLocked" @adopt="referenceSchoolTask" @adopt-activity="referenceSchoolActivity"/></template></StudentUnderstanding>
-  <ConsultationEditor v-if="teacher&&tab==='consultation'&&session.consultation" :session="session" :locked="locked" :imported-reference="importedPreparation" @prepare="tab='counseling'" @complete="completeConsultation" @final="tab='review'"/>
-  <section v-if="teacher&&tab==='counseling'" class="preparation-stage"><div><small>{{preparation?(importedPreparation?'가져온 사전 전략 · 원본 작성자·시각 미검증':'상담 전 전략 · 읽기 전용'):'교사 작성 초안'}}</small></div><div class="preparation-stage-action"><button v-if="!preparation" class="primary" :disabled="locked||prepareIssues.length>0" @click="prepareStrategy">전략 준비 완료·상담으로 <ChevronRight :size="17"/></button><button v-else class="secondary" @click="tab='consultation'">학생 상담·반영으로 <ChevronRight :size="17"/></button><small v-if="!preparation&&prepareIssues.length">{{prepareIssues[0]}}</small></div></section>
+  <section v-if="teacher&&['counseling','consultation'].includes(tab)" class="strategy-studio">
+   <div class="studio-heading"><h2>상담을 바탕으로 학습·진로 전략 수립</h2><p>학생부에서 확인한 배움과 학생의 관심을 연결해 교과·창체·봉사·독서·행동특성별 준비 방향, 탐구 주제와 남은 학년의 전략을 정리합니다.</p></div>
+   <details class="card consultation-input"><summary>상담 내용 입력·수정 <span>{{session.consultation?.status==='completed'?'기록 있음':'선택'}}</span></summary><ConsultationEditor v-if="session.consultation" :session="session" :locked="locked" @prepare="tab='counseling'" @complete="completeConsultation" @final="tab='review'"/></details>
+   <section v-if="localMode" class="card strategy-generate"><div><h3>상세 전략 생성</h3><p>교과별 준비 내용 · 추천 탐구 주제와 방법 · 학년별 발전 순서 · 학생 준비사항</p><small>{{draft.student.school_stage==='high'?'현재 '+draft.student.grade+'학년부터 고등학교 남은 기간에 맞춰 작성합니다.':'현재 학년과 진학 이후의 준비 방향을 구분합니다.'}}</small></div><button class="primary" :disabled="locked||!model||!health?.ollama.available" @click="generateStrategy"><Sparkles :size="18"/>{{Object.values(strategy||{}).some(value=>value.trim())?'상담 반영해 전략 다시 작성':'학습·진로 전략 생성'}}</button><p v-if="Object.values(strategy||{}).some(value=>value.trim())" class="help">현재 입력한 전략도 참고하여 초안을 다시 작성합니다. 보존할 내용은 먼저 백업하거나 새 회차에서 작성하세요.</p><p v-if="!health?.ollama.available" class="help">로컬 분석 연결을 확인하거나 아래에서 직접 전략을 작성하세요. <button class="text-button" :disabled="!!busy" @click="refreshConnection">연결 다시 확인</button></p><details class="analysis-settings strategy-settings"><summary>전략 생성 설정</summary><label>이 PC의 전략 모델<select v-model="model" :disabled="locked"><option value="" disabled>모델 선택</option><option v-for="item in health?.ollama.models" :key="item.name" :value="item.name">{{item.name}}</option></select></label></details></section>
+   <div class="button-row studio-next"><button class="secondary" @click="tab='review'">전략 보고서 보기 <ChevronRight :size="16"/></button></div>
+  </section>
   <section v-if="teacher&&tab==='review'" class="card final-overview report-hub">
-   <div class="profile-section-title"><div><h2>분석·전략 보고서</h2><p>{{localMode?'학생부 분석 보고서는 분석 자료만으로 만들 수 있습니다. 상담을 반영한 전략도 이곳에서 정리합니다.':'상담을 반영한 학습·진로 전략을 검토하고 보고서로 정리합니다.'}}</p></div></div>
+   <div class="profile-section-title"><div><h2>분석·전략 보고서</h2><p>{{localMode?'기본자료·분석·교사 전략은 있는 내용만 사용합니다. 상담 전에도 교사용 자료를 PDF로 내려받을 수 있습니다.':'상담을 반영한 학습·진로 전략을 검토하고 보고서로 정리합니다.'}}</p></div></div>
    <div class="report-kind-selector" role="group" aria-label="보고서 종류">
     <button v-if="localMode" :class="reportKind==='analysis'?'primary':'secondary'" :aria-pressed="reportKind==='analysis'" @click="reportKind='analysis'">학생부 분석 보고서</button>
     <button :class="reportKind==='strategy'?'primary':'secondary'" :aria-pressed="reportKind==='strategy'" @click="reportKind='strategy'">학습·진로 전략 보고서</button>
    </div>
    <template v-if="reportKind==='analysis'&&localMode">
-    <div v-if="analysisReportReady" class="analysis-report-tools"><p>분석 요약·강점·활동 제안과 근거를 정리한 보고서입니다. 교사 전략 작성이나 학생 상담 없이 저장할 수 있습니다.</p><button class="primary" :disabled="!!busy" @click="exportPdf('analysis')"><Download :size="17"/>학생부 분석 PDF 저장</button></div>
-    <div v-else class="workflow-gate"><p>{{analysisReportProblem}}</p><button class="primary" @click="tab=analysisReportSession?.record?'analysis':'record'">{{analysisReportSession?.record?'학생부 분석으로 이동':'학생부 PDF 불러오기'}}</button></div>
+    <div v-if="analysisReportReady" class="analysis-report-tools"><p>분석 요약·강점·활동 제안과 근거를 정리한 보고서입니다. 교사 전략 작성이나 학생 상담 없이 저장할 수 있습니다.</p></div>
+    <div v-else class="workflow-gate"><p>{{analysisReportProblem}}</p><p class="help">현재 입력 자료는 아래의 학생부 분석 자료 PDF로 먼저 정리할 수 있습니다. 빈 항목은 확인 필요로 표시합니다.</p><button class="primary" @click="tab=analysisReportSession?.record?'analysis':'record'">{{analysisReportSession?.record?'학생부 분석으로 이동':'학생부 PDF 불러오기'}}</button></div>
    </template>
-   <template v-else>
-    <div v-if="!finalReady" class="workflow-gate"><p>{{finalIssues[0]}}</p><button class="primary" @click="tab=preparation?'consultation':'counseling'">{{preparation?'학생 상담·반영으로':'교사 전략 수립으로'}}</button></div>
-    <div v-else-if="session.consultation?.status==='completed'" class="consultation-reflection"><div><h3>상담에서 합의한 방향</h3><p>{{session.consultation.agreed_direction}}</p></div><div><h3>최종 전략에 반영할 점</h3><p>{{session.consultation.adjustments||'수정 사항 없음'}}</p></div><button class="text-button" @click="tab='consultation'">사전 전략·상담 기록 대조</button></div>
-    <p v-else class="help">기존 방식으로 작성한 회차입니다. 이전 기록을 보존하며, 새 회차부터 사전 전략·상담 반영 흐름을 사용합니다.</p>
-   </template>
+   <p v-else-if="!finalReady" class="help">{{finalIssues[0]}}</p>
   </section>
   <AnalysisReport v-if="teacher&&tab==='review'&&reportKind==='analysis'&&analysisReportReady&&analysisReportSession?.analysis&&analysisReportSession.record&&analysisReportCase" :analysis="analysisReportSession.analysis" :record="analysisReportSession.record" :student="analysisReportSession.student_snapshot||analysisReportCase.student" :date="analysisReportSession.date" :synthetic="analysisReportCase.origin==='synthetic'" :imported="analysisReportSession.imported_unverified"/>
-  <div v-if="teacher&&tab==='review'&&strategyReportActive&&finalReady" class="result-preview-bar"><span>{{session.confirmed?'학생에게 전달할 결과물':studentPreview?'현재 작성 내용 · 확정 전':'상담을 반영한 최종 내용'}}</span><button v-if="!session.confirmed" class="secondary" :aria-pressed="studentPreview" @click="toggleStudentPreview">{{studentPreview?'내용 수정':'학생 결과물 미리보기'}}</button></div>
-  <StudentResult v-if="showStudentResult&&strategy" :topic="session.topic" :strategy="strategy" :actions="session.actions" :next-date="session.next_date" :preview="teacher"/>
+  <div v-if="teacher&&tab==='review'&&strategyReportActive&&finalReady" class="result-preview-bar"><span>{{session.confirmed?'학생에게 전달할 전략':studentPreview?'현재 작성 내용 · 확정 전':'학습·진로 전략'}}</span><button v-if="!session.confirmed" class="secondary" :aria-pressed="studentPreview" @click="toggleStudentPreview">{{studentPreview?'내용 수정':'보고서 미리보기'}}</button></div>
+  <StudentResult v-if="showStudentResult&&strategy" :topic="session.topic" :strategy="strategy" :admission-targets="teacher?session.profile?.admission_targets:session.student_admission_targets" :actions="session.actions" :next-date="session.next_date" :preview="teacher"/>
   <section v-if="teacher&&!showStudentResult&&(tab==='counseling'||tab==='review'&&strategyReportActive&&finalReady)&&displayedStrategy" class="editor-grid strategy-layout" :class="{'final-strategy':tab==='review'}">
    <div class="strategy-main"><StrategyEditor :topic="displayedTopic" :strategy="displayedStrategy" :read-only="strategyReadOnly" :locked="locked" :phase="!teacher?'published':tab==='review'?'final':'preparation'" @update:topic="session.topic=$event"/>
-    <details v-if="teacher" class="card teacher-notes"><summary><ShieldCheck :size="18"/><strong>교사 참고 메모</strong><span>비공개</span></summary><fieldset :disabled="locked"><label>학생의 질문<textarea v-model="session.student_question" rows="3" placeholder="예: 관심 전공을 정하지 못했는데 어떤 수업부터 살펴보면 좋을까요?"></textarea></label><label>이전 상담과 현재 상황<textarea v-model="session.context" rows="3" placeholder="예: 이전 회차에서 자료 비교를 계획했고, 이번에 작성한 비교표를 확인함"></textarea></label><label>확인한 근거<textarea v-model="session.evidence_notes" rows="3" placeholder="예: 이번 학기 평가계획과 학생 활동지를 대조함. 시행 조건은 담당 교사 확인 예정"></textarea></label><label>교사의 의견<textarea v-model="session.teacher_opinion" rows="4" placeholder="예: 비교표의 근거 제시는 확인함. 자료 선택 이유를 설명할 수 있는지는 다음 점검에서 확인"></textarea></label></fieldset></details>
+    <details v-if="teacher" class="card teacher-notes"><summary><ShieldCheck :size="18"/><strong>교사 참고 메모</strong><span>비공개</span></summary><fieldset :disabled="locked"><label>학생의 질문<textarea v-model="session.student_question" rows="3" placeholder="예: 관심 전공을 정하지 못했는데 어떤 수업부터 살펴보면 좋을까요?"></textarea></label><label>이전 상담과 현재 상황<textarea v-model="session.context" rows="3" placeholder="예: 이전 회차에서 자료 비교를 계획했고, 이번에 작성한 비교표를 확인함"></textarea></label><label>확인한 근거<textarea v-model="session.evidence_notes" rows="3" placeholder="예: 이번 학기 평가계획과 학생 활동지를 대조함. 시행 조건은 담당 교사 확인 예정"></textarea></label><label>교사의 의견<textarea v-model="session.teacher_opinion" rows="4" placeholder="예: 비교표에 근거를 제시한 강점을 확인함. 상담에서 자료 선택 이유와 다른 설명의 가능성을 함께 살펴봄"></textarea></label></fieldset></details>
    </div>
-   <aside class="side-panel"><section class="card"><div class="section-heading compact-heading"><CalendarDays :size="21"/><h2>실행과제</h2></div>
-    <template v-if="strategyReadOnly"><div v-for="(action,index) in displayedActions" :key="action.id" class="student-action"><span class="eyebrow">과제 {{index+1}}</span><h3>{{action.text}}</h3><p>{{action.due_date?'점검일 '+action.due_date:'점검일을 함께 정합니다.'}}</p><span class="badge">{{{planned:'계획',in_progress:'진행 중',done:'수행 확인',deferred:'보류'}[action.status]}}</span></div><p v-if="!displayedActions.length" class="help">{{teacher?'사전 전략에 포함된 실행과제가 없습니다.':'다음 점검에서 실행과제를 함께 정합니다.'}}</p></template>
-    <fieldset v-else :disabled="locked"><div v-for="(action,index) in session.actions" :key="action.id" class="action-card"><div class="action-heading"><span>실행과제 {{index+1}}</span><button class="icon-button" :aria-label="'실행과제 '+(index+1)+' 삭제'" @click="removeAction(action.id)"><Trash2 :size="16"/></button></div><label class="sr-only" :for="'action-'+action.id">실행과제 {{index+1}}</label><textarea :id="'action-'+action.id" v-model="action.text" rows="3"  :placeholder="'예: '+actionExample"></textarea><FieldExample :text="actionExample"/><div class="field-grid"><label>점검일<input v-model="action.due_date" type="date"></label><label>진행 상태<select v-model="action.status"><option value="planned">계획</option><option value="in_progress">진행 중</option><option value="done">수행 확인</option><option value="deferred">보류</option></select></label></div></div><button class="secondary wide" @click="addAction"><Plus :size="16"/>실행과제 추가</button><div class="field-grid result-schedule"><label>작성일<input v-model="session.date" type="date"></label><label>다음 점검일<input v-model="session.next_date" type="date"></label></div></fieldset>
-   </section>
-
-   <section v-if="!localMode&&teacher&&!strategyReadOnly" class="card ai-card"><div class="section-heading compact-heading"><Sparkles :size="21"/><h2>AI 전략 초안</h2></div><p>학생부 원문·로컬 분석은 붙여 넣지 마세요.</p><button class="text-button" @click="settingsOpen=true">연결 설정 · {{settings.provider==='server'?'서버 AI':settings.provider==='gemini'?'개인 Gemini':'이 PC의 Ollama'}}</button><label v-if="settings.provider!=='ollama'" class="check-label"><input v-model="externalConsent" type="checkbox">학생 기본자료·전략·교사 메모·상담 반영 기록이 선택한 외부 AI로 전송됨을 확인했습니다.</label><button class="secondary wide" :disabled="locked||(!externalConsent&&settings.provider!=='ollama')||(settings.provider==='server'&&!health?.ai?.server)" @click="generalAi"><Sparkles :size="16"/>전략 초안 요청</button><p v-if="settings.provider==='server'&&!health?.ai?.server" class="help">현재 학교 서버 AI를 사용할 수 없습니다. 직접 전략을 작성할 수 있습니다.</p><div v-if="aiDraft" class="ai-output"><span class="badge">교사 검토 전 AI 초안</span><p>{{aiDraft}}</p><p class="help">필요한 내용을 전략 항목에 옮겨 적은 뒤 저장하세요.</p></div></section>
+   <aside v-if="!localMode" class="side-panel">
+   <section v-if="!localMode&&teacher&&!strategyReadOnly" class="card ai-card"><h2>비식별 학종 전략 생성</h2><p>로컬 전략실에서 학생부를 분석한 뒤, 개인정보를 제외한 학습 정보만 외부 AI로 전달합니다.</p><a class="secondary" href="/counseling/downloads/daeryun-counseling-local.zip">최신 로컬 앱 다운로드</a></section>
    </aside>
   </section>
 
   <section v-if="teacher&&tab==='record'" class="card">
    <template v-if="!localMode"><div class="local-only"><Monitor :size="40"/><h2>학생부는 교사 PC에서 살펴봅니다.</h2><p>교사용 · Ollama 모델 필요</p><div class="button-row local-resource-buttons"><a class="secondary" href="/counseling/downloads/daeryun-counseling-local.zip" download><Download :size="16"/>로컬 실행기 다운로드</a><a class="secondary" href="/counseling/guide.html#local-analysis" target="_blank" rel="noopener noreferrer">설치 및 분석 안내 <ExternalLink :size="15"/></a></div><a class="primary" href="http://127.0.0.1:8765/counseling/" target="_blank" rel="noopener noreferrer">로컬 전략실 열기 <ExternalLink :size="16"/></a><small>먼저 로컬 실행기를 시작해 주세요. 로컬 학생부와 분석·파생 전략은 온라인 보관함으로 옮기지 않습니다.</small></div></template>
-   <template v-else><div class="section-heading"><span class="step">02</span><div><h2>학생부 PDF 확인</h2><p>내용이 없거나 읽히지 않은 항목을 학생의 약점으로 판단하지 않습니다.</p></div></div><div v-if="health?.demo" class="inline-note warning"><AlertCircle :size="18"/><div><strong>제공된 합성 PDF만 사용할 수 있습니다.</strong><p>실제 학생부를 업로드하지 마세요. 이 모드는 교사 인증과 실제 상담 검토를 대신하지 않습니다.</p><div class="button-row"><button v-for="fixture in fixtures" :key="fixture.id" class="text-button" :disabled="!!busy" @click="fixturePdf(fixture.id)"><Download :size="15"/>{{fixture.title}}</button></div></div></div>
+   <template v-else><div class="section-heading"><div><h2>학생부 PDF 확인</h2><p>내용이 없거나 읽히지 않은 항목을 학생의 약점으로 판단하지 않습니다.</p></div></div><div v-if="health?.demo" class="inline-note warning"><AlertCircle :size="18"/><div><strong>제공된 합성 PDF만 사용할 수 있습니다.</strong><p>실제 학생부를 업로드하지 마세요. 이 모드는 교사 인증과 실제 상담 검토를 대신하지 않습니다.</p><div class="button-row"><button v-for="fixture in fixtures" :key="fixture.id" class="text-button" :disabled="!!busy" @click="fixturePdf(fixture.id)"><Download :size="15"/>{{fixture.title}}</button></div></div></div>
    <fieldset :disabled="locked"><div class="upload-area" :class="{'drag-active':pdfDragDepth>0&&!locked}" @dragenter="enterPdf" @dragover="dragPdf" @dragleave="leavePdf" @drop="dropPdf"><Upload :size="28"/><h3>{{pdfDragDepth&&!locked?'여기에 PDF를 놓으세요':record?'다른 PDF를 끌어 놓거나 선택':'학생부 PDF를 끌어 놓거나 선택'}}</h3><p>20MB, 80페이지 이내 · 원본과 추출 내용은 이 PC에 보관합니다.</p><button class="secondary" @click="pdfInput?.click()">PDF 파일 선택</button><span v-if="selectedPdf" class="selected-file" role="status">{{selectedPdf.name}}</span></div><div v-if="selectedPdf" class="upload-controls"><label>PDF 암호 <small>암호가 있는 파일만 입력</small><input v-model="pdfPassword" type="password" autocomplete="off"></label><button class="primary" @click="upload">항목 추출하기</button></div></fieldset>
    <template v-if="record"><div class="record-summary"><div><strong>{{record.filename}}</strong><p>{{record.page_count}}페이지 · 읽은 페이지 {{record.readable_pages.length}} · 확인이 필요한 페이지 {{record.unreadable_pages.length}}</p></div><span class="badge">{{record.sections.length}}개 추출 항목</span></div><div v-if="record.warnings.length" class="inline-note warning"><AlertCircle :size="19"/><ul><li v-for="warning in record.warnings" :key="warning">{{warning}}</li></ul></div><RecordEvidence v-for="section in record.sections" :key="draft.id+session.id+record.id+section.id" :section="section" :locked="locked" :highlight="evidenceId===section.id" :save="metadata=>saveRecordMetadata(section.id,metadata)"/><button class="primary next-button" :disabled="locked" @click="tab='analysis'">근거를 확인하고 분석 준비 <ChevronRight :size="17"/></button></template></template>
   </section>
 
-  <section v-if="teacher&&tab==='analysis'&&localMode" class="analysis-layout"><div class="card"><div class="section-heading"><span class="step">03</span><div><h2>근거에서 다음 전략으로</h2><p>설치된 Ollama 모델로 분석합니다. 결과는 교사가 원문과 대조할 초안입니다.</p></div></div><div v-if="!record" class="empty-section"><FileText :size="32"/><h3>학생부의 판독 상태를 먼저 확인해 주세요.</h3><button class="secondary" @click="tab='record'">학생부 근거로 이동</button></div><template v-else><div class="model-controls"><label>이 PC의 Ollama 모델<select v-model="model" :disabled="locked"><option value="" disabled>모델 선택</option><option v-for="item in health?.ollama.models" :key="item.name" :value="item.name">{{item.name}}{{item.vision?' · 이미지 지원':''}}</option></select></label><label>제안 시간 상한<input v-model.number="budget" type="number" min="5" max="600" :disabled="locked"><small>{{session.profile?.weekly_minutes===0?'추가 시간 없음 · 기존 수업 안에서 제안':session.profile?.weekly_minutes==null?'학생 가용 시간 미확인 · 추가 배정 보류':'분 단위 · 확인된 가용 시간 '+session.profile.weekly_minutes+'분 이내 적용'}}</small></label><button class="primary" :disabled="locked||!model||!health?.ollama.available" @click="analyze"><Sparkles :size="17"/>{{analysis?'다시 분석':'분석 시작'}}</button></div><p v-if="!health?.ollama.available" class="inline-note warning">{{health?.ollama.message||'Ollama 연결과 설치된 모델을 확인해 주세요.'}} <button class="text-button" :disabled="!!busy" @click="refreshConnection">연결 다시 확인</button></p><p class="help">분석 참고 방향: {{session.topic||'미입력 · 학생부 기록을 바탕으로 분석합니다.'}}</p></template></div>
-   <template v-if="analysis"><section class="card analysis-report-entry"><div><h2>학생부 분석 보고서</h2><p>분석 자료만으로 정리된 문서를 확인하고 PDF로 저장합니다.</p></div><button class="primary" :disabled="!!busy" @click="openAnalysisReport"><FileText :size="17"/>분석 보고서 보기</button></section><section class="card guidance-card"><h2>분석에서 학생 전략으로</h2><p>선택한 분석을 빈 강점·보완점에 추가합니다.</p><button class="primary" :disabled="planLocked||(!analysis.strengths.length||!!strategy?.strengths.trim())&&(!analysis.improvements.length||!!strategy?.gaps.trim())" @click="adoptFindings">강점·보완점을 전략에 반영</button><small v-if="strategy?.strengths.trim()&&strategy?.gaps.trim()">이미 작성한 강점과 보완점은 학종 전략에서 직접 편집하세요.</small></section><section class="card summary-card"><span class="eyebrow">분석 초안</span><h2>현재의 배움</h2><p class="analysis-summary">{{analysis.summary}}</p><small>{{analysis.model}} · {{analysis.created_at.slice(0,16).replace('T',' ')}}</small></section><div class="findings-grid"><section class="card"><h2>강점과 이어 갈 방향</h2><article v-for="(finding,index) in analysis.strengths" :key="index" class="finding"><h3>{{finding.text}}</h3><p>{{finding.guidance}}</p><div class="evidence-links"><button v-for="id in finding.evidence_ids" :key="id" @click="showEvidence(id)"><FileText :size="14"/>{{record?.sections.find(s=>s.id===id)?.label||'근거 확인'}}</button></div></article><p v-if="!analysis.strengths.length" class="muted">제공된 범위에서 확인한 강점 항목이 없습니다.</p></section><section class="card"><h2>보완을 위해 필요한 도움</h2><article v-for="(finding,index) in analysis.improvements" :key="index" class="finding"><h3>{{finding.text}}</h3><p>{{finding.guidance}}</p><div class="evidence-links"><button v-for="id in finding.evidence_ids" :key="id" @click="showEvidence(id)"><FileText :size="14"/>{{record?.sections.find(s=>s.id===id)?.label||'근거 확인'}}</button></div></article><p v-if="!analysis.improvements.length" class="muted">제공된 근거에서 보완 항목을 확정하지 않았습니다.</p></section></div><section class="card"><h2>상담에서 함께 확인할 질문</h2><ol class="question-list"><li v-for="question in analysis.questions" :key="question">{{question}}</li></ol><h3>제안된 실행과제</h3><article v-for="(action,index) in analysis.actions" :key="index" class="suggested-action"><div><h4>{{action.text}}</h4><p>{{action.reason}}</p><div class="evidence-links"><button v-for="id in action.evidence_ids" :key="id" @click="showEvidence(id)">근거 확인</button></div></div><button class="secondary compact" :disabled="planLocked" @click="addAnalysisAction(action.text)"><Plus :size="15"/>실행과제 초안에 추가</button></article><div v-if="analysis.limitations.length" class="inline-note warning"><AlertCircle :size="18"/><ul><li v-for="limitation in analysis.limitations" :key="limitation">{{limitation}}</li></ul></div></section></template>
+  <section v-if="teacher&&tab==='analysis'&&localMode" class="analysis-layout"><div class="card"><div class="section-heading"><div><h2>학생부 상세 분석</h2><p>교과·활동에서 드러난 역량과 성장 흐름을 근거에 따라 해석합니다.</p></div></div><div v-if="!record" class="empty-section"><FileText :size="32"/><h3>학생부의 판독 상태를 먼저 확인해 주세요.</h3><button class="secondary" @click="tab='record'">학생부 근거로 이동</button></div><template v-else><div class="model-controls"><details class="analysis-settings"><summary>분석 설정</summary><label>이 PC의 분석 모델<select v-model="model" :disabled="locked"><option value="" disabled>모델 선택</option><option v-for="item in health?.ollama.models" :key="item.name" :value="item.name">{{item.name}}{{item.vision?' · 이미지 지원':''}}</option></select></label></details><button class="primary" :disabled="locked||!model||!health?.ollama.available" @click="analyze"><Sparkles :size="17"/>{{analysis?'다시 분석':'분석 시작'}}</button></div><p v-if="!health?.ollama.available" class="inline-note warning">{{health?.ollama.message||'Ollama 연결과 설치된 모델을 확인해 주세요.'}} <button class="text-button" :disabled="!!busy" @click="refreshConnection">연결 다시 확인</button></p><p class="help">분석 참고 방향: {{session.topic||'미입력 · 학생부 기록을 바탕으로 분석합니다.'}}</p></template></div>
+   <template v-if="analysis"><section class="card analysis-report-entry"><div><h2>학생부 분석 보고서</h2><p>분석 자료만으로 정리된 문서를 확인하고 PDF로 저장합니다.</p></div><button class="primary" :disabled="!!busy" @click="openAnalysisReport"><FileText :size="17"/>분석 보고서 보기</button></section><div class="analysis-next-step"><button class="primary" @click="tab='counseling'">상담을 반영해 전략 수립 <ChevronRight :size="17"/></button><button class="text-button" :disabled="planLocked" @click="adoptFindings">강점·보완점을 작성 중 전략에 담기</button></div><section class="card"><StructuredAnalysis :analysis="analysis" :record="record" interactive :locked="planLocked" @evidence="showEvidence" @adopt="addAnalysisAction"/><div v-if="analysis.limitations.length" class="inline-note warning"><AlertCircle :size="18"/><ul><li v-for="limitation in analysis.limitations" :key="limitation">{{limitation}}</li></ul></div><div class="analysis-bottom-actions"><button class="primary" :disabled="!!busy||!analysisReportReady" @click="exportPdf('analysis')"><Download :size="17"/>학생부 분석 PDF 다운로드</button><button class="secondary" @click="tab='counseling'">상담·전략 수립으로 <ChevronRight :size="17"/></button></div></section></template>
   </section>
 
-  <section v-if="teacher&&tab==='review'&&strategyReportActive&&finalReady" class="card review-panel"><div class="section-heading"><h2>최종 확인</h2></div><div v-if="contentIssues.length&&!session.confirmed" class="inline-note warning" role="status"><ul><li v-for="issue in contentIssues" :key="issue">{{issue}}</li></ul></div><details class="review-criteria"><summary>최종 확인 항목</summary><p>학생 근거 → 이번 할 일 → 산출물·점검일·확인 기준을 대조하세요. 학교 과제의 조건과 상담에서 합의한 내용도 확인하세요.</p></details><div v-if="teacher&&!session.confirmed" class="button-row"><button class="secondary" :disabled="!!busy" @click="reviewCase(false)"><ClipboardCheck :size="17"/>자동 점검 후 직접 검토</button><button v-if="localMode" class="secondary" :disabled="!!busy||!model||!health?.ollama.available" @click="reviewCase(true)"><Sparkles :size="17"/>선택한 Ollama로 문체 검토</button></div><p v-if="dirty" class="inline-note warning">내용이 변경됐습니다. 다시 점검해 주세요.</p><div v-if="review" class="review-result"><span class="badge" :class="{success:review.state==='passed',warning:review.state!=='passed'}">{{review.state==='passed'?'점검 결과 확인 가능':review.state==='needs_revision'?'수정 후 다시 검토':'교사 직접 확인 필요'}}</span><p>{{review.method==='ollama'?'Ollama 문체 검토':'자동 점검 및 교사 직접 검토'}} · {{review.created_at.slice(0,16).replace('T',' ')}}</p><ul><li v-for="note in review.notes" :key="note">{{note}}</li></ul><p v-if="!review.notes.length">점검 의견이 없습니다. 아래 확인 항목을 교사가 직접 검토해 주세요.</p></div><div v-else class="empty-section compact-empty"><ClipboardCheck :size="28"/><p>현재 저장 내용에 대한 검토 결과가 없습니다.</p></div><div v-if="teacher&&!session.confirmed" class="confirm-area"><label class="check-label"><input v-model="reviewAcknowledged" type="checkbox" :disabled="!reviewConfirmable||!!busy">학생 근거·학교 조건·실행과제와 문체 의견을 확인했습니다.</label><button class="primary" :disabled="!reviewAcknowledged||!reviewConfirmable||!!busy" @click="confirmCase"><ShieldCheck :size="18"/>{{health?.demo?'합성 시연 회차 확정':'교사 확인 후 확정'}}</button><small v-if="health?.demo">합성자료 시연의 확정은 실제 교사가 학생 전략을 승인했다는 뜻이 아닙니다.</small></div><div v-if="session.confirmed" class="inline-note success"><ShieldCheck :size="20"/><p>{{health?.demo?'합성 시연으로 확정한 회차입니다.':'교사가 확인한 전략 회차입니다.'}} 변경할 내용은 다음 회차에 이어서 기록합니다.</p></div><div class="guidance-card final-delivery"><h2>학생에게 전달</h2><template v-if="localMode"><p>학생용 PDF에는 최종 전략·실행과제만 담깁니다. 원문과 교사 기록은 이 PC에 보관합니다.</p><button class="primary" :disabled="!!busy||!session.confirmed||dirty||!finalReady" @click="exportPdf('student')">학생 안내 PDF 저장</button><small v-if="!session.confirmed">최종 검토와 교사 확정을 먼저 완료하세요.</small></template><template v-else><template v-if="!studentAccountLinked"><p>학생 계정 없이 추가한 학생입니다. 최종 확정 후 학생 안내 PDF로 전달해 주세요.</p><small>인쇄 창에서 PDF로 저장을 선택하세요.</small><button class="primary" :disabled="!studentPdfReady||!!busy" @click="exportPdf('student')">학생 안내 PDF 저장</button></template><p v-else-if="published">{{session.guidance?.published_at.slice(0,10)}} 학생에게 안내했습니다. 개정은 새 회차에서 진행합니다.</p><template v-else><p>최종 전략·실행과제를 학생 계정에 공개합니다. 교사 메모·사전 전략·상담 기록은 제외합니다.</p><button class="primary" :disabled="!!busy||!session.confirmed||dirty||!finalReady" @click="publishStrategy">학생에게 전략 안내</button><small v-if="!session.confirmed">최종 검토와 교사 확정을 먼저 완료하세요.</small></template></template></div></section>
- </template><footer class="footer">학종 전략실 · {{localMode?'학생부와 파생 자료는 교사 PC에서 보관합니다.':'학생과 담당 교사가 전략과 실행을 함께 점검합니다.'}}</footer>
+  <section v-if="teacher&&tab==='review'&&strategyReportActive&&finalReady" class="card review-panel"><div class="section-heading"><h2>학생 전달 전 검토</h2></div><div v-if="contentIssues.length&&!session.confirmed" class="inline-note warning" role="status"><ul><li v-for="issue in contentIssues" :key="issue">{{issue}}</li></ul></div><details class="review-criteria"><summary>최종 확인 항목</summary><p>학생부 근거와 상담 내용이 교과·탐구·학년별 준비 방향에 반영되었는지 확인하세요.</p></details><div v-if="teacher&&!session.confirmed" class="button-row"><button class="secondary" :disabled="!!busy" @click="reviewCase(false)"><ClipboardCheck :size="17"/>자동 점검 후 직접 검토</button><button v-if="localMode" class="secondary" :disabled="!!busy||!model||!health?.ollama.available" @click="reviewCase(true)"><Sparkles :size="17"/>선택한 Ollama로 문체 검토</button></div><p v-if="dirty" class="inline-note warning">내용이 변경됐습니다. 다시 점검해 주세요.</p><div v-if="review" class="review-result"><span class="badge" :class="{success:review.state==='passed',warning:review.state!=='passed'}">{{review.state==='passed'?'점검 결과 확인 가능':review.state==='needs_revision'?'수정 후 다시 검토':'교사 직접 확인 필요'}}</span><p>{{review.method==='ollama'?'Ollama 문체 검토':'자동 점검 및 교사 직접 검토'}} · {{review.created_at.slice(0,16).replace('T',' ')}}</p><ul><li v-for="note in review.notes" :key="note">{{note}}</li></ul><p v-if="!review.notes.length">점검 의견이 없습니다. 아래 확인 항목을 교사가 직접 검토해 주세요.</p></div><div v-else class="empty-section compact-empty"><ClipboardCheck :size="28"/><p>현재 저장 내용에 대한 검토 결과가 없습니다.</p></div><div v-if="teacher&&!session.confirmed" class="confirm-area"><label class="check-label"><input v-model="reviewAcknowledged" type="checkbox" :disabled="!reviewConfirmable||!!busy">학생 근거·상담 반영·학습 및 탐구 전략을 확인했습니다.</label><button class="primary" :disabled="!reviewAcknowledged||!reviewConfirmable||!!busy" @click="confirmCase"><ShieldCheck :size="18"/>{{health?.demo?'합성 시연 회차 확정':'교사 확인 후 확정'}}</button><small v-if="health?.demo">합성자료 시연의 확정은 실제 교사가 학생 전략을 승인했다는 뜻이 아닙니다.</small></div><div v-if="session.confirmed" class="inline-note success"><ShieldCheck :size="20"/><p>{{health?.demo?'합성 시연으로 확정한 회차입니다.':'교사가 확인한 전략 회차입니다.'}} 변경할 내용은 다음 회차에 이어서 기록합니다.</p></div><div class="guidance-card final-delivery"><h2>학생에게 전달</h2><template v-if="localMode"><p>학생용 PDF에는 학습·진로 전략만 담깁니다. 원문과 교사 기록은 이 PC에 보관합니다.</p><button class="primary" :disabled="!!busy||!session.confirmed||dirty||!finalReady" @click="exportPdf('student')">학생 안내 PDF 저장</button><small v-if="!session.confirmed">최종 검토와 교사 확정을 먼저 완료하세요.</small></template><template v-else><template v-if="!studentAccountLinked"><p>학생 계정 없이 추가한 학생입니다. 최종 확정 후 학생 안내 PDF로 전달해 주세요.</p><small>인쇄 창에서 PDF로 저장을 선택하세요.</small><button class="primary" :disabled="!studentPdfReady||!!busy" @click="exportPdf('student')">학생 안내 PDF 저장</button></template><p v-else-if="published">{{session.guidance?.published_at.slice(0,10)}} 학생에게 안내했습니다. 개정은 새 회차에서 진행합니다.</p><template v-else><p>학습·진로 전략을 학생 계정에 공개합니다. 교사 메모·사전 전략·상담 기록은 제외합니다.</p><button class="primary" :disabled="!!busy||!session.confirmed||dirty||!finalReady" @click="publishStrategy">학생에게 전략 안내</button><small v-if="!session.confirmed">최종 검토와 교사 확정을 먼저 완료하세요.</small></template></template></div></section>
+  <section v-if="teacher&&(tab==='review'||tab==='counseling')" class="card report-download-bottom" aria-label="보고서 PDF 다운로드">
+   <div><h2>{{draft.student.name||draft.student.student_number}} 학생부 분석 자료</h2><p>입력된 자료와 교사 전략을 정리합니다. 빈 항목 때문에 다운로드가 막히지 않습니다.</p><small>교사용 검토 자료 · 실행 순서와 시간 계획은 학생이 세웁니다.</small></div>
+   <div class="button-row"><button v-if="tab==='review'&&reportKind==='analysis'&&analysisReportReady" class="primary" :disabled="!!busy" @click="exportPdf('analysis')"><Download :size="17"/>학생부 분석 PDF 저장</button><button :class="analysisReportReady&&tab==='review'&&reportKind==='analysis'?'secondary':'primary'" :disabled="!!busy" @click="exportPdf('teacher')"><Download :size="17"/>현재 자료·전략 PDF 다운로드</button></div>
+  </section>
+ </template><footer class="footer">학종 전략실 · {{localMode?'학생부와 파생 자료는 교사 PC에서 보관합니다.':'학생부 분석과 상담을 바탕으로 학습·진로 전략을 수립합니다.'}}</footer>
 </main></div>
 
 <input v-if="teacher" ref="jsonInput" class="hidden" type="file" accept=".json,application/json" @change="readImport">

@@ -64,7 +64,7 @@ async function actionApi(page:Page,options:{mode?:'local'|'online';role?:'teache
 
 function card(page:Page,identity:string){return page.locator('.case-card').filter({has:page.locator('button.case-item').filter({hasText:identity})})}
 async function makeDirty(page:Page){
- await page.getByRole('button',{name:'교사 전략 수립',exact:true}).click()
+ await page.getByRole('button',{name:'상담·전략 수립',exact:true}).click()
  await page.getByLabel('교과 계획',{exact:true}).fill(unsavedPlan)
  await expect(page.locator('.save-state')).toHaveText('저장 전 변경 있음')
 }
@@ -88,7 +88,7 @@ test('nonselected saved-case downloads use the requested session and preserve th
  await dialog.getByRole('button',{name:'학생 안내 PDF',exact:true}).click();await pending
  await dialog.getByRole('combobox',{name:/^다운로드할 회차/}).selectOption('other-first')
  await expect(dialog.getByRole('button',{name:'학생 안내 PDF',exact:true})).toBeDisabled()
- for(const label of ['학생부 분석 PDF','교사 검토용 PDF','전략 백업(JSON)']){
+ for(const label of ['학생부 분석 PDF','학생부 분석 자료 PDF','전략 백업(JSON)']){
   pending=page.waitForEvent('download')
   await dialog.getByRole('button',{name:label,exact:true}).click();await pending
  }
@@ -118,7 +118,7 @@ test('download readiness follows freshly loaded saved data and rejects a mismatc
  const dialog=page.getByRole('dialog',{name:'전략 다운로드',exact:true})
  await expect(dialog.getByRole('button',{name:'학생부 분석 PDF',exact:true})).toBeDisabled()
  await expect(dialog.getByRole('button',{name:'학생 안내 PDF',exact:true})).toBeDisabled()
- await expect(dialog.getByRole('button',{name:'교사 검토용 PDF',exact:true})).toBeEnabled()
+ await expect(dialog.getByRole('button',{name:'학생부 분석 자료 PDF',exact:true})).toBeEnabled()
  expect(calls.some(call=>call.path.includes('report.pdf'))).toBe(false)
 })
 

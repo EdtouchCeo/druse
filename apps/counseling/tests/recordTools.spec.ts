@@ -86,7 +86,7 @@ test('metadata save is explicit, preserves input after failure and replaces stal
  await form.getByRole('button',{name:'원문 확인 후 저장',exact:true}).click();await expect(form).toHaveCount(0);await expect(button).toBeFocused();await expect(button).toContainText('2025학년도 · 2학년 · 2학기');await expect(page.locator('.evidence')).toContainText('교사 확인값')
  expect(api.extra).toHaveLength(2);expect(api.extra[1]!.body).toEqual({revision:1,session_id:'intuitive-session',record_id:'record-synthetic',section_id:'section-synthetic',metadata:{academic_year:2025,grade:2,semester:2,school_stage:'high'},source_checked:true})
  const saved=(await backup(page)).sessions[0];expect(saved.analysis).toBeNull();expect(saved.review).toBeNull();expect(saved.record.sections[0].text).toContain('합성 원문');expect(saved.record.sections[0].metadata_confirmation.original.grade).toBe(3)
- await page.getByRole('button',{name:'Ollama 근거 분석',exact:true}).click();await expect(page.getByText('이전 분석 합성 표식',{exact:true})).toHaveCount(0);await invariant(page,api)
+ await page.getByRole('button',{name:'학생부 상세 분석',exact:true}).click();await expect(page.getByText('이전 분석 합성 표식',{exact:true})).toHaveCount(0);await invariant(page,api)
 })
 
 test('PDF drop area and inline metadata stay readable at desktop, 390 and 320px with keyboard cancel',async({page})=>{

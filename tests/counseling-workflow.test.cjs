@@ -56,10 +56,9 @@ test('legacy drafts can explicitly enter the new workflow but direct version or 
  for(const [source,mutate]of [[sample(),s=>{delete s.workflow_version;}],[sample(),s=>{s.preparation=prepared().sessions[0].preparation;s.consultation.status='in_progress';}],[prepared(),s=>{s.preparation.strategy.subject_plan='위조';}],[prepared(),s=>{s.preparation=null;s.consultation=C.consultationOf({});}]]){const m=mock([source]),incoming=structuredClone(source);mutate(incoming.sessions[0]);assert.equal((await cases(event('PUT',{case:incoming},{id:source.id}))).statusCode,400);assert.equal(m.writes().length,0);}
 });
 
-test('consultation cannot start or contain notes before preparation or return to not_started after it',()=>{
- for(const mutate of [s=>{s.consultation.status='in_progress';},s=>{s.consultation.student_response='아직 상담하지 않은 발언';},s=>{s.consultation.date='2026-09-12';}]){const c=sample();mutate(c.sessions[0]);assert.throws(()=>C.validateCase(c),e=>e.code==='PREPARATION_REQUIRED');}
- const c=prepared();c.sessions[0].consultation.status='not_started';assert.throws(()=>C.validateCase(c),C.HttpError);
- const legacy=sample();delete legacy.sessions[0].workflow_version;legacy.sessions[0].consultation={};C.validateCase(legacy);legacy.sessions[0].consultation.student_response='미준비 상담 입력';assert.throws(()=>C.validateCase(legacy),C.HttpError);
+test('consultation notes may be entered independently of a preparation snapshot',()=>{
+ for(const mutate of [s=>{s.consultation.status='in_progress';},s=>{s.consultation.student_response='학생의 질문';},s=>{s.consultation.date='2026-09-12';}]){const c=sample();mutate(c.sessions[0]);C.validateCase(c);}
+ const c=prepared();c.sessions[0].consultation.status='not_started';C.validateCase(c);
 });
 
 test('consultation validates real dates, required completion fields, strings, NUL and limits',()=>{
@@ -78,9 +77,8 @@ test('workflow content participates in hashes while empty legacy defaults preser
  const s=completed().sessions[0],hash=C.hashSession(s);for(const k of ['date','student_response','agreed_direction','adjustments','summary','status']){const copy=structuredClone(s);copy.consultation[k]+='changed';assert.notEqual(C.hashSession(copy),hash,k);}const copy=structuredClone(s);copy.preparation.strategy.subject_plan+='changed';assert.notEqual(C.hashSession(copy),hash);
 });
 
-test('prepare and completed consultation gate confirmation, publication and student PDF preview',async()=>{
- for(const c of [sample(),prepared()]){const s=c.sessions[0];s.review={...C.reviewSession(s),state:'passed'};mock([c]);for(const action of ['confirm','publish'])assert.equal((await post(c,action,action==='confirm'?{review_acknowledged:true}:{})).statusCode,409);assert.equal((await cases(event('GET',undefined,{id:c.id,action:'report',audience:'student'}))).statusCode,409);assert.equal((await cases(event('GET',undefined,{id:c.id,action:'report',audience:'teacher'}))).statusCode,200);}
- const c=completed(),m=mock([c]);const preview=await cases(event('GET',undefined,{id:c.id,action:'report',audience:'student'}));assert.equal(preview.statusCode,409);assert.equal(parsed(preview).error.code,'CONFIRM_REQUIRED');assert.equal(m.writes().length,0);
+test('current strategy can be confirmed without preparation or consultation and still needs teacher confirmation to publish',async()=>{
+ for(const c of [sample(),prepared()]){const s=c.sessions[0];s.actions=[];s.review={...C.reviewSession(s),state:'passed'};mock([c]);assert.equal((await post(c,'publish')).statusCode,409);assert.equal((await cases(event('GET',undefined,{id:c.id,action:'report',audience:'student'}))).statusCode,409);const response=await post(c,'confirm',{review_acknowledged:true});assert.equal(response.statusCode,200);const saved=parsed(response).case;assert.equal((await post(saved,'publish')).statusCode,200);}
 });
 
 test('workflow 2 student PDFs require current confirmation while teacher draft reports remain available',async()=>{
@@ -88,7 +86,7 @@ test('workflow 2 student PDFs require current confirmation while teacher draft r
  assert.equal((await cases(event('GET',undefined,{id:c.id,action:'report',audience:'teacher'}))).statusCode,200);
  assert.equal((await cases(event('GET',undefined,{id:c.id,action:'report',audience:'student'}))).statusCode,409);
  const fixed=confirmed(c);m.rows.set(fixed.id,structuredClone(fixed));
- const report=await cases(event('GET',undefined,{id:fixed.id,action:'report',audience:'student'}));assert.equal(report.statusCode,200);assert.ok(report.body.includes('확정 · 학생 안내 전'));assert.ok(!report.body.includes('PRIVATE_'));
+ const report=await cases(event('GET',undefined,{id:fixed.id,action:'report',audience:'student'}));assert.equal(report.statusCode,200);assert.ok(!report.body.includes('검토용 초안'));assert.ok(!report.body.includes('PRIVATE_'));
  fixed.sessions[0].strategy.subject_plan+=' tampered';m.rows.set(fixed.id,structuredClone(fixed));
  const invalid=await cases(event('GET',undefined,{id:fixed.id,action:'report',audience:'student'}));assert.equal(invalid.statusCode,409);assert.equal(parsed(invalid).error.code,'CONFIRM_REQUIRED');assert.equal(m.writes().length,0);
 });
@@ -106,24 +104,25 @@ test('consultation edits invalidate review and confirmed consultation stays immu
 
 test('student lists, details, JSON and either report audience exclude preparation and consultation completely',async()=>{
  const c=published();mock([c],{studentActor:true});for(const q of [{},{id:c.id},{id:c.id,action:'export'},{id:c.id,action:'report',audience:'teacher'},{id:c.id,action:'report',audience:'student'}]){const response=await cases(event('GET',undefined,q));assert.equal(response.statusCode,200);for(const privateText of ['PRIVATE_','"profile"','"preparation"','"consultation"','prepared_by','student_response','합의한 방향','사전 전략'])assert.ok(!response.body.includes(privateText),privateText);}
- const invalid=published();invalid.sessions[0].consultation.status='in_progress';invalid.sessions[0].confirmed.content_hash=C.hashSession(invalid.sessions[0]);mock([invalid],{studentActor:true});assert.equal((await cases(event('GET',undefined,{id:invalid.id}))).statusCode,404);
+ const invalid=published();invalid.sessions[0].consultation.date='';invalid.sessions[0].confirmed.content_hash=C.hashSession(invalid.sessions[0]);mock([invalid],{studentActor:true});assert.equal((await cases(event('GET',undefined,{id:invalid.id}))).statusCode,404);
 });
 
-test('teacher report distinguishes preparation, consultation and final strategy and escapes imported text',()=>{
- const c=completed(),s=c.sessions[0];s.preparation.topic='<script>PRIVATE_PREPARATION</script>';s.consultation.summary='<script>PRIVATE_CONSULTATION</script>';const html=C.report(c,s);for(const text of ['1. 교사의 사전 전략','2. 학생 상담과 반영 사항','3. 상담을 반영한 최종 전략 초안','PRIVATE_PREPARATION_PLAN','PRIVATE_STUDENT_RESPONSE','학생에게 전달할 교과 학습 계획','&lt;script&gt;'])assert.ok(html.includes(text),text);assert.ok(!html.includes('<script>PRIVATE_'));assert.ok(!html.includes('??'));
+test('teacher consumer report includes current strategy and omits private preparation or consultation history',()=>{
+ const c=completed(),s=c.sessions[0];s.preparation.topic='<script>PRIVATE_PREPARATION</script>';s.consultation.summary='<script>PRIVATE_CONSULTATION</script>';const html=C.report(c,s);assert.ok(html.includes('학생에게 전달할 교과 학습 계획'));assert.ok(!html.includes('PRIVATE_'));assert.ok(!html.includes('사전 전략'));assert.ok(!html.includes('<script>'));assert.ok(!html.includes('??'));
 });
 
 test('import preserves validated preparation as a reference and reopens consultation without inheriting trust',async()=>{
- const c=published(),m=mock([]);const response=await cases(event('POST',{bundle:{format:'daeryun-counseling',version:1,case:c},student_id:ids.student,student_confirmed:true},{action:'import'}));assert.equal(response.statusCode,201);const imported=parsed(response).case,s=imported.sessions[0];assert.deepEqual(s.preparation,c.sessions[0].preparation);assert.equal(s.consultation.status,'in_progress');assert.equal(s.consultation.student_response,'PRIVATE_STUDENT_RESPONSE');assert.equal(s.confirmed,null);assert.equal(s.review,null);assert.equal(s.guidance,null);assert.equal(s.imported_history.preparation_imported,true);assert.ok(C.report(imported,s).includes('가져온 사전 전략 참고본'));assert.equal((await cases(event('GET',undefined,{id:imported.id,action:'report',audience:'student'}))).statusCode,409);assert.equal(m.writes().length,1);
+ const c=published(),m=mock([]);const response=await cases(event('POST',{bundle:{format:'daeryun-counseling',version:1,case:c},student_id:ids.student,student_confirmed:true},{action:'import'}));assert.equal(response.statusCode,201);const imported=parsed(response).case,s=imported.sessions[0];assert.deepEqual(s.preparation,c.sessions[0].preparation);assert.equal(s.consultation.status,'in_progress');assert.equal(s.consultation.student_response,'PRIVATE_STUDENT_RESPONSE');assert.equal(s.confirmed,null);assert.equal(s.review,null);assert.equal(s.guidance,null);assert.equal(s.imported_history.preparation_imported,true);assert.ok(!C.report(imported,s).includes('가져온 사전 전략 참고본'));assert.equal((await cases(event('GET',undefined,{id:imported.id,action:'report',audience:'student'}))).statusCode,409);assert.equal(m.writes().length,1);
  const invalid=structuredClone(c);invalid.sessions[0].preparation.actions[0].status='bad';const refused=await cases(event('POST',{bundle:{format:'daeryun-counseling',version:1,case:invalid},student_id:ids.student,student_confirmed:true},{action:'import'}));assert.equal(refused.statusCode,400);assert.equal(m.writes().length,1);
 });
 
-test('legacy import remains legacy and next begins a fresh workflow while carrying strategy/profile/open actions',async()=>{
+test('legacy import remains legacy and next keeps strategy/profile without carrying task tracking',async()=>{
  const legacy=sample();delete legacy.sessions[0].workflow_version;mock([]);const response=await cases(event('POST',{bundle:{format:'daeryun-counseling',version:1,case:legacy},student_id:ids.student,student_confirmed:true},{action:'import'}));assert.equal(response.statusCode,201);assert.equal(parsed(response).case.sessions[0].workflow_version,undefined);
- const c=published();mock([c]);const next=await cases(event('POST',{revision:c.revision},{id:c.id,action:'next'}));assert.equal(next.statusCode,200);const s=parsed(next).case.sessions[1];assert.equal(s.workflow_version,2);assert.equal(s.preparation,null);assert.deepEqual(s.consultation,C.consultationOf({}));assert.deepEqual(s.strategy,c.sessions[0].strategy);assert.deepEqual(s.profile,c.sessions[0].profile);assert.notEqual(s.actions[0].id,c.sessions[0].actions[0].id);assert.deepEqual(parsed(next).case.sessions[0],c.sessions[0]);
+ const c=published();mock([c]);const next=await cases(event('POST',{revision:c.revision},{id:c.id,action:'next'}));assert.equal(next.statusCode,200);const s=parsed(next).case.sessions[1];assert.equal(s.workflow_version,2);assert.equal(s.preparation,null);assert.deepEqual(s.consultation,C.consultationOf({}));assert.deepEqual(s.strategy,c.sessions[0].strategy);assert.deepEqual(s.profile,c.sessions[0].profile);assert.deepEqual(s.actions,[]);assert.equal(s.next_date,'');assert.deepEqual(parsed(next).case.sessions[0],c.sessions[0]);
 });
 
-test('AI receives stored preparation and consultation but must draft a teacher strategy before subsidiary questions',async()=>{
- const c=completed(),m=mock([c]);process.env.COUNSELING_SERVER_AI_ENABLED='true';process.env.GEMINI_API_KEY='synthetic-only';let sent;const handler=createAi(async args=>{sent=args;return {ok:true,data:{candidates:[{content:{parts:[{text:'합성 사전 전략'}]}}]}};});
- const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose:'counseling'}));assert.equal(response.statusCode,200);const prompt=sent.payload.contents[0].parts[0].text;for(const text of ['교사의 사전 전략','부속 자료','상담 전에는 학생의 반응이나 합의를 만들지','최종 전략과 실행 과제에 반영','PRIVATE_PREPARATION_PLAN','PRIVATE_STUDENT_RESPONSE'])assert.ok(prompt.includes(text),text);assert.ok(!prompt.includes('prepared_by'));assert.equal(m.writes().length,0);
+test('retired AI blocks AI receives stored preparation and consultation but must draft a teacher strategy before subsidiary questions',async()=>{
+ const c=completed(),m=mock([c]);let calls=0;const handler=createAi(async()=>{calls++;throw Error('provider must not run');});
+ for(const purpose of ['counseling','style']){const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose}));assert.equal(response.statusCode,409);assert.equal(JSON.parse(response.body).error.code,'LEGACY_AI_DISABLED');}
+ assert.equal(calls,0);assert.equal(m.writes().length,0);
 });

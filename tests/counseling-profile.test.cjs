@@ -27,9 +27,23 @@ test.beforeEach(()=>{process.env.COUNSELING_STORAGE='supabase';process.env.SUPAB
 test.afterEach(()=>{delete global.fetch;});
 
 test('legacy and partially entered profiles normalize without inventing missing data',()=>{
- const c=legacySample();delete c.sessions[0].profile;const before=C.hashSession(c.sessions[0]);C.validateCase(c);const normalized=C.normalizeCase(c);assert.equal(C.hashSession(normalized.sessions[0]),before);assert.deepEqual(normalized.sessions[0].profile,{...Object.fromEntries(P.textFields.map(k=>[k,''])),selected_subjects:[],weekly_minutes:null,grades:[]});
+ const c=legacySample();delete c.sessions[0].profile;const before=C.hashSession(c.sessions[0]);C.validateCase(c);const normalized=C.normalizeCase(c);assert.equal(C.hashSession(normalized.sessions[0]),before);assert.deepEqual(normalized.sessions[0].profile,{...Object.fromEntries(P.textFields.map(k=>[k,''])),selected_subjects:[],weekly_minutes:null,grades:[],admission_targets:[]});
  c.sessions[0].profile={interests:'수학 질문'};C.validateCase(c);assert.equal(C.profileOf(c.sessions[0]).interests,'수학 질문');assert.equal(C.profileOf(c.sessions[0]).weekly_minutes,null);assert.deepEqual(C.profileOf(c.sessions[0]).grades,[]);
 });
+test('admission choices survive API save, backup export, import and next session with partial rows',async()=>{
+ const c=legacySample(),m=mock(c),incoming=structuredClone(c);
+ const rows=[{id:C.newId(),university:'합성 대학',major:'생명과학과',admission_type:'학생부종합',admission_name:'합성 전형',admission_year:2029},{id:C.newId(),university:'',major:'전공 탐색 중',admission_type:'',admission_name:'',admission_year:null}];
+ incoming.sessions[0].profile.admission_targets=rows;
+ const updated=await cases(event('PUT',{case:incoming},{id:c.id}));assert.equal(updated.statusCode,200);
+ const saved=JSON.parse(updated.body).case;assert.deepEqual(saved.sessions[0].profile.admission_targets,rows);
+ const exported=await cases(event('GET',undefined,{id:c.id,action:'export'}));assert.equal(exported.statusCode,200);
+ const bundle=JSON.parse(exported.body);assert.deepEqual(bundle.case.sessions[0].profile.admission_targets,rows);
+ const next=await cases(event('POST',{revision:saved.revision},{id:c.id,action:'next'}));assert.equal(next.statusCode,200);assert.deepEqual(JSON.parse(next.body).case.sessions[1].profile.admission_targets,rows);
+ const imported=await cases(event('POST',{bundle,student_id:ids.student,student_confirmed:true},{action:'import'}));assert.equal(imported.statusCode,201);assert.deepEqual(JSON.parse(imported.body).case.sessions[0].profile.admission_targets,rows);
+ const writes=m.writes().length;bundle.case.sessions[0].profile.admission_targets[0].admission_year='2029';
+ assert.equal((await cases(event('POST',{bundle,student_id:ids.student,student_confirmed:true},{action:'import'}))).statusCode,400);assert.equal(m.writes().length,writes);
+});
+
 test('all profile fields participate in the hash and zero minutes is retained',()=>{
  const s=legacySample().sessions[0];s.profile=C.profileOf({});const empty=C.hashSession(s);
  for(const key of P.textFields){const copy=structuredClone(s);copy.profile[key]='입력 근거';assert.notEqual(C.hashSession(copy),empty,key);}
@@ -71,7 +85,7 @@ test('student list, detail, export and reports never contain profile keys or pri
 });
 test('teacher PDF includes escaped profile summary and grades while student preview omits both',async()=>{
  const c=legacySample();c.sessions[0].profile.teacher_observations='<script>PRIVATE_PROFILE_XSS</script>';mock(c);
- const teacher=await cases(event('GET',undefined,{id:c.id,action:'report',audience:'teacher'}));assert.equal(teacher.statusCode,200);for(const label of ['교사용 학생 입력 자료','입력 성적표','5등급','87.5','주간 학습 시간','240분'])assert.ok(teacher.body.includes(label),label);assert.ok(teacher.body.includes('&lt;script&gt;'));assert.ok(!teacher.body.includes('<script>PRIVATE_PROFILE_XSS'));
+ const teacher=await cases(event('GET',undefined,{id:c.id,action:'report',audience:'teacher'}));assert.equal(teacher.statusCode,200);for(const label of ['교과 성적 자료','5등급','87.5'])assert.ok(teacher.body.includes(label),label);assert.ok(!teacher.body.includes('PRIVATE_PROFILE_XSS'));assert.ok(!teacher.body.includes('주간 학습 시간'));assert.ok(!teacher.body.includes('<script>PRIVATE_PROFILE_XSS'));
  const studentPreview=await cases(event('GET',undefined,{id:c.id,action:'report',audience:'student'}));assert.equal(studentPreview.statusCode,200);assert.ok(!studentPreview.body.includes('PRIVATE_'));assert.ok(!studentPreview.body.includes('입력 성적표'));
 });
 test('next and valid import retain profile with independent copies and reset publication',async()=>{
@@ -81,25 +95,20 @@ test('next and valid import retain profile with independent copies and reset pub
 test('invalid profile import fails before any storage write',async()=>{
  const c=legacySample();c.sessions[0].profile.grades[0].grade_scale='unknown';const m=mock();const response=await cases(event('POST',{bundle:{format:'daeryun-counseling',version:1,case:c},student_id:ids.student,student_confirmed:true},{action:'import'}));assert.equal(response.statusCode,400);assert.equal(m.writes().length,0);
 });
-test('teacher AI receives stored profile and evidence-first instructions without changing data',async()=>{
- const c=legacySample(),m=mock(c);process.env.COUNSELING_SERVER_AI_ENABLED='true';process.env.GEMINI_API_KEY='synthetic-only';let prompt;
- const ai=createAi(async args=>{prompt=args.payload.contents[0].parts[0].text;return {ok:true,data:{candidates:[{content:{parts:[{text:'합성 분석 자료'}]}}]}};});
- const response=await ai(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose:'counseling'}));assert.equal(response.statusCode,200);assert.ok(prompt.includes('PRIVATE_PROFILE_OBSERVATION'));assert.ok(prompt.includes('"score":87.5'));assert.ok(prompt.includes('입력 근거에 따른 관찰 → 확인이 필요한 자료 → 교과 연결 → 다음 상담 질문 → 실행 제안'));assert.ok(prompt.includes('약점·역량 부족으로 판단하지 않는다'));assert.ok(prompt.includes('합격 가능성이나 합격 등급을 만들지 않는다'));assert.equal(m.writes().length,0);
- mock(c,true);let calls=0;const forbidden=createAi(async()=>{calls++;});assert.equal((await forbidden(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose:'counseling'}))).statusCode,403);assert.equal(calls,0);
+test('retired AI blocks stored profile forwarding without changing data',async()=>{
+ const c=legacySample(),m=mock(c);let calls=0;const handler=createAi(async()=>{calls++;throw Error('provider must not run');});
+ for(const purpose of ['counseling','style']){const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose}));assert.equal(response.statusCode,409);assert.equal(JSON.parse(response.body).error.code,'LEGACY_AI_DISABLED');}
+ assert.equal(calls,0);assert.equal(m.writes().length,0);
 });
 
-for(const [label,metadata]of [['middle grade 3',{academic_year:2026,school_stage:'middle',grade:3}],['high grade 3',{academic_year:2026,school_stage:'high',grade:3}],['unknown metadata',{academic_year:null,school_stage:null,grade:null}]])test(`AI preserves server student stage separately from past grades: ${label}`,async()=>{
+for(const [label,metadata]of [['middle grade 3',{academic_year:2026,school_stage:'middle',grade:3}],['high grade 3',{academic_year:2026,school_stage:'high',grade:3}],['unknown metadata',{academic_year:null,school_stage:null,grade:null}]])test(`retired AI never forwards stored metadata: ${label}`,async()=>{
  const c=legacySample();Object.assign(c.student,metadata,{name:'PRIVATE_IDENTITY_NAME',student_number:'30222'});
  for(const key of ['academic_year','school_stage','grade'])if(c.student[key]===null)delete c.student[key];
  c.sessions[0].profile.grades[0].academic_year=2024;const m=mock(c);
  process.env.COUNSELING_SERVER_AI_ENABLED='true';process.env.GEMINI_API_KEY='synthetic-only';let sent;
  const handler=createAi(async args=>{sent=args;return {ok:true,data:{candidates:[{content:{parts:[{text:'합성 학년 맥락 검증'}]}}]}};});
  const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:c.revision,privacy:'standard',purpose:'counseling'}));
- assert.equal(response.statusCode,200);const prompt=sent.payload.contents[0].parts[0].text,payload=JSON.parse(prompt.split('상담 자료:\n')[1]);
- assert.deepEqual(payload.student,metadata);assert.equal(payload.profile.grades[0].academic_year,2024);
- assert.deepEqual(Object.keys(payload.student).sort(),['academic_year','grade','school_stage']);
- assert.ok(!prompt.includes('PRIVATE_IDENTITY_NAME'));assert.ok(!prompt.includes('30222'));
- assert.ok(prompt.includes('역산하지 않는다'));assert.ok(prompt.includes('미정인 희망 전공을 확정하거나'));
+ assert.equal(response.statusCode,409);assert.equal(JSON.parse(response.body).error.code,'LEGACY_AI_DISABLED');assert.equal(sent,undefined);
  assert.equal(m.writes().length,0);
 });
 
@@ -107,4 +116,38 @@ test('AI refuses client-supplied student metadata before invoking provider',asyn
  const c=legacySample();mock(c);let calls=0;const handler=createAi(async()=>{calls++;throw Error('must not call provider');});
  const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:c.revision,privacy:'standard',purpose:'counseling',student:{academic_year:2030,school_stage:'high',grade:3}}));
  assert.equal(response.statusCode,400);assert.equal(calls,0);
+});
+test('public admission wishes appear in teacher and student reports without exposing other profile fields',async()=>{
+ const c=legacySample(),s=c.sessions[0];
+ const rows=[{id:C.newId(),university:'합성 <대학>',major:'생명과학과',admission_type:'학생부종합',admission_name:'탐구형',admission_year:2029},{id:C.newId(),university:'',major:'전공 탐색 중',admission_type:'',admission_name:'',admission_year:null}];
+ s.profile.admission_targets=[...rows,{id:C.newId()}];publish(c);const original=structuredClone(c);
+ const projected=C.studentCase(c);assert.deepEqual(projected.sessions[0].profile,{admission_targets:rows});
+ assert.equal(C.studentCase(legacySample()),null);
+ for(const studentMode of [false,true]){
+  mock(c,studentMode);
+  for(const audience of ['teacher','student']){
+   const response=await cases(event('GET',undefined,{id:c.id,action:'report',audience}));assert.equal(response.statusCode,200);
+   for(const label of ['검토할 희망 대학·전공','합성 &lt;대학&gt;','생명과학과','학생부종합 · 탐구형','2029학년도','전공 탐색 중'])assert.ok(response.body.includes(label),label);
+   for(const absent of ['<대학>','PRIVATE_PROFILE_OBSERVATION','PRIVATE_PROFILE_INTEREST','PRIVATE_SELECTED_SUBJECT',rows[0].id,'합격 가능'])assert.ok(!response.body.includes(absent),absent);
+   assert.equal((response.body.match(/<td>2029학년도<\/td>/g)||[]).length,1);
+  }
+ }
+ mock(c,true);
+ for(const q of [{},{id:c.id},{id:c.id,action:'export'}]){
+  const response=await cases(event('GET',undefined,q));assert.equal(response.statusCode,200);assert.ok(!response.body.includes('PRIVATE_'));
+  const body=JSON.parse(response.body),publicCase=body.case||body.cases[0];assert.deepEqual(publicCase.sessions[0].profile,{admission_targets:rows});
+ }
+ assert.deepEqual(c,original);
+});
+
+test('retired AI blocks strategy generation proposes a grounded inquiry title while style review preserves existing titles',async()=>{
+ const c=legacySample(),m=mock(c);let calls=0;const handler=createAi(async()=>{calls++;throw Error('provider must not run');});
+ for(const purpose of ['counseling','style']){const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose}));assert.equal(response.statusCode,409);assert.equal(JSON.parse(response.body).error.code,'LEGACY_AI_DISABLED');}
+ assert.equal(calls,0);assert.equal(m.writes().length,0);
+});
+
+test('retired AI blocks server strategy includes stored admission wishes and versioned public context without changing or publishing the case',async()=>{
+ const c=legacySample(),m=mock(c);let calls=0;const handler=createAi(async()=>{calls++;throw Error('provider must not run');});
+ for(const purpose of ['counseling','style']){const response=await handler(event('POST',{case_id:c.id,session_id:c.current_session_id,revision:1,privacy:'standard',purpose}));assert.equal(response.statusCode,409);assert.equal(JSON.parse(response.body).error.code,'LEGACY_AI_DISABLED');}
+ assert.equal(calls,0);assert.equal(m.writes().length,0);
 });

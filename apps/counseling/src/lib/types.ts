@@ -1,4 +1,5 @@
 import type {AdminAction,AdminData} from './admin'
+import type {PreparationReports} from './preparationReports'
 export type Mode = 'local' | 'online'
 export type ReportAudience = 'student' | 'teacher' | 'analysis'
 export type Student = { student_id: string; student_number: string; academic_year: number; school_stage: 'middle' | 'high'; grade: number; name?: string; account_linked?:boolean }
@@ -9,16 +10,18 @@ export type Action = { id:string;text:string;due_date:string;status:'planned'|'i
 export type RecordMetadata = {academic_year:number|null;grade:number|null;semester:number|null;school_stage:'middle'|'high'|'unknown'}
 export type RecordSection = {id:string;category:string;label:string;school_stage:string;academic_year:number|null;grade:number|null;semester:number|null;pages:number[];text:string;status:'present'|'empty'|'not_applicable'|'uncertain';metadata_confirmation?:{source:string;confirmed_at:string;confirmed_by:string;original:RecordMetadata}}
 export type SchoolRecord = {id:string;filename:string;sha256:string;page_count:number;school_stage:string;sections:RecordSection[];warnings:string[];readable_pages:number[];unreadable_pages:number[]}
-export type Finding = {text:string;evidence_ids:string[];guidance:string;quote?:string}
-export type Analysis = {summary:string;strengths:Finding[];improvements:Finding[];questions:string[];actions:{text:string;reason:string;evidence_ids:string[]}[];limitations:string[];model:string;created_at:string;record_sha256?:string}
+export type Finding = {text:string;evidence_ids:string[];guidance:string;quote?:string;area?:string}
+export type AnalysisAction = {text:string;reason:string;evidence_ids:string[];area?:string;expected_output?:string;review_criteria?:string;teacher_support?:string}
+export type Analysis = {summary:string;strengths:Finding[];improvements:Finding[];questions:string[];actions:AnalysisAction[];limitations:string[];model:string;created_at:string;record_sha256?:string}
 export type Review = {state:'passed'|'needs_revision'|'pending';method:'manual'|'ollama';content_hash:string;notes:string[];created_at:string}
 export type Strategy = {target_major:string;target_path:string;strengths:string;gaps:string;subject_plan:string;inquiry_plan:string;activity_plan:string;semester_plan:string;student_message:string}
 export type Preparation = {prepared_at:string;prepared_by:string;topic:string;strategy:Strategy;actions:Action[]}
 export type Consultation = {status:'not_started'|'in_progress'|'completed';date:string;student_response:string;agreed_direction:string;adjustments:string;summary:string}
 export type Guidance = {published_at:string;published_by:string}
 export type GradeRecord = {id:string;subject:string;academic_year:number;semester:1|2;grade_scale:'5'|'9'|'achievement'|'unknown';rank_grade:number|null;score:number|null;achievement:string}
-export type StudentProfile = {target_major:string;interests:string;learning_concerns:string;study_habits:string;activities:string;reading:string;attendance_notes:string;teacher_observations:string;selected_subjects:string[];weekly_minutes:number|null;grades:GradeRecord[]}
-export type Session = {student_snapshot?:Student;imported_unverified?:boolean;id:string;date:string;topic:string;student_question:string;context:string;evidence_notes:string;teacher_opinion:string;profile?:StudentProfile;workflow_version?:2;preparation?:Preparation|null;consultation?:Consultation;imported_history?:{preparation_imported?:boolean;[key:string]:unknown};strategy?:Strategy;guidance?:Guidance|null;actions:Action[];next_date:string;record:SchoolRecord|null;analysis:Analysis|null;review:Review|null;confirmed:Record<string,unknown>|null}
+export type AdmissionTarget = {id:string;university:string;major:string;admission_type:string;admission_name:string;admission_year:number|null}
+export type StudentProfile = {target_major:string;interests:string;learning_concerns:string;study_habits:string;activities:string;reading:string;attendance_notes:string;teacher_observations:string;selected_subjects:string[];weekly_minutes:number|null;grades:GradeRecord[];admission_targets:AdmissionTarget[]}
+export type Session = {preparation_reports?:PreparationReports;student_snapshot?:Student;imported_unverified?:boolean;id:string;date:string;topic:string;student_question:string;context:string;evidence_notes:string;teacher_opinion:string;profile?:StudentProfile;student_admission_targets?:AdmissionTarget[];workflow_version?:2;preparation?:Preparation|null;consultation?:Consultation;imported_history?:{preparation_imported?:boolean;[key:string]:unknown};strategy?:Strategy;guidance?:Guidance|null;actions:Action[];next_date:string;record:SchoolRecord|null;analysis:Analysis|null;review:Review|null;confirmed:Record<string,unknown>|null}
 export type CounselingCase = {schema_version:1;id:string;revision:number;privacy:'local_only'|'standard';created_at:string;updated_at:string;origin:string;imported_from?:unknown;student:Student;teacher:{display_name:string};current_session_id:string;sessions:Session[]}
 export type Backup = {format:'daeryun-counseling';version:1;case:CounselingCase}
 export type Job = {id:string;state:'queued'|'running'|'succeeded'|'needs_revision'|'failed'|'cancelled';stage?:string;message?:string;case_id?:string}
@@ -35,7 +38,11 @@ export interface Transport {
   exportBackup(id:string):Promise<Blob>;report(id:string,sessionId:string,audience?:ReportAudience):Promise<Blob>
   upload(value:CounselingCase,sessionId:string,file:File,password:string,signal?:AbortSignal):Promise<CounselingCase>
   updateRecordMetadata(value:CounselingCase,sessionId:string,recordId:string,sectionId:string,metadata:RecordMetadata):Promise<CounselingCase>
-  analyze(value:CounselingCase,sessionId:string,model:string,goal:string,budget:number):Promise<Job>
+  analyze(value:CounselingCase,sessionId:string,model:string,goal:string,budget?:number):Promise<Job>
+  generateStrategy?(value:CounselingCase,sessionId:string,model:string):Promise<Job>
+  preparationStatus?(id:string,sessionId:string):Promise<{source_hash:string}>
+  generatePreparation?(value:CounselingCase,sessionId:string,stage:'admissions'|'inquiry',targetId:string):Promise<Job>
+  preparationPdf?(id:string,sessionId:string,kind:'admissions'|'inquiry',targetId:string):Promise<Blob>
   review(value:CounselingCase,sessionId:string,model?:string):Promise<Job|CounselingCase>
   prepare(value:CounselingCase,sessionId:string):Promise<CounselingCase>
   confirm(value:CounselingCase,sessionId:string):Promise<CounselingCase>

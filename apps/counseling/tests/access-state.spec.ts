@@ -92,7 +92,7 @@ for(const [code,heading] of [
  expect(api.calls.some(call=>call.path.endsWith('/counseling-cases'))).toBe(false)
  releaseRetry()
  if(participation){
-  await expect(page.getByRole('article',{name:'학생 최종 결과물'})).toContainText('승인 후 전달된 합성 학생 안내입니다.')
+  await expect(page.getByRole('article',{name:'학습·진로 전략 보고서'})).toContainText('승인 후 전달된 합성 학생 안내입니다.')
   await expect(page.locator('.case-card')).toHaveCount(1)
  }else await expect(page.getByRole('heading',{name:'아직 안내된 전략이 없습니다.',exact:true})).toBeVisible()
  await noLoginLoop(page)
