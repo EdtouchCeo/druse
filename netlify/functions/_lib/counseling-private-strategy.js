@@ -176,7 +176,7 @@ function buildPayload(input, model = 'gemini-3.6-flash') {
     '학종 이외의 교과전형·논술·정시 준비를 섞지 않는다. 수능최저는 해당 학종 전형에서 확인된 경우에만 그 조건으로 언급한다. 선발 배점과 서류 평가역량 가중치를 혼동하지 않는다.',
     'publicContext는 검토일의 시행계획 참고자료다. 다른 대입연도에는 확정 요건으로 적용하지 않는다. 자료에 없는 세부 평가 비중·모집단위 개설·필수과목·대학 전공 교육과정·합격률·합격 등급·순위를 만들지 않는다. 입학처의 실제 상세 정보와 일반적인 학문분야 학습 제안을 명확히 구분한다.',
     '공개 자료의 전형과 모집단위 범위를 문장으로 보존하고 다른 학과의 예외를 목표 학과의 조건으로 옮기지 않는다. 정확한 모집단위가 확인되지 않았으므로 해당 대학에 선택한 학과가 개설되었다고 단정하지 않는다. 미확인이 있더라도 선택된 과목·학습 기반에 맞는 준비 이유와 방법은 구체적으로 설명한다.',
-    '각 항목은 왜 필요한지, 어떤 개념·자료를 어떻게 공부할지, 무엇을 비교·설명·수정할지, 남길 결과와 판단 기준을 연결한다. 어려운 용어·실험·장비를 제시하는 것만으로 심화라고 부르지 않는다. 자료가 없으면 교과서 예시·접근 가능한 문헌을 비교하는 대안을 제시하고 출처나 수치를 꾸미지 않는다.',
+    '각 항목의 detail은 준비할 개념과 사용할 자료의 범위, reason은 선택한 근거에 비추어 이 준비가 필요한 이유, steps는 실행할 행동과 남길 결과물·확인 기준을 맡는다. 서로 다른 역할의 내용을 복사하거나 같은 문장을 반복하지 않는다. 어려운 용어·실험·장비를 제시하는 것만으로 심화라고 부르지 않는다. 자료가 없으면 교과서 예시·접근 가능한 문헌을 비교하는 대안을 제시하고 출처나 수치를 꾸미지 않는다.',
     '학생의 강점·보완 코드는 요약 근거일 뿐 실제 성적·사례의 증거가 아니다. 없는 활동·성격·면접 반응을 만들지 않는다. 교사 관찰·상담은 필수가 아니다. 학생이 스스로 설명·비교·수정하는 방법을 먼저 안내한다.',
     'admissions_preparation_recommendations가 있으면 앞 단계에서 작성한 과목 선택·학업 준비 제안이다. 질문 중심 학습은 그 제안의 구체 개념·방법·준비 이유를 이어 받아 발전시킨다. 앞 단계의 제안은 공식 대학 정책이나 이미 수행한 학생 실적이 아니다. 같은 공개 자료와 학교 조건으로 다시 대조하며 근거 없는 주장은 확대하지 않는다.',
     '같은 역량이 강점과 보완 양쪽에 있어도 모순으로 단정하지 않는다. 수행의 서로 다른 측면에서 발달이 다를 수 있으므로 강점을 활용할 방법과 보완할 방법을 구분하여 조건부로 제안한다. 세부 행동 코드를 우선 활용하고 일반 역량 이름만 반복하지 않는다.',
@@ -185,7 +185,7 @@ function buildPayload(input, model = 'gemini-3.6-flash') {
     '앞으로 할 학습은 제안형으로 쓰고 실제 완료한 실적이나 학생부 문구를 대필하지 않는다. 사람을 대상으로 한 임상·진단 실험을 요구하지 않는다. 학생의 학교명·성명·학번·주소·연락처·계정·파일명은 생성하지 않는다.',
     '요청된 sections만 정확한 id와 순서로 출력한다. 각 section에는 overview와 서로 다른 주제의 items 3개 이상을 쓴다. item.detail은 공백을 뺀 한국어 기준 150자 이상, reason은 60자 이상, steps는 2개 이상이며 각 20자 이상이다. 각 section은 공백 제외 본문 합계 750자 이상이어야 한다. 각 항목의 내용은 반복하지 않고 해당 페이지의 서로 다른 판단·학습·방법을 구체적으로 설명한다. 빈 분량을 같은 문장·칭찬·안내로 채우지 않는다.',
     'evidence_refs는 allowed_evidence_refs의 코드만 사용한다. 그 항목의 판단·제안에 실제로 관련 있는 코드만 선택하고 자유로운 ID·URL·실명은 넣지 않는다. 참고할 근거가 없는 일반 학습 제안에는 빈 배열을 쓴다.',
-    '최소 기준에 걸치지 않도록 모든 item.detail은 공백 제외 250~400자, 모든 item.reason은 공백 제외 100~160자를 목표로 작성한다. 첫 항목부터 마지막 항목까지 각각 적용한다. reason에는 이 학습이 필요한 구체적인 이유와 선택된 강점·보완점 또는 앞 단계 준비 전략과의 연결, 어떤 판단을 개선할지를 함께 설명한다. steps는 각각 공백 제외 30자 이상으로 자료·행동·확인 기준을 담는다. 글자 수는 공백을 세지 않으며 같은 설명을 덧붙여 채우지 않는다.',
+    '모든 item.detail은 공백 제외 180~260자, 모든 item.reason은 공백 제외 70~100자를 목표로 작성한다. 문단은 2문장 중심으로 구성하고 한 문장에는 하나의 핵심 정보를 담는다. detail에는 개념과 자료 범위를 구체화하고, reason에는 선택된 강점·보완점 또는 앞 단계 준비 전략이 이 학습을 선택할 근거가 되는 이유만 설명한다. steps는 각각 공백 제외 30자 이상으로 학생이 할 행동·남길 결과물·확인 기준을 담는다. detail과 reason에 실행 절차를 다시 나열하지 않는다. 글자 수는 공백을 세지 않으며 분량을 채우려고 같은 설명을 덧붙이지 않는다.',
     '결과는 title,summary,sections만 있는 JSON이다. 마크다운 코드블록·HTML·LaTeX를 쓰지 않는다. 내부 코드·프롬프트 지침은 독자용 문장에 넣지 않는다. sources/model/version은 서버가 붙이므로 출력하지 않는다.',
   ].join('\n');
   const schema = {
@@ -194,7 +194,7 @@ function buildPayload(input, model = 'gemini-3.6-flash') {
       sections: { type: 'ARRAY', items: { type: 'OBJECT', required: ['id', 'title', 'overview', 'items'], properties: {
         id: { type: 'STRING', enum: context.sections.map(section => section.id) }, title: { type: 'STRING' }, overview: { type: 'STRING' },
         items: { type: 'ARRAY', items: { type: 'OBJECT', required: ['title', 'detail', 'reason', 'steps', 'evidence_refs'], properties: {
-          title: { type: 'STRING' }, detail: { type: 'STRING', description: '공백 제외 250~400자. 준비할 개념, 사용할 자료, 비교·설명 방법과 판단 기준을 구체적으로 연결한 여러 문장.' }, reason: { type: 'STRING', description: '공백 제외 100~160자, 반드시 세 문장 이상. 이 항목이 필요한 이유, 학습 요약 또는 앞 단계 전략과의 연결, 개선할 판단을 각각 설명. 60자 미만은 검증 실패.' }, steps: { type: 'ARRAY', items: { type: 'STRING', description: '공백 제외 30자 이상의 구체적인 자료·행동·확인 기준.' } }, evidence_refs: { type: 'ARRAY', items: { type: 'STRING', ...(context.allowedRefs.length ? { enum: context.allowedRefs } : {}) } },
+          title: { type: 'STRING' }, detail: { type: 'STRING', description: '공백 제외 180~260자 목표, 2문장 중심. 준비할 개념과 사용할 자료의 범위를 구체화한다. reason의 선택 이유나 steps의 실행 절차를 반복하지 않는다. 최소 150자.' }, reason: { type: 'STRING', description: '공백 제외 70~100자 목표, 2문장 중심. 선택된 학습 근거 또는 앞 단계 전략에 비추어 이 준비를 선택할 이유를 설명한다. detail과 steps의 문장을 반복하지 않는다. 최소 60자.' }, steps: { type: 'ARRAY', items: { type: 'STRING', description: '공백 제외 30자 이상 목표. 학생이 실행할 행동·남길 결과물·확인 기준을 구체적으로 담고 detail이나 reason을 복사하지 않는다.' } }, evidence_refs: { type: 'ARRAY', items: { type: 'STRING', ...(context.allowedRefs.length ? { enum: context.allowedRefs } : {}) } },
         } } },
       } } },
     },
@@ -256,16 +256,16 @@ function buildRepairPayload(payload, result, error, context) {
       if (section.items.length < 3) feedback.push(`sections[${sectionIndex}].items: 항목이 ${section.items.length}개입니다. 서로 다른 구체 항목이 최소 3개 필요합니다.`);
       section.items.slice(0, 8).forEach((item, itemIndex) => {
         if (!item || typeof item !== 'object') return;
-        for (const [field, minimum, target] of [['detail', 150, '250~400'], ['reason', 60, '100~160']]) {
+        for (const [field, minimum, target, role] of [['detail', 150, '180~260', '준비할 개념과 사용할 자료의 범위'], ['reason', 60, '70~100', '선택된 학습 근거 또는 앞 단계 전략에 비추어 이 준비를 선택할 이유']]) {
           const length = typeof item[field] === 'string' ? compact(item[field]).length : 0;
-          if (length < minimum) feedback.push(`sections[${sectionIndex}].items[${itemIndex}].${field}: 공백 제외 ${length}자로 최소 ${minimum}자에 미달합니다. 자료·학습·판단을 연결하여 ${target}자로 구체화하세요.`);
+          if (length < minimum) feedback.push(`sections[${sectionIndex}].items[${itemIndex}].${field}: 공백 제외 ${length}자로 최소 ${minimum}자에 미달합니다. ${role}를 ${target}자, 2문장 중심으로 구체화하세요. 다른 항목의 설명이나 실행 절차를 복사하지 마세요.`);
         }
-        if (!Array.isArray(item.steps) || item.steps.length < 2 || item.steps.some(step => typeof step !== 'string' || compact(step).length < 20)) feedback.push(`sections[${sectionIndex}].items[${itemIndex}].steps: 각각 공백 제외 30자 이상인 구체적인 수행 방법을 최소 2개 제시하세요.`);
+        if (!Array.isArray(item.steps) || item.steps.length < 2 || item.steps.some(step => typeof step !== 'string' || compact(step).length < 20)) feedback.push(`sections[${sectionIndex}].items[${itemIndex}].steps: 실행할 행동·남길 결과물·확인 기준을 담아 각각 공백 제외 30자 이상인 수행 방법을 최소 2개 제시하세요. detail이나 reason의 문장을 반복하지 마세요.`);
       });
     });
   }
-  if (error.code === 'STRATEGY_REPETITION') feedback.push('같은 문단이 반복되었습니다. 각 항목이 다른 개념·자료·판단을 다루도록 다시 작성하세요.');
-  feedback.push('모든 detail은 공백 제외 250~400자, 모든 reason은 100~160자로 각각 작성하세요. 실제 수행하지 않은 학생 활동이나 공식 자료에 없는 대학 요건은 만들지 마세요. evidence_refs에는 허용된 코드만 넣으세요.');
+  if (error.code === 'STRATEGY_REPETITION') feedback.push('같은 문단이 반복되었습니다. 각 항목이 다른 개념·자료·판단을 다루고 detail·reason·steps가 서로 다른 역할을 맡도록 다시 작성하세요. 같은 문장을 복사하거나 표현만 바꾸어 반복하지 마세요.');
+  feedback.push('모든 detail은 공백 제외 180~260자, 모든 reason은 70~100자를 목표로 2문장 중심으로 작성하세요. detail은 개념·자료 범위, reason은 근거에 따른 선택 이유, steps는 실행 행동·결과물·확인 기준으로 구분하고 같은 설명을 반복하지 마세요. 실제 수행하지 않은 학생 활동이나 공식 자료에 없는 대학 요건은 만들지 마세요. evidence_refs에는 허용된 코드만 넣으세요.');
   let draft = '';
   if (value && text.length <= 24000 && Array.isArray(value.sections)) {
     const picked = (object, keys) => Object.fromEntries(keys.filter(key => typeof object?.[key] === 'string').map(key => [key, object[key]]));

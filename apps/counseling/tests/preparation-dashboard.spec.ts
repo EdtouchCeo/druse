@@ -2,6 +2,7 @@ import {test,expect,type Page} from '@playwright/test'
 import {intuitiveApi,syntheticCase} from './fixtures/intuitive'
 import {stageSections,type Report} from '../src/lib/preparationReports'
 import type {AdmissionTarget} from '../src/lib/types'
+import {dashboardHighlights} from '../src/lib/dashboardReadability'
 
 const targets:AdmissionTarget[]=[
  {id:'4c51fd43-45b4-434e-bf4e-59f7845fc441',university:'합성대학교',major:'생명과학과',admission_type:'학생부종합',admission_name:'',admission_year:2028},
@@ -54,6 +55,18 @@ async function setup(page:Page,withReports=false,singleTarget=false){
  return {api,generated,pdfs,statusReads,setSourceHash(value:string){hash=value}}
 }
 
+test('saved server chapter identifiers lead to academic preparation highlights without changing the report',()=>{
+ const value=report('admissions')
+ const ids=['target_basis','learner_alignment','academic_preparation','experience_preparation','next_decisions']
+ const sections=value.sections.map((section,index)=>({...section,id:ids[index]!,empty:''}))
+ const before=JSON.stringify(sections)
+ const highlights=dashboardHighlights('admissions',dashboardCase().sessions[0]!,sections)
+ expect(highlights).toHaveLength(3)
+ expect(highlights.every(item=>item.sectionId==='academic_preparation')).toBe(true)
+ expect(highlights[0]!.title).toBe(sections[2]!.items[0]!.title)
+ expect(JSON.stringify(sections)).toBe(before)
+})
+
 test('consultation generation starts a real job for a single target',async({page})=>{
  const mock=await setup(page,false,true)
  await page.getByRole('button',{name:'교사 관찰·상담 선택',exact:true}).click()
@@ -74,6 +87,49 @@ test('generation failures remain visible next to the button and allow retry',asy
  await dashboard.getByRole('button',{name:'전략 생성',exact:true}).click()
  await expect(dashboard.getByRole('alert')).toContainText('전략 서버 연결을 확인해 주세요.')
  await expect(dashboard.getByRole('button',{name:'전략 생성',exact:true})).toBeEnabled()
+})
+
+test('readability overview leads to full evidence and conditions on desktop and mobile',async({page},testInfo)=>{
+ const mock=await setup(page,true)
+ await page.getByRole('button',{name:'결과 대시보드',exact:true}).click()
+ const dashboard=page.locator('.preparation-dashboard')
+ const brief=dashboard.getByRole('region',{name:'결과 핵심 요약'})
+ await expect(brief.locator('.brief-card')).toHaveCount(3)
+ await expect(brief).toContainText('역량 점수가 아닙니다')
+ const first=brief.locator('.brief-card').first()
+ const href=await first.getAttribute('href')
+ await first.click()
+ await expect(page.locator(`[id="${href!.slice(1)}"]`)).toContainText('자료의 차이를 찾고 비교 기준을 설명함')
+ await expect(dashboard.locator('.analysis-criteria')).not.toHaveAttribute('open','')
+ await dashboard.getByRole('tab',{name:/대학·학과 준비/}).click()
+ await expect(brief.locator('.brief-card')).toHaveCount(3)
+ await expect(brief.locator('.brief-card').first()).toContainText('수업에서 사용한 개념')
+ await expect(dashboard.locator('.item-reason').first()).toContainText('선택 이유')
+ await expect(dashboard.locator('.learning-method').first()).toContainText('실행 순서')
+ await expect(dashboard.locator('.school-connections')).toContainText('AI 활용 금지')
+ for(const width of [1440,390,320]){
+  await page.setViewportSize({width,height:1000})
+  await brief.scrollIntoViewIfNeeded()
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+  await expect(brief.locator('.brief-card').last()).toBeVisible()
+  await page.screenshot({path:testInfo.outputPath(`readability-${width}.png`),fullPage:true})
+ }
+ expect(mock.api.pageErrors).toEqual([])
+ expect(mock.api.outside).toEqual([])
+})
+
+test('failed regeneration preserves the previous useful report and task conditions',async({page})=>{
+ await setup(page,true)
+ await page.route('**/api/cases/*/preparation-strategy',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:{code:'unavailable',message:'잠시 후 다시 생성해 주세요.'}})}))
+ await page.getByRole('button',{name:'결과 대시보드',exact:true}).click()
+ const dashboard=page.locator('.preparation-dashboard')
+ await dashboard.getByRole('tab',{name:/대학·학과 준비/}).click()
+ const before=await dashboard.locator('.report-sections').innerText()
+ await dashboard.getByRole('button',{name:'전략 다시 생성',exact:true}).click()
+ await expect(dashboard.getByRole('alert')).toContainText('잠시 후 다시 생성')
+ expect(await dashboard.locator('.report-sections').innerText()).toBe(before)
+ await expect(dashboard.locator('.school-connections')).toContainText('AI 활용 금지')
+ await expect(dashboard.getByRole('button',{name:'이 결과 PDF 저장',exact:true})).toBeEnabled()
 })
 
 test('full local app moves from source analysis through target preparation and inquiry with scoped jobs and PDFs',async({page},testInfo)=>{

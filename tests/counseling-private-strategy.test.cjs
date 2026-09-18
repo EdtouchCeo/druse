@@ -182,7 +182,7 @@ test('one corrective retry gives precise quality feedback without relaxing the g
   assert.equal(sent[0].signal instanceof AbortSignal, true);
   const repair = JSON.stringify(sent[1].payload);
   assert.ok(repair.includes('sections[0].items[0].reason'));
-  assert.ok(repair.includes('100~160')); assert.ok(repair.includes(valid.sections[0].items[0].detail));
+  assert.ok(repair.includes('70~100')); assert.ok(repair.includes(valid.sections[0].items[0].detail));
   for (const value of ['SYNTHETIC_PRIVATE_METADATA', 'SYNTHETIC_FORGED_REF', 'SYNTHETIC_SERVICE_KEY', 'SYNTHETIC_AUTH_TOKEN']) assert.ok(!repair.includes(value), value);
   let count = 0;
   await assert.rejects(generateStrategy(input, { model: 'gemini-3.6-flash' }, async () => { count++; return response(short); }), error => error.status === 502);
