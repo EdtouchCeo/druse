@@ -75,6 +75,7 @@ const availableStudents=computed(()=>health.value?.students||[])
 const studentAccountLinked=computed(()=>(availableStudents.value.find(student=>student.student_id===draft.value?.student.student_id)?.account_linked??draft.value?.student.account_linked)!==false)
 const record=computed(()=>session.value?.record),analysis=computed(()=>session.value?.analysis)
 const preparationHash=ref('')
+const preparationStage=ref<'analysis'|'admissions'|'inquiry'>('analysis')
 let preparationHashSequence=0
 async function refreshPreparationHash(){
  const seq=++preparationHashSequence,id=draft.value?.id,sid=selectedSessionId.value
@@ -84,7 +85,11 @@ async function refreshPreparationHash(){
 }
 watch(()=>[draft.value?.id,draft.value?.revision,selectedSessionId.value,dirty.value],()=>{void refreshPreparationHash()})
 async function generatePreparation(stage:'admissions'|'inquiry',targetId:string){
- if(!session.value||locked.value||!transport.value?.generatePreparation)return
+ if(busy.value)return
+ if(!session.value){error.value='학생과 회차를 먼저 선택해 주세요.';return}
+ if(locked.value){error.value='확정하거나 안내한 회차입니다. 새 회차를 추가해 전략을 작성해 주세요.';return}
+ if(!transport.value?.generatePreparation){error.value='현재 앱에서 전략 생성 연결을 사용할 수 없습니다. 최신 로컬 앱으로 다시 열어 주세요.';return}
+ preparationStage.value=stage
  await execute('개인정보를 제외한 학습 정보를 준비하고 있습니다.',async()=>{
   const value=await persist();tab.value='dashboard'
   await waitJob(await transport.value!.generatePreparation!(value,selectedSessionId.value,stage,targetId))
@@ -390,7 +395,14 @@ function adoptPreparationCard(card:StrategyPreparationCard){
  tab.value='counseling'
  notice.value=changed?'선택한 제안을 빈 전략 항목에 반영했습니다. 교사 판단에 맞게 편집하고 저장하세요.':'이미 작성한 계획이 있습니다. 전략 화면에서 직접 수정하세요.'
 }
-async function generateStrategy(){tab.value='dashboard';notice.value='대학·학과를 선택해 학종 준비 전략을 먼저 생성하세요.'}
+async function generateStrategy(){
+ preparationStage.value='admissions';tab.value='dashboard'
+ const rows=session.value?.profile?.admission_targets?.length?session.value.profile.admission_targets:session.value?.student_admission_targets||[]
+ const targets=rows.filter(row=>row.university.trim()||row.major.trim())
+ if(targets.length===1)await generatePreparation('admissions',targets[0]!.id)
+ else notice.value=targets.length?'전략을 작성할 대학·학과를 선택하고 전략 생성을 눌러 주세요.':'학생 기본자료에 희망 대학·학과를 입력해 주세요.'
+ await nextTick();document.querySelector<HTMLElement>('.preparation-dashboard')?.scrollIntoView({block:'start'})
+}
 async function reviewCase(useModel:boolean){if(!finalReady.value){error.value=finalIssues.value[0]||'';return}await execute('전략 내용과 문체를 점검하고 있습니다.',async()=>{const value=await persist();const result=await transport.value!.review(value,selectedSessionId.value,useModel?model.value:undefined);if('sessions'in result)setCase(result,selectedSessionId.value);else await waitJob(result);tab.value='review';reviewAcknowledged.value=false})}
 async function publishStrategy(){if(!teacher.value||localMode.value||!studentAccountLinked.value||!transport.value?.publish||!draft.value||!session.value?.confirmed||published.value||dirty.value||!finalReady.value)return;if(!window.confirm('학습·진로 전략을 이 학생의 계정에 공개합니다. 교사 참고 메모는 공개하지 않습니다. 공개한 내용은 보존되며 변경은 새 회차에서 진행합니다. 학생에게 안내할까요?'))return;await execute('학생에게 전략을 안내하고 있습니다.',async()=>{setCase(await transport.value!.publish!(draft.value!,selectedSessionId.value),selectedSessionId.value);notice.value='학생에게 전략을 안내했습니다. 학생 계정에서 학습·진로 전략을 확인할 수 있습니다.'})}
 async function confirmCase(){if(!reviewAcknowledged.value||!reviewConfirmable.value||!finalReady.value)return;await execute('확인한 상담 버전을 확정하고 있습니다.',async()=>{setCase(await transport.value!.confirm(draft.value!,selectedSessionId.value),selectedSessionId.value);notice.value=health.value?.demo?'합성 시연 회차를 확정했습니다. 실제 교사의 검토 기록이 아닙니다.':'확인한 전략 회차를 확정했습니다. 다음 전략은 새 회차에서 개정합니다.'})}
@@ -495,7 +507,7 @@ onBeforeUnmount(()=>{clearTimeout(connectionTimer);clearTimeout(loginRefreshTime
   <div v-if="teacher&&session.confirmed" class="inline-note"><ShieldCheck :size="18"/><span>확정한 전략입니다. 수정은 새 회차에서 진행하세요.</span><button v-if="teacher" class="text-button" :disabled="!!busy" @click="nextSession">다음 회차 만들기</button></div>
   <nav v-if="teacher&&localMode" class="tabs workflow-tabs" aria-label="전략 작업"><button :class="{active:dataTab}" @click="tab='understanding'"><BookOpen :size="17"/>학생 자료·로컬 분석</button><button :class="{active:tab==='consultation'}" @click="tab='consultation'"><MessageSquare :size="17"/>교사 관찰·상담 <small>선택</small></button><button :class="{active:tab==='dashboard'}" @click="tab='dashboard';refreshPreparationHash()"><FileText :size="17"/>결과 대시보드</button><button class="text-button" @click="tab='counseling'">기존 전략 기록</button></nav>
   <nav v-if="teacher&&!localMode" class="tabs workflow-tabs" aria-label="전략 작업"><button :class="{active:dataTab}" @click="tab='understanding'"><span aria-hidden="true">01</span>자료·분석</button><button :class="{active:['counseling','consultation'].includes(tab)}" @click="tab='counseling'"><span aria-hidden="true">02</span>상담·전략 수립</button><button :class="{active:tab==='review'}" @click="tab='review'"><span aria-hidden="true">03</span>분석·전략 보고서</button></nav>
-  <PreparationDashboard v-if="teacher&&localMode&&tab==='dashboard'" :case-value="draft" :session="session" :busy="!!busy" :current-source-hash="dirty?'':preparationHash" @generate="generatePreparation" @download="downloadPreparation" @analyze="tab='analysis'" @settings="tab='analysis'"/>
+  <PreparationDashboard v-if="teacher&&localMode&&tab==='dashboard'" :case-value="draft" :session="session" :busy="!!busy" :initial-stage="preparationStage" :generation-error="error" :progress="activeJob?.message||busy" :current-source-hash="dirty?'':preparationHash" @generate="generatePreparation" @download="downloadPreparation" @analyze="tab='analysis'" @settings="tab='analysis'"/>
 
   <section v-if="teacher&&dataTab" class="teacher-click-guide" aria-label="교사 작업 안내"><div><strong>학생부의 근거를 읽고, 앞으로의 준비 방향을 찾습니다.</strong><p>학생부와 기본자료는 있는 내용부터 입력하세요. 상담 내용은 다음 단계에서 더할 수 있습니다.</p></div><div class="button-row"><button v-if="tab==='understanding'&&localMode" class="primary compact" @click="tab='record'">학생부 PDF 불러오기 <ChevronRight :size="16"/></button><button class="secondary compact" @click="tab='review'">현재 자료로 보고서 보기</button></div></section>
   <nav v-if="teacher&&dataTab" class="data-tools" aria-label="자료 분석 도구"><button :class="{active:tab==='understanding'}" @click="tab='understanding'"><BookOpen :size="16"/>학생 기본자료</button><button :class="{active:tab==='record'}" @click="tab='record'"><FileText :size="16"/>학생부 PDF 근거</button><button v-if="localMode" :class="{active:tab==='analysis'}" @click="tab='analysis'"><Sparkles :size="16"/>학생부 상세 분석</button></nav>
@@ -504,7 +516,7 @@ onBeforeUnmount(()=>{clearTimeout(connectionTimer);clearTimeout(loginRefreshTime
   <section v-if="teacher&&['counseling','consultation'].includes(tab)" class="strategy-studio">
    <div class="studio-heading"><h2>상담을 바탕으로 학습·진로 전략 수립</h2><p>학생부에서 확인한 배움과 학생의 관심을 연결해 교과·창체·봉사·독서·행동특성별 준비 방향, 탐구 주제와 남은 학년의 전략을 정리합니다.</p></div>
    <details class="card consultation-input"><summary>상담 내용 입력·수정 <span>{{session.consultation?.status==='completed'?'기록 있음':'선택'}}</span></summary><ConsultationEditor v-if="session.consultation" :session="session" :locked="locked" @prepare="tab='counseling'" @complete="completeConsultation" @final="tab='review'"/></details>
-   <section v-if="localMode" class="card strategy-generate"><div><h3>상세 전략 생성</h3><p>교과별 준비 내용 · 추천 탐구 주제와 방법 · 학년별 발전 순서 · 학생 준비사항</p><small>{{draft.student.school_stage==='high'?'현재 '+draft.student.grade+'학년부터 고등학교 남은 기간에 맞춰 작성합니다.':'현재 학년과 진학 이후의 준비 방향을 구분합니다.'}}</small></div><button class="primary" :disabled="locked||!model||!health?.ollama.available" @click="generateStrategy"><Sparkles :size="18"/>{{Object.values(strategy||{}).some(value=>value.trim())?'상담 반영해 전략 다시 작성':'학습·진로 전략 생성'}}</button><p v-if="Object.values(strategy||{}).some(value=>value.trim())" class="help">현재 입력한 전략도 참고하여 초안을 다시 작성합니다. 보존할 내용은 먼저 백업하거나 새 회차에서 작성하세요.</p><p v-if="!health?.ollama.available" class="help">로컬 분석 연결을 확인하거나 아래에서 직접 전략을 작성하세요. <button class="text-button" :disabled="!!busy" @click="refreshConnection">연결 다시 확인</button></p><details class="analysis-settings strategy-settings"><summary>전략 생성 설정</summary><label>이 PC의 전략 모델<select v-model="model" :disabled="locked"><option value="" disabled>모델 선택</option><option v-for="item in health?.ollama.models" :key="item.name" :value="item.name">{{item.name}}</option></select></label></details></section>
+   <section v-if="localMode" class="card strategy-generate"><div><h3>상세 전략 생성</h3><p>교과별 준비 내용 · 추천 탐구 주제와 방법 · 학년별 발전 순서 · 학생 준비사항</p><small>{{draft.student.school_stage==='high'?'현재 '+draft.student.grade+'학년부터 고등학교 남은 기간에 맞춰 작성합니다.':'현재 학년과 진학 이후의 준비 방향을 구분합니다.'}}</small></div><button class="primary" :disabled="locked" @click="generateStrategy"><Sparkles :size="18"/>{{Object.values(strategy||{}).some(value=>value.trim())?'상담 반영해 전략 다시 작성':'학습·진로 전략 생성'}}</button><p v-if="Object.values(strategy||{}).some(value=>value.trim())" class="help">현재 입력한 전략도 참고하여 초안을 다시 작성합니다. 보존할 내용은 먼저 백업하거나 새 회차에서 작성하세요.</p><p class="help">완료된 학생부 분석과 상담 내용을 바탕으로 대학·학과별 전략을 생성합니다. 여러 목표가 있으면 대시보드에서 선택해 주세요.</p></section>
    <div class="button-row studio-next"><button class="secondary" @click="tab='review'">전략 보고서 보기 <ChevronRight :size="16"/></button></div>
   </section>
   <section v-if="teacher&&tab==='review'" class="card final-overview report-hub">

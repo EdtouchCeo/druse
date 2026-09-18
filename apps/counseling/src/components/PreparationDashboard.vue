@@ -6,9 +6,10 @@ import {analysisDashboardSections,analysisDetailIssue,dashboardSource,isStale,la
 import type {CounselingCase,Session} from '../lib/types'
 import analysisCriteria from '../data/analysis-criteria.json'
 
-const props=defineProps<{caseValue:CounselingCase;session:Session;busy:boolean;currentSourceHash?:string}>()
+const props=defineProps<{caseValue:CounselingCase;session:Session;busy:boolean;currentSourceHash?:string;initialStage?:PreparationStage;generationError?:string;progress?:string}>()
 const emit=defineEmits<{generate:[stage:'admissions'|'inquiry',targetId:string];download:[kind:'analysis'|'admissions'|'inquiry',targetId?:string];analyze:[];settings:[]}>()
-const id=useId(),active=ref<PreparationStage>('analysis'),selectedTargetId=ref('')
+const id=useId(),active=ref<PreparationStage>(props.initialStage||'analysis'),selectedTargetId=ref('')
+watch(()=>props.initialStage,value=>{if(value)active.value=value})
 const phases=[
  {id:'analysis' as const,title:'학생부 분석',short:'학생부 분석',description:'기록의 사실과 해석을 구분하고, 다음 준비에 사용할 강점과 보완점을 확인합니다.',icon:FileSearch},
  {id:'admissions' as const,title:'대학·학과별 학종 준비',short:'대학·학과 준비',description:'대학의 공식 평가와 전공의 학습 기반을 학생의 현재 학습과 연결합니다.',icon:Layers3},
@@ -79,6 +80,8 @@ function navigateTabs(event:KeyboardEvent){
 
    <div class="source-chain" aria-label="현재 결과의 근거 연결"><span><FileSearch :size="15"/>{{active==='analysis'?'학생부 원문':'학생부 원문·분석'}}</span><ArrowRight :size="15"/><span :class="{current:active!=='inquiry'}">{{active==='analysis'?'로컬 학생부 분석':'대학·학과 공식 자료'}}</span><template v-if="active==='inquiry'"><ArrowRight :size="15"/><span class="current">학종 준비 → 탐구 질문</span></template><small>{{active==='analysis'?'사실과 해석을 근거별로 확인':'공개 기준과 학생의 학습 판단을 구분하여 확인'}}</small></div>
    <div class="result-toolbar"><div><span class="result-state" :class="{attention:stale||!!quality&&!!report}">{{stateText}}</span><small v-if="reportDate(report)">생성일 {{reportDate(report)}}</small></div><div class="result-actions"><button v-if="active==='analysis'" type="button" class="primary" :disabled="busy" @click="emit('analyze')"><FileSearch :size="17"/>{{session.record?'학생부 분석하기':'학생부 가져오기·분석'}}</button><button v-else type="button" class="primary" :disabled="busy||!!requirement" @click="generate"><Sparkles :size="17"/>{{report?'전략 다시 생성':'전략 생성'}}</button><button type="button" class="secondary" :disabled="busy||!!downloadIssue" @click="download"><Download :size="17"/>이 결과 PDF 저장</button></div></div>
+   <p v-if="busy" class="result-notice" role="status" aria-live="polite">{{progress||'전략 생성을 준비하고 있습니다.'}}</p>
+   <p v-if="generationError" class="result-notice" role="alert">{{generationError}}</p>
    <p v-if="requirement" class="result-notice" role="status">{{requirement}}</p><p v-else-if="active==='analysis'&&analysisDetail" class="result-notice" role="status">{{analysisDetail}}</p><p v-else-if="downloadIssue&&report" class="result-notice" role="status">{{downloadIssue}}</p>
    <article v-if="report?.summary" class="result-summary"><span class="dashboard-eyebrow">이번 목표의 준비 방향</span><h4>{{report.title}}</h4><ResultText :text="report.summary"/></article>
 

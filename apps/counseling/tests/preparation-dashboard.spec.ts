@@ -25,8 +25,10 @@ function dashboardCase(withReports=false){
  return value
 }
 
-async function setup(page:Page,withReports=false){
- const api=await intuitiveApi(page,{value:dashboardCase(withReports)})
+async function setup(page:Page,withReports=false,singleTarget=false){
+ const value=dashboardCase(withReports)
+ if(singleTarget)value.sessions[0]!.profile!.admission_targets=targets.slice(0,1)
+ const api=await intuitiveApi(page,{value})
  const generated:{path:string;body:any}[]=[],pdfs:URL[]=[],statusReads:URL[]=[]
  let hash='synthetic-source-current',job:{id:string;stage:Report['kind'];targetId:string;polls:number;completed:boolean}|undefined
  await page.route('**/api/**',async route=>{
@@ -51,6 +53,28 @@ async function setup(page:Page,withReports=false){
  await expect(page.getByRole('button',{name:'결과 대시보드',exact:true})).toBeVisible()
  return {api,generated,pdfs,statusReads,setSourceHash(value:string){hash=value}}
 }
+
+test('consultation generation starts a real job for a single target',async({page})=>{
+ const mock=await setup(page,false,true)
+ await page.getByRole('button',{name:'교사 관찰·상담 선택',exact:true}).click()
+ await page.locator('.strategy-generate .primary').click()
+ const dashboard=page.locator('.preparation-dashboard')
+ await expect(dashboard.getByRole('tab',{name:/대학·학과 준비/})).toHaveAttribute('aria-selected','true')
+ await expect(dashboard.locator('.result-summary')).toBeVisible()
+ expect(mock.generated).toHaveLength(1)
+ expect(mock.generated[0]!.body.stage).toBe('admissions')
+})
+
+test('generation failures remain visible next to the button and allow retry',async({page})=>{
+ await setup(page)
+ await page.route('**/api/cases/*/preparation-strategy',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:{code:'unavailable',message:'전략 서버 연결을 확인해 주세요.'}})}))
+ await page.getByRole('button',{name:'결과 대시보드',exact:true}).click()
+ const dashboard=page.locator('.preparation-dashboard')
+ await dashboard.getByRole('tab',{name:/대학·학과 준비/}).click()
+ await dashboard.getByRole('button',{name:'전략 생성',exact:true}).click()
+ await expect(dashboard.getByRole('alert')).toContainText('전략 서버 연결을 확인해 주세요.')
+ await expect(dashboard.getByRole('button',{name:'전략 생성',exact:true})).toBeEnabled()
+})
 
 test('full local app moves from source analysis through target preparation and inquiry with scoped jobs and PDFs',async({page},testInfo)=>{
  const mock=await setup(page)

@@ -10,5 +10,5 @@ exports.handler=C.wrap(async event=>{
   C.db('users?select=id,google_id,name,email,role,approved,grade,class,admission_year&limit=0')
  ]);
  const ready=checks[0].status==='fulfilled',auth=checks[1].status==='fulfilled';
- return C.json(ready&&auth?200:503,{service:'daeryun-counseling',version:'0.9.0',storage:storage.mode(),storage_ready:ready,storage_diagnostic:ready?'READY':storage.diagnostic(checks[0].reason),school_auth_ready:auth,record_analysis:'local-ollama-only',strategy_generation:'allowlisted-private-context',server_ai_configured:getCounselingAiConfig().enabled});
+ return C.json(ready&&auth?200:503,{service:'daeryun-counseling',version:'1.0.1',storage:storage.mode(),storage_ready:ready,storage_diagnostic:ready?'READY':storage.diagnostic(checks[0].reason),school_auth_ready:auth,record_analysis:'local-ollama-only',strategy_generation:'allowlisted-private-context',server_ai_configured:getCounselingAiConfig().enabled});
 });
