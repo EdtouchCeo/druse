@@ -9,7 +9,7 @@ export type Health = { version?: string; mode: Mode; demo: boolean; csrf_token?:
 export type Action = { id:string;text:string;due_date:string;status:'planned'|'in_progress'|'done'|'deferred' }
 export type RecordMetadata = {academic_year:number|null;grade:number|null;semester:number|null;school_stage:'middle'|'high'|'unknown'}
 export type RecordSection = {id:string;category:string;label:string;school_stage:string;academic_year:number|null;grade:number|null;semester:number|null;pages:number[];text:string;status:'present'|'empty'|'not_applicable'|'uncertain';metadata_confirmation?:{source:string;confirmed_at:string;confirmed_by:string;original:RecordMetadata}}
-export type SchoolRecord = {id:string;filename:string;sha256:string;page_count:number;school_stage:string;sections:RecordSection[];warnings:string[];readable_pages:number[];unreadable_pages:number[]}
+export type SchoolRecord = {id:string;filename:string;sha256:string;page_count:number;school_stage:string;sections:RecordSection[];warnings:string[];readable_pages:number[];unreadable_pages:number[];extraction_review?:{checked:number;changed:number;uncertain:number;skipped:number;failed:number;ocr_message?:string;checks?:{label:string;pages:number[];result:string}[]}}
 export type Finding = {text:string;evidence_ids:string[];guidance:string;quote?:string;area?:string}
 export type AnalysisAction = {text:string;reason:string;evidence_ids:string[];area?:string;expected_output?:string;review_criteria?:string;teacher_support?:string}
 export type Analysis = {summary:string;strengths:Finding[];improvements:Finding[];questions:string[];actions:AnalysisAction[];limitations:string[];model:string;created_at:string;record_sha256?:string}
@@ -39,6 +39,7 @@ export interface Transport {
   upload(value:CounselingCase,sessionId:string,file:File,password:string,signal?:AbortSignal):Promise<CounselingCase>
   updateRecordMetadata(value:CounselingCase,sessionId:string,recordId:string,sectionId:string,metadata:RecordMetadata):Promise<CounselingCase>
   analyze(value:CounselingCase,sessionId:string,model:string,goal:string,budget?:number):Promise<Job>
+  refineRecord?(value:CounselingCase,sessionId:string,model:string):Promise<Job>
   generateStrategy?(value:CounselingCase,sessionId:string,model:string):Promise<Job>
   preparationStatus?(id:string,sessionId:string):Promise<{source_hash:string}>
   generatePreparation?(value:CounselingCase,sessionId:string,stage:'admissions'|'inquiry',targetId:string):Promise<Job>

@@ -38,6 +38,7 @@ const newOpen=ref(false),importBundle=ref<Backup|null>(null),importAcknowledged=
 const caseAction=ref<'download'|'delete'|null>(null),actionCase=ref<CounselingCase|null>(null),actionSessionId=ref(''),actionLoaded=ref(false),deleteAcknowledged=ref(false)
 const actionHasDraft=computed(()=>Boolean(dirty.value&&draft.value?.id===actionCase.value?.id))
 const model=ref(''),pdfPassword=ref(''),selectedPdf=shallowRef<File|null>(null),fixtures=ref<Fixture[]>([]),evidenceId=ref('')
+const aiExtraction=ref(true)
 const settingsOpen=ref(false),aiDraft=ref(''),externalConsent=ref(false),settings=ref<AiSettings>({provider:'server',model:'',apiKey:'',ollamaUrl:'http://127.0.0.1:11434'})
 const pdfInput=ref<HTMLInputElement|null>(null),jsonInput=ref<HTMLInputElement|null>(null)
 const pdfDragDepth=ref(0)
@@ -114,7 +115,7 @@ const review=computed(()=>dirty.value?null:session.value?.review)
 const reviewConfirmable=computed(()=>Boolean(review.value&&['passed','pending'].includes(review.value.state)&&!dirty.value&&finalReady.value&&!contentIssues.value.length))
 const currentSessionIndex=computed(()=>draft.value?.sessions.findIndex(s=>s.id===selectedSessionId.value)??-1)
 const validImportStudent=computed(()=>localMode.value||availableStudents.value.some(s=>s.student_id===importBundle.value?.case.student.student_id))
-const jobStage=computed(()=>({queued:'준비',drafting_strategy:'학습·진로 전략 작성',loading:'모델 불러오기',reading_image:'PDF 이미지 판독',analyzing:'근거 분석',validating_evidence:'원문 대조',checking_evidence:'근거 다시 확인',style_review:'문체 검토',completed:'완료',cancelled:'취소',failed:'분석 중단'} as Record<string,string>)[activeJob.value?.stage||'']||'')
+const jobStage=computed(()=>({queued:'준비',drafting_strategy:'학습·진로 전략 작성',loading:'모델 불러오기',reading_image:'PDF 이미지 판독',checking_extraction:'항목 경계 확인',analyzing:'근거 분석',validating_evidence:'원문 대조',checking_evidence:'근거 다시 확인',style_review:'문체 검토',completed:'완료',cancelled:'취소',failed:'분석 중단'} as Record<string,string>)[activeJob.value?.stage||'']||'')
 const connectionParams=new URLSearchParams(location.search)
 let rememberedConnection:string|null=null
 if(modeForHost(location.hostname)==='online'){try{rememberedConnection=consumeConnection(sessionStorage)}catch{/* Login context may be unavailable in restricted browsers. */}}
@@ -378,7 +379,24 @@ async function saveRecordMetadata(sectionId:string,metadata:RecordMetadata):Prom
  await execute('항목의 학년도·학년을 저장하고 있습니다.',async()=>{const value=await persist();setCase(await transport.value!.updateRecordMetadata(value,id,recordId,sectionId,metadata),id);reviewAcknowledged.value=false;notice.value='학년도·학년을 저장했습니다. 변경한 근거로 다시 분석해 주세요.';saved=true})
  return saved
 }
-async function upload(){if(!selectedPdf.value)return;const file=selectedPdf.value;await execute('학생부 PDF에서 항목과 근거를 읽고 있습니다.',async()=>{const value=await persist();const id=selectedSessionId.value;setCase(await transport.value!.upload(value,id,file,pdfPassword.value,controller?.signal),id);pdfPassword.value='';tab.value='record';notice.value='추출 항목과 판독 상태를 확인해 주세요.'},true)}
+async function upload(){
+ if(!selectedPdf.value)return
+ const file=selectedPdf.value
+ await execute('학생부 PDF에서 항목과 근거를 읽고 있습니다.',async()=>{
+  const value=await persist(),id=selectedSessionId.value
+  setCase(await transport.value!.upload(value,id,file,pdfPassword.value,controller?.signal),id)
+  pdfPassword.value='';tab.value='record'
+  if(aiExtraction.value&&model.value&&health.value?.ollama.available&&transport.value?.refineRecord&&!controller?.signal.aborted){
+   await waitJob(await transport.value.refineRecord(draft.value!,id,model.value))
+  }else notice.value=aiExtraction.value?'기본 추출을 완료했습니다. 로컬 모델을 연결한 뒤 항목을 추가 확인할 수 있습니다.':'추출 항목과 판독 상태를 확인해 주세요.'
+ },true)
+}
+async function refineExtraction(){
+ await execute('로컬 AI로 항목 경계를 확인하고 있습니다.',async()=>{
+  if(!model.value||!transport.value?.refineRecord)throw new Error('설치된 로컬 모델을 선택해 주세요.')
+  const value=await persist();await waitJob(await transport.value.refineRecord(value,selectedSessionId.value,model.value))
+ })
+}
 async function waitJob(job:Job){activeJob.value=job;while(['queued','running'].includes(activeJob.value.state)){await new Promise<void>((resolve,reject)=>{const signal=controller?.signal;if(signal?.aborted){reject(new DOMException('Cancelled','AbortError'));return}const timer=setTimeout(()=>{signal?.removeEventListener('abort',abort);resolve()},900);const abort=()=>{clearTimeout(timer);reject(new DOMException('Cancelled','AbortError'))};signal?.addEventListener('abort',abort,{once:true})});activeJob.value=await transport.value!.job(job.id,controller?.signal)}const outcome=activeJob.value;setCase(await transport.value!.get(draft.value!.id),selectedSessionId.value);if(outcome.state==='failed'||outcome.state==='needs_revision')throw new Error(outcome.message||'작업을 완료하지 못했습니다. 모델 상태와 입력을 확인해 주세요.');notice.value=outcome.message||(outcome.state==='cancelled'?'작업을 취소했습니다.':'작업 결과를 확인해 주세요.')}
 async function analyze(){await execute('Ollama 분석을 준비하고 있습니다.',async()=>{if(!model.value)throw new Error('설치된 로컬 모델을 선택해 주세요.');const value=await persist();await waitJob(await transport.value!.analyze(value,selectedSessionId.value,model.value,session.value!.topic));tab.value='dashboard'})}
 async function completeConsultation(){if(!session.value||locked.value)return;await execute('상담 반영 기록을 저장하고 있습니다.',async()=>{const current=session.value!;const completed=normalizeConsultation({...current.consultation,status:'completed'});current.consultation=completed;await persist();tab.value='counseling';notice.value='상담 내용을 저장했습니다. 전략 생성 버튼으로 이 내용을 반영한 전략을 만들 수 있습니다.'})}
@@ -547,7 +565,26 @@ onBeforeUnmount(()=>{clearTimeout(connectionTimer);clearTimeout(loginRefreshTime
    <template v-if="!localMode"><div class="local-only"><Monitor :size="40"/><h2>학생부는 교사 PC에서 살펴봅니다.</h2><p>교사용 · Ollama 모델 필요</p><div class="button-row local-resource-buttons"><a class="secondary" href="/counseling/downloads/daeryun-counseling-local.zip" download><Download :size="16"/>로컬 실행기 다운로드</a><a class="secondary" href="/counseling/guide.html#local-analysis" target="_blank" rel="noopener noreferrer">설치 및 분석 안내 <ExternalLink :size="15"/></a></div><a class="primary" href="http://127.0.0.1:8765/counseling/" target="_blank" rel="noopener noreferrer">로컬 전략실 열기 <ExternalLink :size="16"/></a><small>먼저 로컬 실행기를 시작해 주세요. 로컬 학생부와 분석·파생 전략은 온라인 보관함으로 옮기지 않습니다.</small></div></template>
    <template v-else><div class="section-heading"><div><h2>학생부 PDF 확인</h2><p>내용이 없거나 읽히지 않은 항목을 학생의 약점으로 판단하지 않습니다.</p></div></div><div v-if="health?.demo" class="inline-note warning"><AlertCircle :size="18"/><div><strong>제공된 합성 PDF만 사용할 수 있습니다.</strong><p>실제 학생부를 업로드하지 마세요. 이 모드는 교사 인증과 실제 상담 검토를 대신하지 않습니다.</p><div class="button-row"><button v-for="fixture in fixtures" :key="fixture.id" class="text-button" :disabled="!!busy" @click="fixturePdf(fixture.id)"><Download :size="15"/>{{fixture.title}}</button></div></div></div>
    <fieldset :disabled="locked"><div class="upload-area" :class="{'drag-active':pdfDragDepth>0&&!locked}" @dragenter="enterPdf" @dragover="dragPdf" @dragleave="leavePdf" @drop="dropPdf"><Upload :size="28"/><h3>{{pdfDragDepth&&!locked?'여기에 PDF를 놓으세요':record?'다른 PDF를 끌어 놓거나 선택':'학생부 PDF를 끌어 놓거나 선택'}}</h3><p>20MB, 80페이지 이내 · 원본과 추출 내용은 이 PC에 보관합니다.</p><button class="secondary" @click="pdfInput?.click()">PDF 파일 선택</button><span v-if="selectedPdf" class="selected-file" role="status">{{selectedPdf.name}}</span></div><div v-if="selectedPdf" class="upload-controls"><label>PDF 암호 <small>암호가 있는 파일만 입력</small><input v-model="pdfPassword" type="password" autocomplete="off"></label><button class="primary" @click="upload">항목 추출하기</button></div></fieldset>
-   <template v-if="record"><div class="record-summary"><div><strong>{{record.filename}}</strong><p>{{record.page_count}}페이지 · 읽은 페이지 {{record.readable_pages.length}} · 확인이 필요한 페이지 {{record.unreadable_pages.length}}</p></div><span class="badge">{{record.sections.length}}개 추출 항목</span></div><div v-if="record.warnings.length" class="inline-note warning"><AlertCircle :size="19"/><ul><li v-for="warning in record.warnings" :key="warning">{{warning}}</li></ul></div><RecordEvidence v-for="section in record.sections" :key="draft.id+session.id+record.id+section.id" :section="section" :locked="locked" :highlight="evidenceId===section.id" :save="metadata=>saveRecordMetadata(section.id,metadata)"/><button class="primary next-button" :disabled="locked" @click="tab='analysis'">근거를 확인하고 분석 준비 <ChevronRight :size="17"/></button></template></template>
+   <fieldset :disabled="locked" class="extraction-options">
+    <label class="check-label"><input v-model="aiExtraction" type="checkbox">추출 후 로컬 AI로 항목 경계 확인</label>
+    <p>원문 줄의 소속을 확인합니다. 스캔 페이지는 이미지 판독 모델이 필요하며, 판독한 글자는 원본과 대조해 주세요.</p>
+    <label>항목 확인에 사용할 로컬 모델<select v-model="model" :disabled="!health?.ollama.available"><option value="">모델 선택</option><option v-for="m in health?.ollama.models||[]" :key="m.name" :value="m.name">{{m.name}}{{m.vision?' · 이미지 판독':''}}</option></select></label>
+    <p v-if="!health?.ollama.available||!model" class="muted">모델이 없으면 기본 추출 결과를 먼저 표시합니다.</p>
+    <button v-if="record" class="secondary" :disabled="!model||!health?.ollama.available||session.imported_unverified" @click="refineExtraction">로컬 AI로 항목 다시 확인</button>
+   </fieldset>
+   <template v-if="record">
+    <div class="record-summary"><div><strong>{{record.filename}}</strong><p>{{record.page_count}}페이지 · 읽은 페이지 {{record.readable_pages.length}} · 확인이 필요한 페이지 {{record.unreadable_pages.length}}</p></div><span class="badge">{{record.sections.length}}개 추출 항목</span></div>
+    <div v-if="record.extraction_review" class="inline-note" role="status"><div>
+     <strong>로컬 AI 항목 확인 결과</strong>
+     <p>경계 {{record.extraction_review.checked}}곳 검토 · {{record.extraction_review.changed}}곳 조정</p>
+     <p v-if="record.extraction_review.uncertain||record.extraction_review.skipped||record.extraction_review.failed">원문 확인 필요: 판단 보류 {{record.extraction_review.uncertain}}곳 · 검토 범위 제외 {{record.extraction_review.skipped}}곳 · 응답 검증·연결 실패 {{record.extraction_review.failed}}곳. 해당 구간은 기존 추출 결과를 유지했습니다.</p>
+     <p v-else-if="!record.extraction_review.checked">자동으로 검토할 수 있는 인접 항목 경계가 없습니다. 전체 추출의 정확성이 확인되었다는 뜻은 아닙니다.</p>
+     <p v-if="record.extraction_review.ocr_message">{{record.extraction_review.ocr_message}}</p>
+     <p v-if="record.extraction_review.changed">원문 문장과 숫자를 보존해 경계만 조정했습니다. 변경한 근거로 다시 분석해 주세요.</p>
+     <details v-if="record.extraction_review.checks?.length"><summary>구간별 확인 결과</summary><ul><li v-for="(check,index) in record.extraction_review.checks" :key="index">{{check.pages.join(', ')}}쪽 · {{check.label}}: {{check.result}}</li></ul></details>
+    </div></div>
+    <div v-if="record.warnings.length" class="inline-note warning"><AlertCircle :size="19"/><ul><li v-for="warning in record.warnings" :key="warning">{{warning}}</li></ul></div><RecordEvidence v-for="section in record.sections" :key="draft.id+session.id+record.id+section.id" :section="section" :locked="locked" :highlight="evidenceId===section.id" :save="metadata=>saveRecordMetadata(section.id,metadata)"/><button class="primary next-button" :disabled="locked" @click="tab='analysis'">근거를 확인하고 분석 준비 <ChevronRight :size="17"/></button>
+   </template></template>
   </section>
 
   <section v-if="teacher&&tab==='analysis'&&localMode" class="analysis-layout"><div class="card"><div class="section-heading"><div><h2>학생부 상세 분석</h2><p>교과·활동에서 드러난 역량과 성장 흐름을 근거에 따라 해석합니다.</p></div></div><div v-if="!record" class="empty-section"><FileText :size="32"/><h3>학생부의 판독 상태를 먼저 확인해 주세요.</h3><button class="secondary" @click="tab='record'">학생부 근거로 이동</button></div><template v-else><div class="model-controls"><details class="analysis-settings"><summary>분석 설정</summary><label>이 PC의 분석 모델<select v-model="model" :disabled="locked"><option value="" disabled>모델 선택</option><option v-for="item in health?.ollama.models" :key="item.name" :value="item.name">{{item.name}}{{item.vision?' · 이미지 지원':''}}</option></select></label></details><button class="primary" :disabled="locked||!model||!health?.ollama.available" @click="analyze"><Sparkles :size="17"/>{{analysis?'다시 분석':'분석 시작'}}</button></div><p v-if="!health?.ollama.available" class="inline-note warning">{{health?.ollama.message||'Ollama 연결과 설치된 모델을 확인해 주세요.'}} <button class="text-button" :disabled="!!busy" @click="refreshConnection">연결 다시 확인</button></p><p class="help">분석 참고 방향: {{session.topic||'미입력 · 학생부 기록을 바탕으로 분석합니다.'}}</p></template></div>

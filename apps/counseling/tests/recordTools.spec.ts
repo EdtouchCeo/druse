@@ -1,5 +1,5 @@
 import {test,expect,type Page} from '@playwright/test'
-import {mkdir,readFile,writeFile} from 'node:fs/promises'
+import {mkdir,writeFile} from 'node:fs/promises'
 import {fileURLToPath} from 'node:url'
 import {intuitiveApi,syntheticCase} from './fixtures/intuitive'
 import type {SchoolRecord} from '../src/lib/types'
@@ -8,7 +8,7 @@ const folder=new URL('../../../_workspace/record-fixes-20260914/screenshots/',im
 const pdfInput='input[type=file][accept=".pdf,application/pdf"]'
 const pdf=(name='합성 학생부.pdf',text='%PDF-1.7 synthetic only')=>({name,mimeType:'application/pdf',buffer:Buffer.from(text)})
 const record=():SchoolRecord=>({id:'record-synthetic',filename:'합성 학생부.pdf',sha256:'synthetic-only',page_count:2,school_stage:'high',readable_pages:[1,2],unreadable_pages:[],warnings:[],sections:[{id:'section-synthetic',category:'subject',label:'교과 학습',school_stage:'high',academic_year:2026,grade:3,semester:1,pages:[1],text:'합성 원문: 2025학년도 고등학교 2학년 2학기. 관찰 자료를 비교하고 설명을 수정함.',status:'present'}]})
-async function setup(page:Page,{confirmed=false,failOnce=false}={}){
+async function setup(page:Page,{confirmed=false,failOnce=false,ai=false,aiFailure=false}={}){
  const value=syntheticCase();value.student.grade=3
  const session=value.sessions[0]!;session.record=record();session.analysis={summary:'이전 분석 합성 표식',strengths:[],improvements:[],questions:[],actions:[],limitations:[],model:'synthetic',created_at:'2026-09-14'};session.review={state:'passed',method:'manual',content_hash:'synthetic',notes:[],created_at:'2026-09-14'}
  if(confirmed)session.confirmed={synthetic:true}
@@ -17,6 +17,13 @@ async function setup(page:Page,{confirmed=false,failOnce=false}={}){
  await page.route('**/api/**',async route=>{
   const request=route.request(),url=new URL(request.url()),path=url.pathname
   const json=(value:unknown,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)})
+  if(ai&&path==='/api/health')return json({mode:'local',demo:true,csrf_token:'synthetic-csrf',teacher:{id:'synthetic',display_name:'합성교사',approved:true},ollama:{available:true,models:[{name:'synthetic-local',vision:true}]}})
+  if(path.endsWith('/refine-record')){
+   extra.push({path,body:request.postDataJSON()})
+   if(!aiFailure){api.session!.record!.extraction_review={checked:1,changed:0,uncertain:0,skipped:0,failed:0};api.value!.revision++}
+   return json({job:{id:'synthetic-extraction',state:'queued'}},202)
+  }
+  if(path==='/api/jobs/synthetic-extraction')return json({job:{id:'synthetic-extraction',state:aiFailure?'failed':'succeeded',message:aiFailure?'합성 모델 연결 실패. 기본 추출은 보존했습니다.':'항목 경계 검토 완료'}})
   if(path==='/api/cases'&&request.method()==='GET')return json({cases:[api.value,other]})
   if(path==='/api/cases/'+other.id&&request.method()==='GET')return json({case:other})
   if(path.endsWith('/record-metadata')){
@@ -36,7 +43,15 @@ async function setup(page:Page,{confirmed=false,failOnce=false}={}){
 async function drop(page:Page,files:{name:string;content?:string;size?:number}[]){
  await page.locator('.upload-area').evaluate((element,files)=>{const transfer=new DataTransfer();for(const file of files){const content=file.size?new Uint8Array(file.size):file.content??'%PDF-1.7 synthetic only';transfer.items.add(new File([content],file.name,{type:'application/pdf'}))}element.dispatchEvent(new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer:transfer}))},files)
 }
-async function backup(page:Page){const pending=page.waitForEvent('download');await page.getByRole('button',{name:'전략 백업 저장',exact:true}).click();const file=await pending;return JSON.parse(await readFile((await file.path())!,'utf8')).case}
+async function backup(page:Page){
+ // Inspect the actual exported Blob and download event. Waiting on Edge's OS
+ // download scan made an unrelated metadata assertion depend on network access.
+ await page.evaluate(()=>{const create=URL.createObjectURL;URL.createObjectURL=function(blob){URL.createObjectURL=create;(window as any).__recordBackup=blob instanceof Blob?blob.text():Promise.reject(new Error('Expected Blob'));return create.call(URL,blob)}})
+ const pending=page.waitForEvent('download');await page.getByRole('button',{name:'전략 백업 저장',exact:true}).click()
+ const file=await pending;expect(file.suggestedFilename()).toMatch(/\.json$/)
+ const result=JSON.parse(await page.evaluate(()=>(window as any).__recordBackup)).case
+ await file.cancel();return result
+}
 async function invariant(page:Page,api:Awaited<ReturnType<typeof setup>>){expect(api.outside).toEqual([]);expect(api.pageErrors).toEqual([]);expect(page.url()).toContain('/counseling/')}
 
 test('PDF chooser and drop only select a file; extraction requires its own action',async({page})=>{
@@ -46,9 +61,35 @@ test('PDF chooser and drop only select a file; extraction requires its own actio
  await drop(page,[{name:'끌어놓은 합성.PDF'}]);await expect(page.locator('.selected-file')).toHaveText('끌어놓은 합성.PDF');await expect(page.getByLabel('PDF 암호')).toHaveValue('')
  expect(api.extra).toHaveLength(0);expect(api.calls.every(call=>call.method==='GET')).toBe(true)
  await page.getByRole('button',{name:'항목 추출하기',exact:true}).click()
- await expect(page.getByText('추출 항목과 판독 상태를 확인해 주세요.',{exact:true})).toBeVisible()
+ await expect(page.getByText('기본 추출을 완료했습니다. 로컬 모델을 연결한 뒤 항목을 추가 확인할 수 있습니다.',{exact:true})).toBeVisible()
  expect(api.extra).toHaveLength(1);expect(api.extra[0]!.path).toMatch(/\/record$/);expect(api.extra[0]!.body).toContain('끌어놓은 합성.PDF')
  await expect(page.locator('.selected-file')).toHaveCount(0);await invariant(page,api)
+})
+
+test('local AI follows native extraction using the saved revision and can be retried without upload',async({page})=>{
+ const api=await setup(page,{ai:true})
+ await expect(page.getByLabel('추출 후 로컬 AI로 항목 경계 확인')).toBeChecked()
+ await page.locator(pdfInput).setInputFiles(pdf())
+ await page.getByRole('button',{name:'항목 추출하기',exact:true}).click()
+ await expect(page.getByText('로컬 AI 항목 확인 결과',{exact:true})).toBeVisible()
+ expect(api.extra.map(call=>call.path.split('/').pop())).toEqual(['record','refine-record'])
+ expect(api.extra[1]!.body).toMatchObject({revision:2,model:'synthetic-local'})
+ await page.getByRole('button',{name:'로컬 AI로 항목 다시 확인',exact:true}).click()
+ await expect(page.getByText('항목 경계 검토 완료',{exact:true})).toBeVisible()
+ expect(api.extra).toHaveLength(3);await invariant(page,api)
+})
+
+test('AI failure preserves the uploaded record and opting out performs native extraction only',async({page})=>{
+ const api=await setup(page,{ai:true,aiFailure:true})
+ await page.locator(pdfInput).setInputFiles(pdf())
+ await page.getByRole('button',{name:'항목 추출하기',exact:true}).click()
+ await expect(page.getByRole('alert').first()).toContainText('기본 추출은 보존')
+ await expect(page.locator('.record-summary')).toContainText('합성 학생부.pdf')
+ await page.getByLabel('추출 후 로컬 AI로 항목 경계 확인').uncheck()
+ await page.locator(pdfInput).setInputFiles(pdf())
+ await page.getByRole('button',{name:'항목 추출하기',exact:true}).click()
+ await expect(page.getByText('추출 항목과 판독 상태를 확인해 주세요.',{exact:true})).toBeVisible()
+ expect(api.extra.map(call=>call.path.split('/').pop())).toEqual(['record','refine-record','record']);await invariant(page,api)
 })
 
 test('both selection paths reject extension, signature and oversized files; multiple drop is rejected',async({page})=>{

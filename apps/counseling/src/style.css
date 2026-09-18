@@ -304,3 +304,4 @@ input::placeholder,textarea::placeholder{opacity:1;color:#637083}
 
 .strategy-settings{flex-basis:100%;width:100%;margin-top:8px}.strategy-settings>summary{font-size:13px;color:#52657b}.strategy-settings label{max-width:420px;margin-top:12px}
 .structured-analysis .analysis-domain-columns.single-column{grid-template-columns:1fr}
+.extraction-options{margin-top:22px;padding:18px;border:1px solid var(--border);border-radius:9px;min-width:0}.extraction-options>p{font-size:13px;color:var(--muted);line-height:1.7;margin:10px 0}.extraction-options>label:not(.check-label){max-width:480px}.extraction-options select{max-width:100%;min-width:0}.extraction-options>.secondary{margin-top:8px}
