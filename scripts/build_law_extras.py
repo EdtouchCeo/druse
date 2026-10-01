@@ -33,6 +33,7 @@ DECREE_JSON = os.path.join(SRC_DIR, 'hakpok_enforcement_decree.json')
 QA_JSON = os.path.join(SRC_DIR, 'ddeqna_qa.json')
 GUIDE_JSON = os.path.join(SRC_DIR, 'dge_teacher_protection_guide.json')
 LECTURE_JSON = os.path.join(SRC_DIR, 'external_lecture_reporting_exemptions.json')
+OVERTIME_JSON = os.path.join(SRC_DIR, 'overtime_20261001.json')
 
 
 def split_lines(lines, cap=MAX_CHARS):
@@ -146,6 +147,12 @@ def main():
     label_g, ch_g = section_chunks(GUIDE_JSON)
     label_l, ch_l = section_chunks(LECTURE_JSON)
     extras = [(label_d, ch_d), (label_q, ch_q), (label_g, ch_g), (label_l, ch_l)]
+    # Reviewed HWPX extraction preserves table cells/tails and embedded-screen notes.
+    # Reapply after a full raw rebuild as well as incremental updates.
+    with io.open(OVERTIME_JSON, encoding='utf-8') as f:
+        overtime = json.load(f)
+    for doc in overtime['documents']:
+        extras.append((doc['docLabel'], [(s['ref'], s['text']) for s in doc['sections']]))
     data = merge_extras(data, extras)
     with io.open(IDX, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
