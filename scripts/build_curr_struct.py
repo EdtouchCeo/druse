@@ -43,7 +43,7 @@
         (나) 성취기준 적용 시 고려 사항 ← 스킵
         (N+1) <영역명> ...
 """
-import sys, os, re, json, bisect
+import sys, os, re, json, bisect, copy
 from collections import defaultdict, Counter
 
 # ---- 경로 기본값 ---------------------------------------------------------
@@ -60,7 +60,7 @@ LEVEL_SCHOOL = {2: "초등학교", 4: "초등학교", 6: "초등학교",
 #   공통과목형 [10공국1-01-01]   = [<lvl><과목+과목숫자>-<영역2>-<번호2>]
 # g1=학교급숫자, g2=과목약칭(로마자 Ⅰ~Ⅳ·숫자 접미 허용, 예:미적Ⅰ·공국1), g3=영역번호, g4=번호
 # 예) [12정01-01]  [10공국1-01-01]  [12미적Ⅰ-01-01]
-CODE_RE = re.compile(r'\[(\d{1,2})([가-힣]{1,4}[ⅠⅡⅢⅣ\d]?)-?(\d{2})-(\d{2})\]')
+CODE_RE = re.compile(r'(?:\[|(?=12))(\d{1,2})([가-힣]{1,4}[ⅠⅡⅢⅣ\d]?(?:\([가-힣]+\))?)[-–−]?(\d{2})[-–−](\d{2})\]')
 
 # 영역 헤더  "(1) 컴퓨팅 시스템"
 AREA_RE = re.compile(r'^\((\d{1,2})\)\s*(.+?)\s*$')
@@ -215,11 +215,13 @@ def parse_standards_groups(seg):
     라벨에서 성취기준 본문 누적을 끊고, 해설 구간의 코드 인용은 담지 않는다.
     반환된 그룹으로 호출측이 (a)내용체계 영역번호에 코드자리로 병합(공유영역 과목) 또는
     (b)순차 영역으로 사용(매트릭스·과목별 영역상이) 을 결정한다."""
-    seg = re.split(r'\n\s*3\.\s', seg, maxsplit=1)[0]   # 3. 교수·학습 및 평가 이전까지
+    # PDF의 표 셀 추출 순서는 시각적 순서와 다를 수 있다. 마지막 성취기준 행이
+    # '3. 교수·학습 및 평가' 뒤에 추출된 원문도 있으므로 표제에서 검색을 자르지 않는다.
     groups = []
     cur_g = None
     cur = None
     in_notes = False
+    in_teaching = False
     seen = set()          # 전체 코드 중복 방지(해설 인용 재등장 등)
 
     def open_group(name):
@@ -244,12 +246,20 @@ def parse_standards_groups(seg):
         s = l.strip()
         if not s:
             continue
+        if re.match(r'^3\.\s', s):
+            flush(); in_notes = True; in_teaching = True; continue
+        if re.fullmatch(r'나\.\s*성취기준', s):
+            flush(); in_notes = False; in_teaching = False; continue
         ma = AREA_RE.match(s)
         if ma:                              # (N) 영역명 → 새 영역 그룹
+            if in_teaching:
+                flush(); in_notes = True; continue
             flush(); in_notes = False
             open_group(ma.group(2).strip())
             continue
         if SUBHDR_RE.match(s):              # (가) 해설 / (나) 고려사항
+            flush(); in_notes = True; continue
+        if re.match(r'^\d+\.\s', s):
             flush(); in_notes = True; continue
         m = CODE_RE.match(s)
         if m:
@@ -258,12 +268,20 @@ def parse_standards_groups(seg):
             # 배치(예: 고급 물리학 02-04~06)를 놓치지 않도록 in_notes와 무관하게 새로 연다.
             # 고려사항의 비불릿 코드 '인용'(이미 앞서 등장)은 flush()의 코드 중복 검사로 배제.
             flush(); in_notes = False
-            cur = {"code": s[1:m.end() - 1], "text": s[m.end():].strip(),
+            cur = {"code": m.group().lstrip('[').rstrip(']'), "text": s[m.end():].strip(),
                    "_area": int(m.group(3))}
             continue
         if s.startswith("[") or s.startswith("<") or s in GRADEBAND_SIMPLE \
                 or GRADEBAND_RE.match(s):
             flush(); continue
+        if s[0] in BULLET_CHARS:
+            # 일부 원문에는 '성취기준 해설' 표제 없이 해설 불릿이 바로 이어진다.
+            # 불릿 첫 줄만 건너뛰고 다음 줄을 기준 본문에 붙이지 않는다.
+            flush(); in_notes = True; continue
+        # 2022 원문의 주 성취기준은 한 문장으로 끝난다. 뒤쪽 해설·페이지머리말이
+        # 제목 없이 이어지더라도 완결된 기준 문장에 덧붙이지 않는다.
+        if cur is not None and re.search(r'다\.[”’"\']?$', cur['text']):
+            flush(); in_notes = True
         if cur is not None and not in_notes and s[0] not in BULLET_CHARS:
             cur["text"] = collapse_ws(cur["text"] + " " + s)
     flush()
@@ -311,6 +329,9 @@ CODE_SUBJECT = {
     "한": "한문", "정": "정보", "환": "환경", "보": "보건", "역": "역사",
     "바": "바른 생활", "슬": "슬기로운 생활", "즐": "즐거운 생활",
     "진로": "진로와 직업", "삶종": "삶과 종교",
+    # 각 원문 '성격' 첫 문장 및 과목 표제에서 확인한 교양 과목명.
+    "생환": "생태와 환경", "심리": "인간과 심리", "교이": "교육의 이해",
+    "보건": "보건", "논술": "논술",
 }
 # 정당한 콤마 포함 과목명은 'X1, X2'(공통국어1, 공통국어2)류 뿐 — 양쪽이 숫자로 끝남
 COURSE_PAIR = re.compile(r'.+\d\s*,\s*.+\d\s*$')
@@ -618,11 +639,16 @@ def derive_subject_name(head_lines, codes, area_names=()):
 def main():
     inp = sys.argv[1] if len(sys.argv) > 1 else DEF_IN
     out = sys.argv[2] if len(sys.argv) > 2 else DEF_OUT
+    pdf_root = sys.argv[3] if len(sys.argv) > 3 else 'input/teacher/교육과정'
+    if not os.path.isdir(pdf_root):
+        raise FileNotFoundError('학교급별 표 검증에 원본 PDF 폴더가 필요합니다: ' + pdf_root)
     data = json.load(open(inp, encoding="utf-8"))
     docs = data["docs"]
     per = defaultdict(list)
-    for c in data["chunks"]:
+    doc_chunk_indices = defaultdict(list)
+    for ci, c in enumerate(data["chunks"]):
         per[c[0]].append((c[1], c[2]))
+        doc_chunk_indices[c[0]].append(ci)
 
     subjects = []
     report = {"docs": [], "excluded": [], "subst_fail": []}
@@ -631,11 +657,31 @@ def main():
         raw, offmap = build_doc_text(per[di])
         # 과목 경계 = "1. 성격" 위치
         sec_starts = [m.start() for m in re.finditer(r'\n1\.\s*성격', raw)]
+        # 생활 외국어는 성격·목표를 공유하고 언어마다 2장부터 다시 시작한다.
+        # 실제 제목 줄과 2장 표제가 함께 있는 경계만 사용한다.
+        language_sections = list(re.finditer(
+            r'\n생활\s+(?:독일어|프랑스어|스페인어|중국어|일본어|러시아어|아랍어|베트남어)\s*\n(2\.\s*내용\s*체계)', raw))
+        sec_starts = sorted(set(sec_starts + [m.start(1) for m in language_sections]))
+        source_starts = []
+        for si, start in enumerate(sec_starts):
+            previous = sec_starts[si - 1] if si else 0
+            before = raw[previous:start]
+            preambles = list(re.finditer(r'(?m)^교육과정\s*설계의\s*개요\s*$', before))
+            source_start = start
+            if preambles:
+                marker = previous + preambles[-1].start()
+                # 표제 바로 앞 과목명 줄까지 포함한다. 앞 과목 본문은 포함하지 않는다.
+                preceding = raw[:marker].rstrip('\n')
+                source_start = preceding.rfind('\n') + 1
+            elif start in [m.start(1) for m in language_sections]:
+                preceding = raw[:start].rstrip('\n')
+                source_start = preceding.rfind('\n') + 1
+            source_starts.append(source_start)
         sec_bounds = sec_starts + [len(raw)]
         doc_subj = 0
         for si in range(len(sec_starts)):
             s0 = sec_starts[si]
-            s1 = sec_bounds[si + 1]
+            s1 = source_starts[si + 1] if si + 1 < len(source_starts) else len(raw)
             region = raw[s0:s1]
             # "1. 성격" 앞 줄들(푸터 제거) — 과목명 후보. 최종 결정은 코드 파싱 후.
             head = strip_footers(raw[max(0, s0 - 220):s0])
@@ -662,7 +708,7 @@ def main():
                     {"doc": di, "title": (head_lines[-1] if head_lines else ""),
                      "reason": "과목명 판정 실패(캡션/학년군/문장)"})
                 continue
-            # 학교급 = 성취기준 코드 선두 숫자 다수결
+            # 학교급은 각 성취기준 코드로 분리한다. 혼합 문서의 다수결 금지.
             levels = Counter()
             for g in groups:
                 for x in g["standards"]:
@@ -672,7 +718,7 @@ def main():
             schools = Counter()
             for lv, n in levels.items():
                 schools[LEVEL_SCHOOL.get(lv, "?")] += n
-            school = schools.most_common(1)[0][0] if schools else "?"
+            school = next(iter(schools)) if schools else "?"
             if school == "?":
                 report["excluded"].append(
                     {"doc": di, "title": title, "reason": "학교급 판정 실패(코드 없음)"})
@@ -685,23 +731,40 @@ def main():
             # 매트릭스형에서 영역 귀속이 확실하지 않은 핵심 아이디어를 담는 과목 레벨 배열
             # (스키마 additive — 정상형 과목에는 빈 값이라 출력에 넣지 않는다).
             subject_core_ideas = []
-            if cs_has_headers:
-                # 정상형: 내용체계 '(N) 영역명' 기준. 성취기준은 코드 영역자리로 병합
-                # (공통국어1·2처럼 여러 과목이 동일 영역을 공유하는 경우 올바르게 합쳐짐).
-                st_by_digit = defaultdict(list)
-                st_seen = defaultdict(set)
-                for g in groups:
-                    for stx in g["standards"]:
-                        dg = int(re.match(r'\d{1,2}[가-힣]{1,4}[ⅠⅡⅢⅣ\d]?-?(\d{2})',
-                                          stx["code"]).group(1))
-                        if stx["code"] not in st_seen[dg]:
-                            st_seen[dg].add(stx["code"])
-                            st_by_digit[dg].append(stx)
-                for num in sorted(set(cs) | set(st_by_digit)):
-                    a = cs.get(num, {"name": "", "coreIdeas": [], "elements": EMPTY_EL()})
+            if any("사(" in code for code in all_codes):
+                # 사회의 내용체계 영역과 지리·일사 성취기준 단원은 서로 다른 분류다.
+                # 같은 번호를 연결하지 않고 원문의 두 목록을 독립적으로 보존한다.
+                for a in cs.values():
                     areas.append({"name": a["name"] or title,
                                   "coreIdeas": a["coreIdeas"], "elements": a["elements"],
-                                  "standards": st_by_digit.get(num, [])})
+                                  "standards": []})
+                for g in groups:
+                    m = CODE_RE.fullmatch("[" + g["standards"][0]["code"] + "]")
+                    branch = re.search(r'\(([^)]+)\)', m.group(2)).group(1)
+                    areas.append({"name": f'{branch} — {g["name"] or title}',
+                                  "coreIdeas": [], "elements": EMPTY_EL(),
+                                  "standards": g["standards"]})
+            elif cs_has_headers:
+                # 내용체계 영역과 성취기준 단원의 번호는 별개다. 원문 영역명이
+                # 일치할 때만 연결하고, 그 외는 두 원문 목록을 독립적으로 보존한다.
+                area_names = {}
+                for a in cs.values():
+                    area = {"name": a["name"] or title, "coreIdeas": a["coreIdeas"],
+                            "elements": a["elements"], "standards": []}
+                    areas.append(area)
+                    area_names[nospace(area['name'])] = area
+                st_seen = set()
+                for g in groups:
+                    name = g['name'] or title
+                    area = area_names.get(nospace(name))
+                    if area is None:
+                        area = {"name": name, "coreIdeas": [], "elements": EMPTY_EL(), "standards": []}
+                        areas.append(area)
+                        area_names[nospace(name)] = area
+                    for stx in g["standards"]:
+                        if stx['code'] not in st_seen:
+                            st_seen.add(stx['code'])
+                            area['standards'].append(stx)
             elif len(groups) > 1 and all(g["name"] for g in groups):
                 # 매트릭스형(내용체계에 '(N) 영역명' 헤더 없음, 핵심 아이디어가 2차원 표).
                 # 영역명·성취기준은 코드/헤더 기반이라 정확. 내용 요소는 표가 매트릭스라
@@ -764,19 +827,45 @@ def main():
                      if a["coreIdeas"] or a["standards"] or any(a["elements"].values())]
             if not areas:
                 continue
+            offset_starts = [x[0] for x in offmap]
+            source_start = source_starts[si]
+            local_start = max(0, bisect.bisect_right(offset_starts, source_start) - 1)
+            local_end = max(local_start, bisect.bisect_right(offset_starts, max(s0, s1 - 1)) - 1)
             entry = {
                 "subject": title,
                 "school": school,
                 "doc": di,
                 "ref": ref,
                 "areas": areas,
+                "chunkStart": doc_chunk_indices[di][local_start],
+                "chunkEnd": doc_chunk_indices[di][local_end],
+                "pageStart": int(re.search(r'\d+', offmap[local_start][1]).group()),
+                "pageEnd": int(re.search(r'\d+', offmap[local_end][1]).group()),
+                "chunkStartOffset": len(raw[offset_starts[local_start]:source_start].encode('utf-16-le')) // 2,
+                "chunkEndOffset": len(raw[offset_starts[local_end]:s1].rstrip('\n').encode('utf-16-le')) // 2,
             }
             if subject_core_ideas:
                 # 영역 coreIdeas가 비어 있을 때 소비자가 폴백으로 쓰는 과목 전체 목록
                 # (귀속된 것도 포함 — 과목의 핵심 아이디어 원문 전량, 문서 순서 유지).
                 entry["subjectCoreIdeas"] = subject_core_ideas
-            subjects.append(entry)
-            doc_subj += 1
+            for level_school in schools:
+                if level_school == "?":
+                    continue
+                separated = copy.deepcopy(entry)
+                separated["school"] = level_school
+                for area in separated["areas"]:
+                    area["standards"] = [x for x in area["standards"]
+                        if LEVEL_SCHOOL.get(int(re.match(r'\d+', x["code"]).group())) == level_school]
+                own_codes = [x["code"] for a in separated["areas"] for x in a["standards"]]
+                # 실과/기술·가정처럼 학교급에 따라 과목명도 달라지는 공통 문서.
+                if len(schools) > 1:
+                    ab = code_abbrev(own_codes)
+                    if ab in CODE_SUBJECT:
+                        separated["subject"] = CODE_SUBJECT[ab]
+                separated["areas"] = [a for a in separated["areas"]
+                    if a["coreIdeas"] or a["standards"] or any(a["elements"].values())]
+                subjects.append(separated)
+                doc_subj += 1
         report["docs"].append({"doc": di, "label": docs[di], "subjects": doc_subj})
 
     # ---- 검증: 부분 문자열 존재 (푸터 제거·공백 제거 후) --------------------
@@ -850,7 +939,11 @@ def main():
     best = {}
     for s in kept:
         k = norm_key(s)
-        score = (sum(len(a["standards"]) for a in s["areas"]),
+        # 학교급 통합본의 성취기준은 해당 학교급으로 제한된다. 내용체계의 공유표
+        # 열 분리는 아래 PDF 좌표 검증 단계에서 별도로 수행한다.
+        own_volume = {"초등학교": 2, "중학교": 3, "고등학교": 4}[s["school"]]
+        canonical = bool(re.search(r'\[별책\s*' + str(own_volume) + r'\]', docs[s["doc"]]))
+        score = (canonical, sum(len(a["standards"]) for a in s["areas"]),
                  sum(len(a["coreIdeas"]) for a in s["areas"]),
                  len(s.get("subjectCoreIdeas", [])))
         if k not in best or score > best[k][0]:
@@ -862,6 +955,15 @@ def main():
 
     result = {"version": 1, "generatedFrom": os.path.basename(inp),
               "subjects": kept}
+
+    if os.path.isdir(pdf_root):
+        from curr_pdf_tables import apply_pdf_tables
+        report['pdfTables'] = apply_pdf_tables(data, result, pdf_root, sys.modules[__name__])
+        report_path = sys.argv[4] if len(sys.argv) > 4 else os.path.join(os.path.dirname(__file__), 'curr_struct.audit.json')
+        with open(report_path, 'w', encoding='utf-8') as audit:
+            json.dump(report, audit, ensure_ascii=False, indent=2)
+        print('PDF 열 검증:', len(report['pdfTables']['subjects']), '과목;',
+              len(report['pdfTables']['rejected']), '항목 보류')
 
     with open(out, "w", encoding="utf-8") as w:
         json.dump(result, w, ensure_ascii=False, separators=(",", ":"))
