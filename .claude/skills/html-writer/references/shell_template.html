@@ -2937,59 +2937,105 @@
   </div>
 </div>
 
-<!-- ===== AI 이동 추천 설정 모달 ===== -->
+<!-- ===== AI 설정 모달 (시간표 AI·주간 교육활동 안내 공용, 저장 키 dr_tt_llm_v1) ===== -->
+<!-- 문안: 세 사이트 공통(edtouch _workspace/ai-setup-easy-20261021/00_contract.md). daeryun에는 서버 제공 AI가 없다. -->
 <div id="tt-ai-modal" style="display:none;position:fixed;inset:0;z-index:3300;align-items:center;justify-content:center;">
   <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);"></div>
-  <div style="position:relative;background:#fff;border-radius:14px;max-width:430px;width:92%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+  <div role="dialog" aria-modal="true" aria-labelledby="tt-ai-title" style="position:relative;background:#fff;border-radius:14px;max-width:460px;width:92%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
     <div style="background:linear-gradient(135deg,#1a3a6b,#2563eb);color:#fff;padding:14px 18px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:.9rem;font-weight:700;">🤖 AI 추천 설정</div>
-      <button onclick="ttAiClose()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.85rem;">✕</button>
+      <div id="tt-ai-title" style="font-size:.95rem;font-weight:700;">🤖 AI 설정</div>
+      <button onclick="ttAiClose()" aria-label="닫기" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.85rem;">✕</button>
     </div>
-    <div style="padding:16px 18px;font-size:.82rem;">
-      <p style="margin:0 0 10px;color:#6b7280;font-size:.76rem;line-height:1.6;">API 키·설정은 <b>이 브라우저에만</b> 저장되며 서버로 전송되지 않습니다. 분석 데이터는 교사 이름을 익명화(교사1·교사2…)한 뒤 AI에 전달합니다.</p>
-      <label class="ai-lbl">AI 제공자</label>
-      <select id="tt-ai-provider" class="ai-inp" onchange="ttAiProvChange()">
-        <option value="gemini">Google Gemini (무료 키)</option>
-        <option value="ollama">Ollama (내 PC 로컬)</option>
-        <option value="bridge">구독 연결 (Claude · ChatGPT)</option>
-      </select>
+    <div style="padding:16px 18px;font-size:.84rem;line-height:1.6;word-break:keep-all;">
+      <div class="ai-lbl" id="tt-ai-method-lbl" style="margin-top:0;">AI 연결 방법</div>
+      <p class="ai-help" style="margin:0 0 8px;">처음이라면 Gemini 무료 키를 고르세요. 구글 계정만 있으면 바로 받을 수 있습니다.</p>
+      <div id="tt-ai-provider" role="radiogroup" aria-labelledby="tt-ai-method-lbl" class="ai-choices">
+        <label class="ai-choice"><input type="radio" name="tt-ai-provider" value="gemini" onchange="ttAiProvChange()"><span><b>Gemini 무료 키</b><small>구글에서 받은 키를 붙여 넣습니다.</small></span></label>
+        <label class="ai-choice"><input type="radio" name="tt-ai-provider" value="bridge" onchange="ttAiProvChange()"><span><b>구독 연결 (Claude · ChatGPT)</b><small>유료 구독이 있을 때, 이 PC에서 씁니다.</small></span></label>
+        <label class="ai-choice"><input type="radio" name="tt-ai-provider" value="ollama" onchange="ttAiProvChange()"><span><b>Ollama (내 PC)</b><small>기록이 PC 밖으로 나가지 않습니다. 설치가 필요합니다.</small></span></label>
+      </div>
+
       <div id="tt-ai-gem">
-        <label class="ai-lbl">Gemini API 키 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="font-weight:400;font-size:.72rem;">(무료 발급 →)</a></label>
-        <input id="tt-ai-gem-key" type="password" class="ai-inp" placeholder="AIza..." autocomplete="off">
-        <label class="ai-lbl">모델</label>
-        <input id="tt-ai-gem-model" class="ai-inp" list="tt-ai-gem-models" placeholder="gemini-3.5-flash">
-        <datalist id="tt-ai-gem-models">
-          <option value="gemini-3.5-flash"></option>
-          <option value="gemini-2.5-flash"></option>
-          <option value="gemini-2.5-pro"></option>
-        </datalist>
+        <ol class="ai-steps">
+          <li>Google AI Studio를 열고 구글 계정으로 로그인합니다. <a class="ai-linkbtn" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio 열기</a></li>
+          <li>Create API key를 눌러 키를 만들고 복사합니다.</li>
+          <li>아래 칸에 붙여 넣고 연결 확인을 누릅니다.</li>
+        </ol>
+        <label class="ai-lbl" for="tt-ai-gem-key">Gemini API 키</label>
+        <input id="tt-ai-gem-key" type="password" class="ai-inp" placeholder="AIza로 시작하는 키" autocomplete="off" spellcheck="false">
+        <details class="ai-adv">
+          <summary>고급 설정</summary>
+          <label class="ai-lbl" for="tt-ai-gem-model">모델</label>
+          <input id="tt-ai-gem-model" class="ai-inp" list="tt-ai-gem-models" placeholder="gemini-3.5-flash">
+          <datalist id="tt-ai-gem-models">
+            <option value="gemini-3.5-flash"></option>
+            <option value="gemini-2.5-flash"></option>
+            <option value="gemini-2.5-pro"></option>
+          </datalist>
+          <p class="ai-help">기본값 그대로 써도 됩니다.</p>
+        </details>
       </div>
-      <div id="tt-ai-oll" style="display:none;">
-        <label class="ai-lbl">Ollama 주소</label>
-        <input id="tt-ai-oll-url" class="ai-inp" placeholder="http://localhost:11434">
-        <label class="ai-lbl">모델명</label>
-        <input id="tt-ai-oll-model" class="ai-inp" placeholder="예: qwen3, gemma3">
-        <p style="margin:6px 0 0;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:7px 10px;font-size:.72rem;line-height:1.6;">웹사이트에서 로컬 Ollama를 쓰려면 CORS 허용이 필요합니다. Windows에서 <code>setx OLLAMA_ORIGINS "*"</code> 실행 후 Ollama를 완전히 종료했다가 다시 시작하세요. (edtouch.ai 안내와 동일한 설정 — 이미 했다면 추가 설정이 필요 없습니다.)<br>특정 사이트만 허용하려면 <code>*</code> 대신 <code>https://daeryun.life</code>처럼 주소를 넣으세요. 여러 사이트는 쉼표로 나열합니다.</p>
-      </div>
+
       <div id="tt-ai-brg" style="display:none;">
-        <label class="ai-lbl">연결할 프로그램</label>
-        <select id="tt-ai-brg-prov" class="ai-inp">
-          <option value="claude">Claude 구독 (Claude Code 필요)</option>
-          <option value="codex">ChatGPT 구독 (Codex 필요, 시험 기능)</option>
+        <ol class="ai-steps">
+          <li>연결 도우미를 내려받아 압축을 풉니다. <a class="ai-linkbtn" href="https://edtouch.ai/ai-bridge/edtouch-ai-bridge.zip">연결 도우미 내려받기</a> <a href="https://edtouch.ai/ai-bridge" target="_blank" rel="noopener">자세한 준비 방법</a></li>
+          <li>start-bridge-windows.bat(맥은 start-bridge-mac.command)을 두 번 눌러 실행합니다. 검은 창에 '사용 가능'이 보이면 준비된 것입니다.</li>
+          <li>아래에서 구독을 고르고 연결 확인을 누릅니다. 크롬이 이 기기 접근을 허용할지 물으면 허용을 누릅니다.</li>
+        </ol>
+        <p class="ai-help">이 PC에 Node.js와 Claude Code(또는 Codex)가 설치되어 있고, 내 구독 계정으로 로그인되어 있어야 합니다.</p>
+        <label class="ai-lbl" for="tt-ai-brg-prov">구독</label>
+        <select id="tt-ai-brg-prov" class="ai-inp" onchange="ttAiBrgProvChange()">
+          <option value="claude">Claude 구독</option>
+          <option value="codex">ChatGPT 구독 (시험 기능)</option>
         </select>
-        <label class="ai-lbl">모델 (선택)</label>
-        <input id="tt-ai-brg-model" class="ai-inp" placeholder="비워 두면 프로그램 기본 모델" autocomplete="off">
-        <p style="margin:6px 0 0;color:#1e3a8a;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:7px 10px;font-size:.72rem;line-height:1.6;">내 PC에서 EdTouch AI 연결 도우미를 실행해 두면, 로그인해 둔 Claude Code(Claude 구독)나 Codex(ChatGPT 구독)로 답을 받습니다. 요청은 내 구독 사용 한도에서 차감되고 API 키는 필요 없습니다. 크롬이 로컬 네트워크 접근 허용을 물으면 허용을 누르세요. <a href="https://edtouch.ai/ai-bridge" target="_blank" rel="noopener">연결 도우미 내려받기와 사용 방법</a></p>
+        <details class="ai-adv">
+          <summary>고급 설정</summary>
+          <label class="ai-lbl" for="tt-ai-brg-model">모델</label>
+          <input id="tt-ai-brg-model" class="ai-inp" list="tt-ai-brg-models" placeholder="비워 두면 기본 모델" autocomplete="off" spellcheck="false">
+          <datalist id="tt-ai-brg-models"></datalist>
+          <p class="ai-help">비워 두면 프로그램의 기본 모델을 씁니다. 대부분 그대로 두면 됩니다.</p>
+        </details>
       </div>
-      <div id="tt-ai-test-msg" style="min-height:18px;font-size:.75rem;margin-top:8px;"></div>
-      <div style="display:flex;gap:6px;margin-top:10px;">
-        <button class="dm-btn s" onclick="ttAiTest()">연결 테스트</button>
+
+      <div id="tt-ai-oll" style="display:none;">
+        <label class="ai-lbl" for="tt-ai-oll-url">Ollama 주소</label>
+        <input id="tt-ai-oll-url" class="ai-inp" placeholder="http://localhost:11434">
+        <label class="ai-lbl" for="tt-ai-oll-model">모델 이름</label>
+        <input id="tt-ai-oll-model" class="ai-inp" placeholder="예: qwen3, gemma3">
+        <div class="ai-lbl">이 사이트의 접속 허용</div>
+        <p class="ai-help" style="margin:0 0 4px;">아래 명령을 실행한 뒤 Ollama를 다시 시작합니다. 이 설정이 없으면 Ollama가 켜져 있어도 연결 확인이 실패합니다.</p>
+        <code class="ai-code">setx OLLAMA_ORIGINS "*"</code>
+        <p class="ai-help">edtouch.ai에서 이미 했다면 다시 하지 않아도 됩니다. 이 사이트만 허용하려면 <code>*</code> 대신 <code>https://daeryun.life</code>를 넣고, 여러 사이트는 쉼표로 이어 씁니다.</p>
+        <p class="ai-help">연결 확인을 눌렀을 때 크롬이 이 기기 접근을 허용할지 물으면 허용을 누릅니다.</p>
+      </div>
+
+      <p id="tt-ai-scope" class="ai-scope"></p>
+      <p class="ai-help" style="margin:4px 0 0;">시간표 분석은 교사 이름을 교사1, 교사2처럼 바꾼 뒤 보냅니다.</p>
+      <div id="tt-ai-test-msg" role="status" aria-live="polite" style="min-height:18px;font-size:.8rem;margin-top:8px;"></div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+        <button class="dm-btn s" id="tt-ai-test-btn" onclick="ttAiTest()">연결 확인</button>
         <button class="dm-btn p" onclick="ttAiSave()">저장</button>
         <button class="dm-btn s" onclick="ttAiClose()">취소</button>
       </div>
     </div>
   </div>
 </div>
+<style>
+#tt-ai-modal .ai-help{margin:4px 0 0;color:#4b5563;font-size:.78rem;line-height:1.6;}
+#tt-ai-modal .ai-choices{display:flex;flex-direction:column;gap:6px;margin:4px 0 10px;}
+#tt-ai-modal .ai-choice{display:flex;gap:10px;align-items:flex-start;border:1px solid #d1d5db;border-radius:9px;padding:8px 10px;cursor:pointer;}
+#tt-ai-modal .ai-choice:has(input:checked){border-color:#1a3a6b;background:#eff6ff;}
+#tt-ai-modal .ai-choice input{margin-top:4px;flex-shrink:0;}
+#tt-ai-modal .ai-choice b{display:block;font-size:.84rem;color:#111827;}
+#tt-ai-modal .ai-choice small{display:block;font-size:.76rem;color:#4b5563;line-height:1.5;}
+#tt-ai-modal .ai-steps{margin:6px 0 4px;padding-left:20px;font-size:.8rem;color:#1f2937;}
+#tt-ai-modal .ai-steps li{margin:3px 0;}
+#tt-ai-modal .ai-linkbtn{display:inline-block;margin-left:2px;padding:1px 8px;border:1px solid #1a3a6b;border-radius:6px;color:#1a3a6b;font-weight:600;font-size:.76rem;text-decoration:none;white-space:nowrap;}
+#tt-ai-modal .ai-adv{margin-top:8px;border:1px solid #e5e7eb;border-radius:8px;padding:6px 10px;}
+#tt-ai-modal .ai-adv summary{cursor:pointer;font-size:.78rem;font-weight:600;color:#374151;}
+#tt-ai-modal .ai-code{display:block;margin:2px 0;padding:6px 8px;background:#f3f4f6;border-radius:6px;font-size:.78rem;user-select:all;overflow-x:auto;}
+#tt-ai-modal .ai-scope{margin:12px 0 0;padding:7px 10px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:7px;font-size:.78rem;color:#374151;line-height:1.6;}
+</style>
 
 <style>
 .tt-hdr-btn{height:27px;padding:0 11px;font-size:.72rem;font-weight:600;font-family:inherit;background:#fff;color:#1a3a6b;border:1px solid #1a3a6b;border-radius:20px;cursor:pointer;white-space:nowrap;}
@@ -4720,13 +4766,48 @@
   // 구독 연결: 내 PC의 EdTouch AI 연결 도우미(127.0.0.1:47321)가 로그인된 Claude Code·Codex를 실행한다.
   // 실패해도 다른 연결(유료 포함)로 자동 전환하지 않는다.
   const AI_BRIDGE='http://127.0.0.1:47321';
-  const AI_BRIDGE_DOWN='연결 도우미가 실행 중이 아닙니다. 연결 도우미 창을 연 뒤 다시 시도해 주세요. 크롬이 로컬 네트워크 접근 허용을 물으면 허용을 누르세요.';
+  const AI_BRIDGE_DOWN='연결 도우미가 실행 중이 아닙니다. 연결 도우미 창을 연 뒤 다시 눌러 주세요. 크롬이 이 기기 접근을 허용할지 물으면 허용을 누릅니다.';
+  const AI_BRIDGE_DENIED='브라우저가 이 사이트의 내 PC 접근을 막아 두었습니다. 주소창 왼쪽 아이콘을 눌러 사이트 설정에서 로컬 네트워크 접근을 허용으로 바꾼 뒤 새로고침해 주세요.';
+  // 크롬은 127.0.0.1 접근을 'loopback-network' 권한으로 다룬다. 지원하지 않는 브라우저는 예외 → 'unknown'.
+  // edtouch·하이위고 aiBridge.ts의 bridgeLocalAccessState()와 같은 판정이다.
+  async function aiBridgeAccessState(){
+    try{
+      if(!navigator.permissions||!navigator.permissions.query)return'unknown';
+      const st=await navigator.permissions.query({name:'loopback-network'});
+      return st.state==='granted'||st.state==='denied'||st.state==='prompt'?st.state:'unknown';
+    }catch(e){return'unknown';}
+  }
+  async function aiBridgeDownMsg(){return(await aiBridgeAccessState())==='denied'?AI_BRIDGE_DENIED:AI_BRIDGE_DOWN;}
+  function aiVerText(v){return String(v||'').replace(/\s*\([^)]*\)\s*$/,'').trim();}
+  const AI_SCOPE={
+    gemini:'입력한 글은 Google로 전송됩니다. 키는 이 브라우저에만 저장됩니다.',
+    bridge:'입력한 글은 내 PC를 거쳐 Anthropic이나 OpenAI로 전송되고, 내 구독 사용 한도에서 차감됩니다.',
+    ollama:'입력한 글이 이 PC 밖으로 나가지 않습니다. PC 사양에 따라 느릴 수 있습니다.'
+  };
+  function aiGetProv(){
+    const el=document.querySelector('input[name="tt-ai-provider"]:checked');
+    const v=el?el.value:'gemini';
+    return v==='ollama'||v==='bridge'?v:'gemini';
+  }
+  function aiSetProv(v){
+    document.querySelectorAll('input[name="tt-ai-provider"]').forEach(function(r){r.checked=(r.value===v);});
+  }
+  function aiFillBrgModels(list){
+    const dl=document.getElementById('tt-ai-brg-models');
+    if(!dl)return;
+    dl.innerHTML='';
+    (list||[]).forEach(function(m){
+      if(typeof m!=='string'||!/^[A-Za-z0-9._:[\]-]{1,64}$/.test(m))return;
+      const o=document.createElement('option');o.value=m;dl.appendChild(o);
+    });
+  }
+  let _aiCodexModels=[];
   function _esc(t){return String(t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
   /* ── 설정 모달 ── */
   window.ttAiOpen=function(){
     const s=aiLoad();
-    document.getElementById('tt-ai-provider').value=s.provider;
+    aiSetProv(s.provider);
     document.getElementById('tt-ai-gem-key').value=s.gemini.apiKey;
     document.getElementById('tt-ai-gem-model').value=s.gemini.model;
     document.getElementById('tt-ai-oll-url').value=s.ollama.url;
@@ -4734,19 +4815,28 @@
     document.getElementById('tt-ai-brg-prov').value=s.bridge.provider;
     document.getElementById('tt-ai-brg-model').value=s.bridge.model;
     document.getElementById('tt-ai-test-msg').textContent='';
+    aiFillBrgModels(s.bridge.provider==='codex'?_aiCodexModels:[]);
     window.ttAiProvChange();
     document.getElementById('tt-ai-modal').style.display='flex';
   };
   window.ttAiClose=function(){document.getElementById('tt-ai-modal').style.display='none';};
   window.ttAiProvChange=function(){
-    const p=document.getElementById('tt-ai-provider').value;
+    const p=aiGetProv();
     document.getElementById('tt-ai-gem').style.display=p==='gemini'?'':'none';
     document.getElementById('tt-ai-oll').style.display=p==='ollama'?'':'none';
     document.getElementById('tt-ai-brg').style.display=p==='bridge'?'':'none';
+    document.getElementById('tt-ai-scope').textContent=AI_SCOPE[p];
+    document.getElementById('tt-ai-test-msg').textContent='';
+  };
+  // 구독을 바꾸면 다른 프로그램의 모델 이름은 맞지 않으므로 비운다.
+  window.ttAiBrgProvChange=function(){
+    document.getElementById('tt-ai-brg-model').value='';
+    aiFillBrgModels(document.getElementById('tt-ai-brg-prov').value==='codex'?_aiCodexModels:[]);
+    document.getElementById('tt-ai-test-msg').textContent='';
   };
   function aiReadForm(){
     return{
-      provider:(function(v){return v==='ollama'||v==='bridge'?v:'gemini';})(document.getElementById('tt-ai-provider').value),
+      provider:aiGetProv(),
       gemini:{apiKey:document.getElementById('tt-ai-gem-key').value.trim(),model:document.getElementById('tt-ai-gem-model').value.trim()||AI_GEM_DEFAULT},
       ollama:{url:document.getElementById('tt-ai-oll-url').value.trim()||'http://localhost:11434',model:document.getElementById('tt-ai-oll-model').value.trim()},
       bridge:{provider:document.getElementById('tt-ai-brg-prov').value==='codex'?'codex':'claude',model:document.getElementById('tt-ai-brg-model').value.trim()}
@@ -4764,17 +4854,29 @@
   window.ttAiTest=async function(){
     const s=aiReadForm();
     const msg=document.getElementById('tt-ai-test-msg');
-    msg.innerHTML='<span style="color:#6b7280;">연결 확인 중…</span>';
+    const btn=document.getElementById('tt-ai-test-btn');
+    msg.innerHTML='<span style="color:#6b7280;">확인하는 중…</span>';
+    if(btn){btn.disabled=true;btn.textContent='확인하는 중…';}
     try{
       if(s.provider==='bridge'){
+        if(s.bridge.model&&!/^[A-Za-z0-9._:[\]-]{1,64}$/.test(s.bridge.model))throw new Error('모델 이름에는 영문, 숫자와 . _ : - [ ] 만 쓸 수 있습니다.');
         let r;
-        try{r=await fetch(AI_BRIDGE+'/health');}catch(e){throw new Error(AI_BRIDGE_DOWN);}
+        try{r=await fetch(AI_BRIDGE+'/health',{cache:'no-store'});}catch(e){throw new Error(await aiBridgeDownMsg());}
         if(!r.ok)throw new Error('연결 도우미가 이 사이트의 요청을 받지 않았습니다('+r.status+'). 연결 도우미를 최신 판으로 다시 받아 주세요.');
         const h=await r.json();
+        if(!h||!h.ok||h.name!=='edtouch-ai-bridge')throw new Error('47321번 포트에서 다른 프로그램이 응답했습니다. 연결 도우미를 다시 실행해 주세요.');
         const p=(h.providers||{})[s.bridge.provider]||{};
         const name=s.bridge.provider==='codex'?'Codex':'Claude Code';
-        if(!p.available)throw new Error('연결 도우미는 실행 중이지만 이 PC에서 '+name+'을(를) 찾지 못했습니다.');
-        msg.innerHTML='<span style="color:#166534;">연결 성공: '+_esc(name+' '+(p.version||''))+'</span>';
+        if(!p.available)throw new Error('이 PC에서 '+name+'를 찾지 못했습니다. '+name+'를 설치하고 로그인한 뒤 연결 도우미를 다시 실행해 주세요.');
+        // 도우미 0.2.0부터 Codex에서 쓸 수 있는 모델 목록을 줄 수 있다(선택 필드).
+        const cm=h.providers&&h.providers.codex&&h.providers.codex.models;
+        _aiCodexModels=Array.isArray(cm)?cm.filter(function(m){return typeof m==='string';}):[];
+        aiFillBrgModels(s.bridge.provider==='codex'?_aiCodexModels:[]);
+        // 숫자 뒤 조사가 어긋나지 않도록 버전은 괄호에 넣는다.
+        const hv=aiVerText(h.version),pv=aiVerText(p.version);
+        const helper=hv?'연결 도우미(버전 '+hv+')가':'연결 도우미가';
+        const found=pv?name+'('+pv+')':name;
+        msg.innerHTML='<span style="color:#166534;">'+_esc(helper+' 실행 중이고 '+found+'를 찾았습니다. 로그인은 첫 요청에서 확인됩니다.')+'</span>';
         return;
       }
       if(s.provider==='gemini'){
@@ -4794,7 +4896,7 @@
         const base=s.ollama.url.replace(/\/$/,'');
         let r;
         try{r=await fetch(base+'/api/tags');}
-        catch(e){throw new Error('Ollama에 연결하지 못했습니다. 실행 여부와 OLLAMA_ORIGINS 설정을 확인해 주세요.');}
+        catch(e){throw new Error('Ollama에 연결하지 못했습니다. Ollama가 켜져 있는지, 이 사이트의 접속 허용을 설정했는지 확인해 주세요.');}
         if(!r.ok)throw new Error('Ollama 오류('+r.status+')가 발생했습니다.');
         if(s.ollama.model){
           const data=await r.json();
@@ -4803,8 +4905,9 @@
             throw new Error('모델 "'+s.ollama.model+'"이(가) 없습니다. ollama pull로 먼저 받아주세요.');
         }
       }
-      msg.innerHTML='<span style="color:#166534;">✅ 연결 성공</span>';
+      msg.innerHTML='<span style="color:#166534;">연결을 확인했습니다. 저장을 누르면 이 설정을 씁니다.</span>';
     }catch(e){msg.innerHTML='<span style="color:#b91c1c;">'+_esc(e.message)+'</span>';}
+    finally{if(btn){btn.disabled=false;btn.textContent='연결 확인';}}
   };
 
   /* ── LLM 호출 사다리 ── */
@@ -4868,7 +4971,7 @@
       try{
         res=await fetch(AI_BRIDGE+'/generate',{method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({provider:s.bridge.provider,model:s.bridge.model||undefined,prompt:prompt,schema:schema})});
-      }catch(e){throw new Error(AI_BRIDGE_DOWN);}
+      }catch(e){throw new Error(await aiBridgeDownMsg());}
       let data=null;try{data=await res.json();}catch(e){}
       if(!res.ok||!data||!data.ok)throw new Error((data&&data.message)||('연결 도우미 오류('+res.status+')가 발생했습니다.'));
       if(data.json&&typeof data.json==='object')return data.json;
