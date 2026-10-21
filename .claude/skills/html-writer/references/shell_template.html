@@ -2951,7 +2951,7 @@
       <select id="tt-ai-provider" class="ai-inp" onchange="ttAiProvChange()">
         <option value="gemini">Google Gemini (무료 키)</option>
         <option value="ollama">Ollama (내 PC 로컬)</option>
-        <option value="bridge">구독 연결 (Claude Code · Codex)</option>
+        <option value="bridge">구독 연결 (Claude · ChatGPT)</option>
       </select>
       <div id="tt-ai-gem">
         <label class="ai-lbl">Gemini API 키 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="font-weight:400;font-size:.72rem;">(무료 발급 →)</a></label>
@@ -2974,12 +2974,12 @@
       <div id="tt-ai-brg" style="display:none;">
         <label class="ai-lbl">연결할 프로그램</label>
         <select id="tt-ai-brg-prov" class="ai-inp">
-          <option value="claude">Claude Code (Claude 구독)</option>
-          <option value="codex">Codex (ChatGPT 구독, 시험 기능)</option>
+          <option value="claude">Claude 구독 (Claude Code 필요)</option>
+          <option value="codex">ChatGPT 구독 (Codex 필요, 시험 기능)</option>
         </select>
         <label class="ai-lbl">모델 (선택)</label>
         <input id="tt-ai-brg-model" class="ai-inp" placeholder="비워 두면 프로그램 기본 모델" autocomplete="off">
-        <p style="margin:6px 0 0;color:#1e3a8a;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:7px 10px;font-size:.72rem;line-height:1.6;">내 PC에서 EdTouch AI 연결 도우미를 실행해 두면, 로그인해 둔 Claude Code나 Codex로 답을 받습니다. 요청은 내 구독 사용 한도에서 차감되고 API 키는 필요 없습니다. 크롬이 로컬 네트워크 접근 허용을 물으면 허용을 누르세요. <a href="https://edtouch.ai/ai-bridge" target="_blank" rel="noopener">연결 도우미 내려받기와 사용 방법</a></p>
+        <p style="margin:6px 0 0;color:#1e3a8a;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:7px 10px;font-size:.72rem;line-height:1.6;">내 PC에서 EdTouch AI 연결 도우미를 실행해 두면, 로그인해 둔 Claude Code(Claude 구독)나 Codex(ChatGPT 구독)로 답을 받습니다. 요청은 내 구독 사용 한도에서 차감되고 API 키는 필요 없습니다. 크롬이 로컬 네트워크 접근 허용을 물으면 허용을 누르세요. <a href="https://edtouch.ai/ai-bridge" target="_blank" rel="noopener">연결 도우미 내려받기와 사용 방법</a></p>
       </div>
       <div id="tt-ai-test-msg" style="min-height:18px;font-size:.75rem;margin-top:8px;"></div>
       <div style="display:flex;gap:6px;margin-top:10px;">
@@ -4863,7 +4863,7 @@
     if(!aiHas(s))throw new Error('먼저 AI 설정을 완료해 주세요.');
     onMsg=onMsg||function(){};
     if(s.provider==='bridge'){
-      onMsg((s.bridge.provider==='codex'?'Codex':'Claude Code')+'가 답을 만드는 중…');
+      onMsg((s.bridge.provider==='codex'?'ChatGPT':'Claude')+'가 답을 만드는 중…');
       let res;
       try{
         res=await fetch(AI_BRIDGE+'/generate',{method:'POST',headers:{'Content-Type':'application/json'},
