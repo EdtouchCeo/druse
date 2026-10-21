@@ -12561,6 +12561,30 @@ function switchSpTab(id,btn){
         <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#d1fae5;border:1px solid #6ee7b7;"></span>학교행사</span>
         <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#f3f4f6;border:1px solid #d1d5db;"></span>기타일정</span>
       </div>
+      <details id="exam-2026-semester2" class="card" style="margin-top:24px;">
+        <summary style="cursor:pointer;font-weight:700;">2026학년도 2학기 중간시험·기말시험 시간표 (10월 1·2·6·7일)</summary>
+        <p style="margin:12px 0;">1·2학년 중간시험 / 3학년 기말시험. 3학년은 10월 1일 1교시 수업입니다.</p>
+        <div style="overflow-x:auto;">
+          <table class="data-table" style="min-width:680px;">
+            <caption>학년·반별 시험 과목</caption>
+            <thead><tr><th scope="col">날짜</th><th scope="col">교시</th><th scope="col">1학년 (1~12반)</th><th scope="col">2학년</th><th scope="col">3학년 (1~12반)</th></tr></thead>
+            <tbody>
+            <tr><td>10/1(목)</td><td>1교시</td><td>공통국어2</td><td>확률과 통계</td><td>(1교시 수업)</td></tr>
+            <tr><td>10/1(목)</td><td>2교시</td><td>—</td><td>역학과 에너지 (1·2·3·4·5·6·7·8·9반)</td><td>—</td></tr>
+            <tr><td>10/2(금)</td><td>1교시</td><td>공통영어2</td><td>화법과 언어</td><td>통합수학Ⅰ</td></tr>
+            <tr><td>10/2(금)</td><td>2교시</td><td>통합사회2</td><td>물질과 에너지 (1·2·3·4·5·6·7·8·9반) / 경제 (10·11·12반)</td><td>—</td></tr>
+            <tr><td>10/2(금)</td><td>3교시</td><td>—</td><td>영어 발표와 토론 (3·4·7·8·9·10·11·12반)</td><td>—</td></tr>
+            <tr><td>10/6(화)</td><td>1교시</td><td>통합과학2</td><td>영어Ⅱ</td><td>심화 국어</td></tr>
+            <tr><td>10/6(화)</td><td>2교시</td><td>인공지능 기초</td><td>세포와 물질대사 (1·2·3·4·8·9반) / 정치 (10·11·12반)</td><td>—</td></tr>
+            <tr><td>10/6(화)</td><td>3교시</td><td>—</td><td>윤리와사상 (1반) / 지구과학 (5·6·7·8·9반) / 윤리와 사상 (10·11·12반)</td><td>—</td></tr>
+            <tr><td>10/7(수)</td><td>1교시</td><td>공통수학2</td><td>한문 / 일본어</td><td>심화 영어 독해Ⅱ</td></tr>
+            <tr><td>10/7(수)</td><td>2교시</td><td>한국사2</td><td>미적분Ⅱ (1·2·3·4·5·6·7·8·9·10반)</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:0.85rem;">반 표시가 없는 과목은 전체 반에 해당합니다. —는 원본의 빈칸입니다. 시험 시작·종료 시각은 원본에 기재되어 있지 않습니다.</p>
+        <p style="font-size:0.8rem;">출처: 2026학년도 2학기 1,2학년 중간시험 및 3학년 기말시험 시간표(전 학년).xlsx</p>
+      </details>
       <div class="card" style="margin-top:24px;border-left-color:#94a3b8;background:#f8faff;font-size:0.85rem;line-height:1.8;color:#475569;">
         &#128204; 연간 수업일수 <strong>190일</strong> (1학기 95일 / 2학기 95일) &nbsp;|&nbsp; 2026학년도 기준 &nbsp;|&nbsp; 학교 사정에 따라 변경될 수 있습니다.
       </div>
@@ -12601,6 +12625,7 @@ function switchSpTab(id,btn){
         <button id="ai-sub-btn-5" onclick="switchAiSub(5)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🔢 학생 개별 점수 조회</button>
         <button id="ai-sub-btn-6" onclick="switchAiSub(6)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
         <button id="ai-sub-btn-10" onclick="switchAiSub(10)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📦 PDF 용량 줄이기</button>
+        <button id="ai-sub-btn-11" onclick="switchAiSub(11)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🗂️ 업무 양식 AI</button>
       </div>
 
       <!-- 0: 법령·지침 AI (RAG 챗봇) -->
@@ -12670,6 +12695,21 @@ function switchSpTab(id,btn){
             <a href="/schedule/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#2a5298;color:#fff;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(42,82,152,0.28);">📅 어시스턴트 열기 →</a>
           </div>
           <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 전체 화면으로 열립니다. 처음 한 번 화면의 AI 설정에서 Gemini 무료 키를 등록하면 바로 사용할 수 있습니다.</p>
+        </div>
+      </div>
+      <!-- 11: 업무 양식 AI (대륜고 자체 페이지, 별도 창) -->
+      <div id="ai-sub-11" style="display:none;">
+        <div style="max-width:760px;margin:0 auto;border-radius:16px;border:1px solid #e5e7eb;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);box-shadow:0 2px 16px rgba(0,0,0,0.06);padding:28px 26px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:1.6rem;">🗂️</span>
+            <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:#1e3a6b;">업무 양식 AI</h3>
+          </div>
+          <p style="margin:0 0 4px;font-size:0.92rem;color:#334155;line-height:1.6;">학생 명단·날짜·활동만 입력하면 학교 양식 그대로 한글 파일(.hwpx)을 만들어 줍니다. 문장은 내가 쓰는 Claude·ChatGPT·Gemini 구독으로 다듬습니다.</p>
+          <p style="margin:0 0 16px;font-size:0.82rem;color:#64748b;">API 키 없이 프롬프트 복사·붙여넣기로 동작합니다. 엑셀 명단은 브라우저에서 바로 읽고, 사진·PDF는 AI 창에 직접 첨부합니다. 입력 내용은 저장·전송되지 않습니다.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <a href="/forms/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#2a5298;color:#fff;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(42,82,152,0.28);">📝 1학급 1캠페인 활동 계획서 →</a>
+          </div>
+          <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 열립니다. 양식은 창의인성부 2025학년도 원본을 2026학년도용으로 옮긴 것입니다.</p>
         </div>
       </div>
       <!-- 5: 학생 개별 점수 조회 -->
@@ -14541,7 +14581,7 @@ function switchSpTab(id,btn){
   };
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 11; i++) {
+    for (var i = 0; i < 12; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;
@@ -14657,12 +14697,12 @@ function switchSpTab(id,btn){
       "2026-9-24":[{t:"추석 연휴",c:"holiday"}],
       "2026-9-25":[{t:"추석",c:"holiday"}],
       "2026-9-26":[{t:"추석 연휴",c:"holiday"}],
-      "2026-10-1":[{t:"중간시험 고1·2 / 기말시험 고3",c:"exam"}],
-      "2026-10-2":[{t:"중간시험 고1·2 / 기말시험 고3",c:"exam"}],
+      "2026-10-1":[{t:"중간시험 고1·2 / 1교시 수업 고3",c:"exam",d:"2학기 1·2학년 중간시험 / 3학년 기말시험 — 10/1(목)\n[1학년] 1교시 공통국어2\n[2학년] 1교시 확률과 통계 · 2교시 역학과 에너지 (1·2·3·4·5·6·7·8·9반)\n[3학년] 1교시 (1교시 수업)"}],
+      "2026-10-2":[{t:"중간시험 고1·2 / 기말시험 고3",c:"exam",d:"2학기 1·2학년 중간시험 / 3학년 기말시험 — 10/2(금)\n[1학년] 1교시 공통영어2 · 2교시 통합사회2\n[2학년] 1교시 화법과 언어 · 2교시 물질과 에너지 (1·2·3·4·5·6·7·8·9반) / 경제 (10·11·12반) · 3교시 영어 발표와 토론 (3·4·7·8·9·10·11·12반)\n[3학년] 1교시 통합수학Ⅰ"}],
       "2026-10-3":[{t:"개천절",c:"holiday"}],
       "2026-10-5":[{t:"대체 휴일",c:"holiday"}],
-      "2026-10-6":[{t:"중간시험 고1·2 / 기말시험 고3",c:"exam"}],
-      "2026-10-7":[{t:"중간시험 고1·2 / 기말시험 고3",c:"exam"}],
+      "2026-10-6":[{t:"중간시험 고1·2 / 기말시험 고3",c:"exam",d:"2학기 1·2학년 중간시험 / 3학년 기말시험 — 10/6(화)\n[1학년] 1교시 통합과학2 · 2교시 인공지능 기초\n[2학년] 1교시 영어Ⅱ · 2교시 세포와 물질대사 (1·2·3·4·8·9반) / 정치 (10·11·12반) · 3교시 윤리와사상 (1반) / 지구과학 (5·6·7·8·9반) / 윤리와 사상 (10·11·12반)\n[3학년] 1교시 심화 국어"}],
+      "2026-10-7":[{t:"중간시험 고1·2 / 기말시험 고3",c:"exam",d:"2학기 1·2학년 중간시험 / 3학년 기말시험 — 10/7(수)\n[1학년] 1교시 공통수학2 · 2교시 한국사2\n[2학년] 1교시 한문 / 일본어 · 2교시 미적분Ⅱ (1·2·3·4·5·6·7·8·9·10반)\n[3학년] 1교시 심화 영어 독해Ⅱ"}],
       "2026-10-9":[{t:"한글날",c:"holiday"}],
       "2026-10-20":[{t:"학력평가 전학년",c:"exam"}],
       "2026-10-21":[{t:"명상의 시간",c:"other"}],

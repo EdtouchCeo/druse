@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>업무 양식 AI — 1학급 1캠페인 활동 계획서 · 대륜고 사용설명서</title>
+<meta name="description" content="학생 명단·날짜·활동만 입력하면 1학급 1캠페인 활동 계획서 한글 파일(.hwpx)을 만들어 줍니다. 문장은 본인이 쓰는 Claude·ChatGPT·Gemini 구독으로 다듬습니다.">
+<style>
+  :root {
+    --primary: #2a5298; --primary-light: #4a7bc4; --primary-soft: #eef3fb;
+    --bg: #f8fafc; --surface: #fff; --text: #0f172a; --text-secondary: #64748b;
+    --muted: #f1f5f9; --border: #e2e8f0; --success: #16a34a; --success-soft: #ecfdf3;
+    --warning: #b45309; --warning-soft: #fffbeb; --danger: #dc2626; --danger-soft: #fef2f2;
+    --radius: 0.65rem;
+    --shadow: 0 1px 3px 0 rgba(15,23,42,0.07), 0 1px 2px -1px rgba(15,23,42,0.06);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Pretendard', 'Malgun Gothic', '맑은 고딕', Roboto, Arial, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6;
+    letter-spacing: -0.01em; word-break: keep-all; overflow-wrap: anywhere;
+  }
+  a { color: var(--primary); }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  header.top { background: var(--surface); border-bottom: 1px solid var(--border); }
+  .top-inner { max-width: 1180px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .top-inner h1 { font-size: 1.08rem; font-weight: 800; color: #1e3a6b; }
+  .top-inner .form-name { font-size: 0.9rem; color: var(--text-secondary); }
+  .top-inner .spacer { flex: 1; }
+  .top-inner a.back { font-size: 0.85rem; text-decoration: none; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
+  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .side { position: sticky; top: 12px; }
+  @media (max-width: 900px) { .side { position: static; } }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; }
+  .card h2 { font-size: 1rem; font-weight: 800; color: #1e3a6b; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .card h2 .step { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 0.78rem; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card h2 .opt { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field.wide { grid-column: 1 / -1; }
+  label.lbl { font-size: 0.85rem; font-weight: 700; color: #334155; }
+  label.lbl .req { color: var(--danger); margin-left: 2px; }
+  .hint { font-size: 0.78rem; color: var(--text-secondary); }
+  input[type=text], input[type=date], input[type=time], input[type=number], select, textarea {
+    width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; padding: 8px 10px; min-height: 40px;
+  }
+  textarea { resize: vertical; min-height: 84px; line-height: 1.55; }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(42,82,152,0.15); }
+  .field.ai-filled textarea { background: #f5f9ff; border-color: var(--primary-light); }
+  .radio-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .radio-row label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #cbd5e1; border-radius: 999px; padding: 6px 14px; cursor: pointer; background: #fff; font-size: 0.9rem; min-height: 36px; }
+  .radio-row input { accent-color: var(--primary); }
+  .radio-row label:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); font-weight: 700; color: #1e3a6b; }
+  .check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; }
+  .check input { accent-color: var(--primary); width: 16px; height: 16px; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; padding: 8px 14px; min-height: 40px; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-decoration: none; color: #1e293b; }
+  .btn:hover { background: var(--muted); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn.primary:hover { background: #22467f; }
+  .btn.big { width: 100%; min-height: 48px; font-size: 1rem; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.small { min-height: 32px; padding: 4px 10px; font-size: 0.8rem; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .roster-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 8px; }
+  .roster-table th, .roster-table td { border: 1px solid var(--border); padding: 4px 8px; text-align: center; }
+  .roster-table th { background: var(--muted); font-weight: 700; }
+  .roster-table td.bad { color: var(--danger); text-align: left; }
+  .count-badge { display: inline-block; background: var(--primary-soft); color: #1e3a6b; font-weight: 800; border-radius: 999px; padding: 1px 10px; font-size: 0.8rem; }
+
+  .drop { border: 2px dashed #94a3b8; border-radius: 12px; padding: 14px; text-align: center; background: #fbfdff; cursor: pointer; }
+  .drop.over { border-color: var(--primary); background: var(--primary-soft); }
+  .drop strong { color: #1e3a6b; }
+  .att-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .att { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); border-radius: 10px; padding: 8px; background: #fff; }
+  .att img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: var(--muted); }
+  .att .ico { width: 52px; height: 52px; border-radius: 6px; background: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+  .att .meta { flex: 1; min-width: 0; font-size: 0.83rem; }
+  .att .meta b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .att .where { font-size: 0.75rem; font-weight: 700; border-radius: 6px; padding: 1px 6px; display: inline-block; }
+  .where.local { background: var(--success-soft); color: var(--success); }
+  .where.ai { background: var(--warning-soft); color: var(--warning); }
+
+  .ai-pick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .ai-pick .btn { flex-direction: column; gap: 2px; min-height: 58px; }
+  .ai-pick .btn small { font-weight: 500; font-size: 0.72rem; color: var(--text-secondary); }
+  details.prompt-view { margin-top: 10px; }
+  details.prompt-view summary { cursor: pointer; font-size: 0.83rem; color: var(--text-secondary); }
+  details.prompt-view pre { white-space: pre-wrap; font-size: 0.78rem; background: var(--muted); border-radius: 8px; padding: 10px; margin-top: 6px; max-height: 260px; overflow: auto; font-family: inherit; }
+
+  .note { font-size: 0.8rem; border-radius: 8px; padding: 8px 10px; }
+  .note.info { background: var(--primary-soft); color: #1e3a6b; }
+  .note.warn { background: var(--warning-soft); color: var(--warning); }
+  .note.ok { background: var(--success-soft); color: var(--success); }
+  .note.err { background: var(--danger-soft); color: var(--danger); }
+  .status { margin-top: 8px; min-height: 0; }
+  .status:empty { display: none; }
+
+  .missing { list-style: none; font-size: 0.82rem; color: var(--danger); display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; }
+  .missing li::before { content: '· '; }
+
+  /* 미리보기: 실제 양식 배치를 축소해 보여 줌 */
+  .pv { border: 1px solid #334155; font-size: 0.74rem; width: 100%; border-collapse: collapse; table-layout: fixed; background: #fff; }
+  .pv td { border: 1px solid #334155; padding: 3px 5px; height: 22px; vertical-align: middle; text-align: center; overflow-wrap: anywhere; }
+  .pv .t { font-size: 0.95rem; font-weight: 800; padding: 8px; }
+  .pv .h { background: #dbe7c9; font-weight: 700; }
+  .pv .h2 { background: #c9d9ef; font-weight: 700; }
+  .pv .l { text-align: left; white-space: pre-wrap; }
+  .pv .empty { color: #cbd5e1; }
+  .pv .foot { padding: 8px; line-height: 1.9; }
+  .pv .sign { font-size: 0.95rem; font-weight: 800; }
+
+  footer { max-width: 1180px; margin: 0 auto; padding: 4px 16px 32px; font-size: 0.78rem; color: var(--text-secondary); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <h1>📝 업무 양식 AI</h1>
+    <span class="form-name">1학급 1캠페인 활동 계획서 · 창의인성부</span>
+    <span class="spacer"></span>
+    <a class="back" href="../">← 대륜고 사용설명서</a>
+  </div>
+</header>
+
+<main>
+  <!-- 왼쪽: 입력 -->
+  <div class="col">
+    <section class="card" aria-labelledby="h-class">
+      <h2 id="h-class"><span class="step">1</span>학급과 학생</h2>
+      <div class="grid">
+        <div class="field">
+          <label class="lbl" for="f-grade">학년<span class="req">*</span></label>
+          <select id="f-grade"><option value="">선택</option><option>1</option><option>2</option><option>3</option></select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="f-class">반<span class="req">*</span></label>
+          <select id="f-class"><option value="">선택</option></select>
+        </div>
+        <div class="field wide">
+          <label class="lbl" for="f-roster">참가 학생 명단<span class="req">*</span></label>
+          <textarea id="f-roster" rows="5" placeholder="예) 5 김대륜&#10;12 이샛별&#10;2-3-16 박하늘"></textarea>
+          <span class="hint">한 줄에 한 명, <b>번호 이름</b> 순서. 엑셀에서 두 열을 복사해 붙여 넣거나, 아래 4단계에서 엑셀·CSV 명단 파일을 올려도 됩니다.</span>
+          <div id="roster-view"></div>
+        </div>
+        <div class="field">
+          <label class="lbl" for="f-leader">대표 학생<span class="req">*</span></label>
+          <select id="f-leader"><option value="">명단을 먼저 입력하세요</option></select>
+        </div>
+        <div class="field" style="justify-content:flex-end;">
+          <label class="check"><input type="checkbox" id="f-leader-in"> 대표 학생도 참가학생 칸에 적기</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-when">
+      <h2 id="h-when"><span class="step">2</span>일시와 장소</h2>
+      <div class="grid">
+        <div class="field">
+          <label class="lbl" for="f-start">시작일<span class="req">*</span></label>
+          <input type="date" id="f-start" min="2026-03-01" max="2027-02-28">
+        </div>
+        <div class="field">
+          <label class="lbl" for="f-end">종료일<span class="req">*</span></label>
+          <input type="date" id="f-end" min="2026-03-01" max="2027-02-28">
+        </div>
+        <div class="field">
+          <label class="lbl" for="f-slot">활동 시간대</label>
+          <select id="f-slot"><option>등교시간</option><option>점심시간</option><option>저녁시간</option><option value="">직접 입력</option></select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="f-from">매일 시작 시각</label>
+          <input type="time" id="f-from" value="07:50">
+        </div>
+        <div class="field">
+          <label class="lbl" for="f-to">매일 끝 시각</label>
+          <input type="time" id="f-to" value="08:15">
+        </div>
+        <div class="field">
+          <label class="lbl" for="f-hours">총 봉사 시간</label>
+          <input type="number" id="f-hours" min="1" max="20" step="1" placeholder="예) 2">
+          <span class="hint">50분을 1시간으로 인정</span>
+        </div>
+        <div class="field wide">
+          <label class="lbl" for="f-timeline">양식에 들어갈 시간 문구</label>
+          <input type="text" id="f-timeline">
+          <span class="hint" id="timeline-hint">위 칸을 채우면 자동으로 만들어집니다. 직접 고쳐도 됩니다.</span>
+        </div>
+        <div class="field wide">
+          <label class="lbl" for="f-place">활동 장소<span class="req">*</span></label>
+          <input type="text" id="f-place" placeholder="예) 구 테니스장 앞 건널목">
+        </div>
+        <div class="field wide">
+          <span class="lbl" id="lbl-area">활동 영역<span class="req">*</span></span>
+          <div class="radio-row" role="radiogroup" aria-labelledby="lbl-area">
+            <label><input type="radio" name="area" value="캠페인" checked> 캠페인</label>
+            <label><input type="radio" name="area" value="이웃돕기"> 이웃돕기</label>
+            <label><input type="radio" name="area" value="환경보호"> 환경보호</label>
+            <label><input type="radio" name="area" value="기타"> 기타</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-text">
+      <h2 id="h-text"><span class="step">3</span>활동 목적과 내용</h2>
+      <div class="grid">
+        <div class="field wide">
+          <label class="lbl" for="f-topic">캠페인 주제·학급 메모</label>
+          <input type="text" id="f-topic" placeholder="예) 손씻기 생활화 — 체육 후 손을 안 씻고 교실에 오는 학생이 많음">
+          <span class="hint">AI가 목적·내용을 쓸 때 참고합니다. 양식에는 들어가지 않습니다.</span>
+        </div>
+        <div class="field wide" id="wrap-purpose">
+          <label class="lbl" for="f-purpose">활동 목적<span class="req">*</span></label>
+          <textarea id="f-purpose" rows="3" placeholder="직접 쓰거나, 오른쪽 AI 도우미로 초안을 받으세요."></textarea>
+        </div>
+        <div class="field wide" id="wrap-content">
+          <label class="lbl" for="f-content">활동 내용<span class="req">*</span></label>
+          <textarea id="f-content" rows="3" placeholder="직접 쓰거나, 오른쪽 AI 도우미로 초안을 받으세요."></textarea>
+        </div>
+        <div class="field">
+          <label class="lbl" for="f-date">작성일</label>
+          <input type="date" id="f-date" min="2026-01-01" max="2027-02-28">
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 오른쪽: AI 도우미 + 미리보기 + 받기 -->
+  <div class="col side">
+    <section class="card" aria-labelledby="h-ai">
+      <h2 id="h-ai"><span class="step">4</span>AI 도우미 <span class="opt">— 내 구독(Claude·ChatGPT·Gemini) 그대로</span></h2>
+
+      <div class="field">
+        <span class="lbl">참고 자료 첨부 <span class="hint">(선택)</span></span>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-desc">
+          <strong>파일을 끌어 놓거나 눌러서 선택</strong> · 이미지는 Ctrl+V로 붙여넣기
+          <div class="hint" id="drop-desc">엑셀·CSV 명단은 이 페이지에서 바로 읽어 1단계에 채웁니다. 사진·PDF는 AI 창에 직접 첨부합니다.</div>
+        </div>
+        <input type="file" id="file-input" class="sr-only" multiple accept=".xlsx,.xls,.csv,image/*,.pdf,.hwp,.hwpx,.docx,.txt">
+        <div class="att-list" id="att-list"></div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <span class="lbl">① 프롬프트를 복사하고 AI 열기</span>
+        <div class="ai-pick">
+          <button class="btn" type="button" data-ai="chatgpt">ChatGPT<small>chatgpt.com</small></button>
+          <button class="btn" type="button" data-ai="claude">Claude<small>claude.ai</small></button>
+          <button class="btn" type="button" data-ai="gemini">Gemini<small>gemini.google.com</small></button>
+        </div>
+        <div class="status" id="copy-status"></div>
+        <details class="prompt-view"><summary>AI에 보낼 내용 보기</summary><pre id="prompt-pre"></pre></details>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label class="lbl" for="f-answer">② AI 답을 통째로 붙여 넣기</label>
+        <textarea id="f-answer" rows="4" placeholder="AI 답변 전체를 복사해 여기에 붙여 넣으세요. 설명이 섞여 있어도 됩니다."></textarea>
+        <div class="btn-row" style="margin-top:6px;">
+          <button class="btn primary" type="button" id="btn-apply">목적·내용 칸에 넣기</button>
+        </div>
+        <div class="status" id="apply-status"></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-out">
+      <h2 id="h-out"><span class="step">5</span>미리 보고 한글 파일 받기</h2>
+      <div style="overflow-x:auto;"><table class="pv" id="preview" aria-label="양식 미리보기"></table></div>
+      <div style="margin-top:12px;">
+        <button class="btn primary big" type="button" id="btn-download">⬇ 한글 파일(.hwpx) 받기</button>
+        <ul class="missing" id="missing"></ul>
+        <div class="status" id="dl-status"></div>
+        <p class="hint" style="margin-top:6px;">입력한 내용은 이 창에만 있고 저장·전송되지 않습니다. 창을 닫으면 사라집니다. AI가 쓴 문장은 초안이니 검토 후 사용하세요.</p>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>원본 양식: 2025학년도 1학급 1캠페인 활동계획서(창의인성부) · 파일은 브라우저 안에서 만들어집니다 · 한글 2014 이상에서 열립니다.</footer>
+
+<script src="../lib/jszip.min.js"></script>
+<script src="../lib/xlsx.full.min.js"></script>
+<script src="campaign-plan.template.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var SCHOOL_YEAR = 2026;
+  var MAX_CLASS = 12;
+  var SLOT_TIMES = { '등교시간': ['07:50', '08:15'] };
+  var AI_URLS = {
+    chatgpt: 'https://chatgpt.com/',
+    claude: 'https://claude.ai/new',
+    gemini: 'https://gemini.google.com/app'
+  };
+  var AI_NAMES = { chatgpt: 'ChatGPT', claude: 'Claude', gemini: 'Gemini' };
+
+  var state = { students: [], attachments: [], dirty: false, timelineEdited: false };
+
+  // ---------- 공통 ----------
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function setStatus(id, kind, html) { var n = $(id); n.className = 'status' + (html ? ' note ' + kind : ''); n.innerHTML = html || ''; }
+  function parseDate(v) { if (!v) return null; var p = v.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function korDate(v, wide) {
+    var d = parseDate(v); if (!d) return '';
+    var sp = wide ? '  ' : ' ';
+    return d.getFullYear() + '년' + sp + (d.getMonth() + 1) + '월' + sp + d.getDate() + '일';
+  }
+  function weekdaysBetween(a, b) {
+    var s = parseDate(a), e = parseDate(b); if (!s || !e || e < s) return 0;
+    var n = 0; for (var d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) { var w = d.getDay(); if (w !== 0 && w !== 6) n++; }
+    return n;
+  }
+  function todayIso() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function area() { var r = document.querySelector('input[name=area]:checked'); return r ? r.value : ''; }
+
+  // ---------- 명단 ----------
+  // "5 김대륜", "2-3-5 김대륜", "20305 김대륜", "김대륜 5", 탭 구분 모두 허용
+  function parseRoster(text) {
+    var g = $('f-grade').value, c = $('f-class').value, out = [];
+    text.split(/\r?\n/).forEach(function (raw) {
+      var line = raw.trim(); if (!line) return;
+      var parts = line.split(/[\t,]+|\s+/).filter(Boolean);
+      var num = null, name = [];
+      parts.forEach(function (p) {
+        if (num === null && /^(\d{1,2}|\d-\d{1,2}-\d{1,2}|\d{5})(번)?$/.test(p)) num = p.replace(/번$/, '');
+        else name.push(p);
+      });
+      var nm = name.join(' ');
+      var gg = g, cc = c, nn = null;
+      if (num) {
+        if (/^\d-\d{1,2}-\d{1,2}$/.test(num)) { var q = num.split('-'); gg = q[0]; cc = q[1]; nn = q[2]; }
+        else if (/^\d{5}$/.test(num)) { gg = num[0]; cc = String(+num.slice(1, 3)); nn = String(+num.slice(3)); }
+        else nn = String(+num);
+      }
+      out.push({ raw: line, grade: gg, cls: cc, no: nn, name: nm, ok: !!(nn && nm && gg && cc) });
+    });
+    return out;
+  }
+  function sid(s) { return s.grade + '-' + s.cls + '-' + s.no; }
+  function renderRoster() {
+    state.students = parseRoster($('f-roster').value);
+    var v = $('roster-view');
+    if (!state.students.length) { v.innerHTML = ''; }
+    else {
+      var bad = state.students.filter(function (s) { return !s.ok; });
+      var h = '<div style="margin-top:6px;"><span class="count-badge">' + state.students.length + '명</span>';
+      if (bad.length) h += ' <span class="hint" style="color:var(--danger);">' + bad.length + '줄을 읽지 못했습니다' + (!$('f-grade').value || !$('f-class').value ? ' — 학년·반을 먼저 고르세요' : ' — 번호와 이름을 확인하세요') + '</span>';
+      h += '</div><table class="roster-table"><thead><tr><th>학년-반-번호</th><th>성명</th></tr></thead><tbody>';
+      state.students.forEach(function (s) {
+        h += s.ok ? '<tr><td>' + esc(sid(s)) + '</td><td>' + esc(s.name) + '</td></tr>' : '<tr><td colspan="2" class="bad">읽지 못함: ' + esc(s.raw) + '</td></tr>';
+      });
+      v.innerHTML = h + '</tbody></table>';
+    }
+    var sel = $('f-leader'), prev = sel.value, ok = state.students.filter(function (s) { return s.ok; });
+    sel.innerHTML = ok.length ? ok.map(function (s) { return '<option value="' + esc(sid(s)) + '">' + esc(sid(s) + ' ' + s.name) + '</option>'; }).join('') : '<option value="">명단을 먼저 입력하세요</option>';
+    if (prev && ok.some(function (s) { return sid(s) === prev; })) sel.value = prev;
+  }
+  function leader() { var v = $('f-leader').value; return state.students.filter(function (s) { return s.ok && sid(s) === v; })[0] || null; }
+  function participants() {
+    var L = leader();
+    return state.students.filter(function (s) { return s.ok && (!L || $('f-leader-in').checked || sid(s) !== sid(L)); });
+  }
+
+  // ---------- 시간 문구 ----------
+  function autoTimeline() {
+    var slot = $('f-slot').value, from = $('f-from').value, to = $('f-to').value, hours = $('f-hours').value;
+    var days = weekdaysBetween($('f-start').value, $('f-end').value);
+    if (!from || !to || !days) return '';
+    return '(' + (slot ? slot + ' 실시: ' : '') + '매일 ' + from + '~' + to + ' 실시, 총 ' + days + '일간' + (hours ? ' ' + hours + '시간' : '') + ')';
+  }
+  function refreshTimeline() {
+    if (!state.timelineEdited) $('f-timeline').value = autoTimeline();
+    var days = weekdaysBetween($('f-start').value, $('f-end').value);
+    $('timeline-hint').textContent = days ? '주말을 뺀 활동일 ' + days + '일로 계산했습니다. 직접 고쳐도 됩니다.' : '위 칸을 채우면 자동으로 만들어집니다. 직접 고쳐도 됩니다.';
+  }
+  function period() {
+    var s = $('f-start').value, e = $('f-end').value;
+    if (!s) return '';
+    return (!e || e === s) ? korDate(s) : korDate(s) + ' ~ ' + korDate(e);
+  }
+
+  // ---------- 데이터 모음 ----------
+  function collect() {
+    var L = leader(), P = participants(), a = area();
+    var d = {
+      학년: $('f-grade').value, 반: $('f-class').value,
+      대표_학번: L ? L.grade + '학년 ' + L.cls + '반 ' + L.no + '번' : '',
+      대표_성명: L ? L.name : '',
+      기간: period(), 시간설명: $('f-timeline').value.trim(),
+      장소: $('f-place').value.trim(), 목적: $('f-purpose').value.trim(), 내용: $('f-content').value.trim(),
+      영역_캠페인: a === '캠페인' ? '○' : '', 영역_이웃돕기: a === '이웃돕기' ? '○' : '',
+      영역_환경보호: a === '환경보호' ? '○' : '', 영역_기타: a === '기타' ? '○' : '',
+      작성일: korDate($('f-date').value, true),
+      participants: P
+    };
+    return d;
+  }
+  function missingList(d) {
+    var m = [];
+    if (!d.학년) m.push('학년'); if (!d.반) m.push('반');
+    if (!state.students.some(function (s) { return s.ok; })) m.push('참가 학생 명단');
+    if (state.students.some(function (s) { return !s.ok; })) m.push('명단 중 읽지 못한 줄');
+    if (!d.대표_성명) m.push('대표 학생');
+    if (!$('f-start').value) m.push('시작일');
+    if ($('f-start').value && $('f-end').value && $('f-end').value < $('f-start').value) m.push('종료일이 시작일보다 빠름');
+    if (!d.장소) m.push('활동 장소'); if (!d.목적) m.push('활동 목적'); if (!d.내용) m.push('활동 내용');
+    return m;
+  }
+
+  // ---------- 미리보기 ----------
+  function cell(v, cls, attrs) { return '<td' + (cls ? ' class="' + cls + '"' : '') + (attrs || '') + '>' + (v ? esc(v) : '') + '</td>'; }
+  function renderPreview() {
+    var d = collect(), P = d.participants, rows = Math.max(4, Math.ceil(P.length / 3));
+    var h = '<colgroup><col style="width:14%"><col><col><col><col><col><col></colgroup>';
+    h += '<tr><td class="t" colspan="7">1학급 1캠페인 활동 계획서(' + esc(d.학년 || '0') + '학년 ' + esc(d.반 || '0') + '반)</td></tr>';
+    h += '<tr><td class="h">인적사항<br>(대표학생)</td><td class="h">학년-반-번호</td>' + cell(d.대표_학번, d.대표_학번 ? '' : 'empty', ' colspan="2"') + '<td class="h">성명</td>' + cell(d.대표_성명, '', ' colspan="2"') + '</tr>';
+    h += '<tr><td class="h" rowspan="' + (rows + 1) + '">참가학생</td>' + '<td class="h2">학년-반-번호</td><td class="h2">성명</td>'.repeat(3) + '</tr>';
+    for (var r = 0; r < rows; r++) {
+      h += '<tr>';
+      for (var k = 0; k < 3; k++) { var s = P[r * 3 + k]; h += cell(s ? sid(s) : '') + cell(s ? s.name : ''); }
+      h += '</tr>';
+    }
+    h += '<tr><td class="h">활동일시<br>(활동시간)</td>' + cell([d.기간, d.시간설명, '※ 시간은 학급 사정에 따라 변경 가능(50분을 1시간으로 인정)'].filter(Boolean).join('\n'), 'l', ' colspan="6"') + '</tr>';
+    h += '<tr><td class="h">활동장소</td>' + cell(d.장소, 'l', ' colspan="6"') + '</tr>';
+    h += '<tr><td class="h">활동목적</td>' + cell(d.목적, 'l', ' colspan="6"') + '</tr>';
+    h += '<tr><td class="h">활동내용</td>' + cell(d.내용, 'l', ' colspan="6"') + '</tr>';
+    h += '<tr><td class="h" rowspan="2">활동영역</td><td colspan="2">캠페인</td><td colspan="2">이웃돕기</td><td>환경보호</td><td>기타</td></tr>';
+    h += '<tr>' + cell(d.영역_캠페인, '', ' colspan="2"') + cell(d.영역_이웃돕기, '', ' colspan="2"') + cell(d.영역_환경보호) + cell(d.영역_기타) + '</tr>';
+    h += '<tr><td class="foot" colspan="7">위의 계획에 따라 봉사활동을 실시하고자 합니다.<br>' + esc(d.작성일 || SCHOOL_YEAR + '년  0월  0일') + '<br><span class="sign">대륜고등학교장</span></td></tr>';
+    $('preview').innerHTML = h;
+    var m = missingList(d);
+    $('missing').innerHTML = m.length ? m.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') : '';
+    $('btn-download').setAttribute('aria-describedby', 'missing');
+    $('prompt-pre').textContent = buildPrompt();
+  }
+
+  // ---------- 첨부 ----------
+  function kindOf(f) {
+    var n = f.name.toLowerCase();
+    if (/\.(xlsx|xls|csv)$/.test(n)) return 'sheet';
+    if (f.type.indexOf('image/') === 0) return 'image';
+    if (/\.pdf$/.test(n)) return 'pdf';
+    return 'doc';
+  }
+  function addFiles(list) {
+    Array.prototype.forEach.call(list, function (f) {
+      var a = { file: f, kind: kindOf(f), name: f.name || ('붙여넣은 이미지 ' + (state.attachments.length + 1) + '.png'), note: '' };
+      if (a.kind === 'image') a.url = URL.createObjectURL(f);
+      state.attachments.push(a);
+      if (a.kind === 'sheet') readRosterFile(a);
+    });
+    renderAttachments(); renderPreview();
+  }
+  function readRosterFile(a) {
+    if (!window.XLSX) { a.note = '엑셀 읽기 모듈을 불러오지 못했습니다'; renderAttachments(); return; }
+    var fr = new FileReader();
+    fr.onload = function () {
+      try {
+        var wb = XLSX.read(new Uint8Array(fr.result), { type: 'array' });
+        var rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+        var lines = rosterFromRows(rows);
+        if (!lines.length) { a.note = '번호·이름 열을 찾지 못했습니다. 1단계 칸에 직접 붙여 넣어 주세요.'; }
+        else {
+          var cur = $('f-roster').value.trim();
+          $('f-roster').value = (cur ? cur + '\n' : '') + lines.join('\n');
+          a.note = lines.length + '명을 1단계 명단에 넣었습니다.';
+          renderRoster(); state.dirty = true;
+        }
+      } catch (e) { a.note = '파일을 읽지 못했습니다: ' + e.message; }
+      renderAttachments(); renderPreview();
+    };
+    fr.readAsArrayBuffer(a.file);
+  }
+  // 머리글에서 학번/번호, 성명/이름 열을 찾는다. 없으면 [번호, 이름] 순서로 가정
+  function rosterFromRows(rows) {
+    var hi = -1, cNo = -1, cName = -1;
+    for (var i = 0; i < Math.min(rows.length, 10); i++) {
+      rows[i].forEach(function (v, j) {
+        var t = String(v).replace(/\s/g, '');
+        if (cNo < 0 && /^(학번|번호|학년-반-번호|출석번호)$/.test(t)) cNo = j;
+        if (cName < 0 && /^(성명|이름|학생명)$/.test(t)) cName = j;
+      });
+      if (cNo >= 0 && cName >= 0) { hi = i; break; }
+      cNo = cName = -1;
+    }
+    if (hi < 0) { cNo = 0; cName = 1; }
+    var out = [];
+    rows.slice(hi + 1).forEach(function (r) {
+      var no = String(r[cNo] == null ? '' : r[cNo]).trim(), nm = String(r[cName] == null ? '' : r[cName]).trim();
+      if (/^\d/.test(no) && nm && !/^\d+$/.test(nm)) out.push(no.replace(/번$/, '') + ' ' + nm);
+    });
+    return out;
+  }
+  function renderAttachments() {
+    var el = $('att-list');
+    el.innerHTML = state.attachments.map(function (a, i) {
+      var thumb = a.kind === 'image' ? '<img src="' + a.url + '" alt="">' : '<div class="ico">' + ({ sheet: '📊', pdf: '📄', doc: '📎' }[a.kind]) + '</div>';
+      var where = a.kind === 'sheet' ? '<span class="where local">이 페이지에서 읽음</span>' : '<span class="where ai">AI 창에 직접 첨부</span>';
+      var actions = '';
+      if (a.kind === 'image') actions += '<button class="btn small" type="button" data-copyimg="' + i + '">이미지 복사</button>';
+      actions += '<button class="btn small" type="button" data-remove="' + i + '" aria-label="' + esc(a.name) + ' 빼기">빼기</button>';
+      return '<div class="att">' + thumb + '<div class="meta"><b title="' + esc(a.name) + '">' + esc(a.name) + '</b>' + where + (a.note ? ' <span class="hint">' + esc(a.note) + '</span>' : '') + '</div><div class="btn-row">' + actions + '</div></div>';
+    }).join('');
+    var forAi = state.attachments.filter(function (a) { return a.kind !== 'sheet'; });
+    if (forAi.length) el.insertAdjacentHTML('beforeend', '<div class="note warn">AI 창을 연 뒤 이 ' + forAi.length + '개 파일을 대화에 직접 첨부하세요. 이미지는 [이미지 복사] 후 AI 입력창에 Ctrl+V 해도 됩니다.</div>');
+  }
+  function copyImage(a, btn) {
+    var img = new Image();
+    img.onload = function () {
+      var cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+      cv.getContext('2d').drawImage(img, 0, 0);
+      cv.toBlob(function (blob) {
+        if (!navigator.clipboard || !window.ClipboardItem) { btn.textContent = '복사 불가 — 파일로 첨부'; return; }
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(function () { btn.textContent = '복사됨 ✓'; }, function () { btn.textContent = '복사 불가 — 파일로 첨부'; });
+      }, 'image/png');
+    };
+    img.src = a.url;
+  }
+
+  // ---------- 프롬프트 ----------
+  function buildPrompt() {
+    var d = collect(), L = leader(), forAi = state.attachments.filter(function (a) { return a.kind !== 'sheet'; });
+    var n = state.students.filter(function (s) { return s.ok; }).length;
+    var lines = [];
+    lines.push('대륜고등학교 교사의 업무 문서 작성을 도와주세요.');
+    lines.push('');
+    lines.push('[작업] 「1학급 1캠페인 활동 계획서」의 "활동목적"과 "활동내용" 칸에 들어갈 문장을 써 주세요.');
+    lines.push('');
+    lines.push('[학급 정보]');
+    lines.push('- 학급: ' + (d.학년 || '?') + '학년 ' + (d.반 || '?') + '반, 참가 학생 ' + n + '명' + (L ? ' (대표: ' + sid(L) + ' ' + L.name + ')' : ''));
+    lines.push('- 기간: ' + (d.기간 || '미정') + (d.시간설명 ? ' ' + d.시간설명 : ''));
+    lines.push('- 장소: ' + (d.장소 || '미정'));
+    lines.push('- 활동 영역: ' + (area() || '미정'));
+    var topic = $('f-topic').value.trim();
+    lines.push('- 캠페인 주제·교사 메모: ' + (topic || '(없음 — 장소와 시간대에 맞는 주제를 하나 정해 주세요)'));
+    if (d.목적 || d.내용) {
+      lines.push('');
+      lines.push('[교사가 먼저 쓴 초안 — 이 내용을 살려 다듬어 주세요]');
+      if (d.목적) lines.push('- 활동목적: ' + d.목적);
+      if (d.내용) lines.push('- 활동내용: ' + d.내용);
+    }
+    if (forAi.length) {
+      lines.push('');
+      lines.push('[첨부 자료] 이 대화에 첨부한 파일 ' + forAi.length + '개(' + forAi.map(function (a) { return a.name; }).join(', ') + ')를 참고하세요. 사진·문서에서 확인되는 장소, 문구, 활동 모습만 반영하고, 보이지 않는 내용은 지어내지 마세요.');
+    }
+    lines.push('');
+    lines.push('[작성 규칙]');
+    lines.push('- 공문 개조식 문체로, 문장 끝은 "~함", "~하고자 함"으로 맺습니다.');
+    lines.push('- 활동목적: 1~2문장, 150자 이내. 학교생활에서 보이는 문제와 캠페인으로 바꾸려는 행동을 구체적으로 씁니다.');
+    lines.push('- 활동내용: 1~3문장, 200자 이내. 언제·어디서·무엇을(피켓 문구 예시 포함)·어떻게 하는지 씁니다.');
+    lines.push('- 위에 없는 인원·날짜·장소·실적은 새로 만들지 않습니다.');
+    lines.push('');
+    lines.push('[참고 예시]');
+    lines.push('- 활동목적: 평소 일과 중 축구나 배드민턴과 같은 실외 운동을 하고 나서 손을 씻지 않고 교실에 돌아와 생활하는 학생들에게 위생에 대한 주의를 환기시켜 학생들의 ‘손씻기 생활화’를 목표함.');
+    lines.push('- 활동내용: 많은 학생들과 대면하여 소통할 수 있는 등교시간을 활용하여 ‘손씻기를 생활화합시다.’ 등의 문구를 담은 피켓이나 보드를 준비하여 상기 기간과 장소에서 캠페인 활동을 실시하고자 함.');
+    lines.push('');
+    lines.push('[답변 형식] 다른 설명 없이 아래 JSON 코드 블록 하나만 답하세요.');
+    lines.push('```json');
+    lines.push('{"활동목적": "…", "활동내용": "…"}');
+    lines.push('```');
+    return lines.join('\n');
+  }
+  function copyText(t) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    return new Promise(function (res, rej) {
+      var ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy') ? res() : rej(new Error('copy')); } catch (e) { rej(e); }
+      document.body.removeChild(ta);
+    });
+  }
+  function openAi(key) {
+    var win = window.open(AI_URLS[key], '_blank', 'noopener');
+    var forAi = state.attachments.filter(function (a) { return a.kind !== 'sheet'; }).length;
+    copyText(buildPrompt()).then(function () {
+      setStatus('copy-status', 'ok', '프롬프트를 복사했습니다. ' + AI_NAMES[key] + ' 입력창에 <b>Ctrl+V</b> 하세요.' + (forAi ? ' 첨부 파일 ' + forAi + '개도 함께 올리세요.' : '') + ' 답이 나오면 아래 ②에 붙여 넣으세요.');
+    }, function () {
+      setStatus('copy-status', 'err', '자동 복사가 막혔습니다. 아래 "AI에 보낼 내용 보기"를 펼쳐 직접 복사하세요.');
+      document.querySelector('details.prompt-view').open = true;
+    });
+    if (!win) setStatus('copy-status', 'warn', '팝업이 막혀 새 창을 열지 못했습니다. <a href="' + AI_URLS[key] + '" target="_blank" rel="noopener">' + AI_NAMES[key] + ' 열기</a>');
+  }
+
+  // ---------- AI 답 적용 ----------
+  function parseAnswer(text) {
+    var t = text.replace(/[“”]/g, '"');
+    var fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    var body = fence ? fence[1] : t;
+    var a = body.indexOf('{'), b = body.lastIndexOf('}');
+    if (a >= 0 && b > a) {
+      try {
+        var o = JSON.parse(body.slice(a, b + 1));
+        var p = o['활동목적'] || o['목적'] || o.purpose, c = o['활동내용'] || o['내용'] || o.content;
+        if (p || c) return { 목적: p ? String(p).trim() : '', 내용: c ? String(c).trim() : '' };
+      } catch (e) { /* 아래 줄 단위 읽기로 넘어감 */ }
+    }
+    var mp = text.match(/활동\s*목적\s*["”]?\s*[:：]\s*["“]?([\s\S]*?)(?=\n\s*[-*]?\s*["“]?활동\s*내용|$)/);
+    var mc = text.match(/활동\s*내용\s*["”]?\s*[:：]\s*["“]?([\s\S]*?)$/);
+    var clean = function (s) { return s ? s.replace(/["”,}\s]+$/, '').replace(/^\s*["“]/, '').trim() : ''; };
+    if (mp || mc) return { 목적: clean(mp && mp[1]), 내용: clean(mc && mc[1]) };
+    return null;
+  }
+  function applyAnswer() {
+    var raw = $('f-answer').value.trim();
+    if (!raw) { setStatus('apply-status', 'warn', 'AI 답을 먼저 붙여 넣으세요.'); return; }
+    var r = parseAnswer(raw);
+    if (!r || (!r.목적 && !r.내용)) { setStatus('apply-status', 'err', '답에서 활동목적·활동내용을 찾지 못했습니다. AI에게 "JSON 코드 블록으로 다시 답해 줘"라고 요청한 뒤 다시 붙여 넣으세요.'); return; }
+    var done = [];
+    if (r.목적) { $('f-purpose').value = r.목적; $('wrap-purpose').classList.add('ai-filled'); done.push('활동 목적'); }
+    if (r.내용) { $('f-content').value = r.내용; $('wrap-content').classList.add('ai-filled'); done.push('활동 내용'); }
+    var miss = ['활동 목적', '활동 내용'].filter(function (x) { return done.indexOf(x) < 0; });
+    setStatus('apply-status', miss.length ? 'warn' : 'ok', done.join('·') + ' 칸에 넣었습니다.' + (miss.length ? ' ' + miss.join('·') + '은(는) 답에 없어 그대로 두었습니다.' : '') + ' 3단계에서 확인하고 고치세요.');
+    state.dirty = true; renderPreview();
+  }
+
+  // ---------- hwpx 만들기 ----------
+  function xmlEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  // 여러 줄 값: 자리표시자가 든 문단을 줄 수만큼 복제
+  function expandMultiline(xml, key, value) {
+    var token = '<hp:t>{{' + key + '}}</hp:t>', i = xml.indexOf(token);
+    if (i < 0) return xml;
+    var lines = String(value).split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (lines.length < 2) return xml;
+    var ps = xml.lastIndexOf('<hp:p ', i), pe = xml.indexOf('</hp:p>', i) + 7;
+    var para = xml.slice(ps, pe);
+    var rep = lines.map(function (ln) { return para.replace(token, '<hp:t>' + xmlEsc(ln) + '</hp:t>'); }).join('');
+    return xml.slice(0, ps) + rep + xml.slice(pe);
+  }
+  // 참가학생이 12명을 넘으면 마지막 명단 줄(rowAddr 6)을 복제해 늘린다
+  function growParticipantRows(xml, extraRows) {
+    if (extraRows <= 0) return xml;
+    var mark = xml.indexOf('{{p10_no}}');
+    var rs = xml.lastIndexOf('<hp:tr>', mark), re = xml.indexOf('</hp:tr>', mark) + 8;
+    var row = xml.slice(rs, re), clones = '';
+    var ROW_H = 2011;
+    for (var r = 1; r <= extraRows; r++) {
+      var base = 12 + (r - 1) * 3;
+      clones += row.replace(/\{\{p(10|11|12)_(no|name)\}\}/g, function (_, k, f) { return '{{p' + (base + (+k - 9)) + '_' + f + '}}'; })
+                   .replace(/rowAddr="6"/g, 'rowAddr="' + (6 + r) + '"');
+    }
+    var head = xml.slice(0, re), tail = xml.slice(re);
+    tail = tail.replace(/rowAddr="(\d+)"/g, function (m, n) { return +n > 6 ? 'rowAddr="' + (+n + extraRows) + '"' : m; });
+    // 표는 글자처럼 취급(treatAsChar)이라 쪽을 넘기면 통째로 다음 쪽으로 밀린다.
+    // 늘어난 높이만큼 활동일시·장소·목적·내용 4줄의 최소 높이를 줄여 한 쪽을 유지한다.
+    var TALL = 6125, MIN_TALL = 2600, cut = Math.min(TALL - MIN_TALL, Math.ceil(extraRows * ROW_H / 4));
+    tail = tail.replace(/(<hp:cellSz width="\d+" height=")6125"/g, function (m, a) { return a + (TALL - cut) + '"'; });
+    ROW_H = ROW_H - cut * 4 / extraRows; // 아래 표 전체 높이 계산에 반영
+    // '참가학생' 칸: 세로 병합 수와 칸 높이를 함께 늘려야 한글이 표를 제대로 그린다
+    head = head.replace(/(<hp:cellAddr colAddr="0" rowAddr="2"\/><hp:cellSpan colSpan="1" rowSpan=")(\d+)("\/><hp:cellSz width="\d+" height=")(\d+)"/, function (m, a, n, b, h) { return a + (+n + extraRows) + b + (+h + extraRows * ROW_H) + '"'; })
+               .replace(/(<hp:tbl [^>]*rowCnt=")(\d+)"/, function (m, a, n) { return a + (+n + extraRows) + '"'; })
+               .replace(/(<hp:tbl [^>]*>\s*<hp:sz [^>]*height=")(\d+)"/, function (m, a, n) { return a + (+n + extraRows * ROW_H) + '"'; });
+    return head + clones + tail;
+  }
+  function fillSection(xml, d) {
+    var P = d.participants, slots = Math.max(12, Math.ceil(P.length / 3) * 3);
+    xml = growParticipantRows(xml, (slots - 12) / 3);
+    ['시간설명', '장소', '목적', '내용'].forEach(function (k) { xml = expandMultiline(xml, k, d[k]); });
+    var map = {};
+    Object.keys(d).forEach(function (k) { if (k !== 'participants') map[k] = d[k]; });
+    for (var i = 0; i < slots; i++) { var s = P[i]; map['p' + (i + 1) + '_no'] = s ? sid(s) : ''; map['p' + (i + 1) + '_name'] = s ? s.name : ''; }
+    map['목적'] = d.목적.replace(/\s*\n\s*/g, ' '); map['내용'] = d.내용.replace(/\s*\n\s*/g, ' ');
+    return xml.replace(/\{\{([^}]+)\}\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(map, k) ? xmlEsc(map[k]) : ''; });
+  }
+  function download() {
+    var d = collect(), m = missingList(d);
+    if (m.length) { setStatus('dl-status', 'err', '아직 비어 있는 칸이 있습니다: ' + esc(m.join(', '))); return; }
+    if (!window.JSZip || !window.DR_FORM_TEMPLATES) { setStatus('dl-status', 'err', '양식 파일을 불러오지 못했습니다. 페이지를 새로 고친 뒤 다시 시도하세요.'); return; }
+    var btn = $('btn-download'); btn.disabled = true; setStatus('dl-status', 'info', '파일을 만드는 중…');
+    JSZip.loadAsync(window.DR_FORM_TEMPLATES['campaign-plan'], { base64: true }).then(function (zip) {
+      return zip.file('Contents/section0.xml').async('string').then(function (sec) {
+        zip.file('Contents/section0.xml', fillSection(sec, d));
+        zip.file('mimetype', 'application/hwp+zip', { compression: 'STORE' });
+        return zip.generateAsync({ type: 'blob', mimeType: 'application/hwp+zip', compression: 'DEFLATE' });
+      });
+    }).then(function (blob) {
+      var name = SCHOOL_YEAR + '학년도 1학급 1캠페인 활동계획서(' + d.학년 + '-' + d.반 + ').hwpx';
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      setStatus('dl-status', 'ok', '<b>' + esc(name) + '</b>을(를) 내려받았습니다. 한글에서 열어 확인하세요.');
+      state.dirty = false;
+    }).catch(function (e) {
+      setStatus('dl-status', 'err', '파일을 만들지 못했습니다: ' + esc(e.message));
+    }).then(function () { btn.disabled = false; });
+  }
+
+  // ---------- 연결 ----------
+  (function init() {
+    var cls = $('f-class'); for (var i = 1; i <= MAX_CLASS; i++) cls.insertAdjacentHTML('beforeend', '<option>' + i + '</option>');
+    $('f-date').value = todayIso() >= '2026-01-01' && todayIso() <= '2027-02-28' ? todayIso() : '';
+
+    document.querySelectorAll('input, select, textarea').forEach(function (el) {
+      el.addEventListener('input', function () { if (el.id !== 'f-answer') state.dirty = true; });
+    });
+    ['f-roster', 'f-grade', 'f-class'].forEach(function (id) { $(id).addEventListener('input', function () { renderRoster(); renderPreview(); }); });
+    ['f-leader', 'f-leader-in'].forEach(function (id) { $(id).addEventListener('change', renderPreview); });
+    $('f-slot').addEventListener('change', function () {
+      var t = SLOT_TIMES[this.value]; if (t) { $('f-from').value = t[0]; $('f-to').value = t[1]; }
+      refreshTimeline(); renderPreview();
+    });
+    ['f-start', 'f-end', 'f-from', 'f-to', 'f-hours'].forEach(function (id) {
+      $(id).addEventListener('input', function () {
+        if (id === 'f-start' && !$('f-end').value) $('f-end').value = this.value;
+        refreshTimeline(); renderPreview();
+      });
+    });
+    $('f-timeline').addEventListener('input', function () { state.timelineEdited = this.value.trim() !== ''; renderPreview(); });
+    ['f-place', 'f-purpose', 'f-content', 'f-topic', 'f-date'].forEach(function (id) { $(id).addEventListener('input', renderPreview); });
+    document.querySelectorAll('input[name=area]').forEach(function (r) { r.addEventListener('change', renderPreview); });
+    ['f-purpose', 'f-content'].forEach(function (id) { $(id).addEventListener('input', function () { this.parentNode.classList.remove('ai-filled'); }); });
+
+    var drop = $('drop'), fi = $('file-input');
+    drop.addEventListener('click', function () { fi.click(); });
+    drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fi.click(); } });
+    fi.addEventListener('change', function () { addFiles(fi.files); fi.value = ''; });
+    ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+    ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+    drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+    document.addEventListener('paste', function (e) {
+      var tgt = e.target; if (tgt && (tgt.tagName === 'TEXTAREA' || tgt.tagName === 'INPUT')) return;
+      var items = (e.clipboardData && e.clipboardData.items) || [], files = [];
+      Array.prototype.forEach.call(items, function (it) { if (it.kind === 'file') { var f = it.getAsFile(); if (f) files.push(f); } });
+      if (files.length) { e.preventDefault(); addFiles(files); }
+    });
+    $('att-list').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.remove != null) {
+        var a = state.attachments.splice(+b.dataset.remove, 1)[0];
+        if (a && a.url) URL.revokeObjectURL(a.url);
+        renderAttachments(); renderPreview();
+      } else if (b.dataset.copyimg != null) copyImage(state.attachments[+b.dataset.copyimg], b);
+    });
+    document.querySelectorAll('[data-ai]').forEach(function (b) { b.addEventListener('click', function () { openAi(b.dataset.ai); }); });
+    $('btn-apply').addEventListener('click', applyAnswer);
+    $('btn-download').addEventListener('click', download);
+    window.addEventListener('beforeunload', function (e) { if (state.dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+    if (!window.JSZip || !window.DR_FORM_TEMPLATES) setStatus('dl-status', 'err', '양식 파일을 불러오지 못했습니다. 인터넷 연결이나 파일 위치를 확인하세요.');
+    refreshTimeline(); renderRoster(); renderPreview();
+  })();
+
+  // 테스트용 노출 (화면 동작에는 쓰지 않음)
+  window.__drForm = { parseRoster: parseRoster, parseAnswer: parseAnswer, fillSection: fillSection, growParticipantRows: growParticipantRows };
+})();
+</script>
+</body>
+</html>
