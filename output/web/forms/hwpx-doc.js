@@ -253,7 +253,7 @@
       try {
         var tbl = self.tables[x.table].el, head = rowHeadOf(self, x.table, x.row);
         var block = sameShapeRows(tbl, x.src), per = kids(x.src, 'tc').length;
-        var beforeText = block.map(function (tr) { return sortedCells(tr).map(cellText).join(' '); }).join(' / ').trim();
+        var beforeText = block.map(function (tr) { return sortedCells(tr).map(cellText).filter(Boolean).join(' · '); }).filter(Boolean).join(' · ');
         var need = Math.max(1, Math.ceil(x.cells.length / per));
         while (block.length < need) {
           var r = addRow(tbl, x.src, block[block.length - 1], []);
