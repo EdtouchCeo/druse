@@ -4,7 +4,7 @@
 순서:
   1. python scripts/forms/hwp_to_hwpx.py <원본.hwp> plan.hwpx        (한글 설치 PC 필요)
   2. python scripts/forms/prep_campaign_plan.py plan.hwpx output/web/forms/templates/campaign-plan.hwpx
-  3. python scripts/forms/build_template_js.py campaign-plan
+  3. output/web/forms/forms.js의 양식 목록에 항목이 있는지 확인한다(업무 양식 AI가 이 파일을 편집기로 연다).
 원본 양식이 바뀌면 이 스크립트의 문구 일치(assert)가 실패하므로, 실패한 위치를 새 양식에 맞게 고친다.
 """
 import io, re, sys, zipfile
