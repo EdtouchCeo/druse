@@ -6,7 +6,7 @@
 <!-- /forms 처럼 끝 / 없이 열어도 편집기·양식 파일 경로가 맞도록 기준 주소를 고정한다 -->
 <base href="/forms/">
 <title>업무 양식 AI · 대륜고 사용설명서</title>
-<meta name="description" content="왼쪽에 하고 싶은 말을 적으면 AI가 오른쪽 한글 문서를 바로 채우고 고칩니다. 문서에서 직접 고칠 수도 있고, 다 쓴 문서는 한글 파일(.hwpx)로 받습니다.">
+<meta name="description" content="한글·엑셀·파워포인트·PDF 파일을 불러와 왼쪽 대화로 AI에게 문서를 채우고 고치게 합니다. 학교 양식은 목록에서 골라 바로 시작합니다.">
 <link rel="icon" href="/favicon.ico">
 <style>
   :root {
@@ -14,7 +14,6 @@
     --bg: #f1f5f9; --surface: #fff; --text: #0f172a; --text-2: #475569; --muted: #f1f5f9;
     --border: #e2e8f0; --ok: #166534; --ok-soft: #ecfdf3; --warn: #92400e; --warn-soft: #fffbeb;
     --err: #b91c1c; --err-soft: #fef2f2; --add: #dcfce7; --del: #fee2e2;
-    --header-h: 56px;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -28,13 +27,10 @@
   button, input, select, textarea { font: inherit; color: inherit; }
   :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  [hidden] { display: none !important; }
 
-  /* 상단 */
-  header.top { flex: 0 0 auto; min-height: var(--header-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 8px 16px; flex-wrap: wrap; }
-  header.top h1 { font-size: 1.02rem; font-weight: 800; color: var(--primary-dark); white-space: nowrap; }
-  .form-pick { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--text-2); min-width: 0; }
-  .form-pick select { border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 8px; min-height: 36px; background: #fff; max-width: 60vw; }
-  .form-pick .dept { white-space: nowrap; }
+  header.top { flex: 0 0 auto; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; padding: 8px 16px; flex-wrap: wrap; }
+  header.top h1 { font-size: 1.02rem; font-weight: 800; color: var(--primary-dark); white-space: nowrap; margin-right: 6px; }
   .spacer { flex: 1; }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; padding: 6px 14px; min-height: 40px; font-weight: 700; font-size: 0.88rem; cursor: pointer; text-decoration: none; color: #1e293b; white-space: nowrap; }
   .btn:hover { background: var(--muted); }
@@ -42,34 +38,39 @@
   .btn.primary:hover { background: #22467f; }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn.small { min-height: 32px; padding: 3px 10px; font-size: 0.8rem; border-radius: 8px; }
+  .btn.danger { color: var(--err); border-color: #fca5a5; }
   .back { font-size: 0.84rem; text-decoration: none; white-space: nowrap; }
   #save-note { font-size: 0.8rem; color: var(--text-2); white-space: nowrap; }
+  .menu { position: relative; }
+  .menu-pop { position: absolute; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 30px rgba(15,23,42,.15); padding: 6px; min-width: 220px; z-index: 50; }
+  .menu-pop button { display: block; width: 100%; text-align: left; border: none; background: none; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; }
+  .menu-pop button:hover { background: var(--muted); }
 
-  /* 본문: 왼쪽 AI 도우미 · 오른쪽 한글 편집기 */
   main { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(320px, 400px) minmax(0, 1fr); }
+
+  /* 왼쪽: AI 도우미 */
   .chat { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; }
   .chat-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
   .chat-head h2 { font-size: 0.98rem; font-weight: 800; color: var(--primary-dark); }
   .chat-log { flex: 1 1 auto; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-
   .empty { margin: auto 0; text-align: center; padding: 8px 4px; }
-  .empty h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 6px; }
-  .empty p { font-size: 0.86rem; color: var(--text-2); margin-bottom: 14px; }
+  .empty h3 { font-size: 1.02rem; font-weight: 800; margin-bottom: 6px; }
+  .empty p { font-size: 0.86rem; color: var(--text-2); margin-bottom: 12px; }
   .chips { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .chip { border: 1px solid #cbd5e1; background: #fff; border-radius: 999px; padding: 7px 14px; font-size: 0.85rem; cursor: pointer; text-align: left; min-height: 36px; }
   .chip:hover { border-color: var(--primary); background: var(--primary-soft); }
-
   .msg { max-width: 92%; font-size: 0.9rem; line-height: 1.6; }
   .msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-radius: 14px 14px 4px 14px; padding: 8px 12px; white-space: pre-wrap; }
   .msg.me .files { font-size: 0.78rem; opacity: 0.85; margin-top: 4px; }
   .msg.ai { align-self: flex-start; background: var(--muted); border-radius: 14px 14px 14px 4px; padding: 10px 12px; }
   .msg.ai .reply { white-space: pre-wrap; }
+  .msg.ai .doc-tag { font-size: 0.76rem; color: var(--text-2); margin-bottom: 4px; }
   .msg.ai.wait { color: var(--text-2); display: flex; align-items: center; gap: 8px; }
+  .msg.info { align-self: stretch; background: var(--primary-soft); color: var(--primary-dark); border-radius: 10px; padding: 8px 12px; font-size: 0.84rem; }
   .spin { width: 14px; height: 14px; border: 2px solid #cbd5e1; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .msg.err { align-self: stretch; background: var(--err-soft); color: var(--err); border-radius: 10px; padding: 8px 12px; font-size: 0.86rem; }
   .msg.err .btn { margin-top: 6px; }
-
   .changes { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
   .changes summary { cursor: pointer; font-size: 0.82rem; font-weight: 700; color: var(--primary-dark); }
   .changes ul { list-style: none; margin-top: 6px; display: flex; flex-direction: column; gap: 6px; }
@@ -83,67 +84,145 @@
   .undone { color: var(--text-2); font-size: 0.8rem; margin-top: 6px; }
 
   .composer { border-top: 1px solid var(--border); padding: 10px 12px 12px; background: var(--surface); }
-  .composer label.lbl { font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px; }
+  .composer .lbl { font-size: 0.8rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px; }
+  .composer select { border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 8px; min-height: 34px; background: #fff; max-width: 100%; }
+  .target-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .target-row .lbl { margin: 0; }
+  .sources { margin-bottom: 8px; }
+  .sources summary { cursor: pointer; font-size: 0.8rem; font-weight: 700; color: #334155; }
+  .sources ul { list-style: none; margin-top: 4px; display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; }
+  .sources li label { display: flex; gap: 6px; align-items: flex-start; font-size: 0.8rem; cursor: pointer; }
+  .sources li small { color: var(--text-2); }
   .composer textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 10px; min-height: 72px; max-height: 40vh; resize: vertical; line-height: 1.55; background: #fff; }
   .composer textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(42,82,152,0.15); }
   .composer .row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
   .ai-chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); background: var(--muted); border-radius: 999px; padding: 4px 10px; font-size: 0.78rem; cursor: pointer; min-height: 32px; max-width: 100%; }
   .ai-chip.off { background: var(--warn-soft); border-color: #fcd34d; color: var(--warn); font-weight: 700; }
-  .att-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
-  .att-list:empty { display: none; }
-  .att { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); border-radius: 8px; padding: 2px 4px 2px 8px; font-size: 0.78rem; background: #fff; max-width: 100%; }
-  .att span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
-  .att.bad { border-color: #fca5a5; color: var(--err); }
-  .att button { border: none; background: none; cursor: pointer; width: 26px; height: 26px; border-radius: 6px; }
-  .att button:hover { background: var(--muted); }
   .scope { font-size: 0.75rem; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
 
-  .doc { position: relative; min-height: 0; min-width: 0; background: #e5e7eb; }
+  /* 오른쪽: 탭과 문서 */
+  .work { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+  .tabbar { display: flex; align-items: stretch; gap: 2px; padding: 6px 8px 0; background: #e2e8f0; overflow-x: auto; flex: 0 0 auto; }
+  .tab { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #cbd5e1; border-bottom: none; background: #f8fafc; border-radius: 8px 8px 0 0; padding: 6px 6px 6px 10px; font-size: 0.82rem; cursor: pointer; max-width: 240px; min-height: 36px; }
+  .tab[aria-selected=true] { background: #fff; font-weight: 700; color: var(--primary-dark); }
+  .tab .kind { font-size: 0.7rem; border-radius: 4px; padding: 0 5px; background: var(--muted); color: var(--text-2); flex-shrink: 0; }
+  .tab .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tab .dot { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; flex-shrink: 0; }
+  .tab .x { border: none; background: none; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; color: var(--text-2); flex-shrink: 0; }
+  .tab .x:hover { background: var(--muted); }
+  .tab-add { border: 1px dashed #94a3b8; background: transparent; border-radius: 8px 8px 0 0; padding: 0 12px; cursor: pointer; font-size: 0.85rem; color: var(--text-2); }
+  .stage { position: relative; flex: 1 1 auto; min-height: 0; background: #e5e7eb; }
   #editor { position: absolute; inset: 0; }
   #editor iframe { border: 0; display: block; }
-  .doc-cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #f8fafc; text-align: center; padding: 24px; font-size: 0.92rem; color: var(--text-2); }
-  .doc-cover[hidden] { display: none; }
-  .doc-cover .spin { width: 28px; height: 28px; border-width: 3px; }
-  .doc-cover.err { color: var(--err); }
-  .busy-bar { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--primary), transparent); background-size: 200% 100%; animation: bar 1.2s linear infinite; }
-  .busy-bar[hidden] { display: none; }
+  #viewer { position: absolute; inset: 0; overflow: auto; padding: 16px; background: #e5e7eb; }
+  .pdf-page { display: block; margin: 0 auto 12px; box-shadow: 0 2px 8px rgba(0,0,0,.15); background: #fff; max-width: 100%; height: auto; }
+  .pdf-label { text-align: center; font-size: 0.75rem; color: var(--text-2); margin-bottom: 4px; }
+  .sheet-wrap { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 14px; overflow: auto; }
+  .sheet-wrap h3 { font-size: 0.9rem; margin-bottom: 8px; }
+  .sheet { border-collapse: collapse; font-size: 0.8rem; }
+  .sheet td { border: 1px solid #cbd5e1; padding: 3px 6px; white-space: nowrap; max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+  .sheet tr:first-child td { background: var(--muted); font-weight: 700; }
+  .slide-card { background: #fff; border-radius: 10px; padding: 14px 16px; margin: 0 auto 12px; max-width: 760px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .slide-card h3 { font-size: 0.8rem; color: var(--text-2); margin-bottom: 6px; }
+  .slide-card p { font-size: 0.9rem; margin-bottom: 4px; }
+  .slide-card .notes { font-size: 0.8rem; color: var(--text-2); border-top: 1px dashed var(--border); margin-top: 8px; padding-top: 6px; }
+  .text-view { background: #fff; border-radius: 10px; padding: 16px; white-space: pre-wrap; max-width: 860px; margin: 0 auto; font-size: 0.9rem; }
+  .viewer-note { max-width: 860px; margin: 0 auto 12px; background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 8px 12px; font-size: 0.84rem; }
+  .viewer-head { max-width: 860px; margin: 0 auto 12px; font-size: 0.84rem; color: var(--text-2); }
+
+  .start { position: absolute; inset: 0; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 32px 16px; background: #f8fafc; }
+  .start-inner { width: 100%; max-width: 760px; }
+  .drop { border: 2px dashed #94a3b8; border-radius: 16px; padding: 28px 16px; text-align: center; background: #fff; }
+  .drop h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; }
+  .drop p { font-size: 0.86rem; color: var(--text-2); margin-bottom: 14px; }
+  .drop .btn { min-width: 160px; }
+  .forms-list { margin-top: 22px; }
+  .forms-list h3 { font-size: 0.95rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; }
+  .form-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .form-card { text-align: left; border: 1px solid var(--border); background: #fff; border-radius: 12px; padding: 12px; cursor: pointer; min-height: 72px; }
+  .form-card:hover { border-color: var(--primary); background: var(--primary-soft); }
+  .form-card b { display: block; font-size: 0.9rem; }
+  .form-card small { color: var(--text-2); font-size: 0.78rem; }
+  .drag-over::after { content: '여기에 놓으면 파일이 열립니다'; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(42,82,152,.12); border: 3px dashed var(--primary); color: var(--primary-dark); font-weight: 800; font-size: 1.2rem; z-index: 100; pointer-events: none; }
+  .cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #f8fafc; text-align: center; padding: 24px; font-size: 0.92rem; color: var(--text-2); z-index: 5; }
+  .cover .spin { width: 28px; height: 28px; border-width: 3px; }
+  .cover.err { color: var(--err); }
+  .busy-bar { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--primary), transparent); background-size: 200% 100%; animation: bar 1.2s linear infinite; z-index: 6; }
   @keyframes bar { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-  /* 좁은 화면: 탭으로 전환 (편집기는 display:none 이어도 상태를 유지한다) */
-  .tabs { display: none; }
+  /* 교사 전용 안내 */
+  .gate { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .gate-box { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; max-width: 460px; text-align: center; }
+  .gate-box h2 { font-size: 1.1rem; margin-bottom: 8px; }
+  .gate-box p { font-size: 0.9rem; color: var(--text-2); margin-bottom: 16px; }
+
+  /* 관리자 창 */
+  .modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; }
+  .modal-back { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+  .modal-box { position: relative; background: #fff; border-radius: 14px; width: min(760px, 94vw); max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: #fff; z-index: 1; }
+  .modal-head h2 { font-size: 1rem; color: var(--primary-dark); }
+  .modal-body { padding: 16px 18px; }
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .field label { font-size: 0.84rem; font-weight: 700; color: #334155; }
+  .field input, .field textarea { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; min-height: 40px; background: #fff; }
+  .field textarea { min-height: 110px; resize: vertical; line-height: 1.55; }
+  .field .hint { font-size: 0.78rem; color: var(--text-2); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 10px; }
+  .tpl-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .tpl-list li { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; font-size: 0.86rem; }
+  .tpl-list li .t { flex: 1; min-width: 0; }
+  .tpl-list li small { color: var(--text-2); }
+  .admin-msg { font-size: 0.84rem; margin: 6px 0 0; min-height: 1.2em; }
+  .admin-msg.err { color: var(--err); } .admin-msg.ok { color: var(--ok); }
+
+  .tabs-m { display: none; }
   @media (max-width: 900px) {
     main { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
-    .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
-    .tabs button { flex: 1; border: none; background: none; padding: 10px; font-weight: 700; color: var(--text-2); border-bottom: 3px solid transparent; min-height: 44px; cursor: pointer; }
-    .tabs button[aria-selected=true] { color: var(--primary-dark); border-bottom-color: var(--primary); }
+    .tabs-m { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .tabs-m button { flex: 1; border: none; background: none; padding: 10px; font-weight: 700; color: var(--text-2); border-bottom: 3px solid transparent; min-height: 44px; cursor: pointer; }
+    .tabs-m button[aria-selected=true] { color: var(--primary-dark); border-bottom-color: var(--primary); }
     .chat { border-right: none; }
-    body[data-tab=doc] .chat { display: none; }
-    body[data-tab=chat] .doc { display: none; }
-    header.top h1 { font-size: 0.95rem; }
+    body[data-pane=work] .chat { display: none; }
+    body[data-pane=chat] .work { display: none; }
+    .grid2 { grid-template-columns: 1fr; }
   }
 </style>
 </head>
-<body data-tab="chat">
+<body data-pane="chat">
 <header class="top">
   <h1>업무 양식 AI</h1>
-  <div class="form-pick">
-    <label for="form-select" class="sr-only">양식</label>
-    <select id="form-select"></select>
-    <span class="dept" id="form-dept"></span>
-  </div>
+  <button class="btn small" type="button" id="btn-forms" hidden>양식에서 시작</button>
+  <button class="btn small" type="button" id="btn-open" hidden>파일 열기</button>
+  <button class="btn small" type="button" id="btn-admin" hidden>양식 관리</button>
   <span class="spacer"></span>
   <span id="save-note" role="status" aria-live="polite"></span>
-  <button class="btn primary" type="button" id="btn-download" disabled>한글 파일 받기</button>
+  <div class="menu">
+    <button class="btn primary" type="button" id="btn-download" disabled aria-haspopup="true" aria-expanded="false">받기</button>
+    <div class="menu-pop" id="download-menu" hidden>
+      <button type="button" data-format="hwpx">한글 파일로 받기 (.hwpx)</button>
+      <button type="button" data-format="hwp">한글 97~2018 형식으로 받기 (.hwp)</button>
+    </div>
+  </div>
   <a class="back" href="/">← 대륜고 사용설명서</a>
 </header>
+<input type="file" id="file-input" class="sr-only" multiple accept=".hwp,.hwpx,.pdf,.xlsx,.xls,.csv,.pptx,.txt,.md" tabindex="-1">
 
-<main>
-  <div class="tabs" role="tablist" aria-label="화면 전환">
-    <button type="button" role="tab" id="tab-chat" aria-selected="true" aria-controls="chat-panel">AI 도우미</button>
-    <button type="button" role="tab" id="tab-doc" aria-selected="false" aria-controls="doc-panel">문서</button>
+<div class="gate" id="gate" hidden>
+  <div class="gate-box">
+    <h2 id="gate-title">교사 전용 메뉴입니다</h2>
+    <p id="gate-text">대륜고 사용설명서에서 교사 계정으로 로그인한 뒤 다시 열어 주세요.</p>
+    <a class="btn primary" href="/">사용설명서로 가서 로그인</a>
+  </div>
+</div>
+
+<main id="app" hidden>
+  <div class="tabs-m" role="tablist" aria-label="화면 전환">
+    <button type="button" role="tab" id="pane-chat" aria-selected="true">AI 도우미</button>
+    <button type="button" role="tab" id="pane-work" aria-selected="false">문서</button>
   </div>
 
-  <section class="chat" id="chat-panel" aria-labelledby="chat-title">
+  <section class="chat" aria-labelledby="chat-title">
     <div class="chat-head">
       <h2 id="chat-title">AI 도우미</h2>
       <span class="spacer"></span>
@@ -151,12 +230,17 @@
     </div>
     <div class="chat-log" id="chat-log" aria-live="polite"></div>
     <form class="composer" id="composer">
-      <div class="att-list" id="att-list"></div>
+      <div class="target-row">
+        <label class="lbl" for="target">고칠 문서</label>
+        <select id="target"></select>
+      </div>
+      <details class="sources" id="sources-box" hidden>
+        <summary id="sources-sum">함께 보낼 자료</summary>
+        <ul id="sources-list"></ul>
+      </details>
       <label class="lbl" for="prompt">요청</label>
       <textarea id="prompt" rows="3"></textarea>
       <div class="row">
-        <button class="btn small" type="button" id="btn-attach">파일 첨부</button>
-        <input type="file" id="file-input" class="sr-only" multiple accept=".xlsx,.xls,.csv,.txt,.md" tabindex="-1">
         <button class="ai-chip" type="button" id="ai-chip"></button>
         <span class="spacer"></span>
         <button class="btn primary small" type="submit" id="btn-send">보내기</button>
@@ -165,427 +249,78 @@
     </form>
   </section>
 
-  <section class="doc" id="doc-panel" aria-label="한글 문서">
-    <div id="editor"></div>
-    <div class="busy-bar" id="busy-bar" hidden></div>
-    <div class="doc-cover" id="doc-cover" role="status"><div class="spin"></div><div>한글 편집기를 여는 중입니다…</div></div>
+  <section class="work" aria-label="문서">
+    <div class="tabbar" role="tablist" aria-label="열린 파일" id="tabbar"></div>
+    <div class="stage" id="stage">
+      <div id="editor" hidden></div>
+      <div id="viewer" hidden></div>
+      <div class="start" id="start">
+        <div class="start-inner">
+          <div class="drop" id="drop">
+            <h2>파일을 끌어다 놓거나 열어 주세요</h2>
+            <p>한글(.hwp·.hwpx)은 바로 고칠 수 있습니다. PDF·엑셀·파워포인트는 자료로 열어 AI가 한글 문서를 채울 때 씁니다.</p>
+            <button class="btn primary" type="button" id="btn-open2">파일 열기</button>
+          </div>
+          <div class="forms-list">
+            <h3>학교 양식에서 시작</h3>
+            <div class="form-cards" id="form-cards"><p class="hint">양식 목록을 불러오는 중입니다…</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="busy-bar" id="busy-bar" hidden></div>
+      <div class="cover" id="cover" hidden></div>
+    </div>
   </section>
 </main>
+
+<div class="modal" id="admin-modal" hidden>
+  <div class="modal-back" data-close></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+    <div class="modal-head"><h2 id="admin-title">양식 관리</h2><button class="btn small" type="button" data-close>닫기</button></div>
+    <div class="modal-body">
+      <ul class="tpl-list" id="tpl-list"></ul>
+      <form id="tpl-form">
+        <h3 id="tpl-form-title" style="font-size:.95rem;margin-bottom:10px;">새 양식 올리기</h3>
+        <div class="field">
+          <label for="tpl-file">양식 파일 (.hwp·.hwpx, 4MB 이하)</label>
+          <input type="file" id="tpl-file" accept=".hwp,.hwpx">
+          <span class="hint">학생 이름 같은 개인정보가 없는 빈 양식을 올려 주세요. 고르면 오른쪽에 열려 확인할 수 있습니다.</span>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="tpl-title">양식 이름</label><input id="tpl-title" maxlength="80" placeholder="예: 1학급 1캠페인 활동 계획서"></div>
+          <div class="field"><label for="tpl-dept">부서</label><input id="tpl-dept" maxlength="40" placeholder="예: 창의인성부"></div>
+          <div class="field"><label for="tpl-year">학년도</label><input id="tpl-year" maxlength="10" placeholder="예: 2026"></div>
+        </div>
+        <div class="field">
+          <label for="tpl-guide">작성 기준</label>
+          <textarea id="tpl-guide" rows="8" placeholder="칸마다 무엇을 어떤 형식으로 쓰는지, 학교 규칙을 적습니다. 예: 활동목적 칸은 1~2문장, 150자 이내, 문장 끝은 '~하고자 함'."></textarea>
+          <span class="hint">AI가 이 기준을 그대로 따릅니다. 처음이라면 아래 "작성 기준 초안 만들기"를 누른 뒤 고쳐 주세요.</span>
+        </div>
+        <div class="field">
+          <label for="tpl-sugg">예시 요청 (한 줄에 하나, 최대 6개)</label>
+          <textarea id="tpl-sugg" rows="3" placeholder="예: 첨부한 명단으로 참가 학생 칸을 채워 줘."></textarea>
+        </div>
+        <div class="field">
+          <label for="tpl-example">요청 칸 입력 예시</label>
+          <input id="tpl-example" maxlength="300" placeholder="예: 2학년 3반이고 10월 27일부터 31일까지 정문 앞에서 해.">
+        </div>
+        <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" type="button" id="tpl-draft">작성 기준 초안 만들기</button>
+          <span class="spacer"></span>
+          <button class="btn" type="button" id="tpl-reset" hidden>새 양식으로</button>
+          <button class="btn primary" type="submit" id="tpl-save">저장</button>
+        </div>
+        <p class="admin-msg" id="tpl-msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script src="../lib/jszip.min.js"></script>
 <script src="../lib/xlsx.full.min.js"></script>
 <script src="../lib/dr-ai.js"></script>
 <script src="forms.js"></script>
 <script src="hwpx-doc.js"></script>
-<script type="module">
-import { createEditor } from './lib/rhwp-editor/index.js';
-
-const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const MAX_ATT_CHARS = 15000;
-const HISTORY_TURNS = 6;
-
-const state = {
-  form: null, editor: null, busy: false,
-  history: [],        // { user, reply, changes:[label] }
-  undo: [],           // { turnEl, before: Uint8Array, afterSha }
-  attachments: [],    // { name, text, error }
-  savedSha: null, dirty: false,
-  retries: {}, retrySeq: 0  // 실패한 요청을 첨부까지 그대로 다시 보내기 위한 보관
-};
-
-/* ── 양식 선택 ── */
-function pickForm() {
-  const want = new URLSearchParams(location.search).get('form');
-  return DR_FORMS.find((f) => f.id === want) || DR_FORMS[0];
-}
-function renderFormSelect() {
-  const sel = $('form-select');
-  sel.innerHTML = DR_FORMS.map((f) => `<option value="${esc(f.id)}"${f === state.form ? ' selected' : ''}>${esc(f.title)}</option>`).join('');
-  sel.disabled = DR_FORMS.length < 2;
-  $('form-dept').textContent = state.form.dept ? '· ' + state.form.dept : '';
-  document.title = state.form.title + ' · 업무 양식 AI · 대륜고 사용설명서';
-}
-$('form-select').addEventListener('change', (e) => {
-  if (state.dirty && !confirm('지금 문서를 아직 받지 않았습니다. 다른 양식으로 바꾸면 지금 문서는 사라집니다. 바꿀까요?')) { e.target.value = state.form.id; return; }
-  location.search = '?form=' + encodeURIComponent(e.target.value);
-});
-
-/* ── 편집기 ── */
-function cover(kind, html) {
-  const c = $('doc-cover');
-  if (!kind) { c.hidden = true; return; }
-  c.hidden = false; c.className = 'doc-cover' + (kind === 'err' ? ' err' : '');
-  c.innerHTML = (kind === 'wait' ? '<div class="spin"></div>' : '') + html;
-}
-async function templateBytes(form) {
-  const res = await fetch(form.template, { cache: 'no-cache' });
-  if (!res.ok) throw new Error('양식 파일을 받지 못했습니다(' + res.status + ').');
-  const zip = await JSZip.loadAsync(await res.arrayBuffer());
-  for (const name of Object.keys(zip.files).filter((n) => /^Contents\/section\d+\.xml$/.test(n))) {
-    const xml = (await zip.file(name).async('string')).replace(/\{\{([^}]+)\}\}/g, (m, k) => (form.blanks && k in form.blanks ? form.blanks[k] : ''));
-    zip.file(name, xml);
-  }
-  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE', mimeType: 'application/hwp+zip' });
-}
-async function docSha() {
-  try { return (await state.editor.getDocumentState()).documentSha256; } catch (e) { return null; }
-}
-// 편집기는 기본으로 복구용 사본을 이 브라우저(IndexedDB)에 자동 저장한다. 학교 공용 PC에 학생 이름이 든
-// 문서가 남지 않도록, 편집기를 띄우기 전에 같은 오리진의 편집기 설정에서 자동 저장을 끈다.
-function disableStudioDrafts() {
-  try {
-    const key = 'rhwp-settings';
-    const s = JSON.parse(localStorage.getItem(key) || '{}') || {};
-    s.autosave = Object.assign({}, s.autosave || {}, { recoveryEnabled: false, idleSaveEnabled: false });
-    localStorage.setItem(key, JSON.stringify(s));
-  } catch (e) {}
-}
-async function startEditor() {
-  cover('wait', '<div>한글 편집기를 여는 중입니다…</div>');
-  try {
-    disableStudioDrafts();
-    state.editor = await createEditor('#editor', { studioUrl: new URL('studio/', document.baseURI).href });
-    const bytes = await templateBytes(state.form);
-    await state.editor.loadFile(bytes, state.form.title + '.hwpx', { skipUnsavedGuard: true });
-    state.savedSha = await docSha();
-    cover(null);
-    $('btn-download').disabled = false;
-    setInterval(checkDirty, 4000);
-  } catch (e) {
-    console.error(e);
-    cover('err', '<div>한글 편집기를 열지 못했습니다. 새로 고침해도 같으면 학교 인터넷이 이 페이지의 편집기 파일을 막고 있는지 확인해 주세요.</div><button class="btn" type="button" onclick="location.reload()">새로 고침</button>');
-  }
-}
-async function checkDirty() {
-  if (!state.editor || state.busy) return;
-  const sha = await docSha();
-  if (sha && state.savedSha) setDirty(sha !== state.savedSha);
-}
-function setDirty(v) {
-  if (state.dirty === v) return; // 주기 확인이 '받았습니다' 같은 안내를 지우지 않게
-  state.dirty = v;
-  $('save-note').textContent = v ? '받지 않은 변경이 있습니다' : '';
-}
-window.addEventListener('beforeunload', (e) => { if (state.dirty) { e.preventDefault(); e.returnValue = ''; } });
-
-/* ── 내려받기 ── */
-$('btn-download').addEventListener('click', async () => {
-  const btn = $('btn-download');
-  btn.disabled = true; btn.textContent = '파일을 만드는 중…';
-  try {
-    const bytes = await state.editor.exportHwpx();
-    let name = state.form.title + '.hwpx';
-    try { name = state.form.fileName(await DrHwpxDoc.open(bytes)); } catch (e) {}
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/hwp+zip' }));
-    a.download = name;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    // 편집기의 '저장 안 됨' 표시를 지운다. 복구 사본을 꺼 두었으므로 응답을 기다리지 않는다.
-    state.editor.notifySaved(name).catch(() => {});
-    state.savedSha = await docSha(); setDirty(false);
-    $('save-note').textContent = name + '을(를) 받았습니다';
-  } catch (e) {
-    alert('한글 파일을 만들지 못했습니다. ' + (e && e.message ? e.message : ''));
-  } finally { btn.disabled = false; btn.textContent = '한글 파일 받기'; }
-});
-
-/* ── AI 연결 표시 ── */
-function renderAi() {
-  const chip = $('ai-chip'), label = drAi.label();
-  chip.classList.toggle('off', !label);
-  chip.textContent = label ? 'AI: ' + label : 'AI 설정 필요';
-  chip.title = 'AI 연결 방법 바꾸기';
-  $('scope').textContent = label ? '보낼 때 문서 전체 내용과 첨부 파일 글도 함께 보냅니다. ' + drAi.scope() : '처음 한 번 AI 설정에서 Gemini 무료 키나 구독 연결을 등록하면 쓸 수 있습니다.';
-}
-$('ai-chip').addEventListener('click', () => drAi.open());
-window.addEventListener('drai-change', renderAi);
-
-/* ── 첨부 ── */
-async function readAttachment(file) {
-  const n = file.name.toLowerCase();
-  if (/\.(xlsx|xls)$/.test(n)) {
-    if (!window.XLSX) throw new Error('엑셀 읽기 모듈을 불러오지 못했습니다');
-    const wb = XLSX.read(new Uint8Array(await file.arrayBuffer()), { type: 'array' });
-    return wb.SheetNames.map((s) => (wb.SheetNames.length > 1 ? '[시트: ' + s + ']\n' : '') + XLSX.utils.sheet_to_csv(wb.Sheets[s], { blankrows: false })).join('\n');
-  }
-  if (/\.(csv|txt|md)$/.test(n)) {
-    const buf = await file.arrayBuffer();
-    try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { return new TextDecoder('euc-kr').decode(buf); }
-  }
-  throw new Error('엑셀·CSV·텍스트 파일만 읽을 수 있습니다. 사진이나 PDF의 내용은 요청 칸에 글로 적어 주세요');
-}
-async function addFiles(list) {
-  for (const f of Array.from(list)) {
-    const a = { name: f.name, text: '', error: '' };
-    state.attachments.push(a);
-    try {
-      a.text = (await readAttachment(f)).trim();
-      if (!a.text) a.error = '읽을 내용이 없습니다';
-      else if (a.text.length > MAX_ATT_CHARS) { a.text = a.text.slice(0, MAX_ATT_CHARS); a.note = '앞부분 ' + MAX_ATT_CHARS.toLocaleString() + '자만 보냅니다'; }
-    } catch (e) { a.error = e.message; }
-    renderAttachments();
-  }
-}
-function renderAttachments() {
-  $('att-list').innerHTML = state.attachments.map((a, i) =>
-    `<span class="att${a.error ? ' bad' : ''}" title="${esc(a.error || a.note || '')}"><span>${esc(a.name)}${a.error ? ' — ' + esc(a.error) : a.note ? ' — ' + esc(a.note) : ''}</span><button type="button" data-remove="${i}" aria-label="${esc(a.name)} 빼기">✕</button></span>`).join('');
-}
-$('btn-attach').addEventListener('click', () => $('file-input').click());
-$('file-input').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
-$('att-list').addEventListener('click', (e) => {
-  const b = e.target.closest('button[data-remove]'); if (!b) return;
-  state.attachments.splice(+b.dataset.remove, 1); renderAttachments();
-});
-$('chat-panel').addEventListener('dragover', (e) => e.preventDefault());
-$('chat-panel').addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
-
-/* ── 대화 화면 ── */
-function scrollLog() { const l = $('chat-log'); l.scrollTop = l.scrollHeight; }
-function renderEmpty() {
-  const f = state.form;
-  $('chat-log').innerHTML = `<div class="empty" id="empty">
-    <h3>하고 싶은 말을 적어 보세요</h3>
-    <p>AI가 오른쪽 문서를 바로 채우고 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다.</p>
-    <div class="chips">${f.suggestions.map((s) => `<button type="button" class="chip">${esc(s)}</button>`).join('')}</div></div>`;
-}
-$('chat-log').addEventListener('click', (e) => {
-  const chip = e.target.closest('.chip');
-  if (chip) { const t = $('prompt'); t.value = chip.textContent; t.focus(); t.setSelectionRange(t.value.length, t.value.length); return; }
-  const u = e.target.closest('button[data-undo]');
-  if (u) undoTurn(u);
-  const r = e.target.closest('button[data-retry]');
-  if (r) {
-    const saved = state.retries[r.dataset.retry];
-    if (!saved || state.busy) return;
-    delete state.retries[r.dataset.retry];
-    r.disabled = true;
-    $('prompt').value = saved.request;
-    state.attachments = saved.atts.slice(); renderAttachments();
-    send();
-  }
-});
-function addMsg(cls, html) {
-  const empty = $('empty'); if (empty) empty.remove();
-  const d = document.createElement('div'); d.className = 'msg ' + cls; d.innerHTML = html;
-  $('chat-log').appendChild(d); scrollLog();
-  return d;
-}
-function changesHtml(changes, problems) {
-  let h = '';
-  if (changes.length) {
-    h += `<details class="changes"${changes.length <= 6 ? ' open' : ''}><summary>고친 곳 ${changes.length}군데</summary><ul>` +
-      changes.map((c) => `<li><span class="where">${esc(c.label)}</span>${c.before ? '<del>' + esc(c.before) + '</del> ' : ''}${c.after ? '<ins>' + esc(c.after) + '</ins>' : ''}</li>`).join('') +
-      '</ul></details>';
-  }
-  if (problems.length) h += '<div class="problems">' + problems.map(esc).join('<br>') + '</div>';
-  return h;
-}
-$('btn-new').addEventListener('click', () => {
-  if (state.busy) return;
-  state.history = []; state.undo = [];
-  renderEmpty();
-});
-
-/* ── 요청 보내기 ── */
-const SCHEMA = {
-  type: 'object',
-  properties: {
-    reply: { type: 'string', description: '교사에게 보여 줄 답' },
-    edits: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          op: { type: 'string', enum: ['set', 'fill_rows', 'add_row', 'insert_after', 'delete'] },
-          target: { type: 'string' },
-          text: { type: 'string' },
-          cells: { type: 'array', items: { type: 'string' } }
-        },
-        required: ['op', 'target', 'text', 'cells']
-      }
-    }
-  },
-  required: ['reply', 'edits']
-};
-function today() {
-  const d = new Date(), w = '일월화수목금토'[d.getDay()];
-  return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일(' + w + ')';
-}
-function buildPrompt(map, request, atts) {
-  const L = [];
-  L.push('너는 대륜고등학교 교사가 학교 업무 양식(한글 문서)을 작성하도록 돕는 AI 도우미다.');
-  L.push('교사의 요청에 따라 문서를 고치거나 질문에 답한다. 오늘은 ' + today() + '이다.');
-  L.push('');
-  L.push('[양식] ' + state.form.title + (state.form.dept ? ' (' + state.form.dept + ')' : ''));
-  L.push('[양식 작성 기준]');
-  L.push(state.form.guide);
-  L.push('');
-  L.push('[문서 현재 내용] 줄마다 위치 아이디 = 지금 들어 있는 글(JSON 문자열, \\n은 칸 안의 줄바꿈)');
-  L.push(map);
-  if (atts.length) {
-    L.push('');
-    L.push('[첨부 자료]');
-    atts.forEach((a) => { L.push('--- ' + a.name + ' ---'); L.push(a.text); });
-  }
-  const hist = state.history.slice(-HISTORY_TURNS);
-  if (hist.length) {
-    L.push('');
-    L.push('[지난 대화]');
-    hist.forEach((h) => {
-      L.push('교사: ' + h.user);
-      L.push('도우미: ' + h.reply + (h.changes.length ? ' (고친 곳: ' + h.changes.join(', ') + ')' : ''));
-    });
-  }
-  L.push('');
-  L.push('[이번 요청]');
-  L.push(request);
-  L.push('');
-  L.push('[고치는 방법] 고칠 것은 edits 배열에 넣는다.');
-  L.push('- set: target(칸 T1:r8c1 또는 문단 P1)의 글을 text로 통째로 바꾼다. 칸 안의 여러 줄은 \\n으로 나눈다. 칸의 줄 가운데 바꾸지 않을 줄도 그대로 다시 적는다.');
-  L.push('- fill_rows: target 줄(예: T1:r3)부터 아래로 같은 모양의 줄들을 cells 목록으로 한 칸에 하나씩 왼쪽→오른쪽, 위→아래 순서로 채운다. 목록이 길면 줄이 자동으로 늘고, 남는 칸은 비워진다. 명단처럼 여러 줄에 걸친 값은 set 여러 개 대신 fill_rows 한 번으로 쓴다.');
-  L.push('- add_row: target 행(예: T1:r6) 바로 아래에 같은 모양의 행을 하나 더 만든다. cells에 새 행의 칸 내용을 왼쪽부터 차례로 넣는다. 여러 행이 필요하면 add_row를 여러 번 쓰고, 같은 target이면 적은 순서대로 아래에 붙는다.');
-  L.push('- insert_after: 문단 P 바로 아래에 text로 새 문단을 넣는다. delete: 문단 P를 지운다. 표 칸에는 쓰지 않는다.');
-  L.push('- 아이디는 위 [문서 현재 내용]에 있는 것만 쓴다. 같은 응답 안에서는 행을 추가해도 위 지도의 아이디를 그대로 쓴다. 지도는 요청마다 새로 만들어지므로 지난 대화에 나온 아이디를 다시 쓰지 말고 [행 이름]으로 칸을 찾는다.');
-  L.push('- "수정 불가"라고 표시된 곳과 양식의 머리글 칸(학년-반-번호, 성명 같은 항목 이름)은 고치지 않는다.');
-  L.push('- 쓰지 않는 필드는 빈 문자열("")이나 빈 배열([])로 둔다.');
-  L.push('[지켜야 할 것]');
-  L.push('- 교사가 알려 주지 않았고 첨부 자료에도 없는 학생 이름, 학번, 날짜, 시간, 장소, 숫자는 지어내지 않는다. 모르면 그 칸은 비워 두고 reply에서 물어본다.');
-  L.push('- 요청과 관계없는 곳은 고치지 않는다. 질문만 했으면 edits는 빈 배열로 둔다.');
-  L.push('- reply는 교사에게 보여 줄 짧은 답이다. 2~4문장, 존댓말로 무엇을 고쳤는지와 교사가 확인하거나 더 알려 줘야 할 것을 쓴다.');
-  return L.join('\n');
-}
-
-function setBusy(v) {
-  state.busy = v;
-  $('btn-send').disabled = v; $('busy-bar').hidden = !v;
-  if (state.editor) $('btn-download').disabled = v; // 문서를 바꾸는 중에는 받지 않는다
-  $('btn-send').textContent = v ? '작업 중…' : '보내기';
-}
-
-async function send() {
-  if (state.busy) return;
-  const request = $('prompt').value.trim();
-  if (!request) { $('prompt').focus(); return; }
-  if (!state.editor) { addMsg('err', '한글 편집기가 아직 열리지 않았습니다. 잠시 뒤 다시 보내 주세요.'); return; }
-  if (!drAi.has()) { drAi.open(); return; }
-  const atts = state.attachments.filter((a) => !a.error && a.text);
-  addMsg('me', esc(request) + (atts.length ? '<div class="files">첨부: ' + esc(atts.map((a) => a.name).join(', ')) + '</div>' : ''));
-  $('prompt').value = ''; state.attachments = []; renderAttachments();
-  const wait = addMsg('ai wait', '<span class="spin"></span><span>문서를 읽는 중…</span>');
-  const say = (t) => { wait.lastElementChild.textContent = t; };
-  setBusy(true);
-  const retryId = 'r' + (++state.retrySeq);
-  state.retries[retryId] = { request, atts };
-  const retryBtn = '<br><button class="btn small" type="button" data-retry="' + retryId + '">다시 보내기' + (atts.length ? '(첨부 ' + atts.length + '개 포함)' : '') + '</button>';
-  let before = null, loading = false;
-  try {
-    // 지문을 먼저 읽고 내보낸다. 그 사이 입력이 있으면 아래 확인에서 걸린다.
-    const shaBefore = await docSha();
-    before = await state.editor.exportHwpx();
-    const doc = await DrHwpxDoc.open(before);
-    const out = await drAi.call(buildPrompt(doc.toPrompt(), request, atts), SCHEMA, say);
-    const reply = String((out && out.reply) || '').trim() || '요청을 처리했습니다.';
-    const edits = Array.isArray(out && out.edits) ? out.edits : [];
-    let res = { changes: [], problems: [] };
-    if (edits.length) {
-      say('문서에 넣는 중…');
-      res = doc.apply(edits, { keepOnePage: state.form.keepOnePage });
-      if (res.changes.length) {
-        const packed = await DrHwpxDoc.pack(doc);
-        const pagesBefore = await state.editor.pageCount();
-        // 편집기에 넣기 직전에 한 번 더 확인한다. AI를 기다리는 동안 교사가 문서를 고쳤으면 덮어쓰지 않는다.
-        if ((await docSha()) !== shaBefore) {
-          wait.remove();
-          addMsg('err', 'AI가 답을 만드는 동안 문서가 바뀌어 고친 내용을 넣지 않았습니다. 같은 요청을 다시 보내 주세요.' + retryBtn);
-          return;
-        }
-        loading = true;
-        await state.editor.loadFile(packed, state.form.title + '.hwpx', { skipUnsavedGuard: true });
-        loading = false;
-        const pagesAfter = await state.editor.pageCount();
-        if (pagesAfter > pagesBefore) res.problems.push('문서가 ' + pagesBefore + '쪽에서 ' + pagesAfter + '쪽으로 늘었습니다. 한 쪽으로 맞춰야 하면 글을 줄여 달라고 요청해 주세요.');
-      }
-    }
-    let notes = [];
-    if (res.changes.length && state.form.check) {
-      try { notes = state.form.check(await DrHwpxDoc.open(await state.editor.exportHwpx())); } catch (e) { console.warn(e); }
-    }
-    wait.remove();
-    const turn = addMsg('ai', '<div class="reply">' + esc(reply) + '</div>' + changesHtml(res.changes, res.problems) +
-      (notes.length ? '<div class="checks">문서 확인: ' + notes.map(esc).join(' · ') + '</div>' : ''));
-    if (res.changes.length) {
-      const afterSha = await docSha();
-      state.undo.push({ turnEl: turn, before, afterSha });
-      refreshUndoButtons();
-      setDirty(afterSha !== state.savedSha);
-    }
-    state.history.push({ user: request, reply: reply + (notes.length ? ' [문서 확인: ' + notes.join(' · ') + ']' : ''), changes: res.changes.map((c) => c.label) });
-    delete state.retries[retryId];
-    scrollLog();
-  } catch (e) {
-    console.error(e);
-    wait.remove();
-    // 고친 문서를 넣다가 실패했으면 보내기 전 문서로 되돌려 둔다.
-    if (loading && before) { try { await state.editor.loadFile(before, state.form.title + '.hwpx', { skipUnsavedGuard: true }); } catch (e2) {} }
-    const m = e && e.message ? e.message : String(e);
-    addMsg('err', esc(m) + retryBtn);
-    if (/^먼저 AI 설정/.test(m)) drAi.open();
-  } finally { setBusy(false); }
-}
-$('composer').addEventListener('submit', (e) => { e.preventDefault(); send(); });
-$('prompt').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); }
-});
-
-/* ── 되돌리기: 가장 최근에 AI가 고친 것부터 하나씩 ── */
-function refreshUndoButtons() {
-  document.querySelectorAll('.turn-actions').forEach((n) => n.remove());
-  const last = state.undo[state.undo.length - 1];
-  if (!last) return;
-  const bar = document.createElement('div'); bar.className = 'turn-actions';
-  bar.innerHTML = '<button class="btn small" type="button" data-undo>되돌리기</button><span>이번에 AI가 고친 곳을 모두 원래대로 돌립니다.</span>';
-  last.turnEl.appendChild(bar);
-}
-async function undoTurn(btn) {
-  if (state.busy) return;
-  const last = state.undo[state.undo.length - 1]; if (!last) return;
-  const now = await docSha();
-  if (now && last.afterSha && now !== last.afterSha &&
-      !confirm('AI가 고친 뒤 문서에서 직접 고친 내용이 있습니다. 되돌리면 그 내용도 함께 사라집니다. 되돌릴까요?')) return;
-  setBusy(true); btn.disabled = true;
-  try {
-    await state.editor.loadFile(last.before, state.form.title + '.hwpx', { skipUnsavedGuard: true });
-    state.undo.pop();
-    const note = document.createElement('div'); note.className = 'undone'; note.textContent = '되돌렸습니다.';
-    last.turnEl.appendChild(note);
-    refreshUndoButtons();
-    const sha = await docSha(); setDirty(sha !== state.savedSha);
-  } catch (e) {
-    addMsg('err', '되돌리지 못했습니다. ' + esc(e && e.message ? e.message : ''));
-  } finally { btn.disabled = false; setBusy(false); }
-}
-
-/* ── 좁은 화면 탭 ── */
-function setTab(t) {
-  document.body.dataset.tab = t;
-  $('tab-chat').setAttribute('aria-selected', String(t === 'chat'));
-  $('tab-doc').setAttribute('aria-selected', String(t === 'doc'));
-}
-$('tab-chat').addEventListener('click', () => setTab('chat'));
-$('tab-doc').addEventListener('click', () => setTab('doc'));
-
-/* ── 시작 ── */
-state.form = pickForm();
-renderFormSelect();
-$('prompt').placeholder = state.form.example || '';
-renderAi();
-renderEmpty();
-startEditor();
-
-// 시험용(화면 동작에는 쓰지 않음)
-window.__drForms = { state, buildPrompt, send };
-</script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

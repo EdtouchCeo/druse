@@ -175,6 +175,32 @@
     return it.kind === 'p' ? paraText(it.el) : cellText(it.el);
   };
 
+  // 자료로 쓸 때의 글: 문단은 줄로, 표는 행마다 칸을 " | "로 잇는다.
+  Doc.prototype.toText = function () {
+    var self = this, out = [], row = -1, line = [];
+    function flush() { if (line.length) out.push(line.join(' | ')); line = []; }
+    this.order.forEach(function (o) {
+      if (o.table) { flush(); row = -1; out.push('[표]'); return; }
+      var it = self.items[o.id], t = self.text(o.id).replace(/\n/g, ' / ');
+      if (it.kind === 'p') { flush(); row = -1; if (t.trim()) out.push(t); return; }
+      if (it.row !== row) { flush(); row = it.row; }
+      line.push(t);
+    });
+    flush();
+    return out.join('\n');
+  };
+
+  // AI에게 보여 줄 위치 지도. limit(글자 수)를 넘으면 뒷부분을 줄이고 truncated를 표시한다.
+  Doc.prototype.mapInfo = function (limit) {
+    var full = this.toPrompt();
+    if (!limit || full.length <= limit) return { text: full, truncated: 0 };
+    var lines = full.split('\n'), kept = [], size = 0;
+    for (var i = 0; i < lines.length; i++) { if (size + lines[i].length + 1 > limit) break; kept.push(lines[i]); size += lines[i].length + 1; }
+    var cut = lines.length - kept.length;
+    kept.push('(문서가 길어 뒤의 ' + cut + '줄은 보내지 않았다. 그 부분은 고칠 수 없으니 교사에게 위치를 물어본다.)');
+    return { text: kept.join('\n'), truncated: cut };
+  };
+
   // AI에게 보여 줄 위치 지도
   Doc.prototype.toPrompt = function () {
     var self = this, lines = [];
@@ -260,9 +286,16 @@
           block.push(r.clone);
           grown[x.table] = (grown[x.table] || 0) + r.height;
         }
+        var lockedCells = 0;
         block.forEach(function (tr, j) {
-          sortedCells(tr).forEach(function (tc, k) { setCellText(tc, x.cells[j * per + k] == null ? '' : x.cells[j * per + k]); });
+          sortedCells(tr).forEach(function (tc, k) {
+            // 그림·표 같은 요소가 든 칸은 글을 바꾸면 그 요소가 사라지므로 건너뛴다.
+            var ps = cellParas(tc);
+            if (!ps.length || ps.some(paraBlocked)) { lockedCells++; return; }
+            setCellText(tc, x.cells[j * per + k] == null ? '' : x.cells[j * per + k]);
+          });
         });
+        if (lockedCells) problems.push((head || '표') + '에서 그림이나 표가 든 칸 ' + lockedCells + '개는 고치지 않았습니다.');
         var filled = x.cells.filter(function (c) { return c; });
         changes.push({ label: (head || '표') + ' 줄 채우기(' + block.length + '줄)', before: beforeText, after: filled.join(' · ') });
       } catch (err) { problems.push(err.message); }
