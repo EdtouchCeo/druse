@@ -13,7 +13,12 @@
  */
 (function () {
   'use strict';
-  var AI_KEY = 'dr_tt_llm_v1';
+  // 사이트별 설정(같은 파일을 daeryun.life와 edtouch.ai가 함께 쓴다). 없으면 daeryun 기본값.
+  //   storageKey: AI 설정 저장 키, seedKey: 저장값이 없을 때 대신 읽을 키,
+  //   openExternal: 설정 창을 이 모듈 대신 부모 사이트가 열게 하는 함수(예: edtouch의 전역 AI 설정 창)
+  var CFG = window.DR_AI_CONFIG || {};
+  var AI_KEY = CFG.storageKey || 'dr_tt_llm_v1';
+  var SEED_KEY = CFG.seedKey || '';
   // 폴백은 반드시 실재하는 모델이어야 한다 — flash-lite는 일부 키에서 404가 나 원래 오류를 뒤덮는 실사고(특기사항 AI, 2026-07)
   var GEM_DEFAULT = 'gemini-3.5-flash', GEM_FALLBACK = 'gemini-2.5-flash';
   var BRIDGE = 'http://127.0.0.1:47321';
@@ -28,7 +33,7 @@
 
   function load() {
     try {
-      var s = JSON.parse(localStorage.getItem(AI_KEY));
+      var s = JSON.parse(localStorage.getItem(AI_KEY) || (SEED_KEY ? localStorage.getItem(SEED_KEY) : null));
       if (s && typeof s === 'object') return {
         provider: s.provider === 'ollama' ? 'ollama' : s.provider === 'bridge' ? 'bridge' : 'gemini',
         gemini: { apiKey: ((s.gemini && s.gemini.apiKey) || '').trim(), model: ((s.gemini && s.gemini.model) || '').trim() || GEM_DEFAULT },
@@ -40,7 +45,7 @@
   }
   // 구독 연결은 저장만 하면 '설정됨'으로 본다(본체와 같다). 실제 실행 여부는 첫 요청에서 확인된다.
   function has(s) { s = s || load(); if (s.provider === 'bridge') return true; return s.provider === 'gemini' ? !!s.gemini.apiKey : !!(s.ollama.url && s.ollama.model); }
-  function isSaved() { try { return !!localStorage.getItem(AI_KEY); } catch (e) { return false; } }
+  function isSaved() { try { return !!(localStorage.getItem(AI_KEY) || (SEED_KEY && localStorage.getItem(SEED_KEY))); } catch (e) { return false; } }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
@@ -202,6 +207,7 @@
     };
   }
   function open() {
+    if (typeof CFG.openExternal === 'function') { CFG.openExternal(); return; }
     ensureModal();
     lastFocus = document.activeElement;
     var s = load();
@@ -399,6 +405,9 @@
     }
     throw primaryErr || lastErr || new Error('AI 응답을 받지 못했습니다.');
   }
+
+  // 다른 창(부모 사이트의 설정 창 등)에서 설정을 바꾸면 화면 표시를 새로 고친다.
+  window.addEventListener('storage', function (e) { if (e.key === AI_KEY || (SEED_KEY && e.key === SEED_KEY)) window.dispatchEvent(new CustomEvent('drai-change')); });
 
   window.drAi = {
     call: call,

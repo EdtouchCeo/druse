@@ -20,6 +20,12 @@ const SESSION_KEY = 'dr_sess_v1';
 const SB_URL = 'https://aafpkfcxzdrguuctdwth.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhZnBrZmN4emRyZ3V1Y3Rkd3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEwNjYsImV4cCI6MjA5MjMwNzA2Nn0.1VWheZHC2qNwWJhJ6KTFhjfFf9-bAfAdjzja2cD-xmw';
 
+// 사이트별 설정(같은 파일을 daeryun.life 업무 양식 AI와 edtouch.ai 문서작성 AI가 함께 쓴다). 없으면 daeryun 기본값.
+//   gate: 교사 확인(본 사이트 세션)을 이 화면이 직접 할지 — edtouch는 앱 라우터가 이미 확인한다
+//   serverForms: 관리자 양식(서버) 목록·관리 화면을 쓸지
+//   role: AI에게 알려 줄 사용자 설명
+const CFG = Object.assign({ gate: true, serverForms: true, role: '대륜고등학교 교사' }, window.FORMS_CONFIG || {});
+
 const state = {
   isAdmin: false, forms: [], editor: null, editorTabId: null, busy: false,
   tabs: [], activeId: null, targetId: null, seq: 0,
@@ -138,6 +144,8 @@ async function loadIntoEditor(t) {
   state.editorTabId = null;
   await state.editor.loadFile(t.bytes, t.loadName || t.name, { skipUnsavedGuard: true });
   state.editorTabId = t.id;
+  // .hwp는 처음 내보낼 때 지문이 한 번 바뀐다(편집기 동작). 미리 한 번 내보내 두어야 고치지 않은 문서가 '받지 않은 문서'로 잡히지 않는다.
+  if (!/\.hwpx$/i.test(t.loadName || t.name)) { try { await state.editor.exportHwpx(); } catch (e) {} }
   const sha = await docSha();
   // 다시 연 문서는 지문이 바뀔 수 있다. 떠날 때와 같은 문서였다면 되돌리기 기준을 새 지문으로 옮긴다.
   const top = t.undo[t.undo.length - 1];
@@ -348,7 +356,7 @@ document.addEventListener('paste', async (e) => {
 async function loadForms() {
   const builtin = (window.DR_FORMS || []).map((f) => ({ id: 'builtin:' + f.id, builtin: true, title: f.title, dept: f.dept, form: f }));
   let server = [];
-  try { server = ((await api('list')).items || []).map((m) => ({ id: 'srv:' + m.id, builtin: false, title: m.title, dept: m.dept, meta: m })); }
+  if (CFG.serverForms) try { server = ((await api('list')).items || []).map((m) => ({ id: 'srv:' + m.id, builtin: false, title: m.title, dept: m.dept, meta: m })); }
   catch (e) { console.warn(e); }
   // 관리자가 같은 이름으로 다시 올린 양식은 웹 판이 우선한다.
   const names = new Set(server.map((s) => s.title));
@@ -356,6 +364,7 @@ async function loadForms() {
   renderFormCards();
 }
 function renderFormCards() {
+  document.querySelector('.forms-list').hidden = !state.forms.length && !CFG.serverForms;
   $('form-cards').innerHTML = state.forms.length ? state.forms.map((f) =>
     `<button type="button" class="form-card" data-form="${esc(f.id)}"><b>${esc(f.title)}</b><small>${esc(f.dept || '')}${f.meta && f.meta.year ? ' · ' + esc(f.meta.year) + '학년도' : ''}</small></button>`).join('')
     : '<p class="hint">등록된 양식이 없습니다.</p>';
@@ -578,7 +587,7 @@ function today() {
 }
 function buildPrompt(o) {
   const L = [];
-  L.push('너는 대륜고등학교 교사가 학교 업무 문서(한글 문서)를 작성하도록 돕는 AI 도우미다.');
+  L.push('너는 ' + CFG.role + '가 학교 업무 문서(한글 문서)를 작성하도록 돕는 AI 도우미다.');
   L.push('교사의 요청에 따라 문서를 고치거나 질문에 답한다. 오늘은 ' + today() + '이다.');
   if (o.target) {
     L.push('');
@@ -673,7 +682,9 @@ async function send(sourceIds) {
       if (!(await activate(target.id, true))) throw new Error('고칠 문서를 열지 못해 요청을 보내지 않았습니다.');
       const got = await lock(async () => {
         if (state.editorTabId !== target.id) throw new Error('고칠 문서를 열지 못해 요청을 보내지 않았습니다.');
-        return { sha: await docSha(), bytes: await state.editor.exportHwpx() };
+        // .hwp로 연 문서는 처음 내보낼 때 지문이 바뀐다. 내보낸 뒤의 지문을 기준으로 삼아야 넣기 직전 확인이 헛걸리지 않는다.
+        const bytes = await state.editor.exportHwpx();
+        return { sha: await docSha(), bytes };
       });
       shaBefore = got.sha; before = got.bytes;
       doc = await DrHwpxDoc.open(before);
@@ -896,10 +907,12 @@ function showGate(e) {
   else if (e && e.status && e.status !== 401) { $('gate-title').textContent = '확인하지 못했습니다'; $('gate-text').textContent = e.message + ' 잠시 뒤 새로 고쳐 주세요.'; }
 }
 async function boot() {
-  try {
-    const me = await api('me');
-    state.isAdmin = !!me.isAdmin;
-  } catch (e) { showGate(e); return; }
+  if (CFG.gate) {
+    try {
+      const me = await api('me');
+      state.isAdmin = !!me.isAdmin && CFG.serverForms;
+    } catch (e) { showGate(e); return; }
+  }
   $('app').hidden = false;
   ['btn-forms', 'btn-open'].forEach((id) => { $(id).hidden = false; });
   $('btn-admin').hidden = !state.isAdmin;
