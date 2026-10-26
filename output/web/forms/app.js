@@ -7,6 +7,7 @@
  */
 import { createEditor } from './lib/rhwp-editor/index.js';
 import { KIND_OF, KIND_LABEL, readPdf, readSheet, readPptx, readText, readPaste } from './sources.js';
+import * as Deck from './deck.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -24,7 +25,13 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 //   gate: 교사 확인(본 사이트 세션)을 이 화면이 직접 할지 — edtouch는 앱 라우터가 이미 확인한다
 //   serverForms: 관리자 양식(서버) 목록·관리 화면을 쓸지
 //   role: AI에게 알려 줄 사용자 설명
-const CFG = Object.assign({ gate: true, serverForms: true, role: '대륜고등학교 교사' }, window.FORMS_CONFIG || {});
+//   slideTheme·slideAssets·pptxLib: 새 PPT의 양식(slides.js 테마), 양식 그림 주소, 파워포인트 도구 주소
+const CFG = Object.assign({ gate: true, serverForms: true, role: '대륜고등학교 교사',
+  slideTheme: 'daeryun', slideAssets: { 'daeryun-logo': 'slides/daeryun-logo.png' }, pptxLib: '../lib/pptxgen.bundle.js' }, window.FORMS_CONFIG || {});
+const abs = (u) => new URL(u, document.baseURI).href;
+const SLIDE_ASSETS = Object.fromEntries(Object.entries(CFG.slideAssets).map(([k, u]) => [k, abs(u)]));
+const isTarget = (t) => !!t && (t.kind === 'hwp' || t.kind === 'slides');
+(function injectSlideCss() { const st = document.createElement('style'); st.textContent = window.DrSlides.CSS; document.head.appendChild(st); })();
 
 const state = {
   isAdmin: false, forms: [], editor: null, editorTabId: null, busy: false,
@@ -168,10 +175,16 @@ window.addEventListener('beforeunload', (e) => { if (state.tabs.some((t) => t.di
 
 /* ── 탭 ── */
 function newTab(o) {
-  const t = Object.assign({ id: 't' + (++state.seq), form: null, src: null, srcErr: '', use: o.kind !== 'hwp', undo: [], dirty: false, loadSha: null, viewEl: null }, o);
+  const t = Object.assign({ id: 't' + (++state.seq), form: null, src: null, srcErr: '', use: o.kind !== 'hwp' && o.kind !== 'slides', undo: [], dirty: false, loadSha: null, viewEl: null }, o);
   state.tabs.push(t);
   return t;
 }
+let deckSeq = 0;
+function newDeckTab(base) {
+  const name = (base ? base + ' 발표 자료' : '새 PPT' + (++deckSeq > 1 ? ' ' + deckSeq : ''));
+  return newTab({ name, kind: 'slides', deck: Deck.emptyDeck(CFG.slideTheme, '') });
+}
+function refreshDeck(t) { if (t && t.viewEl && t.viewEl.refresh) t.viewEl.refresh(); }
 function renderTabs() {
   $('tabbar').innerHTML = state.tabs.map((t) =>
     `<div class="tab" role="tab" tabindex="0" data-tab="${t.id}" aria-selected="${t.id === state.activeId}" title="${esc(t.name)}">` +
@@ -219,8 +232,9 @@ async function activate(id, force) {
   } else {
     $('editor').hidden = true; $('viewer').hidden = false;
     renderViewer(t);
+    if (t.kind === 'slides' && !state.busy) state.targetId = t.id;
   }
-  renderTabs(); renderTarget(); renderSources(); updateDownload();
+  renderTabs(); renderTarget(); renderSources(); updateDownload(); renderEmptyHint();
   if (document.body.dataset.pane === 'chat' && window.matchMedia('(max-width: 900px)').matches) setPane('work');
   return true;
 }
@@ -232,7 +246,7 @@ async function closeTab(id, force) {
     state.tabs = state.tabs.filter((x) => x.id !== id);
     if (state.editorTabId === id) state.editorTabId = null;
   });
-  if (state.targetId === id) state.targetId = (state.tabs.filter((x) => x.kind === 'hwp').pop() || {}).id || null;
+  if (state.targetId === id) state.targetId = (state.tabs.filter(isTarget).pop() || {}).id || null;
   if (state.admin.tabId === id) state.admin.tabId = null;
   if (state.activeId === id) {
     const next = state.tabs[state.tabs.length - 1];
@@ -245,13 +259,23 @@ async function closeTab(id, force) {
 function renderViewer(t) {
   const v = $('viewer');
   v.innerHTML = '';
-  if (!t.viewEl) t.viewEl = buildView(t);
+  if (!t.viewEl) t.viewEl = t.kind === 'slides' ? buildDeckView(t) : buildView(t);
   v.appendChild(t.viewEl);
+  if (t.viewEl.refresh) t.viewEl.refresh();
   v.scrollTop = 0;
+}
+function buildDeckView(t) {
+  return Deck.createDeckView(t, {
+    assets: SLIDE_ASSETS,
+    isBusy: () => state.busy && state.sendTargetId === t.id,
+    onEdit: () => { if (!t.dirty) { t.dirty = true; renderTabs(); updateSaveNote(); } updateDownload(); },
+    emptyHtml: () => '<h2>어떤 발표 자료를 만들까요?</h2><p>왼쪽 요청 칸에 주제와 장 수를 적어 보내면 AI가 장 구성을 짜고 내용을 채웁니다. ' +
+      '함께 보낼 자료(PDF·한글·엑셀·파워포인트)를 열어 두면 그 내용을 근거로 씁니다.</p><p class="deck-eg">예: 연수 자료 PDF로 10장짜리 교사 연수 PPT 만들어 줘.</p>'
+  });
 }
 function buildView(t) {
   const box = document.createElement('div');
-  const head = `<div class="viewer-head">${esc(KIND_LABEL[t.kind])} 자료입니다. 이 파일은 고치지 않고, AI가 한글 문서를 채울 때 근거로 씁니다.</div>`;
+  const head = `<div class="viewer-head">${esc(KIND_LABEL[t.kind])} 자료입니다. 이 파일은 고치지 않고, AI가 한글 문서를 채우거나 PPT를 만들 때 근거로 씁니다.</div>`;
   if (t.srcErr) { box.innerHTML = head + `<div class="viewer-note">${esc(t.srcErr)}</div>`; return box; }
   const s = t.src;
   const noteHtml = s.note ? `<div class="viewer-note">${esc(s.note)}</div>` : '';
@@ -327,6 +351,17 @@ async function addFiles(list) {
 }
 $('file-input').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
 ['btn-open', 'btn-open2'].forEach((id) => $(id).addEventListener('click', () => $('file-input').click()));
+// 새 PPT: 빈 PPT 탭을 열고, 열려 있던 한글 문서가 있으면 자료로 고른다.
+$('btn-new-deck').addEventListener('click', async () => {
+  if (state.busy) return;
+  const from = tab(state.targetId);
+  const t = newDeckTab(from && from.kind === 'hwp' ? baseName(from.name) : null);
+  if (from && from.kind === 'hwp') from.use = true;
+  await activate(t.id);
+  renderSources(); renderEmpty();
+  if (window.matchMedia('(max-width: 900px)').matches) setPane('chat');
+  $('prompt').focus();
+});
 let dragDepth = 0;
 window.addEventListener('dragenter', (e) => { if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) { dragDepth++; document.body.classList.add('drag-over'); } });
 window.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) document.body.classList.remove('drag-over'); });
@@ -422,9 +457,9 @@ async function openForm(id, opts) {
 
 /* ── 고칠 문서·자료 선택 ── */
 function renderTarget() {
-  const hw = state.tabs.filter((t) => t.kind === 'hwp');
+  const hw = state.tabs.filter(isTarget);
   const sel = $('target');
-  sel.innerHTML = hw.length ? hw.map((t) => `<option value="${t.id}"${t.id === state.targetId ? ' selected' : ''}>${esc(t.name)}</option>`).join('')
+  sel.innerHTML = hw.length ? hw.map((t) => `<option value="${t.id}"${t.id === state.targetId ? ' selected' : ''}>${t.kind === 'slides' ? '[PPT] ' : ''}${esc(t.name)}</option>`).join('')
     : '<option value="">없음 (질문만 할 수 있습니다)</option>';
   sel.disabled = !hw.length || state.busy;
   renderEmptyHint();
@@ -438,7 +473,7 @@ function renderSources() {
   const others = state.tabs.filter((t) => t.id !== state.targetId);
   $('sources-box').hidden = !others.length;
   $('sources-list').innerHTML = others.map((t) => {
-    const info = t.kind === 'hwp' ? '한글 문서' : t.srcErr ? '읽지 못함' : (srcSize(t).toLocaleString() + '자' + (srcSize(t) > SRC_LIMIT ? ', 앞부분만 보냄' : ''));
+    const info = t.kind === 'hwp' ? '한글 문서' : t.kind === 'slides' ? 'PPT ' + t.deck.slides.length + '장' : t.srcErr ? '읽지 못함' : (srcSize(t).toLocaleString() + '자' + (srcSize(t) > SRC_LIMIT ? ', 앞부분만 보냄' : ''));
     return `<li><label><input type="checkbox" data-use="${t.id}"${t.use && !t.srcErr ? ' checked' : ''}${t.srcErr ? ' disabled' : ''}><span>${esc(t.name)} <small>(${esc(KIND_LABEL[t.kind])}, ${info})</small></span></label></li>`;
   }).join('');
   const n = others.filter((t) => t.use && !t.srcErr).length;
@@ -455,15 +490,18 @@ async function sourceText(t) {
     const doc = await DrHwpxDoc.open(await currentHwpx(t));
     return doc.toText();
   }
+  if (t.kind === 'slides') return Deck.deckText(t.deck);
   return (t.src && t.src.text) || '';
 }
 
 /* ── 받기 ── */
 function updateDownload() {
   const t = tab(state.activeId);
-  const ok = !!(t && t.kind === 'hwp' && state.editorTabId === t.id) && !state.busy;
+  const isDeck = !!t && t.kind === 'slides';
+  const ok = (isDeck ? t.deck.slides.length > 0 : !!(t && t.kind === 'hwp' && state.editorTabId === t.id)) && !state.busy;
   $('btn-download').disabled = !ok;
-  $('btn-download').title = ok ? '' : '한글 문서 탭에서 받을 수 있습니다.';
+  $('btn-download').title = ok ? '' : isDeck ? 'AI가 슬라이드를 만든 뒤에 받을 수 있습니다.' : '한글 문서나 PPT 탭에서 받을 수 있습니다.';
+  $('download-menu').querySelectorAll('[data-format]').forEach((b) => { b.hidden = (b.dataset.format === 'pptx') !== isDeck; });
 }
 $('btn-download').addEventListener('click', () => {
   const m = $('download-menu'); m.hidden = !m.hidden;
@@ -473,7 +511,9 @@ document.addEventListener('click', (e) => { if (!e.target.closest('.menu')) { $(
 $('download-menu').addEventListener('click', async (e) => {
   const b = e.target.closest('[data-format]'); if (!b) return;
   $('download-menu').hidden = true;
-  const t = tab(state.activeId); if (!t || state.editorTabId !== t.id) return;
+  const t = tab(state.activeId); if (!t) return;
+  if (t.kind === 'slides') { downloadDeck(t); return; }
+  if (state.editorTabId !== t.id) return;
   const fmt = b.dataset.format, btn = $('btn-download');
   btn.disabled = true; btn.textContent = '만드는 중…';
   try {
@@ -502,6 +542,23 @@ $('download-menu').addEventListener('click', async (e) => {
   } finally { btn.textContent = '받기'; updateDownload(); }
 });
 
+async function downloadDeck(t) {
+  const btn = $('btn-download');
+  btn.disabled = true; btn.textContent = '만드는 중…';
+  try {
+    const blob = await Deck.buildPptxBlob(t.deck, SLIDE_ASSETS, abs(CFG.pptxLib));
+    const name = (t.deck.title || t.name).replace(/[\\/:*?"<>|\n\r]+/g, ' ').trim().slice(0, 80) + '.pptx';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    t.dirty = false; renderTabs(); updateSaveNote();
+    $('save-note').textContent = name + '을(를) 받았습니다';
+  } catch (err) {
+    console.error(err);
+    alert('파워포인트 파일을 만들지 못했습니다. ' + (err && err.message ? err.message : ''));
+  } finally { btn.textContent = '받기'; updateDownload(); }
+}
+
 /* ── AI 연결 표시 ── */
 function renderAi() {
   const chip = $('ai-chip'), label = drAi.label();
@@ -519,14 +576,19 @@ window.addEventListener('drai-change', renderAi);
 /* ── 대화 화면 ── */
 function currentForm() { const t = tab(state.targetId); return t && t.form; }
 function renderEmpty() {
-  const f = currentForm();
-  const sugg = f && f.suggestions && f.suggestions.length ? f.suggestions
-    : (state.targetId ? ['아직 비어 있는 칸을 알려 줘.', '맞춤법과 띄어쓰기를 검토해 줘.', '고른 자료 내용으로 빈칸을 채워 줘.'] : ['고른 자료를 다섯 줄로 요약해 줘.']);
+  const f = currentForm(), tg = tab(state.targetId), deck = tg && tg.kind === 'slides' ? tg.deck : null;
+  const sugg = deck ? (deck.slides.length ? ['모든 장의 글을 더 짧게 줄여 줘.', '3번 장을 표로 바꿔 줘.', '발표 노트를 장마다 3문장으로 써 줘.']
+      : ['고른 자료로 10장짜리 발표 자료를 만들어 줘.', '학부모 설명회용으로 8장 만들어 줘.'])
+    : f && f.suggestions && f.suggestions.length ? f.suggestions
+    : (state.targetId ? ['아직 비어 있는 칸을 알려 줘.', '맞춤법과 띄어쓰기를 검토해 줘.', '이 문서 내용으로 PPT 만들어 줘.'] : ['고른 자료를 다섯 줄로 요약해 줘.', '고른 자료로 PPT 만들어 줘.']);
+  const lead = deck ? (deck.slides.length ? 'AI가 PPT의 글과 장을 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다. 화면의 글을 눌러 직접 고칠 수도 있습니다.'
+      : '만들 발표 자료의 주제·대상·장 수를 적어 주세요. AI가 장 구성을 짠 뒤 내용을 채웁니다.')
+    : state.targetId ? 'AI가 고칠 문서를 바로 채우고 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다.' : '양식에서 시작하거나 한글 파일을 열면 AI가 문서를 채웁니다. PPT를 만들어 달라고 하면 새 PPT 탭이 열립니다.';
   $('chat-log').innerHTML = `<div class="empty" id="empty">
     <h3>하고 싶은 말을 적어 보세요</h3>
-    <p>${state.targetId ? 'AI가 고칠 문서를 바로 채우고 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다.' : '양식에서 시작하거나 한글 파일을 열면 AI가 문서를 채웁니다. 지금은 자료에 대한 질문만 할 수 있습니다.'}</p>
+    <p>${lead}</p>
     <div class="chips">${sugg.map((s) => `<button type="button" class="chip">${esc(s)}</button>`).join('')}</div></div>`;
-  $('prompt').placeholder = (f && f.example) || '예: 연수 자료 PDF 내용으로 활동 목적을 써 줘.';
+  $('prompt').placeholder = deck ? '예: 연수 자료 PDF로 10장짜리 교사 연수 PPT 만들어 줘.' : (f && f.example) || '예: 연수 자료 PDF 내용으로 활동 목적을 써 줘.';
 }
 function renderEmptyHint() { if ($('empty')) renderEmpty(); }
 $('chat-log').addEventListener('click', (e) => {
@@ -634,8 +696,9 @@ function setBusy(v) {
   if (!v) state.sendTargetId = null;
   $('btn-send').disabled = v; $('busy-bar').hidden = !v;
   $('btn-send').textContent = v ? '작업 중…' : '보내기';
-  $('target').disabled = v || !state.tabs.some((t) => t.kind === 'hwp');
+  $('target').disabled = v || !state.tabs.some(isTarget);
   renderTabs(); updateDownload();
+  state.tabs.forEach((t) => { if (t.kind === 'slides' && t.id === state.activeId) refreshDeck(t); });
 }
 // 자료를 상한에 맞춰 모은다. 고칠 문서와 읽지 못한 파일은 빼고, 잘리거나 못 보낸 것은 따로 알린다.
 async function collectSources(ids) {
@@ -659,7 +722,20 @@ async function send(sourceIds) {
   const request = $('prompt').value.trim();
   if (!request) { $('prompt').focus(); return; }
   if (!drAi.has()) { drAi.open(); return; }
-  const target = tab(state.targetId);
+  let target = tab(state.targetId);
+  // 한글 문서를 고치다가 PPT를 만들어 달라고 하면 새 PPT 탭을 열고, 그 한글 문서를 자료로 쓴다.
+  if ((!target || target.kind !== 'slides') && Deck.isDeckRequest(request)) {
+    const from = target;
+    const t2 = newDeckTab(from ? baseName(from.name) : null);
+    if (from) from.use = true;
+    await activate(t2.id);
+    note('새 PPT 탭을 만들었습니다.' + (from ? ' "' + from.name + '"을(를) 자료로 씁니다.' : ''));
+    target = t2;
+  } else if (target && target.kind === 'hwp' && Deck.mentionsDeck(request)) {
+    // 한글 문서를 보고 있다가 "PPT 3번 장 …"처럼 이미 만든 PPT를 고치라고 하면 가장 최근 PPT를 고친다.
+    const last = state.tabs.filter((x) => x.kind === 'slides' && x.deck.slides.length).pop();
+    if (last) { await activate(last.id); state.targetId = last.id; note('"' + last.name + '"을(를) 고칩니다.'); target = last; }
+  }
   state.sendTargetId = target ? target.id : null;
   setBusy(true);
   const retryId = 'r' + (++state.retrySeq);
@@ -676,6 +752,7 @@ async function send(sourceIds) {
     if (skipped.length) note('자료가 너무 많아 보내지 못한 파일: ' + skipped.map((s) => s.name).join(', ') + '. 필요하면 다른 자료의 선택을 풀고 다시 보내 주세요.');
     wait = addMsg('ai wait', '<span class="spin"></span><span>문서를 읽는 중…</span>');
     const say = (t) => { wait.lastElementChild.textContent = t; };
+    if (target && target.kind === 'slides') { await sendSlides(target, request, sources, wait, say, retryId); return; }
 
     let doc = null, shaBefore = null, map = '';
     if (target) {
@@ -748,6 +825,40 @@ async function send(sourceIds) {
     if (/^먼저 AI 설정/.test(m)) drAi.open();
   } finally { setBusy(false); }
 }
+// PPT 탭: 비어 있으면 새로 만들고(장 구성 → 6장씩 채우기), 있으면 장·칸 주소로 고친다.
+async function sendSlides(target, request, sources, wait, say, retryId) {
+  const ctx = { role: CFG.role, today: today(), request, sources, name: baseName(target.name), history: state.history.slice(-HISTORY_TURNS) };
+  const before = Deck.clone(target.deck);
+  const call = (prompt, schema) => drAi.call(prompt, schema, say);
+  let reply = '', res = { changes: [], problems: [] };
+  if (!target.deck.slides.length) {
+    say('PPT를 만드는 중…');
+    const r = await Deck.generateDeck(target, ctx, call, say, () => { refreshDeck(target); renderSources(); });
+    reply = r.reply || target.deck.slides.length + '장을 만들었습니다.';
+    res.problems = r.problems;
+    res.changes = [{ label: '새 PPT', before: '', after: (target.deck.title ? target.deck.title + ', ' : '') + target.deck.slides.length + '장' }];
+    target.cur = 0;
+  } else {
+    const out = await call(Deck.editPrompt(ctx, target.deck), Deck.EDIT_SCHEMA);
+    reply = String((out && out.reply) || '').trim() || '요청을 처리했습니다.';
+    const edits = Array.isArray(out && out.edits) ? out.edits : [];
+    if (edits.length) { say('PPT에 넣는 중…'); res = Deck.applyDeckEdits(target.deck, edits); }
+  }
+  const afterJson = JSON.stringify(target.deck), changed = afterJson !== JSON.stringify(before);
+  const notes = changed ? Deck.checkDeck(target.deck) : [];
+  wait.remove();
+  const turn = addMsg('ai', (changed ? '<div class="doc-tag">' + esc(target.name) + '</div>' : '') +
+    '<div class="reply">' + esc(reply) + '</div>' + changesHtml(changed ? res.changes : [], res.problems) +
+    (notes.length ? '<div class="checks">PPT 확인: ' + notes.map(esc).join(' · ') + '</div>' : ''));
+  if (changed) {
+    target.undo.push({ turnEl: turn, before, afterJson });
+    target.dirty = true;
+    refreshUndoButtons(); renderTabs(); updateSaveNote(); refreshDeck(target); renderSources(); renderEmptyHint();
+  }
+  state.history.push({ user: request, reply: reply + (notes.length ? ' [PPT 확인: ' + notes.join(' · ') + ']' : ''), changes: res.changes.map((c) => c.label) });
+  delete state.retries[retryId];
+  scrollLog();
+}
 $('composer').addEventListener('submit', (e) => { e.preventDefault(); send(); });
 $('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
 
@@ -766,6 +877,15 @@ async function undoTurn(btn) {
   if (state.busy) return;
   const t = tab(btn.dataset.undo); if (!t) return;
   const last = t.undo[t.undo.length - 1]; if (!last) return;
+  if (t.kind === 'slides') {
+    if (JSON.stringify(t.deck) !== last.afterJson &&
+        !confirm('AI가 고친 뒤 화면에서 직접 고친 내용이 있습니다. 되돌리면 그 내용도 함께 사라집니다. 되돌릴까요?')) return;
+    t.deck = Deck.clone(last.before); t.cur = 0; t.undo.pop(); t.dirty = true;
+    const n = document.createElement('div'); n.className = 'undone'; n.textContent = '되돌렸습니다.';
+    last.turnEl.appendChild(n);
+    refreshUndoButtons(); refreshDeck(t); renderTabs(); updateSaveNote(); updateDownload(); renderSources(); renderEmptyHint();
+    return;
+  }
   state.sendTargetId = t.id;
   setBusy(true); btn.disabled = true;
   try {
@@ -925,4 +1045,4 @@ async function boot() {
 boot();
 
 // 시험용(화면 동작에는 쓰지 않음)
-window.__drForms = { state, buildPrompt, send, addFiles, openForm, activate };
+window.__drForms = { state, buildPrompt, send, addFiles, openForm, activate, Deck };

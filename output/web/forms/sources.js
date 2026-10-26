@@ -20,7 +20,7 @@ export const KIND_OF = (name) => {
   if (/\.(txt|md)$/.test(n)) return 'text';
   return '';
 };
-export const KIND_LABEL = { hwp: '한글', pdf: 'PDF', xlsx: '엑셀', pptx: '파워포인트', text: '글', paste: '붙여넣기' };
+export const KIND_LABEL = { hwp: '한글', pdf: 'PDF', xlsx: '엑셀', pptx: '파워포인트', text: '글', paste: '붙여넣기', slides: 'PPT' };
 
 /* ── PDF ── */
 export async function openPdf(bytes) {
