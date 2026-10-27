@@ -2,7 +2,7 @@
  *
  * 편집기(rhwp)가 내보낸 .hwpx의 본문 XML을 읽어
  *   1) AI에게 보여 줄 위치 지도(문단 P1…, 표 칸 T1:r3c1…)를 만들고
- *   2) AI가 돌려준 편집 명령(set·add_row·insert_after·delete)을 XML에 적용한 뒤
+ *   2) AI가 돌려준 편집 명령(set·fill_rows·add_row·insert_after·insert_table·delete)을 XML에 적용한 뒤
  *   3) 다시 .hwpx 바이트로 묶는다.
  * 위치 아이디는 편집 전 문서 기준으로 한 번 정하고, 명령을 적용하기 전에 모두 요소로 풀어 둔다.
  * 그래서 행을 추가해도 같은 응답 안의 다른 아이디가 밀리지 않는다.
@@ -223,7 +223,7 @@
   };
 
   /* 편집 적용
-   *  edits: [{ op:'set'|'fill_rows'|'add_row'|'insert_after'|'delete', target, text, cells }]
+   *  edits: [{ op:'set'|'fill_rows'|'add_row'|'insert_after'|'insert_table'|'delete', target, text, cells }]
    *  opts.keepOnePage: { tallHeight, minHeight } — 행을 늘린 만큼 키 큰 행을 줄여 한 쪽을 유지(양식별 설정)
    *  반환: { changes:[{label, before, after}], problems:[문장] }
    */
@@ -232,13 +232,16 @@
     var self = this, changes = [], problems = [], plan = [];
     (edits || []).forEach(function (e) {
       if (!e || typeof e !== 'object') return;
-      var op = String(e.op || ''), target = String(e.target || '').trim(), text = e.text == null ? '' : String(e.text);
+      var op = String(e.op || ''), target = String(e.target || '').trim(), text = e.text == null ? '' : stripMd(String(e.text));
+      // 표가 없는 문단(P)에 줄 채우기·줄 추가를 하라고 하면 새 표를 만들라는 뜻으로 받는다(모델이 자주 헷갈린다).
+      var pm = (op === 'fill_rows' || op === 'add_row') && target.match(/^(P\d+)(?::|$)/);
+      if (pm && self.items[pm[1]]) { op = 'insert_table'; target = pm[1]; }
       if (op === 'fill_rows') {
         var fm = target.match(/^(T\d+):r(\d+)(?:c\d+)?$/);
         var ftb = fm && self.tables[fm[1]];
         var fsrc = ftb && kids(ftb.el, 'tr')[+fm[2]];
         if (!fsrc) { problems.push('채울 줄의 위치(' + target + ')를 문서에서 찾지 못했습니다.'); return; }
-        plan.push({ op: op, table: fm[1], row: +fm[2], src: fsrc, cells: Array.isArray(e.cells) ? e.cells.map(String) : [] });
+        plan.push({ op: op, table: fm[1], row: +fm[2], src: fsrc, cells: Array.isArray(e.cells) ? e.cells.map(function (c) { return stripMd(String(c)); }) : [] });
         return;
       }
       if (op === 'add_row') {
@@ -247,12 +250,25 @@
         var srcTr = tb && kids(tb.el, 'tr')[+m[2]];
         if (!srcTr) { problems.push('추가할 행의 위치(' + target + ')를 문서에서 찾지 못했습니다.'); return; }
         // 원래 행 요소를 지금 잡아 둔다. 같은 응답의 다른 행 추가로 번호가 밀려도 이 요소를 기준으로 복제한다.
-        plan.push({ op: op, table: m[1], row: +m[2], src: srcTr, cells: Array.isArray(e.cells) ? e.cells.map(String) : [] });
+        plan.push({ op: op, table: m[1], row: +m[2], src: srcTr, cells: Array.isArray(e.cells) ? e.cells.map(function (c) { return stripMd(String(c)); }) : [] });
+        return;
+      }
+      if (op === 'insert_table') {
+        var ti = self.items[target];
+        if (!ti || ti.kind !== 'p') { problems.push('새 표는 문단(P) 아래에만 넣을 수 있어 1건을 적용하지 않았습니다.'); return; }
+        // 머리글을 text에 "구분 | 내용"처럼 따로 보내는 응답도 있다. 칸 첫 줄과 다르면 맨 위에 붙인다.
+        var tcells = Array.isArray(e.cells) ? e.cells.slice() : [];
+        if (text.indexOf('|') >= 0 && String(tcells[0] || '').trim() !== text.trim()) tcells.unshift(text);
+        var trows = tableRows(tcells);
+        if (!trows.length) { problems.push('새 표에 넣을 줄이 없어 1건을 적용하지 않았습니다.'); return; }
+        plan.push({ op: op, it: ti, id: target, rows: trows });
         return;
       }
       var it = self.items[target];
       if (!it) { problems.push('문서에 없는 위치(' + (target || '빈 값') + ')를 가리킨 수정 1건은 적용하지 않았습니다.'); return; }
       if (it.readonly) { problems.push(it.label + '에는 표나 그림 같은 요소가 있어 AI가 고치지 않았습니다.'); return; }
+      // 내용 없는 문단 추가는 빈 줄만 늘리므로 버린다.
+      if (op === 'insert_after' && !text.trim()) return;
       if (op === 'set') plan.push({ op: op, it: it, id: target, text: text });
       else if ((op === 'insert_after' || op === 'delete') && it.kind === 'p') plan.push({ op: op, it: it, id: target, text: text });
       else if (op === 'insert_after' || op === 'delete') problems.push('표 칸에는 문단 추가·삭제 대신 글 바꾸기만 할 수 있어 1건을 적용하지 않았습니다.');
@@ -316,15 +332,30 @@
     });
     if (opts.keepOnePage) Object.keys(grown).forEach(function (tid) { keepOnePage(self.tables[tid].el, grown[tid], opts.keepOnePage); });
 
-    // 4) 문단 추가·삭제 — 문단 순서를 지키기 위해 추가는 뒤에서부터 붙인다.
+    // 4) 문단·표 추가와 문단 삭제 — 같은 문단 아래에 여러 개면 적은 순서대로 아래에 붙인다.
     var inserts = {};
     plan.forEach(function (x) {
-      if (x.op !== 'insert_after') return;
-      var anchor = inserts[x.id] || x.it.el, np = cleanClone(x.it.el);
-      setParaText(np, x.text.replace(/\r?\n/g, ' '));
+      if (x.op !== 'insert_after' && x.op !== 'insert_table') return;
+      var anchor = inserts[x.id] || x.it.el, np;
+      if (x.op === 'insert_table') {
+        np = makeTablePara(self, x.it.el, x.rows);
+        changes.push({ label: x.it.label + ' 아래에 새 표(' + x.rows.length + '줄 × ' + x.rows[0].length + '칸)', before: '', after: x.rows[0].filter(Boolean).join(' · ') });
+      } else {
+        // 여러 줄 글은 줄마다 문단 하나로 넣는다(빈 줄은 버린다). 한 문단에 몰아넣으면 문서가 한 덩어리가 된다.
+        var paras = x.text.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+        if (!paras.length) paras = [''];
+        paras.forEach(function (line) {
+          var p = cleanClone(x.it.el);
+          setParaText(p, line);
+          anchor.parentNode.insertBefore(p, anchor.nextSibling);
+          anchor = p;
+        });
+        inserts[x.id] = anchor;
+        changes.push({ label: x.it.label + ' 아래에 새 문단' + (paras.length > 1 ? ' ' + paras.length + '개' : ''), before: '', after: x.text });
+        return;
+      }
       anchor.parentNode.insertBefore(np, anchor.nextSibling);
       inserts[x.id] = np;
-      changes.push({ label: x.it.label + ' 아래에 새 문단', before: '', after: x.text });
     });
     plan.forEach(function (x) {
       if (x.op !== 'delete' || !x.it.el.parentNode) return;
@@ -412,6 +443,100 @@
     if (tsz) tsz.setAttribute('height', String(attrInt(tsz, 'height', 0) - total));
   }
 
+  /* ── 새 표 ──
+   * cells: 줄마다 문자열 하나, 칸은 "|"로 나눈다. 첫 줄은 머리글(옅은 회색 바탕).
+   * 표 모양은 한글 2024가 [표 만들기]로 만든 표를 따른다(글자처럼 취급, 실선 0.12mm, 쪽 너비에 맞춤).
+   */
+  var MAX_TBL_ROWS = 60, MAX_TBL_COLS = 12;
+  // AI가 굵은 글씨를 마크다운(**글**, __글__)으로 보내면 문서에 별표가 그대로 남는다. 짝이 맞는 표시만 벗긴다.
+  function stripMd(s) { return String(s).replace(/\*\*([^*\n]+?)\*\*/g, '$1').replace(/__([^_\n]+?)__/g, '$1'); }
+  function tableRows(cells) {
+    if (!Array.isArray(cells)) return [];
+    // 한 칸에 마크다운 표를 통째로 넣은 응답도 받는다: 줄로 나누고, 구분 줄(|---|)과 양 끝 세로줄을 버린다.
+    var lines = [];
+    cells.forEach(function (c) { String(c == null ? '' : c).split(/\r?\n/).forEach(function (l) { lines.push(l); }); });
+    var rows = lines.filter(function (l) { return !/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l); })
+      .map(function (l) {
+        return stripMd(l).trim().replace(/^\|/, '').replace(/\|$/, '').split(/\s*[|\t]\s*/).map(function (v) { return v.trim(); });
+      }).filter(function (r) { return r.some(Boolean); }).slice(0, MAX_TBL_ROWS);
+    if (!rows.length) return [];
+    var cols = Math.min(MAX_TBL_COLS, Math.max.apply(null, rows.map(function (r) { return r.length; })));
+    if (rows.length === 1) rows.push([]); // 머리글만 왔으면 채울 빈 줄 하나를 붙인다
+    return rows.map(function (r) { r = r.slice(0, cols); while (r.length < cols) r.push(''); return r; });
+  }
+  function xmlEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  // 머리말(header.xml)에서 네 변이 실선인 테두리를 찾고, 없으면 새로 만든다. fill이면 회색 바탕을 함께 찾는다.
+  function borderId(self, fill) {
+    var key = fill ? 'headFill' : 'solid';
+    self._border = self._border || {};
+    if (self._border[key]) return self._border[key];
+    var h = self.headerXml;
+    if (!h) throw new Error('문서의 머리말 정보를 읽지 못해 표를 만들지 못했습니다.');
+    var max = 0, found = '', re = /<hh:borderFill\b[^>]*\bid="(\d+)"[^>]*>([\s\S]*?)<\/hh:borderFill>/g, m;
+    var side = function (body, n) { var x = new RegExp('<hh:' + n + 'Border\\b[^>]*type="SOLID"'); return x.test(body); };
+    while ((m = re.exec(h))) {
+      max = Math.max(max, +m[1]);
+      var body = m[2], solid = ['left', 'right', 'top', 'bottom'].every(function (n) { return side(body, n); });
+      var hasFill = /faceColor="#/i.test(body);
+      if (!found && solid && /slash type="NONE"/.test(body) && (fill ? /faceColor="#E7E6E6"/i.test(body) : !hasFill)) found = m[1];
+    }
+    if (!found) {
+      found = String(max + 1);
+      var line = function (n) { return '<hh:' + n + 'Border type="SOLID" width="0.12 mm" color="#000000"/>'; };
+      var bf = '<hh:borderFill id="' + found + '" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0">' +
+        '<hh:slash type="NONE" Crooked="0" isCounter="0"/><hh:backSlash type="NONE" Crooked="0" isCounter="0"/>' +
+        line('left') + line('right') + line('top') + line('bottom') + '<hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>' +
+        (fill ? '<hc:fillBrush><hc:winBrush faceColor="#E7E6E6" hatchColor="#999999" alpha="0"/></hc:fillBrush>' : '') + '</hh:borderFill>';
+      if (!/<\/hh:borderFills>/.test(h)) throw new Error('문서의 테두리 정보를 찾지 못해 표를 만들지 못했습니다.');
+      h = h.replace(/<\/hh:borderFills>/, bf + '</hh:borderFills>');
+      h = h.replace(/(<hh:borderFills\b[^>]*\bitemCnt=")(\d+)(")/, function (_, a, n, b) { return a + (+n + 1) + b; });
+      self.headerXml = h; self.headerDirty = true;
+    }
+    self._border[key] = found;
+    return found;
+  }
+  // 본문 너비: 첫 구역의 쪽 너비 − 왼쪽·오른쪽 여백(가로 쪽이면 높이를 쓴다).
+  function textWidth(self) {
+    var pp = self.sections[0].doc.getElementsByTagNameNS('*', 'pagePr')[0];
+    var mg = pp && kid(pp, 'margin');
+    if (!pp || !mg) return 42520;
+    var w = pp.getAttribute('landscape') === 'NARROWLY' ? attrInt(pp, 'height', 84186) : attrInt(pp, 'width', 59528);
+    var tw = w - attrInt(mg, 'left', 8504) - attrInt(mg, 'right', 8504);
+    return tw > 5000 ? tw : 42520;
+  }
+  function makeTablePara(self, anchor, rows) {
+    var cols = rows[0].length, solid = borderId(self, false);
+    var head = /xmlns:hc=/.test(self.headerXml || '') ? borderId(self, true) : solid; // 바탕색 요소의 이름공간이 없으면 머리글도 실선만
+    var width = textWidth(self) - 566, colW = Math.floor(width / cols), rowH = 1282;
+    var cellParas = function (text) {
+      return String(text).split('\n').map(function (line) {
+        return '<hp:p id="0" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="0">' +
+          (line ? '<hp:t>' + xmlEsc(line) + '</hp:t>' : '') + '</hp:run></hp:p>';
+      }).join('');
+    };
+    var trs = rows.map(function (r, ri) {
+      return '<hp:tr>' + r.map(function (v, ci) {
+        var w = ci === cols - 1 ? width - colW * (cols - 1) : colW;
+        return '<hp:tc name="" header="' + (ri === 0 ? 1 : 0) + '" hasMargin="0" protect="0" editable="0" dirty="0" borderFillIDRef="' + (ri === 0 ? head : solid) + '">' +
+          '<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">' +
+          cellParas(v) + '</hp:subList><hp:cellAddr colAddr="' + ci + '" rowAddr="' + ri + '"/><hp:cellSpan colSpan="1" rowSpan="1"/>' +
+          '<hp:cellSz width="' + w + '" height="282"/><hp:cellMargin left="510" right="510" top="141" bottom="141"/></hp:tc>';
+      }).join('') + '</hp:tr>';
+    }).join('');
+    var tid = String(1000000000 + Math.floor(Math.random() * 1000000000));
+    var xml = '<hp:p xmlns:hp="' + anchor.namespaceURI + '" id="0" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="0">' +
+      '<hp:tbl id="' + tid + '" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="1" rowCnt="' + rows.length + '" colCnt="' + cols + '" cellSpacing="0" borderFillIDRef="' + solid + '" noAdjust="0">' +
+      '<hp:sz width="' + width + '" widthRelTo="ABSOLUTE" height="' + (rowH * rows.length) + '" heightRelTo="ABSOLUTE" protect="0"/>' +
+      '<hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/>' +
+      '<hp:outMargin left="283" right="283" top="283" bottom="283"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>' +
+      trs + '</hp:tbl><hp:t/></hp:run></hp:p>';
+    var parsed = new DOMParser().parseFromString(xml, 'application/xml');
+    if (parsed.getElementsByTagName('parsererror').length) throw new Error('새 표를 만들지 못했습니다.');
+    var node = anchor.ownerDocument.importNode(parsed.documentElement, true);
+    node.removeAttributeNS('http://www.w3.org/2000/xmlns/', 'hp'); // 바깥 구역이 이미 선언했다
+    return node;
+  }
+
   Doc.prototype.serialize = function () {
     var ser = new XMLSerializer();
     return this.sections.map(function (s) {
@@ -434,10 +559,13 @@
     for (var i = 0; i < names.length; i++) sections.push({ name: names[i], xml: await zip.file(names[i]).async('string') });
     var doc = new Doc(sections);
     doc.zip = zip;
+    var hf = zip.file('Contents/header.xml');
+    doc.headerXml = hf ? await hf.async('string') : null;
     return doc;
   }
   async function pack(doc) {
     doc.serialize().forEach(function (s) { doc.zip.file(s.name, s.xml); });
+    if (doc.headerDirty) doc.zip.file('Contents/header.xml', doc.headerXml);
     // mimetype은 압축하지 않은 첫 항목이어야 한다(HWPX·OCF 규칙). JSZip은 기존 순서를 유지한다.
     if (doc.zip.file('mimetype')) doc.zip.file('mimetype', await doc.zip.file('mimetype').async('string'), { compression: 'STORE' });
     return doc.zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE', mimeType: 'application/hwp+zip' });

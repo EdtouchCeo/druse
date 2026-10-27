@@ -650,7 +650,7 @@ const SCHEMA = {
       items: {
         type: 'object',
         properties: {
-          op: { type: 'string', enum: ['set', 'fill_rows', 'add_row', 'insert_after', 'delete'] },
+          op: { type: 'string', enum: ['set', 'fill_rows', 'add_row', 'insert_after', 'insert_table', 'delete'] },
           target: { type: 'string' }, text: { type: 'string' }, cells: { type: 'array', items: { type: 'string' } }
         },
         required: ['op', 'target', 'text', 'cells']
@@ -701,7 +701,8 @@ function buildPrompt(o) {
     L.push('- set: target(칸 T1:r8c1 또는 문단 P1)의 글을 text로 통째로 바꾼다. 칸 안의 여러 줄은 \\n으로 나눈다. 칸의 줄 가운데 바꾸지 않을 줄도 그대로 다시 적는다.');
     L.push('- fill_rows: target 줄(예: T1:r3)부터 아래로 같은 모양의 줄들을 cells 목록으로 한 칸에 하나씩 왼쪽→오른쪽, 위→아래 순서로 채운다. 목록이 길면 줄이 자동으로 늘고, 남는 칸은 비워진다. 명단처럼 여러 줄에 걸친 값은 set 여러 개 대신 fill_rows 한 번으로 쓴다.');
     L.push('- add_row: target 행(예: T1:r6) 바로 아래에 같은 모양의 행을 하나 더 만든다. cells에 새 행의 칸 내용을 왼쪽부터 차례로 넣는다.');
-    L.push('- insert_after: 문단 P 바로 아래에 text로 새 문단을 넣는다. delete: 문단 P를 지운다. 표 칸에는 쓰지 않는다.');
+    L.push('- insert_after: 문단 P 바로 아래에 text로 새 문단을 넣는다. text에 줄바꿈이 있으면 줄마다 새 문단이 된다. delete: 문단 P를 지운다. 표 칸에는 쓰지 않는다.');
+    L.push('- insert_table: 문단 P 바로 아래에 새 표를 만든다. cells에 표의 한 줄을 문자열 하나로 넣고 칸은 " | "로 나눈다. 첫 줄은 머리글이다. 예: ["번호 | 이름 | 상담 날짜", "1 | 김가람 | "]. 교사가 표를 만들어 달라거나 표로 정리해 달라고 하면 문단을 여러 개 넣지 말고 이 방법 하나로 만든다. 표 줄을 문자열 하나에 몰아넣지 말고 cells의 원소 하나가 표의 한 줄이 되게 한다. fill_rows·add_row는 이미 있는 표(T)에만 쓴다. 모르는 칸은 비워 둔다. 이미 있는 표에 줄을 더할 때는 fill_rows나 add_row를 쓴다.');
     L.push('- 아이디는 위 [문서 현재 내용]에 있는 것만 쓴다. 같은 응답 안에서는 행을 추가해도 위 지도의 아이디를 그대로 쓴다. 지도는 요청마다 새로 만들어지므로 지난 대화에 나온 아이디를 다시 쓰지 말고 [행 이름]으로 칸을 찾는다.');
     L.push('- "수정 불가"라고 표시된 곳과 양식의 머리글 칸(학년-반-번호, 성명 같은 항목 이름)은 고치지 않는다.');
     L.push('- 쓰지 않는 필드는 빈 문자열("")이나 빈 배열([])로 둔다.');
@@ -709,6 +710,8 @@ function buildPrompt(o) {
   L.push('[지켜야 할 것]');
   L.push('- 교사가 알려 주지 않았고 자료에도 없는 학생 이름, 학번, 날짜, 시간, 장소, 숫자는 지어내지 않는다. 모르면 그 칸은 비워 두고 reply에서 물어본다.');
   L.push('- 요청과 관계없는 곳은 고치지 않는다. 질문만 했으면 edits는 빈 배열로 둔다.');
+  L.push('- 교사가 표·문단·안내문을 만들어 달라고 하면 묻기만 하고 끝내지 않는다. 알 수 없는 값은 빈 칸으로 둔 채 먼저 만들고, 채울 내용은 reply에서 물어본다.');
+  L.push('- 고칠 문서가 비어 있는 새 문서이면 요청한 글을 P1부터 바로 써 넣는다. 정보가 모자라도 [ ]로 빈 곳을 표시한 초안을 먼저 쓴다.');
   L.push('- reply는 교사에게 보여 줄 답이다. 존댓말로 무엇을 고쳤는지와 교사가 확인하거나 더 알려 줘야 할 것을 쓴다. 고친 것이 없으면 질문에 대한 답을 쓴다.');
   return L.join('\n');
 }
