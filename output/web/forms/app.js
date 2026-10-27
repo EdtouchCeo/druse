@@ -351,6 +351,27 @@ async function addFiles(list) {
 }
 $('file-input').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
 ['btn-open', 'btn-open2'].forEach((id) => $(id).addEventListener('click', () => $('file-input').click()));
+// 새 한글: 빈 A4 문서(blank.hwpx)를 열고, 열려 있던 문서가 있으면 자료로 고른다.
+let hwpSeq = 0;
+if ($('btn-new-hwp')) $('btn-new-hwp').addEventListener('click', async () => {
+  if (state.busy) return;
+  const from = tab(state.targetId);
+  try {
+    const r = await fetch(abs('blank.hwpx'));
+    if (!r.ok) throw new Error('빈 문서를 받지 못했습니다(' + r.status + ').');
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    const name = '새 한글 문서' + (++hwpSeq > 1 ? ' ' + hwpSeq : '');
+    const t = newTab({ name, kind: 'hwp', bytes, loadName: name + '.hwpx' });
+    if (from) from.use = true;
+    await activate(t.id);
+    renderSources(); renderEmpty();
+    if (window.matchMedia('(max-width: 900px)').matches) setPane('chat');
+    $('prompt').focus();
+  } catch (e) {
+    console.error(e);
+    note('새 한글 문서를 열지 못했습니다. ' + (e.message || ''));
+  }
+});
 // 새 PPT: 빈 PPT 탭을 열고, 열려 있던 한글 문서가 있으면 자료로 고른다.
 $('btn-new-deck').addEventListener('click', async () => {
   if (state.busy) return;
