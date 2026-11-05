@@ -9,11 +9,15 @@
 //   VERTEX_PROJECT·VERTEX_SA_KEY : 설정 시 Vertex(체험판 크레딧) 경로 우선 (_lib/vertex.js)
 
 const { callGemini } = require('./_lib/vertex');
+const { requireTeacher } = require('./_lib/gate-cookie');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
+
+  const denied = requireTeacher(event);
+  if (denied) return denied;
 
   const API_KEY = process.env.GEMINI_API_KEY;
   const MODEL = process.env.LLM_MODEL || 'gemini-2.5-flash';

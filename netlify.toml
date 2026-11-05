@@ -1,6 +1,6 @@
 [build]
   publish = "output/web"
-  command = "node --test tests/counseling-*.test.cjs"
+  command = "node --test tests/counseling-*.test.cjs tests/auth-gate.test.cjs && node scripts/build_auth_gate.cjs output/web --in-place"
 
 [build.environment]
   NODE_VERSION = "22"
@@ -13,6 +13,19 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
     X-Content-Type-Options = "nosniff"
+
+# 로그인 게이트: 정적 파일 앞에서 서버가 쿠키를 검사한다. 대소문자 변형 우회를 막으려고
+# 전체 경로에 걸고, 명백한 공개 폴더만 제외한다. 보호 목록은 auth-gate.js의 requiredTier.
+[[edge_functions]]
+  function = "auth-gate"
+  path = "/*"
+  excludedPath = ["/.netlify/*", "/lib/*", "/img/*", "/pdf/*", "/biotech/*", "/assessment/*", "/counseling/*", "/sdg/*", "/sdg-api/*", "/downloads/*", "/data/univ/*", "/auth-gate-client.js", "/favicon.ico", "/logo.jpg", "/logo.png", "/og-image-v2.jpg"]
+
+# 전략실은 자체 서버 인증을 쓰므로 화면은 두되 검색 색인만 막는다.
+[[headers]]
+  for = "/counseling/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
 
 [functions]
   directory = "netlify/functions"

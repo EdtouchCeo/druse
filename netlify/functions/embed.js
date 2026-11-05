@@ -8,11 +8,15 @@
 // ※ build_embeddings.py / 프론트 EMB_DIM 과 모델·차원이 동일해야 함.
 
 const { callEmbed } = require('./_lib/vertex');
+const { requireTeacher } = require('./_lib/gate-cookie');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
+
+  const denied = requireTeacher(event);
+  if (denied) return denied;
 
   const API_KEY = process.env.GEMINI_API_KEY;
   const MODEL = process.env.EMBED_MODEL || 'gemini-embedding-001';
