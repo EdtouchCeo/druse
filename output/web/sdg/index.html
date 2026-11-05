@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>구현 미리보기 | 인공지능 기초 수행평가</title>
+<link rel="stylesheet" href="/sdg/style.css">
+</head>
+<body>
+<header class="top">
+  <strong>구현 미리보기</strong>
+  <span id="who" class="who" hidden></span>
+  <button id="logout" class="link" type="button" hidden>나가기</button>
+</header>
+
+<main>
+  <form id="login" class="card narrow" hidden>
+    <h1>입장</h1>
+    <label for="sid">학번 (5자리)</label>
+    <input id="sid" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="예: 10301" required>
+    <label for="sname">이름</label>
+    <input id="sname" autocomplete="off" maxlength="20" required>
+    <label for="scode">입장 코드</label>
+    <input id="scode" autocomplete="off" maxlength="20" placeholder="선생님이 알려 준 코드" required>
+    <button type="submit">입장하기</button>
+    <p id="login-msg" class="msg error" role="alert"></p>
+  </form>
+
+  <div id="app" class="stack" hidden>
+    <nav class="tabs" role="tablist" aria-label="구현 단계">
+      <button id="tab-1" role="tab" type="button" aria-selected="true" aria-controls="panel-1">1차 구현 <span id="badge-1" class="badge"></span></button>
+      <button id="tab-2" role="tab" type="button" aria-selected="false" aria-controls="panel-2">2차 구현 <span id="badge-2" class="badge"></span></button>
+    </nav>
+
+    <section id="panel-1" class="card" role="tabpanel" aria-labelledby="tab-1">
+      <form id="form-1">
+        <label for="plan">기획서 전체 내용</label>
+        <textarea id="plan" rows="14" maxlength="6000" placeholder="1. 서비스명&#10;2. 기획 의도&#10;3. 서비스 목적&#10;4. 대상 사용자&#10;5. 인공지능 활용 해결 방향(핵심 기능)&#10;6. 특징 및 차별성"></textarea>
+        <p class="hint"><span id="plan-count">0</span> / 6,000자. 기획서만 처리하며 질문이나 다른 글에는 답하지 않습니다.</p>
+        <button id="submit-1" type="submit">1차 화면 만들기 (1회)</button>
+      </form>
+      <p id="msg-1" class="msg" role="status"></p>
+    </section>
+
+    <section id="panel-2" class="card" role="tabpanel" aria-labelledby="tab-2" hidden>
+      <form id="form-2">
+        <label for="files">피그마 설계 파일 (PDF 1개 또는 PNG 여러 장)</label>
+        <input id="files" type="file" accept=".pdf,.png,application/pdf,image/png" multiple>
+        <p id="file-info" class="hint">PNG는 화면 순서대로 고르세요. 데스크톱 화면 기준으로 읽습니다.</p>
+        <button id="submit-2" type="submit">2차 화면 만들기 (1회)</button>
+      </form>
+      <p id="msg-2" class="msg" role="status"></p>
+    </section>
+
+    <p class="notice">AI가 만든 참고용 화면이며 평가에 반영되지 않습니다. 입력 내용은 AI 처리를 위해 Anthropic으로 전송되고 선생님이 확인할 수 있습니다. 실제 이름이나 연락처 같은 개인정보는 넣지 마세요.</p>
+
+    <section id="result" class="card result" hidden>
+      <h2 id="result-title">결과 미리보기</h2>
+      <iframe id="frame" title="생성된 웹페이지 미리보기" sandbox="allow-scripts allow-forms allow-modals"></iframe>
+    </section>
+  </div>
+</main>
+<script type="module" src="/sdg/app.js"></script>
+</body>
+</html>

@@ -35,6 +35,20 @@
   status = 200
   force = true
 
+# 수행평가 구현 미리보기(/sdg/) 학생용 기능. 생성은 교사 PC 처리 프로그램이 맡는다.
+[[redirects]]
+  from = "/sdg-api/*"
+  to = "/.netlify/functions/sdg/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/sdg/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self'; connect-src 'self' https://*.supabase.co; frame-ancestors 'self'; base-uri 'none'; form-action 'none'"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+
 # HTML 문서를 항상 브라우저에 표시 (다운로드 방지)
 [[headers]]
   for = "/"
