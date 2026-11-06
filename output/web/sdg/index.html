@@ -9,14 +9,24 @@
 </head>
 <body>
 <header class="top">
-  <strong>구현 미리보기</strong>
+  <a class="brand" href="/">
+    <img src="/img/daeryuni/face_smile.webp" alt="">
+    <span><small>대륜고 사용 설명서</small><strong>구현 미리보기</strong></span>
+  </a>
   <span id="who" class="who" hidden></span>
   <a id="admin-link" class="link" href="/sdg/admin.html" hidden>관리 화면</a>
   <button id="logout" class="link" type="button" hidden>나가기</button>
 </header>
 
 <main>
-  <form id="login" class="card narrow" hidden>
+  <form id="login" class="card login" hidden>
+    <div class="login-side">
+      <span class="eyebrow">인공지능 기초 수행평가</span>
+      <span class="login-title">구현 미리보기</span>
+      <p>수업 시간에 선생님이 열면 들어갈 수 있습니다.</p>
+      <img src="/img/daeryuni/pose_wave.webp" alt="">
+    </div>
+    <div class="login-body">
     <h1>입장</h1>
     <label for="sid">학번 (5자리)</label>
     <input id="sid" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="예: 10301" required>
@@ -27,6 +37,7 @@
     <button type="submit">입장하기</button>
     <p id="login-msg" class="msg error" role="alert"></p>
     <p class="hint"><a href="/sdg/admin.html">선생님 관리 화면</a></p>
+    </div>
   </form>
 
   <div id="app" class="stack" hidden>
@@ -36,6 +47,10 @@
     </nav>
 
     <section id="panel-1" class="card" role="tabpanel" aria-labelledby="tab-1">
+      <div class="panel-head">
+        <img src="/img/daeryuni/face_thinking.webp" alt="">
+        <h2>기획서로 첫 화면 만들기</h2>
+      </div>
       <form id="form-1">
         <label for="plan">기획서 전체 내용</label>
         <textarea id="plan" rows="14" maxlength="6000" placeholder="1. 서비스명&#10;2. 기획 의도&#10;3. 서비스 목적&#10;4. 대상 사용자&#10;5. 인공지능 활용 해결 방향(핵심 기능)&#10;6. 특징 및 차별성"></textarea>
@@ -43,6 +58,7 @@
         <button id="submit-1" type="submit">1차 화면 만들기 (1회)</button>
       </form>
       <div class="status-row">
+        <img id="char-1" class="status-char" alt="" hidden>
         <div id="build-1" class="build" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></div>
         <div class="status-text">
           <p id="msg-1" class="msg" role="status"></p>
@@ -52,6 +68,10 @@
     </section>
 
     <section id="panel-2" class="card" role="tabpanel" aria-labelledby="tab-2" hidden>
+      <div class="panel-head">
+        <img src="/img/daeryuni/face_fist.webp" alt="">
+        <h2>프롬프트로 화면 완성하기</h2>
+      </div>
       <form id="form-2">
         <label for="prompt">구현 프롬프트</label>
         <textarea id="prompt" rows="14" maxlength="6000" placeholder="[역할]&#10;[만들 형태]&#10;[화면 구성]&#10;[기능별 동작 조건]&#10;[공통 조건]"></textarea>
@@ -59,6 +79,7 @@
         <button id="submit-2" type="submit">2차 화면 만들기 (1회)</button>
       </form>
       <div class="status-row">
+        <img id="char-2" class="status-char" alt="" hidden>
         <div id="build-2" class="build" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></div>
         <div class="status-text">
           <p id="msg-2" class="msg" role="status"></p>

@@ -9,6 +9,11 @@ let me = null;
 let timer = null;
 let currentStage = 1;
 let previewShown = null;
+// 상태마다 어울리는 캐릭터를 보여 준다.
+const CHAR = {
+  upload: 'face_smile', queued: 'face_thinking', running: 'pose_maker', stopped: 'face_surprised',
+  done: 'face_laugh', failed: 'face_shy', refused: 'face_shy', locked: 'face_surprised',
+};
 const clock = { 1: null, 2: null }; // 현재 상태를 이 화면에서 처음 본 시각
 
 function deviceId() {
@@ -78,6 +83,16 @@ function showElapsed(stage) {
   $(`elapsed-${stage}`).textContent = text;
 }
 
+function setChar(stage, key) {
+  const img = $(`char-${stage}`);
+  const name = CHAR[key];
+  img.hidden = !name;
+  if (name && img.dataset.name !== name) {
+    img.dataset.name = name;
+    img.src = `/img/daeryuni/${name}.webp`;
+  }
+}
+
 function setBuild(stage, state) {
   $(`build-${stage}`).hidden = !state;
   if (state) $(`build-${stage}`).dataset.state = state;
@@ -93,7 +108,9 @@ function render() {
     $(`badge-${stage}`).textContent = stop ? '멈춤' : (LABEL[st.status] || '');
     $(`badge-${stage}`).classList.toggle('busy', working);
     $(`badge-${stage}`).classList.toggle('stalled', stop);
-    setBuild(stage, stop ? 'stopped' : (working ? st.status : null));
+    const state = stop ? 'stopped' : (working ? st.status : null);
+    setBuild(stage, state);
+    setChar(stage, state || st.status);
     $(`submit-${stage}`).disabled = !st.canSubmit;
     $(`msg-${stage}`).textContent = stageMessage(stage, st);
     $(`msg-${stage}`).classList.toggle('error', stop || ['failed', 'refused', 'locked'].includes(st.status));
@@ -187,6 +204,7 @@ for (const [stage, field, what] of [[1, 'plan', '기획서'], [2, 'prompt', '프
     $(`msg-${stage}`).classList.remove('error');
     $(`msg-${stage}`).textContent = `${what}를 보내는 중입니다.`;
     setBuild(stage, 'upload');
+    setChar(stage, 'upload');
     try {
       await api(`submit/${stage}`, { text: $(field).value });
       await refresh();

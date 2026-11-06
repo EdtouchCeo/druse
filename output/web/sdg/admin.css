@@ -1,6 +1,6 @@
 :root {
-  --bg: #f4f6f8; --card: #fff; --ink: #1c2530; --muted: #5a6876; --line: #d4dbe2;
-  --accent: #174ea6; --accent-ink: #fff; --error: #b3261e; --ok: #1b6e3c; --warn: #8a5a00;
+  --bg: #f8fafc; --card: #fff; --ink: #0f172a; --muted: #5b6b80; --line: #e2e8f0;
+  --accent: #2a5298; --accent-ink: #fff; --error: #b3261e; --ok: #1b6e3c; --warn: #8a5a00;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -58,3 +58,18 @@ main > div, #panel { min-width: 0; }
 #code-table { margin-top: 8px; }
 .worker-state { flex-basis: 100%; margin: 0; font-weight: 700; color: var(--ok); }
 .worker-state.off { color: var(--error); }
+
+/* 사용 설명서와 같은 머리글과 표면 */
+.top { padding: 10px 24px; background: linear-gradient(135deg, #1e3a6b 0%, #2a5298 60%, #4a7bc4 100%); border-bottom: 0; color: #fff; }
+.top .hint { margin: 0; color: #dbe6ff; }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; margin-right: auto; }
+.brand img { width: 40px; height: 40px; object-fit: cover; object-position: top; border-radius: 50%; background: #fff; border: 2px solid rgba(255, 255, 255, .7); }
+.brand small { display: block; font-size: .74rem; line-height: 1.3; color: #f6d48e; font-weight: 600; }
+.brand strong { display: block; font-size: 1.05rem; line-height: 1.3; }
+main { padding: 24px 16px 48px; }
+.card { border-radius: 14px; padding: 24px; box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
+button { border-radius: 10px; min-height: 42px; transition: background .15s; }
+button:not(.danger):not(.link):hover { background: #1e3a6b; }
+button.link { min-height: 0; }
+input:not([type=checkbox]) { border-radius: 10px; }
+:focus-visible { outline-color: #e8a020; }

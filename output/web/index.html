@@ -6705,38 +6705,70 @@ function switchRulesTab(id,btn){
 </div>
 <!-- 평가과제 도움 자료 -->
 <div class="sub-panel" id="sub-assessment-help">
-  <h2 class="section-title" style="font-size:26px;line-height:1.5;margin-bottom:18px;">평가과제 도움 자료</h2>
+  <div class="ah-hero">
+    <div class="ah-hero-copy">
+      <span class="ah-eyebrow">과제 준비</span>
+      <h2>평가과제 도움 자료</h2>
+      <p>과제에 맞는 자료를 골라 바로 시작하세요.</p>
+    </div>
+    <img src="img/daeryuni/pose_wave.webp" alt="" loading="lazy">
+  </div>
   <div class="assessment-help-nav" role="tablist" aria-label="평가과제 자료 구분">
     <button id="assessment-help-tab-subject" class="assessment-help-tab active" role="tab" aria-selected="true" aria-controls="assessment-help-subject" onclick="switchAssessmentTab('assessment-help-subject', this)">교과</button>
     <button id="assessment-help-tab-activity" class="assessment-help-tab" role="tab" aria-selected="false" aria-controls="assessment-help-activity" tabindex="-1" onclick="switchAssessmentTab('assessment-help-activity', this)">창체</button>
   </div>
   <style>
-    .assessment-help-nav{display:flex;gap:10px;margin:0 0 24px;}
-    .assessment-help-tab{min-height:48px;min-width:100px;padding:11px 24px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#334155;font-family:inherit;line-height:1.6;font-size:16px;font-weight:600;cursor:pointer;}
-    .assessment-help-tab.active{background:#1d4ed8;border-color:#1d4ed8;color:#fff;}
-    .assessment-help-tab:focus-visible{outline:3px solid #1d4ed8;outline-offset:3px;}
+    #sub-assessment-help{--ah-navy:#1e3a6b;font-size:16px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere;}
+    #sub-assessment-help img{display:block;}
+    .ah-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 20px;padding:30px 28px 0 36px;overflow:hidden;border-radius:16px;background:linear-gradient(135deg,#1e3a6b 0%,var(--primary) 60%,var(--primary-light) 100%);color:#fff;}
+    .ah-hero-copy{padding-bottom:30px;min-width:0;}
+    .ah-eyebrow{display:inline-block;margin-bottom:8px;padding:2px 10px;border:1px solid rgba(232,160,32,.6);border-radius:999px;background:rgba(255,255,255,.12);color:var(--accent);font-size:.78rem;font-weight:600;}
+    .ah-hero h2{margin:0;color:#fff;font-size:1.75rem;line-height:1.35;font-weight:700;letter-spacing:-.02em;}
+    .ah-hero p{margin:6px 0 0;color:#dbe6ff;font-size:1rem;}
+    .ah-hero img{flex:none;width:auto;height:150px;}
+    .assessment-help-nav{display:inline-flex;gap:4px;margin:0 0 20px;padding:5px;border-radius:13px;background:#e9eef6;}
+    .assessment-help-tab{min-height:42px;min-width:100px;padding:8px 22px;border:0;border-radius:9px;background:transparent;color:#33415c;font-family:inherit;line-height:1.6;font-size:16px;font-weight:600;cursor:pointer;transition:background .15s,color .15s;}
+    .assessment-help-tab:hover{background:rgba(255,255,255,.65);color:var(--ah-navy);}
+    .assessment-help-tab.active{background:#fff;color:var(--ah-navy);box-shadow:0 1px 3px rgba(15,23,42,.14);}
+    .assessment-help-tab:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
     .assessment-help-pane[hidden]{display:none;}
-    @media(max-width:600px){#sub-assessment-help>.section-title{font-size:23px!important;}.assessment-help-tab{flex:1;}}
-  </style>
-  <style>
-    #assessment-preparation,#career-plan-download{font-size:16px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere;}
-    #assessment-preparation{margin-bottom:28px;padding:28px;border:1px solid #dbe3f4;border-radius:16px;background:#f5f7ff;color:#243451;}
-    #assessment-preparation h2,#career-plan-download h2{margin:0 0 12px;font-size:24px;line-height:1.5;color:#1e3a6b;}
-    #assessment-preparation .prep-intro{margin:0 0 22px;max-width:70ch;color:#475569;font-size:17px;}
-    #assessment-preparation .prep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:18px;}
-    #assessment-preparation .prep-card{display:flex;flex-direction:column;gap:12px;padding:24px;border:1px solid #cdd8f4;border-radius:12px;background:#fff;text-decoration:none;color:#1e3a6b;}
-    #assessment-preparation .prep-card:hover{border-color:#1d4ed8;background:#fafbff;}
-    #assessment-preparation a:focus-visible,#career-plan-download a:focus-visible{outline:3px solid #1d4ed8;outline-offset:4px;}
-    #assessment-preparation .prep-label{font-size:14px;font-weight:600;color:#475569;}
-    #assessment-preparation .prep-title{font-size:22px;font-weight:700;line-height:1.5;}
-    #assessment-preparation .prep-description{color:#475569;font-size:16px;line-height:1.8;}
-    #assessment-preparation .prep-action{margin-top:auto;padding-top:8px;font-size:16px;font-weight:700;color:#1d4ed8;}
-    #assessment-preparation .prep-footer{display:flex;gap:8px 24px;flex-wrap:wrap;align-items:center;margin:20px 0 0;font-size:15px;color:#475569;}
-    #assessment-preparation .prep-footer a{display:inline-flex;align-items:center;min-height:44px;color:#1d4ed8;font-size:16px;font-weight:600;}
-    #career-plan-download{margin-bottom:28px;padding:24px;}
-    #career-plan-download p{margin:0 0 18px;font-size:16px;}
-    #career-plan-download .download-plan{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;box-sizing:border-box;border-radius:8px;background:#1d4ed8;color:#fff;text-decoration:none;font-size:16px;font-weight:600;line-height:1.6;}
-    @media(max-width:600px){#assessment-preparation{padding:20px 16px;}#assessment-preparation h2,#career-plan-download h2{font-size:22px;}#assessment-preparation .prep-card{padding:20px;}#assessment-preparation .prep-title{font-size:20px;}#career-plan-download{padding:20px;}#career-plan-download .download-plan{width:100%;}}
+    .assessment-help-pane:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:14px;}
+    #assessment-preparation{margin-bottom:20px;padding:28px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow-sm);color:#243451;}
+    #assessment-preparation h2,#career-plan-download h2{display:block;margin:0 0 8px;font-size:1.35rem;line-height:1.45;font-weight:700;letter-spacing:-.02em;color:var(--ah-navy);}
+    #assessment-preparation .prep-intro{margin:0 0 20px;max-width:70ch;color:#475569;font-size:16px;}
+    #assessment-preparation .prep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;}
+    #assessment-preparation .prep-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:start;column-gap:12px;padding:22px;border:1px solid var(--border);border-radius:14px;background:#f8fafc;color:var(--ah-navy);text-decoration:none;transition:border-color .15s,box-shadow .15s,transform .15s,background .15s;}
+    #assessment-preparation .prep-card:hover{border-color:var(--primary-light);background:#fff;box-shadow:var(--shadow-md);transform:translateY(-2px);text-decoration:none;}
+    #assessment-preparation .prep-char{grid-column:2;grid-row:1 / span 2;width:auto;height:92px;}
+    #assessment-preparation .prep-label{grid-column:1;grid-row:1;align-self:end;font-size:14px;font-weight:600;color:var(--primary);}
+    #assessment-preparation .prep-title{grid-column:1;grid-row:2;align-self:start;font-size:1.3rem;font-weight:700;line-height:1.45;}
+    #assessment-preparation .prep-description{grid-column:1 / -1;margin-top:10px;color:#475569;font-size:16px;line-height:1.75;}
+    #assessment-preparation .prep-action{grid-column:1 / -1;margin-top:12px;font-size:16px;font-weight:700;color:var(--primary);}
+    #assessment-preparation .prep-footer{display:flex;flex-wrap:wrap;gap:4px 20px;align-items:center;margin:14px 0 0;font-size:15px;color:#475569;}
+    #assessment-preparation .prep-footer a{display:inline-flex;align-items:center;min-height:44px;color:var(--primary);font-size:16px;font-weight:600;}
+    #assessment-preparation a:focus-visible,#career-plan-download a:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
+    #sdg-preview-entry{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;padding:28px 28px 0 32px;overflow:hidden;border-radius:16px;background:linear-gradient(135deg,#1e3a6b 0%,var(--primary) 100%);color:#fff;}
+    #sdg-preview-entry .sdg-entry-copy{min-width:0;padding-bottom:28px;}
+    #sdg-preview-entry h2{display:block;margin:0 0 6px;color:#fff;font-size:1.35rem;line-height:1.45;font-weight:700;letter-spacing:-.02em;}
+    #sdg-preview-entry p{margin:0 0 16px;color:#dbe6ff;}
+    #sdg-preview-entry a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:10px 22px;border-radius:10px;background:var(--accent);color:#1e2a44;font-weight:700;text-decoration:none;transition:background .15s,transform .15s;}
+    #sdg-preview-entry a:hover{background:#f2b53f;color:#1e2a44;text-decoration:none;transform:translateY(-1px);}
+    #sdg-preview-entry a:focus-visible{outline:3px solid #fff;outline-offset:3px;}
+    #sdg-preview-entry img{flex:none;width:auto;height:168px;}
+    #career-plan-download{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;padding:28px;border-radius:16px;}
+    #career-plan-download .career-copy{min-width:0;}
+    #career-plan-download p{margin:0 0 16px;color:#475569;font-size:16px;}
+    #career-plan-download .download-plan{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:10px 22px;box-sizing:border-box;border-radius:10px;background:var(--primary);color:#fff;font-weight:700;text-decoration:none;transition:background .15s;}
+    #career-plan-download .download-plan:hover{background:#1e3a6b;color:#fff;text-decoration:none;}
+    #career-plan-download img{flex:none;width:auto;height:132px;}
+    @media(prefers-reduced-motion:reduce){#sub-assessment-help *{transition:none!important;transform:none!important;}}
+    @media(max-width:600px){
+      .ah-hero{padding:22px 10px 0 18px;}.ah-hero-copy{padding-bottom:22px;}.ah-hero h2{font-size:1.4rem;}.ah-hero img{height:104px;}
+      .assessment-help-nav{display:flex;}.assessment-help-tab{flex:1;min-width:0;padding:8px 10px;}
+      #assessment-preparation{padding:20px 16px;}#assessment-preparation .prep-card{padding:18px 16px;}#assessment-preparation .prep-char{height:72px;}
+      #sdg-preview-entry{padding:22px 8px 0 16px;}#sdg-preview-entry img{height:112px;}
+      #career-plan-download{padding:20px 16px;}#career-plan-download img{height:88px;}
+    }
   </style>
   <div id="assessment-help-subject" class="assessment-help-pane" role="tabpanel" aria-labelledby="assessment-help-tab-subject" tabindex="0">
   <section id="assessment-preparation" aria-labelledby="assessment-preparation-title">
@@ -6744,12 +6776,14 @@ function switchRulesTab(id,btn){
     <p class="prep-intro">주어진 문제 상황을 읽고 해결 계획을 세워 보세요. 단계별 질문과 예시를 참고해 쓴 뒤, 내 글을 점검하며 다듬을 수 있습니다.</p>
     <div class="prep-grid">
       <a class="prep-card" href="/assessment/social-plan/">
+        <img class="prep-char" src="img/daeryuni/pose_explore.webp" alt="" loading="lazy">
         <span class="prep-label">문제 상황 선택 · 5단계 작성</span>
         <span class="prep-title">사회 문제 해결 계획서</span>
         <span class="prep-description">네 가지 연습 상황 중 하나를 고르세요. 공감부터 평가까지, 상황에 맞는 해결 방법을 내 말로 정리합니다.</span>
         <span class="prep-action">문제 상황 고르고 시작하기 →</span>
       </a>
       <a class="prep-card" href="/assessment/business-model/">
+        <img class="prep-char" src="img/daeryuni/pose_mentor.webp" alt="" loading="lazy">
         <span class="prep-label">해결 계획 연결 · 린 캔버스 9항목</span>
         <span class="prep-title">비즈니스 모델 수립하기</span>
         <span class="prep-description">해결 계획을 바탕으로 누구에게 어떤 가치를 줄지 생각해 보세요. 고객, 제공할 서비스와 운영 방법을 하나씩 정리합니다.</span>
@@ -6758,25 +6792,23 @@ function switchRulesTab(id,btn){
     </div>
     <div class="prep-footer"><span>로그인 없이 이용하며, 작성한 내용은 이 기기에 저장됩니다.</span><a href="/assessment/">내 계획 이어쓰기</a></div>
   </section>
-  <style>
-    #sdg-preview-entry{margin-bottom:28px;padding:28px;border:1px solid #dbe3f4;border-radius:16px;background:#f5f7ff;color:#243451;font-size:16px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere;}
-    #sdg-preview-entry h2{margin:0 0 12px;font-size:24px;line-height:1.5;color:#1e3a6b;}
-    #sdg-preview-entry p{margin:0 0 18px;color:#475569;}
-    #sdg-preview-entry a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;box-sizing:border-box;border-radius:8px;background:#1d4ed8;color:#fff;text-decoration:none;font-weight:700;}
-    #sdg-preview-entry a:focus-visible{outline:3px solid #1d4ed8;outline-offset:4px;}
-    @media(max-width:600px){#sdg-preview-entry{padding:20px 16px;}#sdg-preview-entry h2{font-size:22px;}}
-  </style>
   <section id="sdg-preview-entry" aria-labelledby="sdg-preview-title">
-    <h2 id="sdg-preview-title">인공지능 기초 구현 미리보기</h2>
-    <p>수업 시간에 선생님이 열면 학번, 이름, 입장 코드로 들어갑니다.</p>
-    <a href="/sdg/">구현 미리보기 열기 →</a>
+    <div class="sdg-entry-copy">
+      <h2 id="sdg-preview-title">인공지능 기초 구현 미리보기</h2>
+      <p>수업 시간에 선생님이 열면 학번, 이름, 입장 코드로 들어갑니다.</p>
+      <a href="/sdg/">구현 미리보기 열기 →</a>
+    </div>
+    <img src="img/daeryuni/pose_maker.webp" alt="" loading="lazy">
   </section>
   </div>
   <div id="assessment-help-activity" class="assessment-help-pane" role="tabpanel" aria-labelledby="assessment-help-tab-activity" tabindex="0" hidden>
   <div class="card" id="career-plan-download">
+    <div class="career-copy">
     <h2>진로활동 계획서</h2>
     <p>진로활동 계획서 양식을 내려받아 작성하세요. 로그인 없이 누구나 이용할 수 있습니다.</p>
     <a class="download-plan" href="/downloads/career-activity-plan-2026-semester2.docx" download="진로활동_계획서_양식.docx">진로활동 계획서 다운로드 (Word)</a>
+    </div>
+    <img src="img/daeryuni/pose_raise.webp" alt="" loading="lazy">
   </div>
   </div>
 </div><!-- /sub-assessment-help -->
