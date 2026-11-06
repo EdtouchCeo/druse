@@ -23,7 +23,7 @@
     <label for="sname">이름</label>
     <input id="sname" autocomplete="off" maxlength="20" required>
     <label for="scode">입장 코드</label>
-    <input id="scode" autocomplete="off" maxlength="20" placeholder="선생님이 알려 준 코드" required>
+    <input id="scode" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" placeholder="선생님이 알려 준 코드" required>
     <button type="submit">입장하기</button>
     <p id="login-msg" class="msg error" role="alert"></p>
     <p class="hint"><a href="/sdg/admin.html">선생님 관리 화면</a></p>
@@ -70,7 +70,11 @@
     <p class="notice">AI가 만든 참고용 화면이며 평가에 반영되지 않습니다. 입력 내용은 AI 처리를 위해 Anthropic으로 전송되고 선생님이 확인할 수 있습니다. 실제 이름이나 연락처 같은 개인정보는 넣지 마세요.</p>
 
     <section id="result" class="card result" hidden>
-      <h2 id="result-title">결과 미리보기</h2>
+      <div class="result-head">
+        <h2 id="result-title">결과 미리보기</h2>
+        <button id="test-again" type="button" hidden>이 결과 지우고 다시 시험</button>
+      </div>
+      <p id="test-again-msg" class="msg error" role="alert"></p>
       <iframe id="frame" title="생성된 웹페이지 미리보기" sandbox="allow-scripts allow-forms allow-modals"></iframe>
     </section>
   </div>

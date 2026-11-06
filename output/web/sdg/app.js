@@ -97,6 +97,7 @@ function render() {
   if (st.status === 'done') {
     $('result').hidden = false;
     $('result-title').textContent = `${currentStage}차 결과 미리보기`;
+    $('test-again').hidden = !me.test;
     if (previewShown !== currentStage) {
       previewShown = currentStage;
       $('frame').src = `${API}/preview/${currentStage}`;
@@ -212,6 +213,18 @@ $('form-2').addEventListener('submit', async (e) => {
     busyFile = false;
     await refresh();
     showError(2, err.message);
+  }
+});
+
+// 관리자 테스트 전용. 서버가 관리자 쿠키를 확인하므로 학생은 쓸 수 없다.
+$('test-again').addEventListener('click', async () => {
+  if (!window.confirm(`${currentStage}차 테스트 결과를 지우고 다시 시험할까요?`)) return;
+  $('test-again-msg').textContent = '';
+  try {
+    await api('admin/reset', { id: me.id, stage: currentStage });
+    await refresh();
+  } catch (err) {
+    $('test-again-msg').textContent = err.status === 401 ? '관리자 로그인이 만료되었습니다. 관리 화면에서 다시 들어와 주세요.' : err.message;
   }
 });
 

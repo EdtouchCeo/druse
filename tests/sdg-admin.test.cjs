@@ -140,13 +140,19 @@ test('명단에서 빠지면 발급된 관리자 쿠키도 바로 무효가 된�
 test('관리자는 입장 코드를 발급하고 그 코드로 학생이 입장한다', async () => {
   const db = fakeBackend();
   const cookie = await adminCookie();
-  assert.equal((await call('login', { body: { id: '10301', name: '합성학생', code: 'K7P2QX' } })).statusCode, 403);
-  assert.equal((await call('admin/settings', { body: { entryCode: 'K7P2QX', open1: true }, cookie })).statusCode, 200);
+  assert.equal((await call('login', { body: { id: '10301', name: '합성학생', code: 'k!m' } })).statusCode, 403);
+  assert.equal((await call('admin/settings', { body: { entryCode: 'k!m', open1: true }, cookie })).statusCode, 200);
   const state = JSON.parse((await call('admin/state', { method: 'GET', cookie })).body);
-  assert.equal(state.entryCode, 'K7P2QX');
+  assert.equal(state.entryCode, 'k!m');
   assert.equal(state.open1, true);
-  assert.equal((await call('login', { body: { id: '10301', name: '합성학생', code: 'K7P2QX' } })).statusCode, 200);
+  assert.equal((await call('login', { body: { id: '10301', name: '합성학생', code: 'k!m' } })).statusCode, 200);
   assert.equal(db.log.at(-1).type, 'admin');
+});
+
+test('입장 코드는 소문자와 특수문자를 함께 쓴 3자 이내만 저장된다', async () => {
+  const { validEntryCode } = require('../netlify/functions/_lib/sdg-admin.js');
+  for (const code of ['', 'k!', '!k', 'k!m', '@ab', 'ab?']) assert.equal(validEntryCode(code), true, code);
+  for (const code of ['a', '!', 'abc', '!@#', 'ABC', 'A!b', 'k1!', 'k!mn', 'k m', '가!a', 'K7P2QX']) assert.equal(validEntryCode(code), false, code);
 });
 
 test('관리자 테스트는 코드와 단계가 닫혀 있어도 제출되지만 일반 학생은 막힌다', async () => {

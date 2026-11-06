@@ -26,11 +26,13 @@
       <div>
         <label for="code">입장 코드</label>
         <div class="row">
-          <input id="code" maxlength="20" autocomplete="off">
+          <input id="code" maxlength="3" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="code-rule" placeholder="예: k!m">
           <button id="save-code" type="button">저장</button>
           <button id="issue-code" type="button">새 코드 발급</button>
         </div>
+        <p id="code-rule" class="hint">소문자와 특수문자(! @ # $ % &amp; * ?)를 함께 써서 3자 이내</p>
         <p id="code-state" class="hint"></p>
+        <p id="code-msg" class="msg error" role="alert"></p>
       </div>
       <label class="check"><input id="open1" type="checkbox"> 1차 구현 열기</label>
       <label class="check"><input id="open2" type="checkbox"> 2차 구현 열기</label>

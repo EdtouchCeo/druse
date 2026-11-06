@@ -24,6 +24,8 @@ const testIdFor = (email) => {
   return index < 0 ? null : `${TEST_PREFIX}${String(index + 1).padStart(2, '0')}`;
 };
 const isTestId = (id) => String(id || '').startsWith(TEST_PREFIX);
+// 입장 코드: 소문자와 특수문자를 함께 쓴 3자 이내. 빈 값은 입장을 닫는다.
+const validEntryCode = (code) => code === '' || (/^[a-z!@#$%&*?]{2,3}$/.test(code) && /[a-z]/.test(code) && /[^a-z]/.test(code));
 
 // 사이트 로그인 토큰을 확인해 이메일과 이름을 돌려준다. 토큰이 틀리면 null.
 async function verifySiteLogin(token) {
@@ -121,8 +123,10 @@ function createAdmin(h) {
     if (route === 'settings' && method === 'POST') {
       const body = parseBody(event);
       if (!body) return fail(400, '요청 형식이 잘못되었습니다.');
+      const code = typeof body.entryCode === 'string' ? body.entryCode.trim() : null;
+      if (code !== null && !validEntryCode(code)) return fail(400, '입장 코드는 소문자와 특수문자(! @ # $ % & * ?)를 함께 써서 3자 이내로 정해 주세요.');
       await rpc('sdg_t_settings', {
-        p_code: typeof body.entryCode === 'string' ? body.entryCode.trim().slice(0, 20) : null,
+        p_code: code,
         p_open1: typeof body.open1 === 'boolean' ? body.open1 : null,
         p_open2: typeof body.open2 === 'boolean' ? body.open2 : null,
       });
@@ -155,4 +159,4 @@ function createAdmin(h) {
   return { handle };
 }
 
-module.exports = { createAdmin, adminEmails, isAdminEmail, testIdFor, isTestId, TEST_PREFIX, ADMIN_COOKIE };
+module.exports = { createAdmin, adminEmails, isAdminEmail, testIdFor, isTestId, validEntryCode, TEST_PREFIX, ADMIN_COOKIE };

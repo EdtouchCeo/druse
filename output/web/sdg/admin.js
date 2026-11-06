@@ -5,8 +5,11 @@ const RETRY_KEY = 'sdg_admin_login_retry';
 const $ = (id) => document.getElementById(id);
 const LABEL = { none: '-', queued: '대기', running: '생성 중', done: '완료', failed: '실패', refused: '거절', locked: '잠김' };
 const RESULT = { done: '완료', refused: '거절', api: '오류', rate: '한도', credit: '크레딧 소진', auth: '키 오류', invalid: '형식 오류', script: '코드 오류', download: '이미지 오류' };
-// 혼동하기 쉬운 0, O, 1, I, L은 뺀다.
-const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+// 혼동하기 쉬운 i, l, o는 뺀다. 서버의 validEntryCode와 규칙이 같아야 한다.
+const CODE_LETTERS = 'abcdefghjkmnpqrstuvwxyz';
+const CODE_SYMBOLS = '!@#$%&*?';
+const CODE_RULE = '입장 코드는 소문자와 특수문자(! @ # $ % & * ?)를 함께 써서 3자 이내로 정해 주세요.';
+const validCode = (code) => code === '' || (/^[a-z!@#$%&*?]{2,3}$/.test(code) && /[a-z]/.test(code) && /[^a-z]/.test(code));
 let me = null;
 let timer = null;
 
@@ -195,20 +198,29 @@ async function saveSetting(body, msgId = 'row-msg') {
   await refresh();
 }
 
+// 소문자 2자와 특수문자 1자를 섞는다.
 function newCode() {
-  const bytes = crypto.getRandomValues(new Uint8Array(6));
-  return Array.from(bytes, (b) => CODE_CHARS[b % CODE_CHARS.length]).join('');
+  const [a, b, c, at] = crypto.getRandomValues(new Uint8Array(4));
+  const chars = [CODE_LETTERS[a % CODE_LETTERS.length], CODE_LETTERS[b % CODE_LETTERS.length]];
+  chars.splice(at % 3, 0, CODE_SYMBOLS[c % CODE_SYMBOLS.length]);
+  return chars.join('');
 }
 
 $('save-code').addEventListener('click', async () => {
-  const entryCode = $('code').value;
+  const entryCode = $('code').value.trim();
+  if (!validCode(entryCode)) {
+    $('code-msg').textContent = CODE_RULE;
+    return;
+  }
+  $('code-msg').textContent = '';
   $('code').blur();
-  await saveSetting({ entryCode });
+  await saveSetting({ entryCode }, 'code-msg');
 });
 $('issue-code').addEventListener('click', async () => {
   if ($('code').value && !window.confirm('새 코드를 발급하면 이전 코드로는 입장할 수 없습니다. 이미 입장한 학생은 그대로 이용합니다. 발급할까요?')) return;
+  $('code-msg').textContent = '';
   $('code').blur();
-  await saveSetting({ entryCode: newCode() });
+  await saveSetting({ entryCode: newCode() }, 'code-msg');
 });
 $('open1').addEventListener('change', () => saveSetting({ open1: $('open1').checked }));
 $('open2').addEventListener('change', () => saveSetting({ open2: $('open2').checked }));
