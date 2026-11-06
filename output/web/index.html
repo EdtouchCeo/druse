@@ -17540,7 +17540,8 @@ function spJump(id){
       .catch(function(){ currStructFailed = true; currStructPromise = null; return null; });
     return currStructPromise;
   }
-  function csNoSpace(s){ return (s||'').replace(/\s+/g, ''); }
+  // 과목명 비교용: 공백과 가운뎃점류를 없앤다. '기술가정'·'기술ㆍ가정'·'기술/가정'이 '기술⋅가정'에 걸리도록.
+  function csNoSpace(s){ return (s||'').replace(/[\s⋅·・･•‧∙ㆍ./]+/g, ''); }
   // 과목명 끝의 권차 표기(1·2·Ⅰ·Ⅱ…) 제거 — "공통수학1" → "공통수학", "영어 I" → "영어"
   function csStripOrdinal(s){ return csNoSpace(s).replace(/[0-9０-９IVXⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]+$/, ''); }
   // 과목명 → 매칭용 별칭. curr_struct.json의 subject는 "공통국어1, 공통국어2"처럼 여러 과목이
