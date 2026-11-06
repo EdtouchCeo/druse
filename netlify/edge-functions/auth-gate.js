@@ -98,20 +98,6 @@ function gateResponse(req, need, status = 401) {
   return new Response(html, { status, headers: { ...headers, 'Content-Type': 'text/html; charset=UTF-8' } });
 }
 
-async function serveVariant(req, context, tier) {
-  // 내부 요청도 다시 이 게이트를 지나므로 쿠키를 그대로 넘긴다.
-  const res = await fetch(new URL(VARIANT_PATH[tier], req.url), {
-    headers: { cookie: req.headers.get('cookie') || '', accept: 'text/html' },
-  });
-  if (!res.ok) return context.next();
-  const headers = new Headers(res.headers);
-  for (const name of ['content-encoding', 'content-length', 'etag', 'age', 'cache-status']) headers.delete(name);
-  headers.set('Content-Type', 'text/html; charset=UTF-8');
-  headers.set('Cache-Control', 'private, no-store');
-  headers.set('X-Robots-Tag', NOINDEX);
-  return new Response(req.method === 'HEAD' ? null : res.body, { status: 200, headers });
-}
-
 export default async function authGate(req, context) {
   const url = new URL(req.url);
   const path = normalizePath(url.pathname);
@@ -119,9 +105,29 @@ export default async function authGate(req, context) {
 
   const secret = serviceKey();
   if (path === '/__auth-gate/health') {
-    let selfFetch = 0;
-    try { selfFetch = (await fetch(new URL('/robots.txt', req.url))).status; } catch { selfFetch = -1; }
-    return new Response(JSON.stringify({ configured: Boolean(secret), selfFetch }), {
+    const body = { configured: Boolean(secret) };
+    if (url.searchParams.get('probe') === '1' && secret) {
+      const claims = b64url(encoder.encode(JSON.stringify({ sub: 'probe', tier: 'teacher', exp: Math.floor(Date.now() / 1000) + 60 })));
+      const key = await hmac(encoder.encode(secret), 'dr-gate-cookie-v1');
+      const cookie = `${COOKIE_NAME}=v1.${claims}.${b64url(await hmac(key, claims))}`;
+      const probe = async (target) => {
+        const started = Date.now();
+        try {
+          const res = await fetch(new URL(target, req.url), { headers: { cookie, accept: 'text/html' }, signal: AbortSignal.timeout(15000) });
+          const text = await res.text();
+          return {
+            status: res.status, ms: Date.now() - started, bytes: text.length,
+            variant: (/name="dr-gate-variant" content="([a-z]+)"/.exec(text) || [])[1] || null,
+            cache: res.headers.get('cache-control'), robots: res.headers.get('x-robots-tag'), type: res.headers.get('content-type'),
+          };
+        } catch (err) {
+          return { failed: err.name, ms: Date.now() - started };
+        }
+      };
+      body.home = await probe('/');
+      body.direct = await probe('/_gated/teacher/index.html');
+    }
+    return new Response(JSON.stringify(body), {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Robots-Tag': NOINDEX },
     });
   }
@@ -132,7 +138,8 @@ export default async function authGate(req, context) {
 
   const claims = await verifyCookie(readCookie(req), secret);
   if (isHome) {
-    if (claims && (req.method === 'GET' || req.method === 'HEAD')) return serveVariant(req, context, claims.tier);
+    // 내부 재작성으로 등급별 본문을 준다. 자기 사이트를 fetch하면 응답이 40초 한도를 넘겨 첫 화면이 멈춘 적이 있다.
+    if (claims && (req.method === 'GET' || req.method === 'HEAD')) return new URL(VARIANT_PATH[claims.tier], req.url);
     return context.next();
   }
   if (!secret) return gateResponse(req, need, 503);

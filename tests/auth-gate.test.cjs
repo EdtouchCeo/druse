@@ -126,24 +126,18 @@ test('데이터 요청의 차단 응답은 HTML이 아니라 JSON이다', async 
   assert.equal(res.status, 401);
 });
 
-test('로그인 후 홈은 등급별 화면을 private no-store로 준다', async () => {
+test('로그인 후 홈은 자기 사이트를 fetch하지 않고 등급별 화면으로 재작성한다', async () => {
   const realFetch = globalThis.fetch;
-  const fetched = [];
-  globalThis.fetch = async (url, init) => {
-    fetched.push({ path: new URL(url).pathname, cookie: init.headers.cookie });
-    return new Response('variant-page', { status: 200, headers: { etag: 'x', 'content-type': 'text/html' } });
-  };
+  let fetches = 0;
+  globalThis.fetch = async () => { fetches += 1; return new Response('never'); };
   try {
-    const teacher = issued('teacher');
-    const { res, ctx } = await run('/', { value: teacher });
-    assert.equal(await res.text(), 'variant-page');
-    assert.equal(ctx.nextCalls, 0);
-    assert.equal(fetched[0].path, '/_gated/teacher/index.html');
-    assert.ok(fetched[0].cookie.includes(teacher));
-    assert.equal(res.headers.get('cache-control'), 'private, no-store');
-    assert.equal(res.headers.get('etag'), null);
-    await run('/', { value: issued('member') });
-    assert.equal(fetched[1].path, '/_gated/member/index.html');
+    const teacher = await run('/?gate_return=%2Fsdg%2Fadmin.html', { value: issued('teacher') });
+    assert.ok(teacher.res instanceof URL);
+    assert.equal(teacher.res.pathname, '/_gated/teacher/index.html');
+    assert.equal(teacher.ctx.nextCalls, 0);
+    const member = await run('/', { value: issued('member') });
+    assert.equal(member.res.pathname, '/_gated/member/index.html');
+    assert.equal(fetches, 0);
   } finally {
     globalThis.fetch = realFetch;
   }
