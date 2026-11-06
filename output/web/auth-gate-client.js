@@ -46,7 +46,8 @@
   function onIssued(data) {
     local(function (s) { s.setItem(EXP_KEY, String(data.exp || 0)); });
     var target = pendingReturn();
-    var allowed = data.tier === 'teacher' || !target || /^\/_timetable_/.test(target);
+    // 구현 미리보기 관리 화면은 자체 명단으로 확인하므로 교사 승인 전 계정도 돌아가게 둔다.
+    var allowed = data.tier === 'teacher' || !target || /^\/(?:_timetable_|sdg\/)/.test(target);
     if (allowed) {
       tab(function (s) { s.removeItem(DENIED_KEY); });
     } else {

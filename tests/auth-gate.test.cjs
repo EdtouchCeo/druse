@@ -3,6 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const { split, CANARIES, TIMETABLE_CANARY } = require('../scripts/build_auth_gate.cjs');
 const cookie = require('../netlify/functions/_lib/gate-cookie.js');
@@ -147,6 +148,43 @@ test('재작성된 등급별 화면은 브라우저에 저장하지 않는다', 
   const { res } = await run('/_gated/teacher/index.html', { value: issued('teacher') });
   assert.equal(res.headers.get('cache-control'), 'private, no-store');
   assert.ok(res.headers.get('x-robots-tag').includes('noindex'));
+});
+
+async function clientReturn(tier, target) {
+  const moved = [];
+  const alerts = [];
+  const listeners = {};
+  const store = () => {
+    const data = new Map();
+    return { getItem: (k) => (data.has(k) ? data.get(k) : null), setItem: (k, v) => data.set(k, String(v)), removeItem: (k) => data.delete(k) };
+  };
+  const location = { pathname: '/', search: `?gate_return=${encodeURIComponent(target)}`, hash: '', replace: (u) => moved.push(u), reload() {} };
+  const localStorage = store();
+  localStorage.setItem('dr_sess_v1', JSON.stringify({ token: 'synthetic-token' }));
+  const window = { localStorage, sessionStorage: store(), addEventListener: (n, f) => { listeners[n] = f; } };
+  const sandbox = {
+    window, location, URLSearchParams, Promise, Number, Date, JSON, String,
+    document: { querySelector: () => ({ content: 'public' }), addEventListener() {}, hidden: false },
+    history: { replaceState() {} },
+    fetch: async () => ({ status: 200, ok: true, json: async () => ({ tier, exp: 4102444800 }) }),
+    alert: (text) => alerts.push(text),
+    setInterval() {},
+    setTimeout: (fn) => fn(),
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../output/web/auth-gate-client.js'), 'utf8'), sandbox);
+  listeners['dr-auth-change']();
+  await new Promise((done) => setImmediate(done));
+  return { moved, alerts };
+}
+
+test('교사 승인 전 계정도 구현 미리보기 관리 화면으로 돌아가고 교사 화면으로는 못 간다', async () => {
+  const sdg = await clientReturn('member', '/sdg/admin.html');
+  assert.deepEqual(sdg.moved, ['/sdg/admin.html']);
+  assert.equal(sdg.alerts.length, 0);
+  const record = await clientReturn('member', '/record/');
+  assert.deepEqual(record.moved, []);
+  assert.equal(record.alerts.length, 1);
+  assert.deepEqual((await clientReturn('teacher', '/record/')).moved, ['/record/']);
 });
 
 test('ask·embed 함수는 교사 쿠키 없이 쓸 수 없다', async () => {
