@@ -17563,11 +17563,16 @@ function spJump(id){
     }
     return out;
   }
+  // '외국어'·'제2외국어' 안의 '국어'는 국어 과목을 묻는 말이 아니다.
+  function csHasAlias(qn, alias){
+    if (alias !== '국어') return qn.indexOf(alias) >= 0;
+    return /(^|[^외])국어/.test(qn);
+  }
   // 과목 1개가 질문에 걸리는 강도 — 매칭 별칭 중 (긴 것 우선, 같은 길이면 낮은 tier). 미매칭 null.
   function csMatchStrength(subject, qn){
     var best = null, al = csSubjectAliases(subject);
     for (var i=0;i<al.length;i++){
-      if (qn.indexOf(al[i].alias) < 0) continue;
+      if (!csHasAlias(qn, al[i].alias)) continue;
       if (!best || al[i].alias.length > best.len || (al[i].alias.length === best.len && al[i].tier < best.tier))
         best = { tier: al[i].tier, len: al[i].alias.length };
     }
