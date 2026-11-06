@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// /evalplan/·/backward/ 재빌드. 사용법은 README.md.
+// /evalplan/·/record/·/backward/ 재빌드. 사용법은 README.md.
 import { execFileSync } from 'node:child_process'
 import {
   cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync,
@@ -16,12 +16,13 @@ function arg(name) {
   return i > 0 ? process.argv[i + 1] : undefined
 }
 const which = process.argv[2]
-if (!['evalplan', 'backward', 'all'].includes(which)) {
-  throw new Error('사용법: node apps/ai-ports/build.mjs evalplan|backward|all --edtouch <edtouch01 저장소> --data-analysis <data_analysis 저장소>')
+if (!['evalplan', 'record', 'backward', 'all'].includes(which)) {
+  throw new Error('사용법: node apps/ai-ports/build.mjs evalplan|record|backward|all --edtouch <edtouch01 저장소> --data-analysis <data_analysis 저장소>')
 }
 
 const APPS = {
   evalplan: { repoArg: '--edtouch', sub: 'v2', commonDir: 'src/daeryun-port/common' },
+  record: { repoArg: '--edtouch', sub: 'v2', commonDir: 'src/daeryun-port/common' },
   backward: { repoArg: '--data-analysis', sub: '.', commonDir: 'src/daeryun-port/common' },
 }
 

@@ -1,4 +1,4 @@
-// /evalplan/·/backward/ 시험. 헤드리스 Chrome에서 실제 화면을 띄우고 외부 요청은 모두 가로채 가짜로 답한다(AI 호출 없음).
+// /evalplan/·/record/·/backward/ 시험. 헤드리스 Chrome에서 실제 화면을 띄우고 외부 요청은 모두 가로채 가짜로 답한다(AI 호출 없음).
 // 사용: node apps/ai-ports/smoke.mjs [스크린샷 폴더]
 import { spawn } from 'node:child_process'
 import { createServer } from 'node:http'
@@ -325,6 +325,133 @@ await waitFor(`document.body.innerText.includes('시험 개념')`)
 r = relay()
 check('x-user-gemini-key 전송', r[0]?.headers['x-user-gemini-key'] === 'AIza-test', JSON.stringify(r[0]?.headers))
 check('세션 토큰 미전송', !r[0]?.headers.authorization && !r[0]?.headers['x-auth-site'])
+
+/* ── /record/ ── */
+const OBS = 'textarea[placeholder^="학생을 관찰한"]'
+const NAME = 'input[placeholder="학생 이름"]'
+async function fillRecord() {
+  await waitFor(`!!document.querySelector(${JSON.stringify(OBS)})`)
+  await setValue(NAME, '김철수')
+  await setValue(OBS, '김철수는 토론에서 근거를 들어 발표하였음.')
+  await sleep(150)
+}
+const attachImage = () => js(`(() => {
+  const bytes = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0));
+  const dt = new DataTransfer();
+  dt.items.add(new File([bytes], 'capture.png', { type: 'image/png' }));
+  const input = document.querySelector('input[type=file]');
+  input.files = dt.files;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+})()`)
+const RECORD_OK = { status: 200, body: { text: JSON.stringify({ body: '토론에서 근거를 들어 발표함.', evidence: [], warnings: [], variants: [] }) } }
+
+console.log('\n[record] 비로그인')
+handler = () => RECORD_OK
+for (const route of ['sebak', 'club', 'jayul', 'jinro', 'haengtuk']) {
+  await open(`/record/#/${route}`)
+  t = await text()
+  check(`${route} 화면과 로그인 안내`, t.includes('특기사항 생성') && t.includes('교사 로그인 후 이용할 수 있습니다'))
+  check(`${route} 셸과 푸터`, t.includes('학생부 특기사항 AI') && t.includes('개발 및 운영 : 교사 홍대화'))
+  check(`${route} 가림 안내 유지`, t.includes('마스킹'))
+  check(`${route} Anthropic 안내`, t.includes('Anthropic으로 전송'))
+  for (const w of FORBIDDEN_WORDS) check(`${route} 문구 없음: ${w}`, !t.includes(w))
+}
+await open('/record/#/sebak')
+check('교사 로그인 링크', await js(`[...document.querySelectorAll('a')].some((a) => a.getAttribute('href') === '/#login' && a.target === '_blank')`))
+check('파비콘 유지', await js(`!!document.querySelector('link[rel=icon][href^="data:image"]')`))
+check('로고 표시', await js(`!!document.querySelector('img[alt="대륜고등학교"]')?.naturalWidth`))
+await fillRecord()
+await shot('record-guest-1280')
+await width(375)
+check('375px 가로 넘침 없음', await noOverflow())
+await shot('record-guest-375')
+await width(1280)
+await clickText('특기사항 생성')
+await sleep(400)
+t = await text()
+check('생성을 눌러도 호출 0건', relay().length === 0)
+check('설정 창 열림(로그인·개인 키 선택지)', t.includes('서버 AI (승인 교사)') && t.includes('Gemini 무료 키') && t.includes('서버 AI는 교사 로그인 후'))
+await shot('record-guest-settings')
+await open('/record/#/sebak')
+await attachImage()
+await sleep(500)
+check('첨부도 호출 0건', relay().length === 0)
+check('첨부 안내 문구', (await text()).includes('교사 로그인을 하거나'))
+
+console.log('\n[record] 다른 탭 로그인 반영')
+await open('/record/#/sebak')
+await js(`localStorage.setItem('dr_sess_v1', ${JSON.stringify(JSON.stringify(SESSION))}); window.dispatchEvent(new StorageEvent('storage', { key: 'dr_sess_v1' }))`)
+await sleep(300)
+t = await text()
+check('로그인 안내 사라짐', !t.includes('교사 로그인 후 이용할 수 있습니다'))
+check('서버 AI 안내로 바뀜', t.includes('서버 AI(Claude)로 생성합니다'))
+
+console.log('\n[record] 교사 세션')
+serverHits = 0
+handler = (c) => {
+  if (c.url.includes('supabase.co')) return REFRESH_OK
+  serverHits++
+  if (serverHits === 1) return { status: 401, body: { error: '만료', code: 'AUTH_REQUIRED' } }
+  return RECORD_OK
+}
+await open('/record/#/sebak', { dr_sess_v1: SESSION })
+await fillRecord()
+await shot('record-teacher-1280')
+await clickText('특기사항 생성')
+check('결과 표시', await waitFor(`[...document.querySelectorAll('textarea')].some((t) => t.value.includes('토론에서 근거를 들어 발표함'))`))
+r = relay()
+check('generate-open 호출', r[0]?.url.endsWith('/api/llm/generate-open'), r[0]?.url)
+check('첫 요청 Bearer·x-auth-site', r[0]?.headers.authorization === 'Bearer old-token' && r[0]?.headers['x-auth-site'] === 'daeryun', JSON.stringify(r[0]?.headers))
+check('401 뒤 새 토큰으로 재전송', r[1]?.headers.authorization === 'Bearer new-token')
+check('세션 갱신 1회', refreshes().length === 1, String(refreshes().length))
+check('재전송 1회만', r.length === 2, String(r.length))
+check('실명이 전송되지 않음', !r.some((c) => c.body.includes('김철수')))
+check('body에 idToken 없음', !r[0]?.body.includes('idToken'))
+check('시간표·양식 AI 저장 키를 건드리지 않음', await js(`localStorage.getItem('dr_tt_llm_v1') === null`))
+
+console.log('\n[record] 첨부를 서버로 전송')
+handler = () => ({ status: 200, body: { text: '캡처에서 읽은 활동 기록' } })
+await open('/record/#/sebak', { dr_sess_v1: SESSION })
+await attachImage()
+check('추출 글이 입력칸에 들어옴', await waitFor(`document.querySelector(${JSON.stringify(OBS)})?.value.includes('캡처에서 읽은 활동 기록')`))
+r = relay()
+const imageBody = r[0] ? JSON.parse(r[0].body) : {}
+check('body.image 전송', imageBody.image?.mimeType === 'image/png' && imageBody.image?.dataBase64?.length > 20, r[0]?.body.slice(0, 200))
+check('첨부 요청 헤더', r[0]?.headers.authorization === 'Bearer old-token' && r[0]?.headers['x-auth-site'] === 'daeryun')
+
+console.log('\n[record] 오류 문구')
+handler = () => ({ status: 403, body: { error: '시험: 서버 문구 그대로', code: 'NOT_APPROVED' } })
+await open('/record/#/sebak', { dr_sess_v1: SESSION })
+await fillRecord()
+await clickText('특기사항 생성')
+check('서버 문구 표시', await waitFor(`document.body.innerText.includes('시험: 서버 문구 그대로')`))
+await shot('record-teacher-error')
+handler = (c) => (c.url.includes('supabase.co') ? REFRESH_OK : { status: 401, body: { error: '시험: 다시 로그인', code: 'AUTH_REQUIRED' } })
+await open('/record/#/sebak', { dr_sess_v1: SESSION })
+await fillRecord()
+await clickText('특기사항 생성')
+check('두 번째 401 문구 표시', await waitFor(`document.body.innerText.includes('시험: 다시 로그인')`))
+check('요청 2건에서 멈춤', relay().length === 2, String(relay().length))
+
+console.log('\n[record] 저장된 개인 연결')
+handler = () => ({ status: 200, body: { candidates: [{ content: { parts: [{ text: RECORD_OK.body.text }] } }] } })
+const gemini = { provider: 'gemini', gemini: { apiKey: 'AIza-test', model: 'gemini-3.5-flash' }, ollama: {}, bridge: {} }
+await open('/record/#/sebak', { dr_sess_v1: SESSION, 'edtouch-record-llm': gemini })
+await fillRecord()
+check('서버 안내 없음', !(await text()).includes('서버 AI(Claude)로 생성합니다'))
+await clickText('특기사항 생성')
+check('결과 표시', await waitFor(`[...document.querySelectorAll('textarea')].some((t) => t.value.includes('토론에서 근거를 들어 발표함'))`))
+check('Gemini로 직접 호출', calls.some((c) => c.url.includes('generativelanguage') && c.url.includes('AIza-test')))
+check('서버 호출 0건', relay().length === 0)
+check('Gemini에 세션 토큰 미전송', calls.every((c) => !c.headers.authorization))
+await open('/record/#/sebak', { 'edtouch-record-llm': gemini })
+check('비로그인이어도 개인 키면 로그인 안내 없음', !(await text()).includes('교사 로그인 후 이용할 수 있습니다'))
+await open('/record/#/sebak', { 'edtouch-record-llm': { ...gemini, gemini: { apiKey: '', model: 'gemini-3.5-flash' } } })
+check('키 없는 옛 저장값은 서버 AI로', (await text()).includes('교사 로그인 후 이용할 수 있습니다'))
+await open('/record/#/sebak', { 'edtouch-record-llm': { provider: 'ollama', gemini: { apiKey: '', model: '' }, ollama: { url: 'http://localhost:11434', model: 'qwen3:8b' }, bridge: {} } })
+check('Ollama 저장값 유지', !(await text()).includes('교사 로그인 후 이용할 수 있습니다') && (await js(`JSON.parse(localStorage.getItem('edtouch-record-llm')).provider === 'ollama'`)))
+await open('/record/#/sebak', { 'edtouch-record-llm': { provider: 'bridge', gemini: { apiKey: '', model: '' }, ollama: {}, bridge: { provider: 'claude', model: '' } } })
+check('구독 연결 저장값 유지', !(await text()).includes('교사 로그인 후 이용할 수 있습니다'))
 
 console.log(failed ? `\n실패 ${failed}건` : '\n전부 통과')
 ws.close()
