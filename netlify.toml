@@ -40,8 +40,8 @@
   node_bundler = "esbuild"
   included_files = ["netlify/functions/_lib/vendor/netlify-blobs.cjs"]
 
-# 백워드 수업 설계(/backward/) API 프록시 — Cloud Run 백워드 엔드포인트로 리라이트.
-# 브라우저는 동일 오리진(daeryun.life/bw-api/*)으로 호출 → CORS 불필요, 원본 서버 무수정.
+# 백워드 수업 설계(/backward/) API 프록시 — Cloud Run 직접 호출이 fetch 예외로 실패할 때만 쓴다.
+# 프록시는 대기 한도(약 26초)에 끊길 수 있어 기본 경로로 쓰지 않는다.
 [[redirects]]
   from = "/bw-api/*"
   to = "https://service-63986215827.us-west1.run.app/api/backward/:splat"

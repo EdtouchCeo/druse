@@ -24,7 +24,11 @@ exports.handler = async (event) => {
     if (!meRes.ok) return json(401, { error: '세션이 만료되었습니다. 다시 로그인해 주세요.', code: 'AUTH_REQUIRED' });
     const me = await meRes.json();
     if (!me || !me.id) return json(401, { error: '로그인 정보를 확인하지 못했습니다.', code: 'AUTH_REQUIRED' });
-    if (String(me.email || '').toLowerCase() === ADMIN_EMAIL) return json(200, { ok: true });
+    // 구글 로그인과 이메일 확인까지 본다(forms-templates.js와 같은 판정). 이메일만 같은 다른 가입을 막는다.
+    const viaGoogle = ((me.app_metadata && me.app_metadata.provider) === 'google'
+      || (me.app_metadata && Array.isArray(me.app_metadata.providers) && me.app_metadata.providers.includes('google')))
+      && !!(me.email_confirmed_at || me.confirmed_at);
+    if (viaGoogle && String(me.email || '').toLowerCase() === ADMIN_EMAIL) return json(200, { ok: true });
 
     const profileRes = await fetch(
       `${SUPABASE_URL}/rest/v1/users?google_id=eq.${encodeURIComponent(me.id)}&select=role,approved&limit=1`,
