@@ -8,6 +8,7 @@
 import { createEditor } from './lib/rhwp-editor/index.js';
 import { KIND_OF, KIND_LABEL, readPdf, readSheet, readPptx, readText, readPaste } from './sources.js';
 import * as Deck from './deck.js';
+import * as Sheet from './sheet.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -27,10 +28,11 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 //   role: AI에게 알려 줄 사용자 설명
 //   slideTheme·slideAssets·pptxLib: 새 PPT의 양식(slides.js 테마), 양식 그림 주소, 파워포인트 도구 주소
 const CFG = Object.assign({ gate: true, serverForms: true, role: '대륜고등학교 교사',
-  slideTheme: 'daeryun', slideAssets: { 'daeryun-logo': 'slides/daeryun-logo.png' }, pptxLib: '../lib/pptxgen.bundle.js' }, window.FORMS_CONFIG || {});
+  slideTheme: 'daeryun', slideAssets: { 'daeryun-logo': 'slides/daeryun-logo.png' }, pptxLib: '../lib/pptxgen.bundle.js', sheets: false, univerBase: 'lib/univer/' }, window.FORMS_CONFIG || {});
 const abs = (u) => new URL(u, document.baseURI).href;
 const SLIDE_ASSETS = Object.fromEntries(Object.entries(CFG.slideAssets).map(([k, u]) => [k, abs(u)]));
-const isTarget = (t) => !!t && (t.kind === 'hwp' || t.kind === 'slides');
+const isSheet = (t) => !!t && t.kind === 'xlsx' && !!t.wbData;
+const isTarget = (t) => !!t && (t.kind === 'hwp' || t.kind === 'slides' || isSheet(t));
 (function injectSlideCss() { const st = document.createElement('style'); st.textContent = window.DrSlides.CSS; document.head.appendChild(st); })();
 
 const state = {
@@ -184,6 +186,23 @@ function newDeckTab(base) {
   const name = (base ? base + ' 발표 자료' : '새 PPT' + (++deckSeq > 1 ? ' ' + deckSeq : ''));
   return newTab({ name, kind: 'slides', deck: Deck.emptyDeck(CFG.slideTheme, '') });
 }
+let sheetSeq = 0;
+function newSheetTab(base, exact) {
+  const name = exact || (base ? base + ' 표' : '새 엑셀' + (++sheetSeq > 1 ? ' ' + sheetSeq : ''));
+  return newTab({ name, kind: 'xlsx', wbData: Sheet.emptyWorkbook(name), rowOps: [], orig: null, use: false });
+}
+let lastBlockNote = 0;
+async function ensureSheet() {
+  if (!$('sheet').dataset.ready) cover('wait', '<div>엑셀 편집기를 여는 중입니다… 처음 한 번은 조금 걸립니다.</div>');
+  try {
+    await Sheet.ensureSheetEditor($('sheet'), {
+      base: abs(CFG.univerBase),
+      onBlocked: (msg) => { if (Date.now() - lastBlockNote > 3000) { lastBlockNote = Date.now(); note(msg); } },
+      onEdit: (t) => { if (!t.dirty) { t.dirty = true; renderTabs(); updateSaveNote(); } }
+    });
+    $('sheet').dataset.ready = '1';
+  } finally { cover(null); }
+}
 function refreshDeck(t) { if (t && t.viewEl && t.viewEl.refresh) t.viewEl.refresh(); }
 function renderTabs() {
   $('tabbar').innerHTML = state.tabs.map((t) =>
@@ -206,7 +225,7 @@ $('tabbar').addEventListener('keydown', (e) => {
 });
 function showStart() {
   state.activeId = null;
-  $('editor').hidden = true; $('viewer').hidden = true; $('start').hidden = false;
+  $('editor').hidden = true; $('viewer').hidden = true; $('sheet').hidden = true; $('start').hidden = false;
   renderTabs(); updateDownload();
 }
 // 탭을 보여 준다. 한글 탭은 편집기에 올라온 것을 확인한 뒤에만 true를 돌려준다.
@@ -214,9 +233,21 @@ async function activate(id, force) {
   const t = tab(id);
   if (!t) return false;
   if (!force && state.busy && t.kind === 'hwp' && state.editorTabId !== t.id) { note('AI가 문서를 고치는 동안에는 다른 한글 문서로 바꿀 수 없습니다. 끝난 뒤 다시 눌러 주세요.'); return false; }
+  if (!force && state.busy && isSheet(t) && !Sheet.isMounted(t)) { note('AI가 엑셀을 고치는 동안에는 다른 엑셀로 바꿀 수 없습니다. 끝난 뒤 다시 눌러 주세요.'); return false; }
   state.activeId = id;
   $('start').hidden = true;
-  if (t.kind === 'hwp') {
+  $('sheet').hidden = !isSheet(t);
+  if (isSheet(t)) {
+    $('editor').hidden = true; $('viewer').hidden = true;
+    try { await ensureSheet(); if (state.activeId !== id) return true; Sheet.mount(t); }
+    catch (e) {
+      console.error(e);
+      cover('err', '<div>엑셀 편집기를 열지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.</div><button class="btn" type="button" id="cover-ok">닫기</button>');
+      $('cover-ok').onclick = () => cover(null);
+      return false;
+    }
+    if (!state.busy) state.targetId = t.id;
+  } else if (t.kind === 'hwp') {
     $('viewer').hidden = true; $('editor').hidden = false;
     let ok = true;
     try { await lock(() => (tab(t.id) ? loadIntoEditor(t) : null)); }
@@ -246,6 +277,7 @@ async function closeTab(id, force) {
     state.tabs = state.tabs.filter((x) => x.id !== id);
     if (state.editorTabId === id) state.editorTabId = null;
   });
+  if (isSheet(t)) { Sheet.unmount(t); if (state.activeId === id) $('sheet').hidden = true; }
   if (state.targetId === id) state.targetId = (state.tabs.filter(isTarget).pop() || {}).id || null;
   if (state.admin.tabId === id) state.admin.tabId = null;
   if (state.activeId === id) {
@@ -343,6 +375,10 @@ async function addFiles(list) {
     const bytes = new Uint8Array(await f.arrayBuffer());
     const t = newTab({ name: f.name, kind, bytes, loadName: f.name });
     if (kind !== 'hwp') { cover('wait', '<div>' + esc(f.name) + '을(를) 읽는 중입니다…</div>'); await readSource(t, bytes); cover(null); }
+    if (kind === 'xlsx' && CFG.sheets && !t.srcErr) {
+      try { await Sheet.prepare(t, bytes, f.name); if (t.sheetNote) note(f.name + ': ' + t.sheetNote); }
+      catch (e) { console.warn(e); note(f.name + '은(는) 편집기로 열지 못해 자료로만 씁니다. 엑셀에서 .xlsx로 다시 저장하면 고칠 수 있습니다.'); }
+    }
     last = t;
     if (kind === 'hwp') await activate(t.id); // 한글은 열 때 편집기로 확인하고 hwpx로 바꿔 둔다
   }
@@ -351,7 +387,7 @@ async function addFiles(list) {
 }
 $('file-input').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
 ['btn-open', 'btn-open2'].forEach((id) => $(id).addEventListener('click', () => $('file-input').click()));
-// 새 한글: 빈 A4 문서(blank.hwpx)를 열고, 열려 있던 문서가 있으면 자료로 고른다.
+// 새 한글: 빈 A4 문서(blank.hwpx)로 한글 탭을 열고, 열려 있던 문서가 있으면 자료로 고른다.
 let hwpSeq = 0;
 if ($('btn-new-hwp')) $('btn-new-hwp').addEventListener('click', async () => {
   if (state.busy) return;
@@ -371,6 +407,17 @@ if ($('btn-new-hwp')) $('btn-new-hwp').addEventListener('click', async () => {
     console.error(e);
     note('새 한글 문서를 열지 못했습니다. ' + (e.message || ''));
   }
+});
+// 새 엑셀: 빈 시트 탭을 열고, 열려 있던 문서가 있으면 자료로 고른다.
+if ($('btn-new-sheet')) $('btn-new-sheet').addEventListener('click', async () => {
+  if (state.busy) return;
+  const from = tab(state.targetId);
+  const t = newSheetTab(from && from.kind !== 'xlsx' ? baseName(from.name) : null);
+  if (from && from.kind !== 'xlsx') from.use = true;
+  await activate(t.id);
+  renderSources(); renderEmpty();
+  if (window.matchMedia('(max-width: 900px)').matches) setPane('chat');
+  $('prompt').focus();
 });
 // 새 PPT: 빈 PPT 탭을 열고, 열려 있던 한글 문서가 있으면 자료로 고른다.
 $('btn-new-deck').addEventListener('click', async () => {
@@ -480,7 +527,7 @@ async function openForm(id, opts) {
 function renderTarget() {
   const hw = state.tabs.filter(isTarget);
   const sel = $('target');
-  sel.innerHTML = hw.length ? hw.map((t) => `<option value="${t.id}"${t.id === state.targetId ? ' selected' : ''}>${t.kind === 'slides' ? '[PPT] ' : ''}${esc(t.name)}</option>`).join('')
+  sel.innerHTML = hw.length ? hw.map((t) => `<option value="${t.id}"${t.id === state.targetId ? ' selected' : ''}>${t.kind === 'slides' ? '[PPT] ' : isSheet(t) ? '[엑셀] ' : ''}${esc(t.name)}</option>`).join('')
     : '<option value="">없음 (질문만 할 수 있습니다)</option>';
   sel.disabled = !hw.length || state.busy;
   renderEmptyHint();
@@ -494,7 +541,7 @@ function renderSources() {
   const others = state.tabs.filter((t) => t.id !== state.targetId);
   $('sources-box').hidden = !others.length;
   $('sources-list').innerHTML = others.map((t) => {
-    const info = t.kind === 'hwp' ? '한글 문서' : t.kind === 'slides' ? 'PPT ' + t.deck.slides.length + '장' : t.srcErr ? '읽지 못함' : (srcSize(t).toLocaleString() + '자' + (srcSize(t) > SRC_LIMIT ? ', 앞부분만 보냄' : ''));
+    const info = t.kind === 'hwp' ? '한글 문서' : t.kind === 'slides' ? 'PPT ' + t.deck.slides.length + '장' : isSheet(t) && !t.orig ? '새 엑셀' : t.srcErr ? '읽지 못함' : (srcSize(t).toLocaleString() + '자' + (srcSize(t) > SRC_LIMIT ? ', 앞부분만 보냄' : ''));
     return `<li><label><input type="checkbox" data-use="${t.id}"${t.use && !t.srcErr ? ' checked' : ''}${t.srcErr ? ' disabled' : ''}><span>${esc(t.name)} <small>(${esc(KIND_LABEL[t.kind])}, ${info})</small></span></label></li>`;
   }).join('');
   const n = others.filter((t) => t.use && !t.srcErr).length;
@@ -512,17 +559,19 @@ async function sourceText(t) {
     return doc.toText();
   }
   if (t.kind === 'slides') return Deck.deckText(t.deck);
+  if (isSheet(t)) return Sheet.sheetText(Sheet.snapshot(t));
   return (t.src && t.src.text) || '';
 }
 
 /* ── 받기 ── */
 function updateDownload() {
   const t = tab(state.activeId);
-  const isDeck = !!t && t.kind === 'slides';
-  const ok = (isDeck ? t.deck.slides.length > 0 : !!(t && t.kind === 'hwp' && state.editorTabId === t.id)) && !state.busy;
+  const isDeck = !!t && t.kind === 'slides', sheet = isSheet(t);
+  const ok = (isDeck ? t.deck.slides.length > 0 : sheet ? true : !!(t && t.kind === 'hwp' && state.editorTabId === t.id)) && !state.busy;
   $('btn-download').disabled = !ok;
-  $('btn-download').title = ok ? '' : isDeck ? 'AI가 슬라이드를 만든 뒤에 받을 수 있습니다.' : '한글 문서나 PPT 탭에서 받을 수 있습니다.';
-  $('download-menu').querySelectorAll('[data-format]').forEach((b) => { b.hidden = (b.dataset.format === 'pptx') !== isDeck; });
+  $('btn-download').title = ok ? '' : isDeck ? 'AI가 슬라이드를 만든 뒤에 받을 수 있습니다.' : '한글 문서·엑셀·PPT 탭에서 받을 수 있습니다.';
+  const fmtOk = { pptx: isDeck, xlsx: sheet };
+  $('download-menu').querySelectorAll('[data-format]').forEach((b) => { const f = b.dataset.format; b.hidden = f in fmtOk ? !fmtOk[f] : isDeck || sheet; });
 }
 $('btn-download').addEventListener('click', () => {
   const m = $('download-menu'); m.hidden = !m.hidden;
@@ -534,6 +583,7 @@ $('download-menu').addEventListener('click', async (e) => {
   $('download-menu').hidden = true;
   const t = tab(state.activeId); if (!t) return;
   if (t.kind === 'slides') { downloadDeck(t); return; }
+  if (isSheet(t)) { downloadSheet(t); return; }
   if (state.editorTabId !== t.id) return;
   const fmt = b.dataset.format, btn = $('btn-download');
   btn.disabled = true; btn.textContent = '만드는 중…';
@@ -563,6 +613,23 @@ $('download-menu').addEventListener('click', async (e) => {
   } finally { btn.textContent = '받기'; updateDownload(); }
 });
 
+async function downloadSheet(t) {
+  const btn = $('btn-download');
+  btn.disabled = true; btn.textContent = '만드는 중…';
+  try {
+    const bytes = await Sheet.buildXlsx(t);
+    const name = baseName(t.name).replace(/[\\/:*?"<>|\n\r]+/g, ' ').trim().slice(0, 80) + '.xlsx';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    t.dirty = false; renderTabs(); updateSaveNote();
+    $('save-note').textContent = name + '을(를) 받았습니다';
+  } catch (err) {
+    console.error(err);
+    alert('엑셀 파일을 만들지 못했습니다. ' + (err && err.message ? err.message : ''));
+  } finally { btn.textContent = '받기'; updateDownload(); }
+}
 async function downloadDeck(t) {
   const btn = $('btn-download');
   btn.disabled = true; btn.textContent = '만드는 중…';
@@ -597,12 +664,14 @@ window.addEventListener('drai-change', renderAi);
 /* ── 대화 화면 ── */
 function currentForm() { const t = tab(state.targetId); return t && t.form; }
 function renderEmpty() {
-  const f = currentForm(), tg = tab(state.targetId), deck = tg && tg.kind === 'slides' ? tg.deck : null;
-  const sugg = deck ? (deck.slides.length ? ['모든 장의 글을 더 짧게 줄여 줘.', '3번 장을 표로 바꿔 줘.', '발표 노트를 장마다 3문장으로 써 줘.']
+  const f = currentForm(), tg = tab(state.targetId), deck = tg && tg.kind === 'slides' ? tg.deck : null, sheet = isSheet(tg);
+  const sugg = sheet ? (tg.orig ? ['합계 행 앞에 학생 3명 줄을 넣어 줘.', '빈 칸이 있는 행을 알려 줘.', '평균 열을 만들어 수식으로 채워 줘.'] : ['고른 자료의 표를 이 엑셀로 옮겨 줘.', '번호·이름·연락처 머리글로 명단 양식을 만들어 줘.'])
+    : deck ? (deck.slides.length ? ['모든 장의 글을 더 짧게 줄여 줘.', '3번 장을 표로 바꿔 줘.', '발표 노트를 장마다 3문장으로 써 줘.']
       : ['고른 자료로 10장짜리 발표 자료를 만들어 줘.', '학부모 설명회용으로 8장 만들어 줘.'])
     : f && f.suggestions && f.suggestions.length ? f.suggestions
-    : (state.targetId ? ['아직 비어 있는 칸을 알려 줘.', '맞춤법과 띄어쓰기를 검토해 줘.', '이 문서 내용으로 PPT 만들어 줘.'] : ['고른 자료를 다섯 줄로 요약해 줘.', '고른 자료로 PPT 만들어 줘.']);
-  const lead = deck ? (deck.slides.length ? 'AI가 PPT의 글과 장을 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다. 화면의 글을 눌러 직접 고칠 수도 있습니다.'
+    : (state.targetId ? ['아직 비어 있는 칸을 알려 줘.', '맞춤법과 띄어쓰기를 검토해 줘.', '이 문서 내용으로 PPT 만들어 줘.', '이 문서의 표를 엑셀로 옮겨 줘.'] : ['고른 자료를 다섯 줄로 요약해 줘.', '고른 자료로 PPT 만들어 줘.']);
+  const lead = sheet ? 'AI가 엑셀의 값과 수식, 글자 모양·색·테두리를 고칩니다. 요청하지 않은 서식은 받을 때 그대로 남습니다. 표의 칸을 눌러 값을 직접 고칠 수도 있습니다.'
+    : deck ? (deck.slides.length ? 'AI가 PPT의 글과 장을 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다. 화면의 글을 눌러 직접 고칠 수도 있습니다.'
       : '만들 발표 자료의 주제·대상·장 수를 적어 주세요. AI가 장 구성을 짠 뒤 내용을 채웁니다.')
     : state.targetId ? 'AI가 고칠 문서를 바로 채우고 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다.' : '양식에서 시작하거나 한글 파일을 열면 AI가 문서를 채웁니다. PPT를 만들어 달라고 하면 새 PPT 탭이 열립니다.';
   $('chat-log').innerHTML = `<div class="empty" id="empty">
@@ -716,6 +785,8 @@ function buildPrompt(o) {
   return L.join('\n');
 }
 function setBusy(v) {
+  const st = tab(state.sendTargetId); // 엑셀은 AI가 고치는 동안 잠그고, 끝나면 푼다(대상을 지우기 전에 잡아 둔다).
+  if (isSheet(st)) Sheet.setReadOnly(st, v);
   state.busy = v;
   if (!v) state.sendTargetId = null;
   $('btn-send').disabled = v; $('busy-bar').hidden = !v;
@@ -747,6 +818,18 @@ async function send(sourceIds) {
   if (!request) { $('prompt').focus(); return; }
   if (!drAi.has()) { drAi.open(); return; }
   let target = tab(state.targetId);
+  // 문서를 보다가 엑셀로 옮겨 달라고 하면 새 엑셀 탭을 열고, 보던 문서를 자료로 쓴다.
+  if (CFG.sheets && !isSheet(target) && Sheet.isSheetRequest(request) && !Deck.isDeckRequest(request)) {
+    const from = target;
+    const t2 = newSheetTab(from ? baseName(from.name) : null);
+    if (from) from.use = true;
+    await activate(t2.id);
+    note('새 엑셀 탭을 만들었습니다.' + (from ? ' "' + from.name + '"을(를) 자료로 씁니다.' : ''));
+    target = t2;
+  } else if (CFG.sheets && target && target.kind === 'hwp' && Sheet.mentionsSheet(request) && !Deck.mentionsDeck(request)) {
+    const lastSheet = state.tabs.filter(isSheet).pop();
+    if (lastSheet) { await activate(lastSheet.id); state.targetId = lastSheet.id; note('"' + lastSheet.name + '"을(를) 고칩니다.'); target = lastSheet; }
+  }
   // 한글 문서를 고치다가 PPT를 만들어 달라고 하면 새 PPT 탭을 열고, 그 한글 문서를 자료로 쓴다.
   if ((!target || target.kind !== 'slides') && Deck.isDeckRequest(request)) {
     const from = target;
@@ -777,6 +860,7 @@ async function send(sourceIds) {
     wait = addMsg('ai wait', '<span class="spin"></span><span>문서를 읽는 중…</span>');
     const say = (t) => { wait.lastElementChild.textContent = t; };
     if (target && target.kind === 'slides') { await sendSlides(target, request, sources, wait, say, retryId); return; }
+    if (isSheet(target)) { await sendSheet(target, request, sources, wait, say, retryId); return; }
 
     let doc = null, shaBefore = null, map = '';
     if (target) {
@@ -883,6 +967,70 @@ async function sendSlides(target, request, sources, wait, say, retryId) {
   delete state.retries[retryId];
   scrollLog();
 }
+// 엑셀 탭: 시트 지도를 주고 set·fill·insert_rows·delete_rows·clear로 고친다. 고치기 전 통합 문서를 보관해 한 번에 되돌린다.
+function sheetPrompt(target, map, request, sources) {
+  const L = ['너는 ' + CFG.role + '가 학교 업무용 엑셀(스프레드시트)을 작성하도록 돕는 AI 도우미다. 오늘은 ' + today() + '이다.', '', Sheet.sheetPromptPart(target.name, map)];
+  if (sources.length) {
+    L.push('', '[자료] 교사가 함께 보낸 파일이다. 표를 채우거나 답할 근거로만 쓰고, 자료에 없는 사실은 지어내지 않는다.');
+    sources.forEach((x) => { L.push('--- ' + x.name + ' (' + x.kind + ')' + (x.cut ? ', 앞부분만' : '') + ' ---'); L.push(x.text); });
+  }
+  const hist = state.history.slice(-HISTORY_TURNS);
+  if (hist.length) { L.push('', '[지난 대화]'); hist.forEach((h) => { L.push('교사: ' + h.user); L.push('도우미: ' + h.reply); }); }
+  L.push('', '[이번 요청]', request, '', '[지켜야 할 것]',
+    '- 교사가 알려 주지 않았고 자료에도 없는 학생 이름, 학번, 날짜, 점수, 숫자는 지어내지 않는다. 모르면 비워 두고 reply에서 물어본다.',
+    '- 요청과 관계없는 셀은 고치지 않는다. 질문만 했으면 edits는 빈 배열로 둔다.',
+    '- 교사가 표나 양식을 만들어 달라고 하면 묻기만 하고 끝내지 않는다. 알 수 없는 값은 빈 칸으로 둔 채 먼저 만들고, 채울 내용은 reply에서 물어본다.',
+    '- reply는 교사에게 보여 줄 답이다. 존댓말로 무엇을 고쳤는지와 교사가 확인할 것을 세 문장 이내로 쓴다. 엑셀 조작법을 늘어놓지 않는다.');
+  return L.join('\n');
+}
+async function sendSheet(target, request, sources, wait, say, retryId) {
+  if (!(await activate(target.id, true)) || !Sheet.isMounted(target)) throw new Error('엑셀을 열지 못해 요청을 보내지 않았습니다.');
+  let before = JSON.parse(JSON.stringify(Sheet.snapshot(target))), opsLen = target.rowOps.length;
+  const mi = Sheet.sheetMap(before, MAP_LIMIT);
+  if (mi.truncated) note('엑셀이 길어 뒤의 ' + mi.truncated + '줄은 AI에게 보내지 않았습니다. 그 부분은 표에서 직접 고쳐 주세요.');
+  const prompt = sheetPrompt(target, mi.text, request, sources);
+  let out = await drAi.call(prompt, Sheet.SHEET_SCHEMA, say);
+  // 만들거나 꾸미라는 요청에 묻기만 하고 돌아오면 한 번만 다시 부탁한다.
+  if (!(Array.isArray(out && out.edits) && out.edits.length) && Sheet.wantsSheetAction(request)) {
+    say('표에 바로 넣도록 다시 요청하는 중…');
+    const again = await drAi.call(prompt + '\n\n[다시 요청] 앞선 답은 edits가 비어 있었다. 이 요청은 묻지 말고 지금 처리한다. 모르는 값은 빈 칸으로 두고 머리글과 아는 값부터 edits에 넣는다. 정말 할 수 없는 작업이면 edits를 비우고 그 이유만 한 문장으로 쓴다.', Sheet.SHEET_SCHEMA, say);
+    if (Array.isArray(again && again.edits) && again.edits.length) out = again;
+  }
+  const reply = String((out && out.reply) || '').trim() || '요청을 처리했습니다.';
+  const edits = Array.isArray(out && out.edits) ? out.edits : [];
+  let res = { changes: [], problems: [] };
+  // 지금 표와 관계없는 새 표는 새 엑셀 탭에 만든다. 열어 둔 파일은 건드리지 않는다.
+  if (out && out.destination === 'new' && edits.length) {
+    const t2 = newSheetTab(null, String(out.newName || '').replace(/[\\/:*?"<>|]/g, ' ').trim().slice(0, 40));
+    if (!(await activate(t2.id, true)) || !Sheet.isMounted(t2)) throw new Error('새 엑셀을 열지 못해 표를 만들지 못했습니다.');
+    state.targetId = t2.id; state.sendTargetId = t2.id;
+    renderTarget();
+    note('새 엑셀 탭 "' + t2.name + '"에 만들었습니다. 열어 두었던 파일은 그대로입니다.');
+    target = t2;
+    before = JSON.parse(JSON.stringify(Sheet.snapshot(target))); opsLen = 0;
+  }
+  if (edits.length) {
+    say('엑셀에 넣는 중…');
+    Sheet.setReadOnly(target, false);
+    res = Sheet.applySheetEdits(target, edits);
+    Sheet.setReadOnly(target, true);
+    await new Promise((r) => setTimeout(r, 400)); // 수식 다시 계산
+  }
+  const after = Sheet.snapshot(target), changed = res.changes.length > 0;
+  const notes = changed ? Sheet.checkSheet(after, res.changes.length, res.emptyRows) : [];
+  wait.remove();
+  const turn = addMsg('ai', (changed ? '<div class="doc-tag">' + esc(target.name) + '</div>' : '') +
+    '<div class="reply">' + esc(reply) + '</div>' + changesHtml(res.changes, res.problems) +
+    (notes.length ? '<div class="checks">엑셀 확인: ' + notes.map(esc).join(' · ') + '</div>' : ''));
+  if (changed) {
+    target.undo.push({ turnEl: turn, before, opsLen, afterJson: JSON.stringify(after.sheets) });
+    target.dirty = true;
+    refreshUndoButtons(); renderTabs(); updateSaveNote(); renderSources(); renderEmptyHint();
+  }
+  state.history.push({ user: request, reply: reply + (notes.length ? ' [엑셀 확인: ' + notes.join(' · ') + ']' : ''), changes: res.changes.map((c) => c.label) });
+  delete state.retries[retryId];
+  scrollLog();
+}
 $('composer').addEventListener('submit', (e) => { e.preventDefault(); send(); });
 $('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
 
@@ -901,6 +1049,15 @@ async function undoTurn(btn) {
   if (state.busy) return;
   const t = tab(btn.dataset.undo); if (!t) return;
   const last = t.undo[t.undo.length - 1]; if (!last) return;
+  if (isSheet(t)) {
+    if (JSON.stringify(Sheet.snapshot(t).sheets) !== last.afterJson &&
+        !confirm('AI가 고친 뒤 표에서 직접 고친 내용이 있습니다. 되돌리면 그 내용도 함께 사라집니다. 되돌릴까요?')) return;
+    Sheet.restore(t, last.before, last.opsLen); t.undo.pop(); t.dirty = true;
+    const n = document.createElement('div'); n.className = 'undone'; n.textContent = '되돌렸습니다.';
+    last.turnEl.appendChild(n);
+    refreshUndoButtons(); renderTabs(); updateSaveNote(); renderSources();
+    return;
+  }
   if (t.kind === 'slides') {
     if (JSON.stringify(t.deck) !== last.afterJson &&
         !confirm('AI가 고친 뒤 화면에서 직접 고친 내용이 있습니다. 되돌리면 그 내용도 함께 사라집니다. 되돌릴까요?')) return;
@@ -1050,6 +1207,57 @@ function showGate(e) {
   if (e && e.status === 403) { $('gate-title').textContent = '교사 전용 메뉴입니다'; $('gate-text').textContent = e.message; }
   else if (e && e.status && e.status !== 401) { $('gate-title').textContent = '확인하지 못했습니다'; $('gate-text').textContent = e.message + ' 잠시 뒤 새로 고쳐 주세요.'; }
 }
+/* ── 다른 화면에서 넘긴 파일 열기(?handoff=열쇠) ──
+   edtouch 융합 수업 설계실이 같은 오리진 IndexedDB(edtouch-handoff/files)에 { key, createdAt, files:[{name, bytes}] }를 둔다.
+   서버로는 아무것도 오가지 않는다. 쿼리가 없으면 이 부분은 아무 일도 하지 않는다(daeryun /forms/와 동작이 같다). */
+// 기다리는 시간은 설계실이 그림이 많은 문서 3종을 만드는 시간까지 넉넉히 잡는다.
+const HANDOFF_DB = 'edtouch-handoff', HANDOFF_STORE = 'files', HANDOFF_TTL = 10 * 60 * 1000, HANDOFF_WAIT = 60000;
+function handoffTake(key) {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(HANDOFF_DB, 1);
+    req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains(HANDOFF_STORE)) req.result.createObjectStore(HANDOFF_STORE, { keyPath: 'key' }); };
+    req.onerror = () => reject(req.error || new Error('브라우저 저장소를 열지 못했습니다.'));
+    req.onsuccess = () => {
+      const db = req.result;
+      let found = null;
+      const tx = db.transaction(HANDOFF_STORE, 'readwrite');
+      const store = tx.objectStore(HANDOFF_STORE);
+      const get = store.get(key);
+      get.onsuccess = () => {
+        const v = get.result;
+        if (!v) return;
+        store.delete(key);
+        found = Date.now() - (v.createdAt || 0) <= HANDOFF_TTL ? v : { expired: true };
+      };
+      tx.oncomplete = () => { db.close(); resolve(found); };
+      tx.onerror = () => { db.close(); reject(tx.error || new Error('브라우저 저장소를 읽지 못했습니다.')); };
+    };
+  });
+}
+async function receiveHandoff(key) {
+  if (!/^[A-Za-z0-9-]{8,64}$/.test(key) || !window.indexedDB) { note('넘겨받을 문서를 찾지 못했습니다. 보낸 화면에서 다시 눌러 주세요.'); return; }
+  cover('wait', '<div>융합 수업 설계실에서 보낸 한글 문서를 받는 중입니다…</div>');
+  let entry = null;
+  const until = Date.now() + HANDOFF_WAIT;
+  try {
+    while (!entry && Date.now() < until) {
+      entry = await handoffTake(key);
+      if (!entry) await new Promise((r) => setTimeout(r, 500));
+    }
+  } catch (e) {
+    console.error(e);
+    cover(null);
+    note('넘겨받은 문서를 읽지 못했습니다. 이 브라우저의 사이트 저장 공간이 막혀 있는지 확인해 주세요. 설계실에서 내려받은 뒤 파일 열기로 올려도 됩니다.');
+    return;
+  }
+  cover(null);
+  if (entry && entry.expired) { note('넘긴 지 10분이 지나 문서를 열지 않았습니다. 설계실의 한글 문서 3종 탭에서 문서작성 AI에서 편집을 다시 눌러 주세요.'); return; }
+  const list = entry && Array.isArray(entry.files) ? entry.files : [];
+  if (!list.length) { note('넘겨받을 문서를 찾지 못했습니다. 설계실의 한글 문서 3종 탭에서 문서작성 AI에서 편집을 다시 눌러 주세요.'); return; }
+  const files = list.map((f) => new File([f.bytes], f.name, { type: 'application/hwp+zip' }));
+  await addFiles(files);
+  note('융합 수업 설계실에서 한글 문서 ' + files.length + '개를 열었습니다. 여기서 고친 내용은 설계실로 돌아가지 않습니다. 다 고친 뒤 받기 버튼으로 저장해 주세요.');
+}
 async function boot() {
   if (CFG.gate) {
     try {
@@ -1065,8 +1273,9 @@ async function boot() {
   const q = new URLSearchParams(location.search);
   if (q.get('form')) await openForm(q.get('form'));
   if (q.get('admin') === '1' && state.isAdmin) openAdmin();
+  if (q.get('handoff')) await receiveHandoff(q.get('handoff'));
 }
 boot();
 
 // 시험용(화면 동작에는 쓰지 않음)
-window.__drForms = { state, buildPrompt, send, addFiles, openForm, activate, Deck };
+window.__drForms = { state, buildPrompt, send, addFiles, openForm, activate, Deck, Sheet };

@@ -1,0 +1,4 @@
+이 폴더는 Univer 1.0.4(@univerjs/presets, @univerjs/preset-sheets-core)의 시트 기본 기능과 한국어 문구를
+esbuild 0.28.2로 묶은 파일이다. Univer는 Apache License 2.0을 따른다(https://github.com/dream-num/univer).
+묶음에 들어간 React(MIT), RxJS(Apache-2.0) 등도 각자의 사용 허가를 따른다.
+다시 묶는 방법: entry.js(DrUniver를 window에 둔다)를 esbuild --bundle --minify --splitting --format=esm으로 묶는다.
