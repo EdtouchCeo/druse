@@ -24,8 +24,8 @@ const testIdFor = (email) => {
   return index < 0 ? null : `${TEST_PREFIX}${String(index + 1).padStart(2, '0')}`;
 };
 const isTestId = (id) => String(id || '').startsWith(TEST_PREFIX);
-// 입장 코드: 소문자와 특수문자를 함께 쓴 3자 이내. 빈 값은 입장을 닫는다.
-const validEntryCode = (code) => code === '' || (/^[a-z!@#$%&*?]{2,3}$/.test(code) && /[a-z]/.test(code) && /[^a-z]/.test(code));
+// 입장 코드: 소문자와 특수문자를 함께 쓴 3자 이내.
+const validEntryCode = (code) => (/^[a-z!@#$%&*?]{2,3}$/.test(code) && /[a-z]/.test(code) && /[^a-z]/.test(code));
 
 // 사이트 로그인 토큰을 확인해 이메일과 이름을 돌려준다. 토큰이 틀리면 null.
 async function verifySiteLogin(token) {
@@ -123,14 +123,29 @@ function createAdmin(h) {
     if (route === 'settings' && method === 'POST') {
       const body = parseBody(event);
       if (!body) return fail(400, '요청 형식이 잘못되었습니다.');
-      const code = typeof body.entryCode === 'string' ? body.entryCode.trim() : null;
-      if (code !== null && !validEntryCode(code)) return fail(400, '입장 코드는 소문자와 특수문자(! @ # $ % & * ?)를 함께 써서 3자 이내로 정해 주세요.');
+      if ('entryCode' in body) return fail(400, '화면이 오래되었습니다. 새로고침한 뒤 다시 시도해 주세요.');
       await rpc('sdg_t_settings', {
-        p_code: code,
+        p_code: null,
         p_open1: typeof body.open1 === 'boolean' ? body.open1 : null,
         p_open2: typeof body.open2 === 'boolean' ? body.open2 : null,
       });
       await note(admin, 'settings');
+      return reply(200, { ok: true });
+    }
+    if (route === 'code-add' && method === 'POST') {
+      const code = typeof parseBody(event)?.code === 'string' ? parseBody(event).code.trim() : '';
+      if (!validEntryCode(code)) return fail(400, '입장 코드는 소문자와 특수문자(! @ # $ % & * ?)를 함께 써서 3자 이내로 정해 주세요.');
+      const out = await rpc('sdg_t_code_add', { p_code: code, p_by: admin.name });
+      if (out?.error === 'exists') return fail(409, '이미 쓰고 있는 코드입니다.');
+      if (out?.error === 'limit') return fail(409, '코드는 20개까지 둘 수 있습니다. 쓰지 않는 코드를 삭제해 주세요.');
+      await note(admin, 'code-add', { code });
+      return reply(200, { ok: true, code });
+    }
+    if (route === 'code-delete' && method === 'POST') {
+      const code = parseBody(event)?.code;
+      if (typeof code !== 'string' || !code) return fail(400, '삭제할 코드를 확인해 주세요.');
+      await rpc('sdg_t_code_delete', { p_code: code });
+      await note(admin, 'code-delete', { code });
       return reply(200, { ok: true });
     }
     if (route === 'reset' && method === 'POST') {

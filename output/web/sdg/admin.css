@@ -54,3 +54,5 @@ main > div, #panel { min-width: 0; }
 #panel { display: grid; gap: 16px; }
 .card { overflow-wrap: anywhere; }
 .top { flex-wrap: wrap; }
+.code-value { font-family: Consolas, Menlo, monospace; font-weight: 700; font-size: 1.1rem; overflow-wrap: normal; }
+#code-table { margin-top: 8px; }

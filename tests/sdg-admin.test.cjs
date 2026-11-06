@@ -26,16 +26,23 @@ const PLAN = `서비스명: 합성 서비스
 핵심 기능: ${'시험 기능 설명입니다. '.repeat(30)}`;
 
 function fakeBackend() {
-  const db = { settings: { entryCode: '', open1: false, open2: false }, students: new Map(), jobs: new Map(), log: [], calls: [] };
+  const db = { settings: { open1: false, open2: false }, codes: new Map(), students: new Map(), jobs: new Map(), log: [], calls: [] };
   const key = (id, stage) => `${id}/${stage}`;
   const rpcs = {
-    sdg_t_state: () => ({ ...db.settings, wipeEpoch: 0, queued: 0, running: 0, students: [...db.students.values()].map((s) => ({ id: s.id, name: s.name, stage1: db.jobs.get(key(s.id, 1))?.status || 'none', stage2: db.jobs.get(key(s.id, 2))?.status || 'none', refusals: 0 })) }),
+    sdg_t_state: () => ({ ...db.settings, codes: [...db.codes.values()], wipeEpoch: 0, queued: 0, running: 0, students: [...db.students.values()].map((s) => ({ id: s.id, name: s.name, stage1: db.jobs.get(key(s.id, 1))?.status || 'none', stage2: db.jobs.get(key(s.id, 2))?.status || 'none', refusals: 0 })) }),
     sdg_t_log: () => db.log,
     sdg_t_settings: (a) => { if (a.p_code !== null) db.settings.entryCode = a.p_code; if (a.p_open1 !== null) db.settings.open1 = a.p_open1; if (a.p_open2 !== null) db.settings.open2 = a.p_open2; return null; },
     sdg_t_reset: (a) => { const j = db.jobs.get(key(a.p_id, a.p_stage)); if (j && ['queued', 'running'].includes(j.status)) return { error: 'busy' }; if (j) j.status = 'none'; return { ok: true }; },
     sdg_t_wipe: () => { db.students.clear(); db.jobs.clear(); db.log = []; db.settings.open1 = false; db.settings.open2 = false; return { ok: true }; },
     sdg_result: () => '<!doctype html><p>결과</p>',
-    sdg_login: (a) => (db.settings.entryCode && a.p_code === db.settings.entryCode ? { ok: true } : { error: db.settings.entryCode ? 'code' : 'closed' }),
+    sdg_login: (a) => (db.codes.has(a.p_code) ? { ok: true } : { error: db.codes.size ? 'code' : 'closed' }),
+    sdg_t_code_add: (a) => {
+      if (db.codes.has(a.p_code)) return { error: 'exists' };
+      if (db.codes.size >= 20) return { error: 'limit' };
+      db.codes.set(a.p_code, { code: a.p_code, issuedBy: a.p_by, createdAt: '2026-11-06T10:00:00Z' });
+      return { ok: true };
+    },
+    sdg_t_code_delete: (a) => { db.codes.delete(a.p_code); return null; },
     sdg_can_submit: (a) => (((a.p_stage === 1 ? db.settings.open1 : db.settings.open2)) ? { ok: true } : { error: 'closed' }),
     sdg_note_refusal: () => ({ ok: true }),
     sdg_submit: (a) => { db.jobs.set(key(a.p_id, a.p_stage), { status: 'queued', input_text: a.p_text }); return { ok: true }; },
@@ -102,7 +109,7 @@ test('관리자 명단은 운영자와 환경변수의 이메일이고 시험 �
 
 test('로그인 없이는 어떤 관리 기능도 쓸 수 없다', async () => {
   const db = fakeBackend();
-  for (const [route, method] of [['admin/state', 'GET'], ['admin/log', 'GET'], ['admin/settings', 'POST'], ['admin/reset', 'POST'], ['admin/wipe', 'POST'], ['admin/test-enter', 'POST'], ['admin/input/10301', 'GET'], ['admin/preview/10301/1', 'GET']]) {
+  for (const [route, method] of [['admin/state', 'GET'], ['admin/log', 'GET'], ['admin/settings', 'POST'], ['admin/code-add', 'POST'], ['admin/code-delete', 'POST'], ['admin/reset', 'POST'], ['admin/wipe', 'POST'], ['admin/test-enter', 'POST'], ['admin/input/10301', 'GET'], ['admin/preview/10301/1', 'GET']]) {
     const res = await call(route, { method, body: method === 'POST' ? { confirm: '초기화', entryCode: 'X' } : undefined });
     assert.equal(res.statusCode, 401, route);
   }
@@ -118,7 +125,7 @@ test('등록되지 않은 계정과 틀린 토큰은 거부된다', async () => 
 
 test('학생 쿠키를 관리자 쿠키로 바꿔 써도 통과하지 못한다', async () => {
   const db = fakeBackend();
-  db.settings.entryCode = 'ABC';
+  db.codes.set('ABC', { code: 'ABC', issuedBy: '합성 교사' });
   const login = await call('login', { body: { id: '10301', name: '합성학생', code: 'ABC' } });
   const value = cookieOf(login).split('=')[1];
   assert.equal((await call('admin/state', { method: 'GET', cookie: `sdg_admin=${value}` })).statusCode, 401);
@@ -141,18 +148,37 @@ test('관리자는 입장 코드를 발급하고 그 코드로 학생이 입장�
   const db = fakeBackend();
   const cookie = await adminCookie();
   assert.equal((await call('login', { body: { id: '10301', name: '합성학생', code: 'k!m' } })).statusCode, 403);
-  assert.equal((await call('admin/settings', { body: { entryCode: 'k!m', open1: true }, cookie })).statusCode, 200);
+  assert.equal((await call('admin/code-add', { body: { code: 'k!m' }, cookie })).statusCode, 200);
+  assert.equal((await call('admin/settings', { body: { open1: true }, cookie })).statusCode, 200);
   const state = JSON.parse((await call('admin/state', { method: 'GET', cookie })).body);
-  assert.equal(state.entryCode, 'k!m');
+  assert.deepEqual(state.codes.map((c) => [c.code, c.issuedBy]), [['k!m', '합성 교사']]);
   assert.equal(state.open1, true);
   assert.equal((await call('login', { body: { id: '10301', name: '합성학생', code: 'k!m' } })).statusCode, 200);
-  assert.equal(db.log.at(-1).type, 'admin');
+});
+
+test('코드 여러 개가 함께 쓰이고 발급 교사가 남으며 삭제한 코드만 막힌다', async () => {
+  const db = fakeBackend();
+  const cookie = await adminCookie();
+  const add = (code) => call('admin/code-add', { body: { code }, cookie });
+  const enter = (code) => call('login', { body: { id: '10301', name: '합성학생', code } });
+  assert.equal((await add('k!m')).statusCode, 200);
+  assert.equal((await add('a?b')).statusCode, 200);
+  assert.equal((await add('k!m')).statusCode, 409);
+  assert.equal((await add('ABC')).statusCode, 400);
+  assert.equal(db.codes.get('a?b').issuedBy, '합성 교사');
+  assert.equal((await enter('k!m')).statusCode, 200);
+  assert.equal((await enter('a?b')).statusCode, 200);
+  assert.equal((await call('admin/code-delete', { body: { code: 'k!m' }, cookie })).statusCode, 200);
+  assert.equal((await enter('k!m')).statusCode, 403);
+  assert.equal((await enter('a?b')).statusCode, 200);
+  assert.deepEqual(db.log.slice(-1).map((e) => [e.type, e.detail.action, e.detail.code]), [['admin', 'code-delete', 'k!m']]);
+  assert.equal((await call('admin/settings', { body: { entryCode: 'x!' }, cookie })).statusCode, 400);
 });
 
 test('입장 코드는 소문자와 특수문자를 함께 쓴 3자 이내만 저장된다', async () => {
   const { validEntryCode } = require('../netlify/functions/_lib/sdg-admin.js');
-  for (const code of ['', 'k!', '!k', 'k!m', '@ab', 'ab?']) assert.equal(validEntryCode(code), true, code);
-  for (const code of ['a', '!', 'abc', '!@#', 'ABC', 'A!b', 'k1!', 'k!mn', 'k m', '가!a', 'K7P2QX']) assert.equal(validEntryCode(code), false, code);
+  for (const code of ['k!', '!k', 'k!m', '@ab', 'ab?']) assert.equal(validEntryCode(code), true, code);
+  for (const code of ['', 'a', '!', 'abc', '!@#', 'ABC', 'A!b', 'k1!', 'k!mn', 'k m', '가!a', 'K7P2QX']) assert.equal(validEntryCode(code), false, code);
 });
 
 test('관리자 테스트는 코드와 단계가 닫혀 있어도 제출되지만 일반 학생은 막힌다', async () => {
@@ -172,7 +198,7 @@ test('관리자 테스트는 코드와 단계가 닫혀 있어도 제출되지�
   assert.equal(db.jobs.get('19902/1').status, 'queued');
   assert.equal((await call('submit/1', { body: { text: PLAN }, cookie: session })).statusCode, 409);
 
-  db.settings.entryCode = 'ABC';
+  db.codes.set('ABC', { code: 'ABC', issuedBy: '합성 교사' });
   const studentLogin = await call('login', { body: { id: '10301', name: '합성학생', code: 'ABC' } });
   db.students.set('10301', { id: '10301', name: '합성학생' });
   const student = cookieOf(studentLogin);
@@ -201,7 +227,7 @@ test('전체 초기화는 확인 문구가 있어야 하고 다른 사이트 요
 
 test('2차는 프롬프트로 제출하고 관리자는 단계별 입력을 본다', async () => {
   const db = fakeBackend();
-  db.settings.entryCode = 'k!m';
+  db.codes.set('k!m', { code: 'k!m', issuedBy: '합성 교사' });
   db.settings.open2 = true;
   const login = await call('login', { body: { id: '10301', name: '합성학생', code: 'k!m' } });
   db.students.set('10301', { id: '10301', name: '합성학생' });

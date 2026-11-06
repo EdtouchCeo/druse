@@ -22,18 +22,24 @@
   </section>
 
   <div id="panel" hidden>
-    <section class="card controls">
-      <div>
-        <label for="code">입장 코드</label>
-        <div class="row">
-          <input id="code" maxlength="3" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="code-rule" placeholder="예: k!m">
-          <button id="save-code" type="button">저장</button>
-          <button id="issue-code" type="button">새 코드 발급</button>
-        </div>
-        <p id="code-rule" class="hint">소문자와 특수문자(! @ # $ % &amp; * ?)를 함께 써서 3자 이내</p>
-        <p id="code-state" class="hint"></p>
-        <p id="code-msg" class="msg error" role="alert"></p>
+    <section class="card">
+      <h2>입장 코드</h2>
+      <label for="code">직접 정하기</label>
+      <div class="row">
+        <input id="code" maxlength="3" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="code-rule" placeholder="예: k!m">
+        <button id="save-code" type="button">추가</button>
+        <button id="issue-code" type="button">새 코드 발급</button>
       </div>
+      <p id="code-rule" class="hint">소문자와 특수문자(! @ # $ % &amp; * ?)를 함께 써서 3자 이내. 목록의 코드는 삭제할 때까지 모두 입장에 쓸 수 있습니다.</p>
+      <p id="code-msg" class="msg error" role="alert"></p>
+      <p id="code-empty" class="hint" hidden>발급된 코드가 없어 학생이 입장할 수 없습니다.</p>
+      <table id="code-table" hidden>
+        <thead><tr><th>코드</th><th>발급 교사</th><th>발급 시각</th><th><span class="sr">삭제</span></th></tr></thead>
+        <tbody id="codes"></tbody>
+      </table>
+    </section>
+
+    <section class="card controls">
       <label class="check"><input id="open1" type="checkbox"> 1차 구현 열기</label>
       <label class="check"><input id="open2" type="checkbox"> 2차 구현 열기</label>
       <p id="stats" class="hint"></p>

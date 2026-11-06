@@ -9,9 +9,10 @@ const RESULT = { done: '완료', refused: '거절', api: '오류', rate: '한도
 const CODE_LETTERS = 'abcdefghjkmnpqrstuvwxyz';
 const CODE_SYMBOLS = '!@#$%&*?';
 const CODE_RULE = '입장 코드는 소문자와 특수문자(! @ # $ % & * ?)를 함께 써서 3자 이내로 정해 주세요.';
-const validCode = (code) => code === '' || (/^[a-z!@#$%&*?]{2,3}$/.test(code) && /[a-z]/.test(code) && /[^a-z]/.test(code));
+const validCode = (code) => (/^[a-z!@#$%&*?]{2,3}$/.test(code) && /[a-z]/.test(code) && /[^a-z]/.test(code));
 let me = null;
 let timer = null;
+let shownCodes = null;
 
 async function api(path, body, headers = {}) {
   const res = await fetch(`${API}/${path}`, body ? { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) } : undefined);
@@ -142,16 +143,43 @@ function describe(e) {
   if (e.type === 'admin') {
     if (d.action === 'test') return `관리자 테스트 입장 (${d.id})`;
     if (d.action === 'reset') return `관리자가 ${d.id} ${d.stage}차 다시 열기`;
+    if (d.action === 'code-add') return `입장 코드 발급 (${d.code})`;
+    if (d.action === 'code-delete') return `입장 코드 삭제 (${d.code})`;
     return '관리자 설정 변경';
   }
   return e.type;
 }
 
-function renderCode(data) {
-  if (document.activeElement !== $('code')) $('code').value = data.entryCode;
-  $('code-state').textContent = data.entryCode
-    ? `학생에게 알려 줄 코드: ${data.entryCode}`
-    : '코드가 없어 학생이 입장할 수 없습니다.';
+async function removeCode(code) {
+  if (!window.confirm(`코드 ${code}를 삭제할까요? 새 입장만 막히고, 이미 입장한 학생은 입장 후 8시간까지 이용합니다.`)) return;
+  $('code-msg').textContent = '';
+  try {
+    await api('code-delete', { code });
+  } catch (err) {
+    $('code-msg').textContent = err.message;
+  }
+  await refresh();
+}
+
+function renderCodes(codes) {
+  // 주기적으로 새로 그려도 삭제 버튼의 포커스를 잃지 않게 바뀔 때만 그린다.
+  const key = JSON.stringify(codes);
+  if (key === shownCodes) return;
+  shownCodes = key;
+  $('code-table').hidden = codes.length === 0;
+  $('code-empty').hidden = codes.length > 0;
+  $('codes').replaceChildren(...codes.map((c) => {
+    const tr = el('tr');
+    const action = el('td');
+    action.append(el('button', '삭제', { type: 'button', className: 'link', ariaLabel: `코드 ${c.code} 삭제`, onclick: () => removeCode(c.code) }));
+    tr.append(
+      el('td', c.code, { className: 'code-value' }),
+      el('td', c.issuedBy || '-'),
+      el('td', new Date(c.createdAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' })),
+      action,
+    );
+    return tr;
+  }));
 }
 
 async function refresh() {
@@ -166,7 +194,7 @@ async function refresh() {
     $('who').hidden = false;
     $('who').textContent = `${me.name} (${me.email})`;
     $('test-id').textContent = me.testId;
-    renderCode(data);
+    renderCodes(data.codes);
     $('open1').checked = data.open1;
     $('open2').checked = data.open2;
     const waiting = data.queued > 0 ? ' 대기가 줄지 않으면 처리 프로그램이 켜져 있는지 확인해 주세요.' : '';
@@ -207,20 +235,35 @@ function newCode() {
 }
 
 $('save-code').addEventListener('click', async () => {
-  const entryCode = $('code').value.trim();
-  if (!validCode(entryCode)) {
+  const code = $('code').value.trim();
+  if (!validCode(code)) {
     $('code-msg').textContent = CODE_RULE;
     return;
   }
   $('code-msg').textContent = '';
-  $('code').blur();
-  await saveSetting({ entryCode }, 'code-msg');
+  try {
+    await api('code-add', { code });
+    $('code').value = '';
+  } catch (err) {
+    $('code-msg').textContent = err.message;
+  }
+  await refresh();
 });
 $('issue-code').addEventListener('click', async () => {
-  if ($('code').value && !window.confirm('새 코드를 발급하면 이전 코드로는 입장할 수 없습니다. 이미 입장한 학생은 그대로 이용합니다. 발급할까요?')) return;
   $('code-msg').textContent = '';
-  $('code').blur();
-  await saveSetting({ entryCode: newCode() }, 'code-msg');
+  // 우연히 쓰고 있는 코드와 겹치면 다시 만든다.
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    try {
+      await api('code-add', { code: newCode() });
+      break;
+    } catch (err) {
+      if (attempt === 5 || !err.message.includes('이미')) {
+        $('code-msg').textContent = err.message;
+        break;
+      }
+    }
+  }
+  await refresh();
 });
 $('open1').addEventListener('change', () => saveSetting({ open1: $('open1').checked }));
 $('open2').addEventListener('change', () => saveSetting({ open2: $('open2').checked }));
