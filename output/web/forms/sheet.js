@@ -16,7 +16,7 @@ const BLOCK = [
   [/^sheet\.command\.(insert-col|insert-multi-cols|remove-col|move-cols)/, '열 넣기·지우기·옮기기는 여기서 할 수 없습니다. 엑셀에서 해 주세요.'],
   [/^sheet\.command\.(add-worksheet-merge|remove-worksheet-merge)/, '셀 병합은 여기서 바꿀 수 없습니다. 엑셀에서 해 주세요.'],
   [/^sheet\.command\.(insert-sheet|remove-sheet|copy-sheet|set-worksheet-name|set-worksheet-order|move-rows|sort)/, '시트 추가·삭제·이름 바꾸기와 정렬·행 옮기기는 여기서 할 수 없습니다. 엑셀에서 해 주세요.'],
-  [/^sheet\.command\.(set-(bold|italic|underline|stroke|font|text-color|background-color|border|horizontal|vertical|text-wrap|text-rotation|style|numfmt)|reset-|add-border|clear-selection-format|set-format-painter|apply-format-painter)/, '글자 모양·색·테두리는 왼쪽 대화로 요청해 주세요. 예: 머리글을 굵게 하고 배경을 넣어 줘.']
+  [/^sheet\.command\.(set-(bold|italic|underline|stroke|font|text-color|background-color|border|horizontal|vertical|text-wrap|text-rotation|style|numfmt)|reset-|add-border|clear-selection-format|clear-selection-all|set-format-painter|apply-format-painter)/, '글자 모양·색·테두리는 AI 도우미에게 요청해 주세요. 예: 머리글을 굵게 하고 배경을 넣어 줘.']
 ];
 
 let U = null, api = null, cur = null; // cur: { t, wb, unitId }
@@ -41,6 +41,14 @@ export async function ensureSheetEditor(container, o) {
     const hit = BLOCK.find(([re]) => re.test(e.id));
     if (hit) { e.cancel = true; o.onBlocked(hit[1]); }
   });
+  // 편집기 실행 취소는 화면의 서식만 되돌려 받는 파일과 어긋난다. 서식은 대화의 되돌리기 버튼으로 돌린다.
+  const guardUndo = (e) => {
+    if (loading || !cur || !cur.t.rowOps.some((x) => !isRowOp(x))) return;
+    e.cancel = true;
+    o.onBlocked('AI가 서식을 넣은 표는 Ctrl+Z로 되돌릴 수 없습니다. AI 도우미 대화의 되돌리기 버튼을 눌러 주세요.');
+  };
+  api.addEvent(api.Event.BeforeUndo, guardUndo);
+  api.addEvent(api.Event.BeforeRedo, guardUndo);
   api.addEvent(api.Event.CommandExecuted, (e) => {
     if (loading || !cur || e.type !== 2) return; // 2 = MUTATION
     const p = e.params || {};
@@ -187,21 +195,34 @@ export async function buildXlsx(t) {
   return X.patch(doc, edits.concat(formats), JSZip);
 }
 function isRowOp(o) { return o.op === 'insertRows' || o.op === 'deleteRows'; }
-// 서식 기록의 주소는 기록할 때의 주소다. 그 뒤의 행 작업만큼 옮겨 마지막 주소로 바꾼다. 지워진 행의 서식은 버린다.
+// 서식 기록의 주소는 기록할 때의 주소다. 뒤의 행 작업을 차례로 적용해 마지막 주소로 바꾼다. 지워진 행의 서식은 버린다.
+// 서식 범위 바로 아래에 넣은 행은 편집기와 같이 윗줄 모양을 받도록 서식을 한 벌 더 만든다.
 function formatEdits(t, snap) {
+  let live = [];
+  t.rowOps.forEach((o) => {
+    if (isRowOp(o)) {
+      const n = o.op === 'insertRows' ? o.count : -o.count, next = [];
+      live.forEach((f) => {
+        if (f.sheetId !== o.sheetId || f.op === 'colWidth') { next.push(f); return; }
+        if (f.op === 'rowHeight') { const row = X.shiftRowRef(f.row, o.at, n); if (row != null) next.push(Object.assign({}, f, { row })); return; }
+        const parts = f.range.split(':'), p = X.parseRef(parts[0]), q = X.parseRef(parts[1] || parts[0]);
+        const range = X.shiftRangeRows(f.range, o.at, n);
+        if (range) next.push(Object.assign({}, f, { range }));
+        if (n > 0 && Math.max(p.r, q.r) === o.at - 1) {
+          const style = Object.assign({}, f.style);
+          if (style.border === 'outer' || style.border === 'bottom') delete style.border;
+          if (Object.keys(style).length) next.push(Object.assign({}, f, { style, range: X.refOf(o.at, Math.min(p.c, q.c)) + ':' + X.refOf(o.at + n - 1, Math.max(p.c, q.c)) }));
+        }
+      });
+      live = next;
+    } else live.push(o);
+  });
   const out = [];
-  t.rowOps.forEach((o, i) => {
-    if (isRowOp(o)) return;
-    const sheet = snap.sheetOrder.indexOf(o.sheetId); if (sheet < 0) return;
-    const later = t.rowOps.slice(i + 1).filter((x) => x.sheetId === o.sheetId && isRowOp(x));
-    const delta = (x) => (x.op === 'insertRows' ? x.count : -x.count);
-    if (o.op === 'format') {
-      const range = later.reduce((r, x) => (r ? X.shiftRangeRows(r, x.at, delta(x)) : r), o.range);
-      if (range) out.push({ sheet, op: 'format', range, style: o.style });
-    } else if (o.op === 'rowHeight') {
-      const row = later.reduce((r, x) => (r == null ? r : X.shiftRowRef(r, x.at, delta(x))), o.row);
-      if (row != null) out.push({ sheet, op: 'rowHeight', row, height: o.height });
-    } else if (o.op === 'colWidth') out.push({ sheet, op: 'colWidth', col: o.col, width: o.width });
+  live.forEach((f) => {
+    const sheet = snap.sheetOrder.indexOf(f.sheetId); if (sheet < 0) return;
+    if (f.op === 'format') out.push({ sheet, op: 'format', range: f.range, style: f.style });
+    else if (f.op === 'rowHeight') out.push({ sheet, op: 'rowHeight', row: f.row, height: f.height });
+    else out.push({ sheet, op: 'colWidth', col: f.col, width: f.width });
   });
   return out;
 }
@@ -288,12 +309,12 @@ export function sheetPromptPart(name, map) {
     '- 명단 아래에 합계·평균 행이 있으면 그 행을 덮어쓰지 말고, insert_rows의 target을 합계 행 번호로 하고 rows에 새 줄 값을 담는다.',
     '- 이미 있는 머리글과 제목의 글은 바꾸지 않는다. 빈 칸에 새 머리글을 쓰는 것은 된다. 쓰지 않는 필드는 "", [], 0으로 둔다.',
     '- 표를 만들어 달라고 하면 머리글 줄과 값 줄을 rows에 담아 fill 한 번으로 빈 곳에 쓴다. 교사가 위치를 말하지 않았으면 지금 내용과 겹치지 않게 맨 아래 내용에서 한 줄을 띄운 곳의 A열부터 쓴다. 지금 명단에 칸만 더하면 되는 요청(예: 명단에 상담 날짜 칸 추가)은 머리글 줄 오른쪽 빈 칸에 새 머리글을 쓰고 그 아래를 채운다. 모르는 값은 빈 칸으로 두고 먼저 만든 뒤 reply에서 물어본다.',
-    '- format: target 범위(예: A1:F1)의 모양을 바꾼다. style에 항목을 쉼표로 적는다. 다른 작업에서 style은 ""로 둔다.',
+    '- format: target 범위의 모양을 바꾼다. target은 칸 범위(A1:F1)·열(B:D)·행(3:5)으로 쓴다. style에 항목을 쉼표로 적는다. 다른 작업에서 style은 ""로 둔다.',
     '  역할 묶음: role:title(표 제목) · role:header(머리글 줄) · role:body(본문) · role:total(합계 줄) · role:note(참고). 색을 따로 고르지 말고 이 묶음을 먼저 쓴다.',
-    '  낱개 항목: bold · bold:false · size:12 · color:red · fill:lightblue · fill:none · border:all · border:outer · border:bottom · border:none · align:left · align:center · align:right · valign:middle · wrap · wrap:false · width:14 · width:auto · height:24.',
+    '  낱개 항목: bold · bold:false · size:12 · color:red · fill:lightblue · fill:none · border:all · border:outer · border:bottom · border:none · align:left · align:center · align:right · valign:middle · wrap · wrap:false · width:14 · width:auto · height:24. 크기는 8~36, 너비는 3~80, 높이는 10~200 안에서 쓴다.',
     '  쓸 수 있는 색: navy blue red pink green yellow gray black white light lightblue lightred lightgreen lightyellow lightpink. 다른 색은 가장 가까운 이름으로 쓴다.',
     '  width는 target 범위의 열 너비(글자 수), width:auto는 내용에 맞춘 너비, height는 행 높이(포인트)다.',
-    '- 꾸며 달라는 요청은 묻지 말고 바로 한다. 표마다 제목 줄 role:title, 머리글 줄 role:header, 값 줄 전체 role:body, 합계 줄이 있으면 role:total을 주고, 표 전체 범위에 width:auto를 준다. 값은 바꾸지 않는다. 표가 여러 개면 각각 따로 준다.',
+    '- 꾸며 달라는 요청은 묻지 말고 바로 한다. 표마다 제목 줄 role:title, 머리글 줄 role:header, 값 줄 전체 role:body, 합계 줄이 있으면 role:total을 주고, 제목 줄을 뺀 머리글·값 범위에 width:auto를 준다. 값은 바꾸지 않는다. 표가 여러 개면 각각 따로 준다.',
     '- 새 표를 만들면 fill 뒤에 위와 같이 format도 함께 넣는다. 교사가 모양을 말하지 않아도 머리글과 테두리는 넣는다. 행을 넣거나 지운 뒤의 format 주소는 행 작업을 마친 뒤의 주소로 쓴다.',
     '- destination은 보통 "current"이고 newName은 ""다. 지금 표의 내용과 관계없는 새 표를 만들라는 요청이면 destination을 "new", newName을 짧은 표 이름으로 두고 모든 주소를 A1부터 쓴다. 지금 표에 덧붙이거나 지금 표를 바탕으로 만드는 표는 "current"다.',
     '- 열 넣기·지우기, 셀 병합은 할 수 없다. 이런 요청만 있으면 그 사실과 엑셀에서 하면 된다는 것만 reply에 한 문장으로 말한다. 이 제약 때문에 할 수 있는 나머지 요청을 거절하지 않는다.'
@@ -311,22 +332,35 @@ const ROLES = {
   note: { color: PALETTE.gray, size: 10 }
 };
 const ROLE_LABEL = { title: '표 제목', header: '머리글', body: '본문', total: '합계', note: '참고' };
+function styleLabel(f) {
+  if (f.role) return ROLE_LABEL[f.role] + ' 모양';
+  const st = f.style, L = [];
+  if (st.bold !== undefined || st.size || st.color) L.push('글자');
+  if (st.fill) L.push('배경');
+  if (st.border) L.push('테두리');
+  if (st.align || st.valign) L.push('정렬');
+  if (st.wrap !== undefined) L.push('줄바꿈');
+  return L.join('·') + ' 모양';
+}
 const num = (v, lo, hi) => { const n = Number(v); return Number.isFinite(n) && n >= lo && n <= hi ? n : null; };
 // "role:header,align:left,width:auto" → { style, width, height, role, problems }. 모델이 JSON으로 보내도 읽히도록 기호를 먼저 벗긴다.
 export function parseStyle(text) {
   const style = {}, out = { style, width: null, height: null, role: '', problems: [] };
-  const bad = (w) => out.problems.push('알 수 없는 서식 항목을 건너뛰었습니다: ' + w);
-  S(text).replace(/["'{}\[\]]/g, '').split(/[,;\s]+/).filter(Boolean).forEach((w) => {
-    const m = /^([a-zA-Z]+)(?:[:=](.+))?$/.exec(w); if (!m) { bad(w); return; }
-    const k = m[1].toLowerCase(), v = m[2] == null ? '' : m[2].toLowerCase(), off = v === 'false' || v === 'no' || v === '0';
-    if (k === 'role' && ROLES[v]) { Object.assign(style, ROLES[v]); out.role = v; }
-    else if (ROLES[k] && !v) { Object.assign(style, ROLES[k]); out.role = k; }
-    else if (k === 'bold') style.bold = !off;
-    else if (k === 'wrap') style.wrap = !off;
+  const bad = (w) => out.problems.push('적용하지 못한 모양이 있습니다(' + w + '). 다른 색이나 모양으로 다시 요청해 주세요.');
+  const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  const words = S(text).replace(/["'{}\[\]]/g, '').replace(/\s*[:=]\s*/g, ':').split(/[,;\s]+/).filter(Boolean);
+  // 역할 묶음을 먼저 깔고 낱개 항목을 그 위에 얹는다(적은 순서와 무관하게).
+  const roleOf = (w) => { const m = /^role:(.+)$/i.exec(w); const r = (m ? m[1] : w).toLowerCase(); return has(ROLES, r) ? r : ''; };
+  words.filter(roleOf).forEach((w) => { const r = roleOf(w); Object.assign(style, ROLES[r]); out.role = r; });
+  words.filter((w) => !roleOf(w)).forEach((w) => {
+    const m = /^([a-zA-Z]+)(?::(.+))?$/.exec(w); if (!m) { bad(w); return; }
+    const k = m[1].toLowerCase(), v = m[2] == null ? '' : m[2].toLowerCase(), off = /^(false|no|off|none|0)$/.test(v), on = /^(|true|yes|on|1)$/.test(v);
+    if (k === 'bold' && (on || off)) style.bold = !off;
+    else if (k === 'wrap' && (on || off)) style.wrap = !off;
     else if (k === 'size' && num(v, 8, 36)) style.size = num(v, 8, 36);
-    else if (k === 'color' && PALETTE[v]) style.color = PALETTE[v];
+    else if (k === 'color' && has(PALETTE, v)) style.color = PALETTE[v];
     else if (k === 'fill' && v === 'none') style.fill = 'none';
-    else if (k === 'fill' && PALETTE[v]) style.fill = PALETTE[v];
+    else if (k === 'fill' && has(PALETTE, v)) style.fill = PALETTE[v];
     else if (k === 'border' && /^(all|outer|bottom|none)$/.test(v)) style.border = v;
     else if (k === 'align' && /^(left|center|right)$/.test(v)) style.align = v;
     else if (k === 'valign' && /^(top|middle|center|bottom)$/.test(v)) style.valign = v === 'middle' ? 'center' : v;
@@ -341,6 +375,8 @@ export function parseStyle(text) {
 function areaOf(target, maxR, maxC) {
   const t = S(target).trim().toUpperCase().replace(/\$/g, '');
   let m;
+  if (/^[A-Z]{1,3}$/.test(t)) return { r1: 1, r2: Math.max(1, maxR), c1: X.colNum(t), c2: X.colNum(t) };
+  if (/^\d+$/.test(t)) return { r1: +t, r2: +t, c1: 1, c2: Math.max(1, maxC) };
   if ((m = /^([A-Z]{1,3}):([A-Z]{1,3})$/.exec(t))) return { r1: 1, r2: Math.max(1, maxR), c1: X.colNum(m[1]), c2: X.colNum(m[2]) };
   if ((m = /^(\d+):(\d+)$/.exec(t))) return { r1: +m[1], r2: +m[2], c1: 1, c2: Math.max(1, maxC) };
   const a = t.split(':'), p = X.parseRef(a[0]), q = X.parseRef(a[1] || a[0]);
@@ -485,13 +521,14 @@ export function applySheetEdits(t, edits) {
         const sh = withFormulas(saved.sheets[ws.getSheetId()]), used = Object.keys(snapCells(sh)).map(X.parseRef);
         const maxR = used.reduce((m, p) => Math.max(m, p.r), 0), maxC = used.reduce((m, p) => Math.max(m, p.c), 0);
         const a = areaOf(e.target, maxR, maxC); if (!a) throw new Error('범위가 아닙니다: ' + e.target);
-        if ((a.r2 - a.r1 + 1) * (a.c2 - a.c1 + 1) > 20000) throw new Error('범위가 너무 넓어 서식을 넣지 않았습니다: ' + e.target);
+        if (a.r1 < 1 || a.c1 < 1 || a.r2 > ws.getMaxRows() || a.c2 > ws.getMaxColumns()) throw new Error('표 밖의 주소라 서식을 넣지 않았습니다: ' + e.target);
+        if (Object.keys(f.style).length && (a.r2 - a.r1 + 1) * (a.c2 - a.c1 + 1) > 20000) throw new Error('범위가 너무 넓어 서식을 넣지 않았습니다: ' + e.target);
         const range = X.refOf(a.r1, a.c1) + (a.r1 === a.r2 && a.c1 === a.c2 ? '' : ':' + X.refOf(a.r2, a.c2));
         const done = [];
         if (Object.keys(f.style).length) {
           paint(ws, range, f.style);
           t.rowOps.push({ sheetId: ws.getSheetId(), op: 'format', range, style: f.style });
-          done.push(ROLE_LABEL[f.role] || '글자 모양');
+          done.push(styleLabel(f));
         }
         if (f.width !== null) {
           const merged = (sh.mergeData || []).filter((m) => m.startColumn !== m.endColumn);
@@ -509,19 +546,21 @@ export function applySheetEdits(t, edits) {
             ws.setColumnWidth(c - 1, Math.round(w * 7 + 5));
             t.rowOps.push({ sheetId: ws.getSheetId(), op: 'colWidth', col: c, width: w });
           }
-          done.push('열 너비');
+          done.push('열 너비 조정');
         }
         if (f.height !== null) {
-          for (let r = a.r1; r <= a.r2; r++) {
-            ws.setRowHeight(r - 1, Math.round(f.height * 96 / 72));
-            t.rowOps.push({ sheetId: ws.getSheetId(), op: 'rowHeight', row: r, height: f.height });
-          }
-          done.push('행 높이');
+          const last = Math.min(a.r2, Math.max(a.r1, maxR)); // 내용 아래의 빈 행까지 넓히지 않는다
+          ws.setRowHeights(a.r1 - 1, last - a.r1 + 1, Math.round(f.height * 96 / 72));
+          for (let r = a.r1; r <= last; r++) t.rowOps.push({ sheetId: ws.getSheetId(), op: 'rowHeight', row: r, height: f.height });
+          done.push('행 높이 조정');
         }
         if (!done.length) throw new Error('바꿀 모양이 없어 ' + S(e.target) + ' 서식을 그대로 두었습니다.');
-        changes.push({ label: label(range), before: '', after: done.join('·') + ' 서식' });
+        changes.push({ label: label(range), before: '', after: done.join(', ') });
       }
-    } catch (err) { problems.push((err && err.message) || String(err)); }
+    } catch (err) {
+      const msg = (err && err.message) || String(err);
+      problems.push(/out of bounds/i.test(msg) ? '표 밖의 주소라 고치지 못했습니다: ' + S(e.target) : msg);
+    }
   });
   // 넣은 행이 끝까지 비어 있으면 알린다(AI가 채웠다고 답했어도 실제 표로 확인한다).
   const snapNow = inserted.length ? cur.wb.save() : null, empty = [];
@@ -572,9 +611,10 @@ const SHEET_CREATE = /(?:엑셀|스프레드\s*시트|xlsx)\s*(?:파일|표)?(?:
 // 고치거나 만들라는 요청인가. 답만 비어 돌아오면 한 번 다시 부탁할 때 쓴다(할 수 없는 일·질문은 뺀다).
 export function wantsSheetAction(text) {
   const t = S(text).trim();
-  if (/[?？]\s*$|(까요|나요|뭐야|무엇|왜|어때|있어|방법)\s*[.!]?\s*$/.test(t)) return false;
-  if (/병합|합쳐|열\s*(넣|추가|지워|삭제)|시트\s*(추가|삭제|이름)/.test(t)) return false;
-  return /만들|작성|채워|채우|넣어|추가|꾸며|꾸미|다듬|예쁘|서식|굵게|색|테두리|가운데|너비|높이|표로/.test(t);
+  if (/[?？]\s*$|(까요|나요|뭐야|어때|있어|있어요|될까|어떤|어떻게|무엇|왜|방법)/.test(t)) return false;
+  // 할 수 없는 부분을 빼고도 할 일이 남으면 고치라는 요청이다('셀 병합하고 색 넣어 줘').
+  const rest = t.replace(/(셀\s*)?병합\S*|셀\S*\s*합\S*|열(을|를|도)?\s*(\S+\s*)?(넣|추가|지워|지우|삭제)\S*|시트\S*\s*(추가|삭제|이름)\S*/g, ' ');
+  return /만들|작성|채워|채우|넣어|추가|꾸며|꾸미|다듬|예쁘|보기\s*좋|깔끔|서식|굵게|색|테두리|가운데|너비|높이|표로/.test(rest);
 }
 export function isSheetRequest(text) { return SHEET_CREATE.test(S(text)); }
 export function mentionsSheet(text) { return /(엑셀|xlsx|스프레드\s*시트)\s*(?:파일|표)?\s*(?:에서|을|를|의)\s*\S/i.test(S(text)) && !/(엑셀|xlsx)[^.?!]{0,12}(?:로|으로|를 보고|을 보고|에 있는)[^.?!]{0,30}(한글|문서|양식|계획서|칸)/i.test(S(text)); }

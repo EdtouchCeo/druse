@@ -565,10 +565,23 @@
     if (widths.length) x = setColWidths(x, widths);
     if (!formats.length && !heights.length) return x;
     var sd = /<sheetData\b[^>]*\/>|<sheetData\b[^>]*>([\s\S]*?)<\/sheetData>/.exec(x); if (!sd) return x;
+    var prevRow = 0;
     var rowList = ((sd[1] || '').match(/<row\b[^>]*?(?:\/>|>[\s\S]*?<\/row>)/g) || []).map(function (rx) {
-      var rt = /^<row\b[^>]*>/.exec(rx)[0];
-      return { r: +attr(rt, 'r'), tag: rt.replace(/\/>$/, '>'), cells: (rx.match(/<c\b[^>]*?(?:\/>|>[\s\S]*?<\/c>)/g) || []).map(function (cx) { var rf = attr(/^<c\b[^>]*>/.exec(cx)[0], 'r'); return { ref: rf, col: parseRef(rf).c, xml: cx }; }) };
+      var rt = /^<row\b[^>]*>/.exec(rx)[0], rn = +attr(rt, 'r') || prevRow + 1, prevCol = 0; // r을 생략한 파일은 순서로 센다
+      prevRow = rn;
+      return { r: rn, tag: setAttr(rt.replace(/\/>$/, '>'), 'r', String(rn)), cells: (rx.match(/<c\b[^>]*?(?:\/>|>[\s\S]*?<\/c>)/g) || []).map(function (cx) {
+        var head = /^<c\b[^>]*>/.exec(cx)[0], pr = parseRef(attr(head, 'r') || ''), col = pr ? pr.c : prevCol + 1, ref = refOf(rn, col);
+        prevCol = col;
+        return { ref: ref, col: col, xml: pr ? cx : setAttr(head, 'r', ref) + cx.slice(head.length) };
+      }) };
     });
+    var colStyles = (x.match(/<col\b[^>]*\/>/g) || []).map(function (t) { return { min: +attr(t, 'min'), max: +attr(t, 'max'), s: +attr(t, 'style') || 0 }; });
+    // 칸이 없는 자리의 실제 모양은 행 스타일, 그다음 열 스타일이다.
+    var inheritedStyle = function (row, c) {
+      if (attr(row.tag, 'customFormat') === '1' && attr(row.tag, 's') != null) return +attr(row.tag, 's');
+      var hit = colStyles.filter(function (k) { return c >= k.min && c <= k.max; })[0];
+      return hit ? hit.s : 0;
+    };
     var rowsBy = {}; rowList.forEach(function (r) { rowsBy[r.r] = r; r.byCol = {}; r.cells.forEach(function (c) { r.byCol[c.col] = c; }); });
     var rowAt = function (n) { if (!rowsBy[n]) { rowsBy[n] = { r: n, tag: '<row r="' + n + '">', cells: [], byCol: {} }; rowList.push(rowsBy[n]); } return rowsBy[n]; };
     formats.forEach(function (e) {
@@ -578,7 +591,7 @@
         var row = rowAt(r);
         for (var c = lo.c; c <= hi.c; c++) {
           var cell = row.byCol[c];
-          if (!cell) { var ref = refOf(r, c); cell = { ref: ref, col: c, xml: '<c r="' + ref + '"/>' }; row.byCol[c] = cell; row.cells.push(cell); }
+          if (!cell) { var ref = refOf(r, c); var inh = inheritedStyle(row, c); cell = { ref: ref, col: c, xml: '<c r="' + ref + '"' + (inh ? ' s="' + inh + '"' : '') + '/>' }; row.byCol[c] = cell; row.cells.push(cell); }
           var headTag = /^<c\b[^>]*>/.exec(cell.xml)[0];
           var ns = deriveXf(doc, +attr(headTag, 's') || 0, e.style, sidesAt(e.style.border, r, c, lo, hi));
           cell.xml = setAttr(headTag, 's', String(ns)) + cell.xml.slice(headTag.length);
@@ -588,6 +601,17 @@
         if (r > s.maxR) s.maxR = r;
       }
       if (hi.c > s.maxC) s.maxC = hi.c;
+      if (e.style.border === 'none') {
+        var clearSide = function (r2, c2, side) {
+          var nb = rowsBy[r2] && rowsBy[r2].byCol[c2]; if (!nb) return;
+          var nh = /^<c\b[^>]*>/.exec(nb.xml)[0], o = {}; o[side] = false;
+          var nv = deriveXf(doc, +attr(nh, 's') || 0, {}, o);
+          nb.xml = setAttr(nh, 's', String(nv)) + nb.xml.slice(nh.length);
+          if (s.cells[nb.ref]) s.cells[nb.ref].s = nv;
+        };
+        for (var ry = lo.r; ry <= hi.r; ry++) { clearSide(ry, lo.c - 1, 'right'); clearSide(ry, hi.c + 1, 'left'); }
+        for (var cx2 = lo.c; cx2 <= hi.c; cx2++) { clearSide(lo.r - 1, cx2, 'bottom'); clearSide(hi.r + 1, cx2, 'top'); }
+      }
     });
     heights.forEach(function (e) { var row = rowAt(e.row); row.tag = setAttr(setAttr(row.tag, 'ht', String(e.height)), 'customHeight', '1'); if (e.row > s.maxR) s.maxR = e.row; });
     rowList.sort(function (a, b) { return a.r - b.r; });

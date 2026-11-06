@@ -998,15 +998,14 @@ async function sendSheet(target, request, sources, wait, say, retryId) {
   }
   const reply = String((out && out.reply) || '').trim() || '요청을 처리했습니다.';
   const edits = Array.isArray(out && out.edits) ? out.edits : [];
-  let res = { changes: [], problems: [] };
+  let res = { changes: [], problems: [] }, newFrom = null;
   // 지금 표와 관계없는 새 표는 새 엑셀 탭에 만든다. 열어 둔 파일은 건드리지 않는다.
   if (out && out.destination === 'new' && edits.length) {
-    const t2 = newSheetTab(null, String(out.newName || '').replace(/[\\/:*?"<>|]/g, ' ').trim().slice(0, 40));
+    const t2 = newSheetTab(null, String(out.newName || '').replace(/[\\/:*?"<>|.\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40));
     if (!(await activate(t2.id, true)) || !Sheet.isMounted(t2)) throw new Error('새 엑셀을 열지 못해 표를 만들지 못했습니다.');
     state.targetId = t2.id; state.sendTargetId = t2.id;
     renderTarget();
-    note('새 엑셀 탭 "' + t2.name + '"에 만들었습니다. 열어 두었던 파일은 그대로입니다.');
-    target = t2;
+    newFrom = target; target = t2;
     before = JSON.parse(JSON.stringify(Sheet.snapshot(target))); opsLen = 0;
   }
   if (edits.length) {
@@ -1015,6 +1014,15 @@ async function sendSheet(target, request, sources, wait, say, retryId) {
     res = Sheet.applySheetEdits(target, edits);
     Sheet.setReadOnly(target, true);
     await new Promise((r) => setTimeout(r, 400)); // 수식 다시 계산
+  }
+  if (newFrom) {
+    if (res.changes.length) note('새 엑셀 탭 "' + target.name + '"에 만들었습니다. 열어 두었던 파일은 그대로입니다.');
+    else { // 하나도 넣지 못했으면 빈 탭을 남기지 않고 원래 파일로 돌아간다
+      const empty = target; target = newFrom; state.sendTargetId = target.id;
+      await closeTab(empty.id, true);
+      await activate(target.id, true); state.targetId = target.id; renderTarget();
+      before = JSON.parse(JSON.stringify(Sheet.snapshot(target))); opsLen = target.rowOps.length;
+    }
   }
   const after = Sheet.snapshot(target), changed = res.changes.length > 0;
   const notes = changed ? Sheet.checkSheet(after, res.changes.length, res.emptyRows) : [];
