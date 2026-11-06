@@ -195,6 +195,11 @@ async function refresh() {
     $('who').textContent = `${me.name} (${me.email})`;
     $('test-id').textContent = me.testId;
     renderCodes(data.codes);
+    $('worker-state').hidden = data.workerOnline === undefined;
+    $('worker-state').classList.toggle('off', data.workerOnline === false);
+    $('worker-state').textContent = data.workerOnline
+      ? '처리 프로그램: 작동 중'
+      : '처리 프로그램: 꺼짐. 생성이 진행되지 않습니다. 처리 프로그램 PC에서 start.bat을 실행해 주세요.';
     $('open1').checked = data.open1;
     $('open2').checked = data.open2;
     const waiting = data.queued > 0 ? ' 대기가 줄지 않으면 처리 프로그램이 켜져 있는지 확인해 주세요.' : '';

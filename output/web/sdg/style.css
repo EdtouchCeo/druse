@@ -33,6 +33,8 @@ button.link { background: none; color: var(--accent); padding: 2px 6px; margin: 
 .tabs button[aria-selected=true] { background: var(--accent); color: var(--accent-ink); }
 .badge { font-weight: 400; font-size: .85rem; }
 .badge.busy::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .35em; vertical-align: -.08em; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sdg-spin 1s linear infinite; }
+.badge.stalled { font-weight: 700; }
+.badge.stalled::before { content: "\26A0\FE0E"; margin-right: .3em; }
 .status-row { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
 .status-text { flex: 1; min-width: 0; }
 .status-row .msg { margin: 0; }
@@ -49,6 +51,9 @@ button.link { background: none; color: var(--accent); padding: 2px 6px; margin: 
 .build[data-state=running] i:nth-child(4) { animation-delay: 1.05s; }
 .build[data-state=queued] i, .build[data-state=upload] i { animation: sdg-wait 1.4s ease-in-out infinite alternate; }
 .build[data-state=queued] i:nth-child(n+2), .build[data-state=upload] i:nth-child(n+2) { animation-delay: .25s; }
+.build[data-state=stopped] { border-color: #8795a3; }
+.build[data-state=stopped]::before { background: #8795a3; }
+.build[data-state=stopped] i { background: #c4ccd5; }
 @keyframes sdg-build { 0% { opacity: 0; transform: translateY(5px); } 14%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 @keyframes sdg-wait { from { opacity: .2; } to { opacity: .65; } }
 @keyframes sdg-spin { to { transform: rotate(360deg); } }

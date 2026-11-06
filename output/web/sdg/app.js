@@ -44,7 +44,15 @@ function showLogin() {
   $('frame').removeAttribute('src');
 }
 
+// 처리 프로그램이 멈췄는데 작업이 남아 있는 상태. 이전 SQL에서는 값이 없어 false가 된다.
+const stalled = (st) => ['queued', 'running'].includes(st.status) && me.workerOnline === false;
+
 function stageMessage(stage, st) {
+  if (stalled(st)) {
+    return me.test
+      ? '처리 프로그램이 꺼져 있어 멈춰 있습니다. 처리 프로그램 PC에서 start.bat을 실행하면 이어서 처리합니다.'
+      : '처리 프로그램이 꺼져 있어 멈춰 있습니다. 선생님께 알려 주세요. 제출한 내용은 저장되어 있습니다.';
+  }
   if (st.status === 'queued') return st.position > 1 ? `대기 중입니다. 앞에 ${st.position - 1}명 있습니다. 창을 닫아도 순서는 유지됩니다.` : '곧 시작합니다. 창을 닫아도 순서는 유지됩니다.';
   if (st.status === 'running') return '화면을 만들고 있습니다. 보통 1분 30초 안에 끝납니다. 창을 닫아도 계속 진행됩니다.';
   if (st.status === 'done') return stage === 1 ? '완료했습니다. 아래 미리보기를 설계에 참고하세요.' : '완료했습니다. 아래 미리보기를 확인하세요.';
@@ -52,6 +60,7 @@ function stageMessage(stage, st) {
   if (st.status === 'refused') return `${st.error || '처리하지 않았습니다.'} 횟수는 줄지 않았습니다. 내용을 확인해 다시 시도해 주세요.`;
   if (st.status === 'failed') return `${st.error || '생성하지 못했습니다.'} 횟수는 줄지 않았습니다.`;
   if (!st.open) return `${stage}차 구현은 선생님이 열면 시작할 수 있습니다.`;
+  if (me.test && me.workerOnline === false && st.canSubmit) return '처리 프로그램이 꺼져 있습니다. 제출하면 켜질 때까지 대기합니다.';
   return '';
 }
 
@@ -79,13 +88,15 @@ function setBuild(stage, state) {
 function render() {
   for (const stage of [1, 2]) {
     const st = me[`stage${stage}`];
-    const working = ['queued', 'running'].includes(st.status);
-    $(`badge-${stage}`).textContent = LABEL[st.status] || '';
+    const stop = stalled(st);
+    const working = !stop && ['queued', 'running'].includes(st.status);
+    $(`badge-${stage}`).textContent = stop ? '멈춤' : (LABEL[st.status] || '');
     $(`badge-${stage}`).classList.toggle('busy', working);
-    setBuild(stage, working ? st.status : null);
+    $(`badge-${stage}`).classList.toggle('stalled', stop);
+    setBuild(stage, stop ? 'stopped' : (working ? st.status : null));
     $(`submit-${stage}`).disabled = !st.canSubmit;
     $(`msg-${stage}`).textContent = stageMessage(stage, st);
-    $(`msg-${stage}`).classList.toggle('error', ['failed', 'refused', 'locked'].includes(st.status));
+    $(`msg-${stage}`).classList.toggle('error', stop || ['failed', 'refused', 'locked'].includes(st.status));
     $(`form-${stage}`).hidden = st.status === 'done';
   }
   const st = me[`stage${currentStage}`];

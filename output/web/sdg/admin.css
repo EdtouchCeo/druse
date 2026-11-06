@@ -56,3 +56,5 @@ main > div, #panel { min-width: 0; }
 .top { flex-wrap: wrap; }
 .code-value { font-family: Consolas, Menlo, monospace; font-weight: 700; font-size: 1.1rem; overflow-wrap: normal; }
 #code-table { margin-top: 8px; }
+.worker-state { flex-basis: 100%; margin: 0; font-weight: 700; color: var(--ok); }
+.worker-state.off { color: var(--error); }
