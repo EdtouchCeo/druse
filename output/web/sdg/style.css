@@ -32,6 +32,29 @@ button.link { background: none; color: var(--accent); padding: 2px 6px; margin: 
 .tabs button { margin: 0; background: #e5eaf0; color: var(--ink); }
 .tabs button[aria-selected=true] { background: var(--accent); color: var(--accent-ink); }
 .badge { font-weight: 400; font-size: .85rem; }
+.badge.busy::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .35em; vertical-align: -.08em; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sdg-spin 1s linear infinite; }
+.status-row { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
+.status-text { flex: 1; min-width: 0; }
+.status-row .msg { margin: 0; }
+.status-row .hint { margin: 2px 0 0; }
+.build:not([hidden]) + .status-text .msg { font-weight: 600; }
+/* 만드는 중: 창 안에 화면 조각이 차례로 쌓인다. 대기 중: 조각이 흐리게 깜빡인다. */
+.build { position: relative; flex: none; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 3px; width: 68px; height: 54px; padding: 11px 6px 5px; overflow: hidden; background: #fff; border: 2px solid var(--accent); border-radius: 6px; }
+.build::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: var(--accent); }
+.build i { display: block; border-radius: 2px; background: #8fb0e3; }
+.build i:nth-child(1), .build i:nth-child(4) { grid-column: 1 / -1; }
+.build[data-state=running] i { opacity: 0; animation: sdg-build 2.8s ease-out infinite; }
+.build[data-state=running] i:nth-child(2) { animation-delay: .35s; }
+.build[data-state=running] i:nth-child(3) { animation-delay: .7s; }
+.build[data-state=running] i:nth-child(4) { animation-delay: 1.05s; }
+.build[data-state=queued] i, .build[data-state=upload] i { animation: sdg-wait 1.4s ease-in-out infinite alternate; }
+.build[data-state=queued] i:nth-child(n+2), .build[data-state=upload] i:nth-child(n+2) { animation-delay: .25s; }
+@keyframes sdg-build { 0% { opacity: 0; transform: translateY(5px); } 14%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes sdg-wait { from { opacity: .2; } to { opacity: .65; } }
+@keyframes sdg-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .build i, .build[data-state] i, .badge.busy::before { animation: none; opacity: .7; }
+}
 .result iframe { width: 100%; height: 760px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
 @media (max-width: 640px) {
   .card { padding: 16px; }
