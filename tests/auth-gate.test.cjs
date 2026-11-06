@@ -143,6 +143,12 @@ test('로그인 후 홈은 자기 사이트를 fetch하지 않고 등급별 화�
   }
 });
 
+test('재작성된 등급별 화면은 브라우저에 저장하지 않는다', async () => {
+  const { res } = await run('/_gated/teacher/index.html', { value: issued('teacher') });
+  assert.equal(res.headers.get('cache-control'), 'private, no-store');
+  assert.ok(res.headers.get('x-robots-tag').includes('noindex'));
+});
+
 test('ask·embed 함수는 교사 쿠키 없이 쓸 수 없다', async () => {
   process.env.SUPABASE_SERVICE_KEY = SECRET;
   process.env.GEMINI_API_KEY = 'synthetic';

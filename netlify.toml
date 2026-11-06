@@ -21,14 +21,6 @@
   path = "/*"
   excludedPath = ["/.netlify/*", "/lib/*", "/img/*", "/pdf/*", "/biotech/*", "/assessment/*", "/counseling/*", "/sdg/*", "/sdg-api/*", "/downloads/*", "/data/univ/*", "/auth-gate-client.js", "/favicon.ico", "/logo.jpg", "/logo.png", "/og-image-v2.jpg"]
 
-# 로그인 후 첫 화면(등급별 본문)은 저장하거나 색인하지 않는다.
-[[headers]]
-  for = "/_gated/*"
-  [headers.values]
-    Cache-Control = "private, no-store"
-    X-Robots-Tag = "noindex, nofollow, noarchive"
-    Content-Type = "text/html; charset=UTF-8"
-
 # 전략실은 자체 서버 인증을 쓰므로 화면은 두되 검색 색인만 막는다.
 [[headers]]
   for = "/counseling/*"

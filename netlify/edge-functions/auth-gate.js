@@ -105,29 +105,7 @@ export default async function authGate(req, context) {
 
   const secret = serviceKey();
   if (path === '/__auth-gate/health') {
-    const body = { configured: Boolean(secret) };
-    if (url.searchParams.get('probe') === '1' && secret) {
-      const claims = b64url(encoder.encode(JSON.stringify({ sub: 'probe', tier: 'teacher', exp: Math.floor(Date.now() / 1000) + 60 })));
-      const key = await hmac(encoder.encode(secret), 'dr-gate-cookie-v1');
-      const cookie = `${COOKIE_NAME}=v1.${claims}.${b64url(await hmac(key, claims))}`;
-      const probe = async (target) => {
-        const started = Date.now();
-        try {
-          const res = await fetch(new URL(target, req.url), { headers: { cookie, accept: 'text/html' }, signal: AbortSignal.timeout(15000) });
-          const text = await res.text();
-          return {
-            status: res.status, ms: Date.now() - started, bytes: text.length,
-            variant: (/name="dr-gate-variant" content="([a-z]+)"/.exec(text) || [])[1] || null,
-            cache: res.headers.get('cache-control'), robots: res.headers.get('x-robots-tag'), type: res.headers.get('content-type'),
-          };
-        } catch (err) {
-          return { failed: err.name, ms: Date.now() - started };
-        }
-      };
-      body.home = await probe('/');
-      body.direct = await probe('/_gated/teacher/index.html');
-    }
-    return new Response(JSON.stringify(body), {
+    return new Response(JSON.stringify({ configured: Boolean(secret) }), {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Robots-Tag': NOINDEX },
     });
   }
@@ -149,6 +127,6 @@ export default async function authGate(req, context) {
   const res = await context.next();
   const out = new Response(res.body, res);
   out.headers.set('X-Robots-Tag', NOINDEX);
-  out.headers.set('Cache-Control', 'private, no-cache');
+  out.headers.set('Cache-Control', under(path, '/_gated') ? 'private, no-store' : 'private, no-cache');
   return out;
 }
