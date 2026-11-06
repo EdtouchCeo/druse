@@ -53,9 +53,9 @@
 
     <section id="panel-2" class="card" role="tabpanel" aria-labelledby="tab-2" hidden>
       <form id="form-2">
-        <label for="files">피그마 설계 파일 (PDF 1개 또는 PNG 여러 장)</label>
-        <input id="files" type="file" accept=".pdf,.png,application/pdf,image/png" multiple>
-        <p id="file-info" class="hint">PNG는 화면 순서대로 고르세요. 데스크톱 화면 기준으로 읽습니다.</p>
+        <label for="prompt">구현 프롬프트</label>
+        <textarea id="prompt" rows="14" maxlength="6000" placeholder="[역할]&#10;[만들 형태]&#10;[화면 구성]&#10;[기능별 동작 조건]&#10;[공통 조건]"></textarea>
+        <p class="hint"><span id="prompt-count">0</span> / 6,000자. 비어 있는 항목은 AI가 서비스에 맞게 판단해 구현합니다.</p>
         <button id="submit-2" type="submit">2차 화면 만들기 (1회)</button>
       </form>
       <div class="status-row">

@@ -34,10 +34,10 @@ function fakeBackend() {
     sdg_t_settings: (a) => { if (a.p_code !== null) db.settings.entryCode = a.p_code; if (a.p_open1 !== null) db.settings.open1 = a.p_open1; if (a.p_open2 !== null) db.settings.open2 = a.p_open2; return null; },
     sdg_t_reset: (a) => { const j = db.jobs.get(key(a.p_id, a.p_stage)); if (j && ['queued', 'running'].includes(j.status)) return { error: 'busy' }; if (j) j.status = 'none'; return { ok: true }; },
     sdg_t_wipe: () => { db.students.clear(); db.jobs.clear(); db.log = []; db.settings.open1 = false; db.settings.open2 = false; return { ok: true }; },
-    sdg_t_input: (a) => db.jobs.get(key(a.p_id, 1))?.input_text ?? null,
     sdg_result: () => '<!doctype html><p>결과</p>',
     sdg_login: (a) => (db.settings.entryCode && a.p_code === db.settings.entryCode ? { ok: true } : { error: db.settings.entryCode ? 'code' : 'closed' }),
     sdg_can_submit: (a) => (((a.p_stage === 1 ? db.settings.open1 : db.settings.open2)) ? { ok: true } : { error: 'closed' }),
+    sdg_note_refusal: () => ({ ok: true }),
     sdg_submit: (a) => { db.jobs.set(key(a.p_id, a.p_stage), { status: 'queued', input_text: a.p_text }); return { ok: true }; },
     sdg_me: (a) => {
       const s = db.students.get(a.p_id);
@@ -66,7 +66,7 @@ function fakeBackend() {
         const id = url.searchParams.get('student_id').replace('eq.', '');
         const stage = url.searchParams.get('stage').replace('eq.', '');
         const j = db.jobs.get(key(id, stage));
-        return send(j ? [{ status: j.status }] : []);
+        return send(j ? [{ status: j.status, input_text: j.input_text }] : []);
       }
       db.jobs.set(key(body.student_id, body.stage), body);
       return send(null, 201);
@@ -197,6 +197,38 @@ test('전체 초기화는 확인 문구가 있어야 하고 다른 사이트 요
   assert.equal((await call('admin/wipe', { body: { confirm: '아니오' }, cookie })).statusCode, 400);
   assert.equal((await call('admin/wipe', { body: { confirm: '초기화' }, cookie, headers: { origin: 'https://evil.test' } })).statusCode, 403);
   assert.equal((await call('admin/wipe', { body: { confirm: '초기화' }, cookie })).statusCode, 200);
+});
+
+test('2차는 프롬프트로 제출하고 관리자는 단계별 입력을 본다', async () => {
+  const db = fakeBackend();
+  db.settings.entryCode = 'k!m';
+  db.settings.open2 = true;
+  const login = await call('login', { body: { id: '10301', name: '합성학생', code: 'k!m' } });
+  db.students.set('10301', { id: '10301', name: '합성학생' });
+  const student = cookieOf(login);
+  const send = (text) => call('submit/2', { body: { text }, cookie: student });
+  assert.equal((await send('짧은 글')).statusCode, 400);
+  assert.equal((await call('submit/2', { body: { prefix: '10301/aa', count: 1 }, cookie: student })).statusCode, 400);
+  assert.equal(db.jobs.size, 0);
+  const prompt = `[만들 형태] 잔반을 줄이는 서비스를 단일 HTML로 만들어 줘. ${'메뉴별 잔반량을 계산해 표로 보여 줘. '.repeat(3)}`;
+  assert.equal((await send(prompt)).statusCode, 202);
+  assert.equal(db.jobs.get('10301/2').input_text, prompt.trim());
+  assert.equal((await call('prepare/2', { body: { count: 1 }, cookie: student })).statusCode, 404);
+  const cookie = await adminCookie();
+  const seen = await call('admin/input/10301/2', { method: 'GET', cookie });
+  assert.equal(JSON.parse(seen.body).text, prompt.trim());
+  assert.equal(JSON.parse((await call('admin/input/10301/1', { method: 'GET', cookie })).body).text, null);
+  assert.equal((await call('admin/input/10301/2', { method: 'GET' })).statusCode, 401);
+});
+
+test('프롬프트 검사는 빈 항목을 허용하고 금칙어와 길이만 막는다', () => {
+  const { validatePrompt } = require('../tools/sdg-preview/lib/filter.cjs');
+  const body = '메뉴별 잔반량을 계산해 표로 보여 주는 단일 HTML 웹페이지를 만들어 주세요. 기능은 알아서 정해 주세요.';
+  assert.equal(validatePrompt(body).text, body);
+  assert.ok(validatePrompt('짧은 글').error);
+  assert.ok(validatePrompt(null).error);
+  assert.ok(validatePrompt('가'.repeat(6001)).error);
+  assert.equal(validatePrompt(`${body} 씨발`).banned, true);
 });
 
 test('관리자 미리보기는 화면 안 틀에서만 열린다', async () => {

@@ -1,5 +1,3 @@
-import { filesToTiles } from '/sdg/tiles.js';
-
 const $ = (id) => document.getElementById(id);
 const API = '/sdg-api';
 const LABEL = { queued: '대기 중', running: '만드는 중', done: '완료', failed: '다시 시도', refused: '다시 입력', locked: '잠김' };
@@ -11,7 +9,6 @@ let me = null;
 let timer = null;
 let currentStage = 1;
 let previewShown = null;
-let busyFile = false;
 const clock = { 1: null, 2: null }; // 현재 상태를 이 화면에서 처음 본 시각
 
 function deviceId() {
@@ -50,7 +47,7 @@ function showLogin() {
 function stageMessage(stage, st) {
   if (st.status === 'queued') return st.position > 1 ? `대기 중입니다. 앞에 ${st.position - 1}명 있습니다. 창을 닫아도 순서는 유지됩니다.` : '곧 시작합니다. 창을 닫아도 순서는 유지됩니다.';
   if (st.status === 'running') return '화면을 만들고 있습니다. 보통 1분 30초 안에 끝납니다. 창을 닫아도 계속 진행됩니다.';
-  if (st.status === 'done') return '완료했습니다. 아래 미리보기를 설계에 참고하세요.';
+  if (st.status === 'done') return stage === 1 ? '완료했습니다. 아래 미리보기를 설계에 참고하세요.' : '완료했습니다. 아래 미리보기를 확인하세요.';
   if (st.status === 'locked') return '부적절하거나 기획서로 인식되지 않은 입력이 반복되어 잠겼습니다. 선생님께 문의해 주세요.';
   if (st.status === 'refused') return `${st.error || '처리하지 않았습니다.'} 횟수는 줄지 않았습니다. 내용을 확인해 다시 시도해 주세요.`;
   if (st.status === 'failed') return `${st.error || '생성하지 못했습니다.'} 횟수는 줄지 않았습니다.`;
@@ -85,12 +82,10 @@ function render() {
     const working = ['queued', 'running'].includes(st.status);
     $(`badge-${stage}`).textContent = LABEL[st.status] || '';
     $(`badge-${stage}`).classList.toggle('busy', working);
-    setBuild(stage, stage === 2 && busyFile ? 'upload' : (working ? st.status : null));
-    $(`submit-${stage}`).disabled = !st.canSubmit || (stage === 2 && busyFile);
-    if (stage !== 2 || !busyFile) {
-      $(`msg-${stage}`).textContent = stageMessage(stage, st);
-      $(`msg-${stage}`).classList.toggle('error', ['failed', 'refused', 'locked'].includes(st.status));
-    }
+    setBuild(stage, working ? st.status : null);
+    $(`submit-${stage}`).disabled = !st.canSubmit;
+    $(`msg-${stage}`).textContent = stageMessage(stage, st);
+    $(`msg-${stage}`).classList.toggle('error', ['failed', 'refused', 'locked'].includes(st.status));
     $(`form-${stage}`).hidden = st.status === 'done';
   }
   const st = me[`stage${currentStage}`];
@@ -168,53 +163,28 @@ $('logout').addEventListener('click', async () => {
   showLogin();
 });
 
-$('plan').addEventListener('input', () => { $('plan-count').textContent = $('plan').value.length.toLocaleString(); });
-
 function showError(stage, message) {
   $(`msg-${stage}`).textContent = message;
   $(`msg-${stage}`).classList.add('error');
 }
 
-$('form-1').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  $('submit-1').disabled = true;
-  $('msg-1').classList.remove('error');
-  $('msg-1').textContent = '기획서를 보내는 중입니다.';
-  setBuild(1, 'upload');
-  try {
-    await api('submit/1', { text: $('plan').value });
-    await refresh();
-  } catch (err) {
-    await refresh();
-    showError(1, err.message);
-  }
-});
-
-async function uploadTile(url, blob) {
-  const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }, body: blob });
-  if (!res.ok) throw new Error('파일을 올리지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.');
+for (const [stage, field, what] of [[1, 'plan', '기획서'], [2, 'prompt', '프롬프트']]) {
+  $(field).addEventListener('input', () => { $(`${field}-count`).textContent = $(field).value.length.toLocaleString(); });
+  $(`form-${stage}`).addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $(`submit-${stage}`).disabled = true;
+    $(`msg-${stage}`).classList.remove('error');
+    $(`msg-${stage}`).textContent = `${what}를 보내는 중입니다.`;
+    setBuild(stage, 'upload');
+    try {
+      await api(`submit/${stage}`, { text: $(field).value });
+      await refresh();
+    } catch (err) {
+      await refresh();
+      showError(stage, err.message);
+    }
+  });
 }
-
-$('form-2').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  busyFile = true;
-  $('submit-2').disabled = true;
-  $('msg-2').classList.remove('error');
-  setBuild(2, 'upload');
-  try {
-    const tiles = await filesToTiles($('files').files, (text) => { $('msg-2').textContent = text; });
-    $('msg-2').textContent = '파일을 올리는 중입니다.';
-    const { prefix, urls } = await api('prepare/2', { count: tiles.length });
-    await Promise.all(tiles.map((blob, i) => uploadTile(urls[i], blob)));
-    await api('submit/2', { prefix, count: tiles.length });
-    busyFile = false;
-    await refresh();
-  } catch (err) {
-    busyFile = false;
-    await refresh();
-    showError(2, err.message);
-  }
-});
 
 // 관리자 테스트 전용. 서버가 관리자 쿠키를 확인하므로 학생은 쓸 수 없다.
 $('test-again').addEventListener('click', async () => {
@@ -226,11 +196,6 @@ $('test-again').addEventListener('click', async () => {
   } catch (err) {
     $('test-again-msg').textContent = err.status === 401 ? '관리자 로그인이 만료되었습니다. 관리 화면에서 다시 들어와 주세요.' : err.message;
   }
-});
-
-$('files').addEventListener('change', () => {
-  const names = [...$('files').files].map((f) => f.name);
-  $('file-info').textContent = names.length ? `선택: ${names.join(', ')}` : 'PNG는 화면 순서대로 고르세요. 데스크톱 화면 기준으로 읽습니다.';
 });
 
 setInterval(() => { showElapsed(1); showElapsed(2); }, 1000);

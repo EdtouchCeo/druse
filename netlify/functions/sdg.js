@@ -7,10 +7,9 @@
 //   SDG_SUPABASE_SERVICE_KEY  : 작업 보관함 서비스 키 (없으면 SUPABASE_SERVICE_KEY)
 
 const crypto = require('node:crypto');
-const { MAX_IMAGES, validatePlan, validStudentId, validName } = require('../../tools/sdg-preview/lib/filter.cjs');
+const { validatePlan, validatePrompt, validStudentId, validName } = require('../../tools/sdg-preview/lib/filter.cjs');
 const { createAdmin } = require('./_lib/sdg-admin');
 
-const BUCKET = 'sdg-uploads';
 const COOKIE = 'sdg_session';
 const SESSION_SECONDS = 8 * 60 * 60;
 const BASE_HEADERS = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
@@ -64,18 +63,6 @@ async function table(method, path, body, prefer) {
   if (!res.ok) throw new Error(`table ${path} ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const text = await res.text();
   return text ? JSON.parse(text) : null;
-}
-
-async function signUpload(path) {
-  const { url, key } = config();
-  const res = await fetch(`${url}/storage/v1/object/upload/sign/${BUCKET}/${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', apikey: key, Authorization: `Bearer ${key}` },
-    body: '{}',
-  });
-  if (!res.ok) throw new Error(`sign ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const data = await res.json();
-  return `${url}/storage/v1${data.url}`;
 }
 
 function sign(payload, secret) {
@@ -193,28 +180,18 @@ async function submitPlan(session, event) {
   return reply(202, { ok: true });
 }
 
-// 2차 이미지는 함수 크기 제한을 피해 브라우저가 보관함에 직접 올린다. 여기서는 일회용 주소만 발급한다.
-async function prepareUpload(session, event) {
+async function submitPrompt(session, event) {
   const body = parseBody(event);
-  const count = Number(body?.count);
-  if (!Number.isInteger(count) || count < 1 || count > MAX_IMAGES) return fail(400, `이미지는 ${MAX_IMAGES}장까지 처리할 수 있습니다.`);
+  if (!body) return fail(400, '요청 형식이 잘못되었습니다.');
   const can = await canSubmit(session, 2);
   if (can.error) return fail(can.error === 'locked' || can.error === 'closed' ? 403 : 409, can.error);
-  const prefix = `${session.id}/${crypto.randomBytes(8).toString('hex')}`;
-  const urls = await Promise.all(
-    Array.from({ length: count }, (_, i) => signUpload(`${prefix}/${String(i + 1).padStart(2, '0')}.jpg`)),
-  );
-  return reply(200, { prefix, urls });
-}
-
-async function submitDesign(session, event) {
-  const body = parseBody(event);
-  const count = Number(body?.count);
-  const prefix = String(body?.prefix || '');
-  if (!Number.isInteger(count) || count < 1 || count > MAX_IMAGES) return fail(400, `이미지는 ${MAX_IMAGES}장까지 처리할 수 있습니다.`);
-  // 자기 학번 폴더만 제출할 수 있다.
-  if (!new RegExp(`^${session.id}/[a-f0-9]{16}$`).test(prefix)) return fail(400, '요청 형식이 잘못되었습니다.');
-  const out = await queueJob(session, 2, null, prefix, count);
+  const checked = validatePrompt(body.text);
+  if (checked.banned) {
+    await rpc('sdg_note_refusal', { p_id: session.id, p_stage: 2, p_reason: checked.error });
+    return fail(400, checked.error);
+  }
+  if (checked.error) return fail(400, checked.error);
+  const out = await queueJob(session, 2, checked.text, null, null);
   if (out.error) return fail(out.error === 'locked' || out.error === 'closed' ? 403 : 409, out.error);
   return reply(202, { ok: true });
 }
@@ -259,8 +236,7 @@ exports.handler = async (event) => {
       return reply(200, session.test ? asTester(me) : me);
     }
     if (route === 'submit/1' && method === 'POST') return await submitPlan(session, event);
-    if (route === 'prepare/2' && method === 'POST') return await prepareUpload(session, event);
-    if (route === 'submit/2' && method === 'POST') return await submitDesign(session, event);
+    if (route === 'submit/2' && method === 'POST') return await submitPrompt(session, event);
     const p = /^preview\/([12])$/.exec(route);
     if (p && method === 'GET') return await previewFor(event, session.id, Number(p[1]));
     return fail(404, '없는 경로입니다.');

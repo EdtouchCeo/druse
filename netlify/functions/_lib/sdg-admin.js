@@ -149,8 +149,11 @@ function createAdmin(h) {
       await emptyBucket().catch((err) => console.error('[sdg wipe bucket]', err.message));
       return reply(200, { ok: true });
     }
-    const input = /^input\/(\d{5})$/.exec(route);
-    if (input && method === 'GET') return reply(200, { text: await rpc('sdg_t_input', { p_id: input[1] }) });
+    const input = /^input\/(\d{5})\/([12])$/.exec(route);
+    if (input && method === 'GET') {
+      const rows = await table('GET', `sdg_jobs?student_id=eq.${input[1]}&stage=eq.${input[2]}&select=input_text`);
+      return reply(200, { text: rows?.[0]?.input_text ?? null });
+    }
     const preview = /^preview\/(\d{5})\/([12])$/.exec(route);
     if (preview && method === 'GET') return previewFor(event, preview[1], Number(preview[2]));
     return fail(404, '없는 경로입니다.');

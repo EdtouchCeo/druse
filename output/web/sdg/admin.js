@@ -85,9 +85,9 @@ function showResult(s, stage) {
   $('frame').src = `${API}/preview/${s.id}/${stage}`;
   $('view').scrollIntoView();
 }
-async function showInput(s) {
-  const { text } = await api(`input/${s.id}`);
-  openView(`${s.id} ${s.name} 기획서 입력`);
+async function showInput(s, stage) {
+  const { text } = await api(`input/${s.id}/${stage}`);
+  openView(`${s.id} ${s.name} ${stage === 1 ? '기획서' : '구현 프롬프트'} 입력`);
   $('view-text').hidden = false;
   $('view-text').textContent = text || '저장된 입력이 없습니다.';
   $('view').scrollIntoView();
@@ -109,7 +109,7 @@ function stageCell(s, stage) {
   td.append(el('span', LABEL[status] || status, { className: `state ${status}` }));
   const action = (label, fn) => td.append(el('button', label, { type: 'button', className: 'link', onclick: fn }));
   if (status === 'done') action('보기', () => showResult(s, stage));
-  if (status !== 'none' && stage === 1) action('입력', () => showInput(s));
+  if (status !== 'none') action('입력', () => showInput(s, stage));
   if (!['none', 'queued', 'running'].includes(status)) action('다시 열기', () => reset(s, stage));
   return td;
 }
