@@ -39,6 +39,7 @@ function showLogin() {
   $('app').hidden = true;
   $('who').hidden = true;
   $('logout').hidden = true;
+  $('admin-link').hidden = true;
   $('login').hidden = false;
   $('frame').removeAttribute('src');
 }
@@ -93,7 +94,8 @@ async function refresh() {
     $('app').hidden = false;
     $('who').hidden = false;
     $('logout').hidden = false;
-    $('who').textContent = `${me.id} ${me.name}`;
+    $('who').textContent = me.test ? `관리자 테스트 ${me.id} ${me.name}` : `${me.id} ${me.name}`;
+    $('admin-link').hidden = !me.test;
     render();
     schedule();
   } catch (err) {

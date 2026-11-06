@@ -8,6 +8,7 @@
 
 const crypto = require('node:crypto');
 const { MAX_IMAGES, validatePlan, validStudentId, validName } = require('../../tools/sdg-preview/lib/filter.cjs');
+const { createAdmin } = require('./_lib/sdg-admin');
 
 const BUCKET = 'sdg-uploads';
 const COOKIE = 'sdg_session';
@@ -52,6 +53,19 @@ async function rpc(name, args) {
   return res.status === 204 ? null : res.json();
 }
 
+// 관리자 테스트는 코드·단계 검사를 건너뛰어야 하므로 학생용 함수 대신 표에 직접 쓴다.
+async function table(method, path, body, prefer) {
+  const { url, key } = config();
+  const res = await fetch(`${url}/rest/v1/${path}`, {
+    method,
+    headers: { 'Content-Type': 'application/json', apikey: key, Authorization: `Bearer ${key}`, ...(prefer ? { Prefer: prefer } : {}) },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`table ${path} ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
 async function signUpload(path) {
   const { url, key } = config();
   const res = await fetch(`${url}/storage/v1/object/upload/sign/${BUCKET}/${path}`, {
@@ -90,9 +104,10 @@ function sessionOf(event, secret) {
   return m ? verify(m[1], secret) : null;
 }
 const isHttps = (event) => header(event, 'x-forwarded-proto') === 'https';
-function cookie(event, value, maxAge) {
-  return `${COOKIE}=${value}; Path=/sdg-api; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${isHttps(event) ? '; Secure' : ''}`;
+function namedCookie(event, name, value, maxAge) {
+  return `${name}=${value}; Path=/sdg-api; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${isHttps(event) ? '; Secure' : ''}`;
 }
+const cookie = (event, value, maxAge) => namedCookie(event, COOKIE, value, maxAge);
 // 다른 사이트에서 보낸 요청을 막는다.
 function badOrigin(event) {
   const origin = header(event, 'origin');
@@ -130,10 +145,42 @@ async function login(event, secret) {
   return reply(200, { ok: true }, { 'Set-Cookie': cookie(event, token, SESSION_SECONDS) });
 }
 
+// 제출 가능 여부. 관리자 테스트는 단계가 닫혀 있어도 시험할 수 있다.
+async function canSubmit(session, stage) {
+  if (!session.test) return rpc('sdg_can_submit', { p_id: session.id, p_stage: stage });
+  const rows = await table('GET', `sdg_jobs?student_id=eq.${session.id}&stage=eq.${stage}&select=status`);
+  const status = rows?.[0]?.status;
+  if (status === 'queued' || status === 'running') return { error: 'busy' };
+  if (status === 'done') return { error: 'used' };
+  if (status === 'locked') return { error: 'locked' };
+  return { ok: true };
+}
+async function queueJob(session, stage, text, prefix, count) {
+  if (!session.test) return rpc('sdg_submit', { p_id: session.id, p_stage: stage, p_text: text, p_prefix: prefix, p_count: count });
+  const can = await canSubmit(session, stage);
+  if (can.error) return can;
+  await table('POST', 'sdg_jobs?on_conflict=student_id,stage', {
+    student_id: session.id, stage, status: 'queued', input_text: text, image_prefix: prefix, image_count: count,
+    result_html: null, error: null, attempts: 0, worker_id: null,
+    queued_at: new Date().toISOString(), heartbeat_at: null, finished_at: null, usage: null,
+  }, 'resolution=merge-duplicates');
+  await table('POST', 'sdg_log', {
+    type: 'submit', student_id: session.id, detail: { stage, chars: text ? text.length : null, images: count, test: true },
+  });
+  return { ok: true };
+}
+function asTester(me) {
+  const out = { ...me, test: true };
+  for (const key of ['stage1', 'stage2']) {
+    out[key] = { ...me[key], open: true, canSubmit: ['none', 'failed', 'refused'].includes(me[key].status) };
+  }
+  return out;
+}
+
 async function submitPlan(session, event) {
   const body = parseBody(event);
   if (!body) return fail(400, '요청 형식이 잘못되었습니다.');
-  const can = await rpc('sdg_can_submit', { p_id: session.id, p_stage: 1 });
+  const can = await canSubmit(session, 1);
   if (can.error) return fail(can.error === 'locked' || can.error === 'closed' ? 403 : 409, can.error);
   const checked = validatePlan(body.text);
   if (checked.banned) {
@@ -141,7 +188,7 @@ async function submitPlan(session, event) {
     return fail(400, checked.error);
   }
   if (checked.error) return fail(400, checked.error);
-  const out = await rpc('sdg_submit', { p_id: session.id, p_stage: 1, p_text: checked.text, p_prefix: null, p_count: null });
+  const out = await queueJob(session, 1, checked.text, null, null);
   if (out.error) return fail(out.error === 'locked' || out.error === 'closed' ? 403 : 409, out.error);
   return reply(202, { ok: true });
 }
@@ -151,7 +198,7 @@ async function prepareUpload(session, event) {
   const body = parseBody(event);
   const count = Number(body?.count);
   if (!Number.isInteger(count) || count < 1 || count > MAX_IMAGES) return fail(400, `이미지는 ${MAX_IMAGES}장까지 처리할 수 있습니다.`);
-  const can = await rpc('sdg_can_submit', { p_id: session.id, p_stage: 2 });
+  const can = await canSubmit(session, 2);
   if (can.error) return fail(can.error === 'locked' || can.error === 'closed' ? 403 : 409, can.error);
   const prefix = `${session.id}/${crypto.randomBytes(8).toString('hex')}`;
   const urls = await Promise.all(
@@ -167,17 +214,17 @@ async function submitDesign(session, event) {
   if (!Number.isInteger(count) || count < 1 || count > MAX_IMAGES) return fail(400, `이미지는 ${MAX_IMAGES}장까지 처리할 수 있습니다.`);
   // 자기 학번 폴더만 제출할 수 있다.
   if (!new RegExp(`^${session.id}/[a-f0-9]{16}$`).test(prefix)) return fail(400, '요청 형식이 잘못되었습니다.');
-  const out = await rpc('sdg_submit', { p_id: session.id, p_stage: 2, p_text: null, p_prefix: prefix, p_count: count });
+  const out = await queueJob(session, 2, null, prefix, count);
   if (out.error) return fail(out.error === 'locked' || out.error === 'closed' ? 403 : 409, out.error);
   return reply(202, { ok: true });
 }
 
-async function preview(session, event, stage) {
+async function previewFor(event, id, stage) {
   // 화면 안 틀에서만 열리게 하여 주소를 직접 열거나 저장하기 어렵게 한다.
   if (header(event, 'sec-fetch-dest') !== 'iframe') {
     return { statusCode: 403, headers: { ...BASE_HEADERS, 'Content-Type': 'text/plain; charset=utf-8' }, body: '미리보기 화면에서만 볼 수 있습니다.' };
   }
-  const html = await rpc('sdg_result', { p_id: session.id, p_stage: stage });
+  const html = await rpc('sdg_result', { p_id: id, p_stage: stage });
   if (!html) return { statusCode: 404, headers: BASE_HEADERS, body: 'not found' };
   return {
     statusCode: 200,
@@ -185,6 +232,13 @@ async function preview(session, event, stage) {
     body: html.replace(/<!doctype html>/i, (m) => `${m}${PREVIEW_GUARD}`),
   };
 }
+
+const admin = createAdmin({
+  rpc, table, reply, fail, sign, verify, header, parseBody, config, previewFor,
+  cookie: namedCookie,
+  SESSION_COOKIE: COOKIE,
+  SESSION_SECONDS,
+});
 
 exports.handler = async (event) => {
   const { url, key, secret } = config();
@@ -195,18 +249,20 @@ exports.handler = async (event) => {
     if (method === 'POST' && badOrigin(event)) return fail(403, '허용되지 않은 요청입니다.');
     if (route === 'login' && method === 'POST') return await login(event, secret);
     if (route === 'logout' && method === 'POST') return reply(200, { ok: true }, { 'Set-Cookie': cookie(event, '', 0) });
+    if (route.startsWith('admin/')) return await admin.handle(route.slice('admin/'.length), event, secret);
 
     const session = sessionOf(event, secret);
     if (!session) return fail(401, '입장이 필요합니다.');
     if (route === 'me' && method === 'GET') {
       const me = await rpc('sdg_me', { p_id: session.id });
-      return me.error ? fail(401, me.error) : reply(200, me);
+      if (me.error) return fail(401, me.error);
+      return reply(200, session.test ? asTester(me) : me);
     }
     if (route === 'submit/1' && method === 'POST') return await submitPlan(session, event);
     if (route === 'prepare/2' && method === 'POST') return await prepareUpload(session, event);
     if (route === 'submit/2' && method === 'POST') return await submitDesign(session, event);
     const p = /^preview\/([12])$/.exec(route);
-    if (p && method === 'GET') return await preview(session, event, Number(p[1]));
+    if (p && method === 'GET') return await previewFor(event, session.id, Number(p[1]));
     return fail(404, '없는 경로입니다.');
   } catch (err) {
     console.error('[sdg]', err.message);

@@ -1,6 +1,6 @@
 [build]
   publish = "output/web"
-  command = "node --test tests/counseling-*.test.cjs tests/auth-gate.test.cjs && node scripts/build_auth_gate.cjs output/web --in-place"
+  command = "node --test tests/counseling-*.test.cjs tests/auth-gate.test.cjs tests/sdg-admin.test.cjs && node scripts/build_auth_gate.cjs output/web --in-place"
 
 [build.environment]
   NODE_VERSION = "22"

@@ -11,6 +11,7 @@
 <header class="top">
   <strong>구현 미리보기</strong>
   <span id="who" class="who" hidden></span>
+  <a id="admin-link" class="link" href="/sdg/admin.html" hidden>관리 화면</a>
   <button id="logout" class="link" type="button" hidden>나가기</button>
 </header>
 
@@ -25,6 +26,7 @@
     <input id="scode" autocomplete="off" maxlength="20" placeholder="선생님이 알려 준 코드" required>
     <button type="submit">입장하기</button>
     <p id="login-msg" class="msg error" role="alert"></p>
+    <p class="hint"><a href="/sdg/admin.html">선생님 관리 화면</a></p>
   </form>
 
   <div id="app" class="stack" hidden>
