@@ -1,6 +1,8 @@
 <script setup lang="ts">
+// 사용설명서의 대륜이 캐릭터. 빌드 경로가 붙지 않도록 문자열로 둔다.
+const CHARACTER = '/img/daeryuni/'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ArrowLeft, ArrowRight, BookOpen, Check, ChevronRight, Copy, Download, FileText, FolderOpen, GraduationCap, LayoutGrid, Lightbulb, Menu, MoreHorizontal, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2, Upload, X } from 'lucide-vue-next'
+import { ArrowLeft, ArrowRight, BookOpen, Check, ChevronRight, Copy, Download, FileText, FolderOpen, LayoutGrid, Lightbulb, Menu, MoreHorizontal, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2, Upload, X } from 'lucide-vue-next'
 import type { CanvasKey, Guide, Mode, Practice, Project, SocialKey, Technique } from './lib/types'
 import { createProject, cloneProject, getField, getIdeaText, isUntouchedProject, linkPlan, reviewField, setReviewChecked, setField, suggestedCanvas, touchSocial } from './lib/model'
 import { listProjects, loadProject, saveProject, deleteProject } from './lib/storage'
@@ -220,7 +222,7 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
   <a class="skip-link" href="#workspace-main">본문으로 건너뛰기</a>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="/#student/assessment-help/subject"><span class="brand-mark"><GraduationCap :size="23" /></span><span><strong>대륜고등학교</strong><small>수행평가 준비</small></span></a>
+      <a class="brand" href="/#student/assessment-help/subject"><span class="brand-mark"><img :src="`${CHARACTER}face_smile.webp`" alt="" /></span><span><strong>대륜고등학교</strong><small>수행평가 준비</small></span></a>
       <nav class="tool-switch" aria-label="작성 도구"><button :class="{ active: kind === 'social' && !landing }" @click="navigate('social')"><FileText :size="17" /><span>사회 문제 해결</span></button><button :class="{ active: kind === 'business' && !landing }" @click="navigate('business')"><LayoutGrid :size="17" /><span>비즈니스 모델</span></button></nav>
       <button class="secondary projects-trigger" @click="dialog = 'projects'"><FolderOpen :size="18" /><span>내 원고</span></button>
     </header>
@@ -228,14 +230,14 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
     <div v-if="loading" class="loading-state" role="status"><span class="loading-dot"></span>이 기기에 저장한 원고를 불러오고 있습니다.</div>
 
     <main v-else-if="landing" id="workspace-main" class="landing">
-      <div class="landing-intro"><span class="eyebrow">AI 문제 해결 · 수행평가 준비</span><h1>예제에서 방법을 찾고,<br />내 문제의 해결책을 씁니다.</h1><p>비슷한 새 상황에서도 스스로 계획할 수 있도록 준비하세요.<br class="desktop-only" /> 질문을 따라 쓴 계획을 비즈니스 모델로 이어갈 수 있습니다.</p></div>
-      <div class="landing-cards"><button class="landing-card social-card" @click="navigate('social')"><span class="card-icon"><FileText :size="28" /></span><span class="eyebrow">01 · 문제에서 해결 계획으로</span><h2>사회 문제 해결 계획서</h2><p>문제를 이해하고, 네 가지 알고리즘의 질문으로 해결 절차를 구체화합니다.</p><span class="card-link">계획서 작성하기 <ArrowRight :size="18" /></span></button><button class="landing-card business-card" @click="navigate('business')"><span class="card-icon"><LayoutGrid :size="28" /></span><span class="eyebrow">02 · 해결 계획에서 서비스로</span><h2>비즈니스 모델 수립하기</h2><p>누구의 문제를 해결하는지, 어떤 가치를 어떻게 전달할지 아홉 칸에 정리합니다.</p><span class="card-link">비즈니스 모델 작성하기 <ArrowRight :size="18" /></span></button></div>
+      <div class="landing-intro"><img class="landing-char" :src="`${CHARACTER}pose_wave.webp`" alt="" /><span class="eyebrow">AI 문제 해결 · 수행평가 준비</span><h1>예제에서 방법을 찾고,<br />내 문제의 해결책을 씁니다.</h1><p>비슷한 새 상황에서도 스스로 계획할 수 있도록 준비하세요.<br class="desktop-only" /> 질문을 따라 쓴 계획을 비즈니스 모델로 이어갈 수 있습니다.</p></div>
+      <div class="landing-cards"><button class="landing-card social-card" @click="navigate('social')"><img class="card-char" :src="`${CHARACTER}pose_explore.webp`" alt="" /><span class="eyebrow">01 · 문제에서 해결 계획으로</span><h2>사회 문제 해결 계획서</h2><p>문제를 이해하고, 네 가지 알고리즘의 질문으로 해결 절차를 구체화합니다.</p><span class="card-link">계획서 작성하기 <ArrowRight :size="18" /></span></button><button class="landing-card business-card" @click="navigate('business')"><img class="card-char" :src="`${CHARACTER}pose_mentor.webp`" alt="" /><span class="eyebrow">02 · 해결 계획에서 서비스로</span><h2>비즈니스 모델 수립하기</h2><p>누구의 문제를 해결하는지, 어떤 가치를 어떻게 전달할지 아홉 칸에 정리합니다.</p><span class="card-link">비즈니스 모델 작성하기 <ArrowRight :size="18" /></span></button></div>
       <div class="learning-path"><div><span>1</span><p><strong>예제로 익히기</strong>완성된 글에서 해결 원리를 찾습니다.</p></div><ChevronRight :size="18" /><div><span>2</span><p><strong>도움받아 써 보기</strong>질문과 단서로 내 글을 씁니다.</p></div><ChevronRight :size="18" /><div><span>3</span><p><strong>혼자 써 보기</strong>달라진 상황에 방법을 적용합니다.</p></div></div>
       <p class="privacy-note"><ShieldCheck :size="18" /> 로그인 없이 사용할 수 있습니다. 원고와 이미지는 이 기기에 저장됩니다.</p>
     </main>
 
     <template v-else-if="!loading">
-      <div class="document-bar"><div class="document-title"><span class="eyebrow">{{ kind === 'social' ? 'SOCIAL PROBLEM SOLVING' : 'LEAN CANVAS' }}</span><h1>{{ title }}</h1></div><div class="document-actions"><span class="save-status" role="status"><span :class="['status-dot', { pending: dirty || isSaving }]" />{{ saveStatus }}</span><button class="secondary" @click="dialog = 'preview'"><BookOpen :size="17" /><span>전체 보기</span></button><button class="primary" @click="printDocument"><Printer :size="17" /><span>인쇄 / PDF 저장</span></button></div></div>
+      <div class="document-bar"><div class="document-title"><img class="document-char" :src="`${CHARACTER}${kind === 'social' ? 'face_thinking' : 'face_fist'}.webp`" alt="" /><span class="eyebrow">{{ kind === 'social' ? 'SOCIAL PROBLEM SOLVING' : 'LEAN CANVAS' }}</span><h1>{{ title }}</h1></div><div class="document-actions"><span class="save-status" role="status"><span :class="['status-dot', { pending: dirty || isSaving }]" />{{ saveStatus }}</span><button class="secondary" @click="dialog = 'preview'"><BookOpen :size="17" /><span>전체 보기</span></button><button class="primary" @click="printDocument"><Printer :size="17" /><span>인쇄 / PDF 저장</span></button></div></div>
       <div class="workspace-layout" :class="{ 'without-help': !helpOpen }">
         <aside class="steps-sidebar" :class="{ 'mobile-expanded': mobileSteps }">
           <button class="mobile-step-toggle" :aria-expanded="mobileSteps" @click="mobileSteps = !mobileSteps"><Menu :size="18" /> {{ guide.label }}<span>{{ positionText }}</span></button>

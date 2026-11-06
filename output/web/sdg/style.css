@@ -57,7 +57,7 @@ button.link:hover { background: none; box-shadow: none; transform: none; }
 /* 입장 */
 .login { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); max-width: 860px; margin: 32px auto; padding: 0; overflow: hidden; box-shadow: var(--shadow); }
 .login-side { position: relative; display: flex; flex-direction: column; min-height: 460px; padding: 32px 28px 0; color: #fff; background: linear-gradient(150deg, var(--primary-dark) 0%, var(--primary) 65%, var(--primary-light) 100%); }
-.eyebrow { align-self: flex-start; font-size: .78rem; font-weight: 600; color: var(--accent); background: rgba(255, 255, 255, .12); border: 1px solid rgba(232, 160, 32, .6); border-radius: 999px; padding: 2px 10px; }
+.eyebrow { align-self: flex-start; font-size: .78rem; font-weight: 600; color: #f6d48e; background: rgba(255, 255, 255, .12); border: 1px solid rgba(232, 160, 32, .6); border-radius: 999px; padding: 2px 10px; }
 .login-title { display: block; margin-top: 12px; font-size: 1.6rem; line-height: 1.35; font-weight: 700; letter-spacing: -.02em; }
 .login-side p { margin: 8px 0 0; color: #dbe6ff; font-size: .95rem; }
 .login-side img { display: block; height: 240px; width: auto; margin: auto auto 0; padding-top: 12px; }
