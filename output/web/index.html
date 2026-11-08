@@ -5432,8 +5432,153 @@
   <button class="sub-nav-btn" onclick="switchSub('sub-assessment-help', this)">📝 평가과제 도움 자료</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-univ', this)">🎓 진학 정보</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-special', this)">✨ 특색활동</button>
+  <button class="sub-nav-btn" onclick="switchSub('sub-showcase', this)">🖼️ 결과물 전시</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-counsel', this)">💬 상담 방법</button>
   <button class="sub-nav-btn" onclick="switchSub('sub-club-stats', this)">📋 동아리 현황</button>
+</div>
+
+<!-- ===== 학생 결과물 전시 (예전 첫 화면 팝업을 하위 페이지로 옮김) ===== -->
+<div class="sub-panel" id="sub-showcase">
+  <style>
+    #sub-showcase{font-size:16px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere;}
+    #sub-showcase img{display:block;}
+    .sc-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 24px;padding:30px 28px 0 36px;overflow:hidden;border-radius:16px;background:linear-gradient(135deg,#1e3a6b 0%,var(--primary) 60%,var(--primary-light) 100%);color:#fff;}
+    .sc-hero-copy{min-width:0;padding-bottom:30px;}
+    .sc-eyebrow{display:inline-block;margin-bottom:8px;padding:2px 10px;border:1px solid rgba(232,160,32,.6);border-radius:999px;background:rgba(255,255,255,.12);color:#f6d48e;font-size:.78rem;font-weight:600;}
+    .sc-hero h2{margin:0;color:#fff;font-size:1.75rem;line-height:1.35;font-weight:700;letter-spacing:-.02em;}
+    .sc-hero p{margin:6px 0 18px;color:#dbe6ff;}
+    .sc-actions{display:flex;flex-wrap:wrap;gap:8px;}
+    .sc-actions a,.sc-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:10px 22px;border-radius:10px;font-family:inherit;font-size:16px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,transform .15s;}
+    .sc-actions a{border:0;background:var(--accent);color:#1e2a44;}
+    .sc-actions a:hover{background:#f2b53f;color:#1e2a44;text-decoration:none;transform:translateY(-1px);}
+    .sc-actions button{border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff;}
+    .sc-actions button:hover{background:rgba(255,255,255,.2);}
+    .sc-actions a:focus-visible,.sc-actions button:focus-visible{outline:3px solid #fff;outline-offset:3px;}
+    .sc-hero img{flex:none;width:auto;height:170px;}
+    .sc-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px;}
+    .sc-head h3{margin:0;color:#1e3a6b;font-size:1.25rem;font-weight:700;}
+    .sc-head span{color:#475569;font-size:15px;}
+    .sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:14px;margin:0;padding:0;list-style:none;}
+    .sc-card{display:flex;flex-direction:column;padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:var(--shadow-sm);transition:border-color .15s,box-shadow .15s,transform .15s;}
+    .sc-card:hover{border-color:var(--primary-light);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+    .sc-icon{font-size:1.7rem;line-height:1;}
+    .sc-cat{margin-top:10px;color:var(--primary);font-size:14px;font-weight:600;}
+    .sc-card h3{margin:2px 0 6px;color:#1e3a6b;font-size:1.12rem;line-height:1.45;font-weight:700;}
+    .sc-card p{flex:1;margin:0 0 12px;color:#475569;font-size:15px;line-height:1.7;}
+    .sc-card a{align-self:flex-start;display:inline-flex;align-items:center;min-height:44px;color:var(--primary);font-weight:700;}
+    .sc-card a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px;}
+    .sc-note{display:flex;align-items:center;gap:14px;margin:20px 0 0;padding:16px 20px;border-radius:14px;background:#f1f5fb;color:#334155;}
+    .sc-note img{flex:none;width:auto;height:64px;}
+    .sc-note p{margin:0;font-size:15px;}
+    @media(prefers-reduced-motion:reduce){#sub-showcase *{transition:none!important;transform:none!important;}}
+    @media(max-width:600px){
+      .sc-hero{flex-direction:column;align-items:stretch;padding:22px 18px 0;}
+      .sc-hero-copy{padding-bottom:4px;}
+      .sc-hero h2{font-size:1.4rem;}
+      .sc-actions a,.sc-actions button{flex:1 1 100%;}
+      .sc-hero img{align-self:flex-end;height:110px;}
+      .sc-head{flex-direction:column;gap:2px;}
+    }
+  </style>
+  <div class="sc-hero">
+    <div class="sc-hero-copy">
+      <span class="sc-eyebrow">학생 결과물 전시</span>
+      <h2>AI 기반 생명공학 문제해결활동</h2>
+      <p>1·2학년 학생이 직접 만든 프로젝트를 써 보고 의견을 남겨 주세요.</p>
+      <div class="sc-actions">
+        <a href="./biotech/" target="_blank" rel="noopener">전시관 열기 <span aria-hidden="true">↗</span></a>
+        <button type="button" onclick="openBiotechGallery()">이 화면에서 보기</button>
+      </div>
+    </div>
+    <img src="img/daeryuni/pose_maker.webp" alt="" loading="lazy">
+  </div>
+  <div class="sc-head">
+    <h3>전시 중인 프로젝트</h3>
+    <span>11개 · 새 결과물은 계속 추가됩니다</span>
+  </div>
+  <ul class="sc-grid">
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🎮</span>
+        <span class="sc-cat">디지털 치료·게임</span>
+        <h3>프로젝트 미러</h3>
+        <p>고립 청년을 위한 치료 은닉형 힐링 RPG. 3D 프로토타입을 직접 해 볼 수 있습니다.</p>
+        <a href="./biotech/mirror/" target="_blank" rel="noopener" aria-label="프로젝트 미러 프로토타입 체험하기">프로토타입 체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">♿</span>
+        <span class="sc-cat">보조공학·안전</span>
+        <h3>휠체어 내리막 안전 제어</h3>
+        <p>경사·노면·탑승 무게로 위험 속도를 계산하고 회생제동으로 안전을 판정하는 시뮬레이터입니다.</p>
+        <a href="./biotech/wheelchair.html" target="_blank" rel="noopener" aria-label="휠체어 내리막 안전 제어 체험하기">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🛡️</span>
+        <span class="sc-cat">식품 알레르기</span>
+        <h3>알레르기 세이프스캔</h3>
+        <p>식품 정보로 알레르기 위험을 확인하고 안전한 선택을 돕습니다.</p>
+        <a href="./biotech/safescan/" target="_blank" rel="noopener" aria-label="알레르기 세이프스캔 체험하기">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🍱</span>
+        <span class="sc-cat">급식 알레르기</span>
+        <h3>급식표가 말하지 않는 것</h3>
+        <p>표시 대상 19종 밖의 알레르겐을 급식표에서 찾아 주는 도구입니다.</p>
+        <a href="./biotech/mealcheck/" target="_blank" rel="noopener" aria-label="급식표가 말하지 않는 것 체험하기">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🦠</span>
+        <span class="sc-cat">항생제 내성</span>
+        <h3>ResisMap</h3>
+        <p>항생제 내성의 확산과 위험 요인을 데이터로 탐색하고 대응 전략을 설계합니다.</p>
+        <a href="./biotech/resismap.html" target="_blank" rel="noopener" aria-label="ResisMap 체험하기">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🔥</span>
+        <span class="sc-cat">적정기술·호흡기 건강</span>
+        <h3>3중 스토브</h3>
+        <p>연탄 난방의 실내 공기오염과 화상 위험을 세 겹의 벽 구조로 줄이는 설계입니다.</p>
+        <a href="https://monumental-praline-9d1f87.netlify.app/" target="_blank" rel="noopener" aria-label="3중 스토브 체험하기 (외부 사이트)">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">✈️</span>
+        <span class="sc-cat">웨어러블 헬스</span>
+        <h3>AEROVITAL</h3>
+        <p>생체 신호로 항공 종사자의 건강과 안전을 지원하는 웨어러블 헬스케어입니다.</p>
+        <a href="./biotech/aerovital.html" target="_blank" rel="noopener" aria-label="AEROVITAL 체험하기">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🏭</span>
+        <span class="sc-cat">바이오공정</span>
+        <h3>엑토인 생산 공장 AI 시뮬레이터</h3>
+        <p>배양 조건과 엑토인 생산량의 관계를 탐색하며 AI 최적화를 체험합니다.</p>
+        <a href="./biotech/ectoine.html" target="_blank" rel="noopener" aria-label="엑토인 생산 공장 AI 시뮬레이터 체험하기">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🧬</span>
+        <span class="sc-cat">디지털 헬스</span>
+        <h3>디지털 피부 트윈</h3>
+        <p>피부 상태와 관련된 생명과학 정보를 디지털 트윈으로 탐색합니다.</p>
+        <a href="./biotech/dermatwin.html" target="_blank" rel="noopener" aria-label="디지털 피부 트윈 체험하기">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🥗</span>
+        <span class="sc-cat">식품·건강</span>
+        <h3>푸드케어 렌즈</h3>
+        <p>식품과 건강 정보를 AI로 살펴보는 문제해결 프로젝트입니다.</p>
+        <a href="https://mldld3276-wq.github.io/foodcare-lens/" target="_blank" rel="noopener" aria-label="푸드케어 렌즈 체험하기 (외부 사이트)">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+      <li class="sc-card">
+        <span class="sc-icon" aria-hidden="true">🧪</span>
+        <span class="sc-cat">유전체·분석</span>
+        <h3>GenoTrack</h3>
+        <p>AI 분석으로 생명공학 데이터를 이해하고 탐색하는 플랫폼입니다.</p>
+        <a href="https://ai-analysis-platform-intro.netlify.app/" target="_blank" rel="noopener" aria-label="GenoTrack 체험하기 (외부 사이트)">체험하기 <span aria-hidden="true">↗</span></a>
+      </li>
+  </ul>
+  <div class="sc-note">
+    <img src="img/daeryuni/face_sparkle.webp" alt="" loading="lazy">
+    <p>좋아요와 응원 의견은 전시관에서 남길 수 있습니다. 활동 소개는 <a href="#student/special/ai">특색활동 → AI기반 생명공학</a>에서 볼 수 있습니다.</p>
+  </div>
 </div>
 
 <!-- ===== 2026학년도 대륜고등학교 동아리 현황 ===== -->
@@ -15550,7 +15695,7 @@ function spJump(id){
     },
     student: {
       rules:'sub-rules', curriculum:'sub-subject', life:'sub-life', 'assessment-help':'sub-assessment-help',
-      univ:'sub-univ', special:'sub-special', counsel:'sub-counsel', 'club-stats':'sub-club-stats'
+      univ:'sub-univ', special:'sub-special', showcase:'sub-showcase', counsel:'sub-counsel', 'club-stats':'sub-club-stats'
     }
   };
 
@@ -18038,10 +18183,9 @@ function spJump(id){
   <p>개발 및 운영: 교사 홍대화 &nbsp;|&nbsp; 문의: <a href="mailto:daveceo@edtouch.ai">daveceo@edtouch.ai</a></p>
 </footer>
 
-<!-- ▼ 학생 결과물 전시 안내 팝업 + 갤러리 뷰어 (셸 공통)
-     탭 콘텐츠 안에 두면 .tab-panel{display:none} 때문에 다른 탭에서 열리지 않는다.
-     그래서 body 끝(셸)에 둔다. 팝업 숨김 기간은 localStorage에 만료 시각으로 저장.
-     안내 내용을 바꿔 다시 띄우려면 NOTICE_KEY 의 v1 을 v2 로 올린다. -->
+<!-- ▼ 학생 결과물 갤러리 뷰어 (셸 공통)
+     탭 콘텐츠 안에 두면 .tab-panel{display:none} 때문에 다른 탭에서 열리지 않는다. 그래서 body 끝(셸)에 둔다.
+     첫 화면 안내 팝업은 없앴고, 안내는 학생·학부모 안내 → 결과물 전시(#student/showcase)로 옮겼다. -->
 <style>
   .biotech-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.72);backdrop-filter:blur(5px)}
   .biotech-modal.open{display:flex}
@@ -18055,28 +18199,6 @@ function spJump(id){
   .biotech-dialog iframe{width:100%;height:100%;border:0;background:#f8fafc}
   @media(max-width:640px){.biotech-modal{padding:0}.biotech-dialog{height:100%;border-radius:0}.biotech-dialog-brand span{font-size:.82rem}.biotech-dialog-actions a{display:none}}
 
-  .dr-notice{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
-  .dr-notice.open{display:flex}
-  .dr-notice-card{width:min(420px,100%);max-height:92vh;overflow-y:auto;border-radius:18px;background:#fff;box-shadow:0 26px 70px rgba(0,0,0,.4);animation:drNoticeIn .28s ease-out}
-  @keyframes drNoticeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-  .dr-notice-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;background:linear-gradient(135deg,#312e81,#4f46e5 60%,#0f766e);color:#fff;border-radius:18px 18px 0 0}
-  .dr-notice-brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:.92rem}
-  .dr-notice-brand img{width:44px;height:32px;object-fit:contain}
-  .dr-notice-x{border:0;background:rgba(255,255,255,.16);color:#fff;width:28px;height:28px;border-radius:8px;font-size:1rem;line-height:1;cursor:pointer}
-  .dr-notice-body{padding:20px 20px 16px}
-  .dr-notice-badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:.74rem;font-weight:800;letter-spacing:.02em}
-  .dr-notice-body h3{margin:11px 0 8px;font-size:1.22rem;line-height:1.3;letter-spacing:-.02em;color:#172033;word-break:keep-all}
-  .dr-notice-body p{margin:0;color:#475569;font-size:.93rem;line-height:1.65;word-break:keep-all}
-  .dr-notice-chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
-  .dr-notice-chips span{padding:5px 10px;border:1px solid #e2e8f0;border-radius:999px;background:#f8fafc;font-size:.78rem;font-weight:700;color:#475569}
-  .dr-notice-acts{display:flex;gap:8px;margin-top:16px}
-  .dr-notice-go{flex:1;padding:12px 14px;border:0;border-radius:11px;background:#4f46e5;color:#fff;font:800 .95rem inherit;cursor:pointer}
-  .dr-notice-go:hover{background:#3730a3}
-  .dr-notice-foot{display:flex;border-top:1px solid #e5e7eb;background:#f8fafc;border-radius:0 0 18px 18px}
-  .dr-notice-foot button{flex:1;padding:13px 6px;border:0;background:none;color:#64748b;font:700 .84rem inherit;cursor:pointer}
-  .dr-notice-foot button+button{border-left:1px solid #e5e7eb}
-  .dr-notice-foot button:hover{background:#eef2ff;color:#3730a3}
-  @media(max-width:480px){.dr-notice{align-items:flex-end;padding:0}.dr-notice-card{width:100%;border-radius:18px 18px 0 0;max-height:88vh}.dr-notice-top{border-radius:18px 18px 0 0}.dr-notice-foot{border-radius:0}.dr-notice-body h3{font-size:1.12rem}}
 </style>
 
 <div class="biotech-modal" id="biotech-gallery-modal" role="dialog" aria-modal="true" aria-labelledby="biotech-gallery-title" onclick="if(event.target===this)closeBiotechGallery()">
@@ -18089,37 +18211,10 @@ function spJump(id){
   </div>
 </div>
 
-<div class="dr-notice" id="dr-notice" role="dialog" aria-modal="true" aria-labelledby="dr-notice-title" onclick="if(event.target===this)drNoticeClose()">
-  <div class="dr-notice-card">
-    <div class="dr-notice-top">
-      <div class="dr-notice-brand"><img src="logo.png" alt=""><span>대륜고 사용 설명서</span></div>
-      <button type="button" class="dr-notice-x" onclick="drNoticeClose()" aria-label="안내 닫기">✕</button>
-    </div>
-    <div class="dr-notice-body">
-      <span class="dr-notice-badge">학생 결과물 전시</span>
-      <h3 id="dr-notice-title">AI 기반 생명공학 문제해결활동</h3>
-      <p>1, 2학년 학생들이 참여한 AI 기반 생명공학 문제해결활동 프로젝트를 전시 중입니다.</p>
-      <div class="dr-notice-chips">
-        <span>🎮 프로젝트 미러</span><span>♿ 휠체어 안전 제어</span><span>🛡️ 세이프스캔</span><span>🍱 급식표 알레르겐</span><span>🦠 ResisMap</span><span>외 6개 프로젝트</span>
-      </div>
-      <div class="dr-notice-acts">
-        <button type="button" class="dr-notice-go" onclick="drNoticeGo()">결과물 보러 가기</button>
-      </div>
-    </div>
-    <div class="dr-notice-foot">
-      <button type="button" onclick="drNoticeHide(1)">오늘 하루 보지 않기</button>
-      <button type="button" onclick="drNoticeHide(7)">일주일 보지 않기</button>
-      <button type="button" onclick="drNoticeClose()">닫기</button>
-    </div>
-  </div>
-</div>
-
 <script>
 (function(){
-  var NOTICE_KEY='dr_notice_biotech_v1';
   var modal=document.getElementById('biotech-gallery-modal');
   var frame=document.getElementById('biotech-gallery-frame');
-  var notice=document.getElementById('dr-notice');
   var lastFocus=null;
 
   window.openBiotechGallery=function(){
@@ -18132,48 +18227,17 @@ function spJump(id){
   };
   window.closeBiotechGallery=function(){
     modal.classList.remove('open');
-    if(!notice.classList.contains('open'))document.body.style.overflow='';
+    document.body.style.overflow='';
     if(lastFocus&&lastFocus.focus)lastFocus.focus();
-  };
-
-  window.drNoticeClose=function(){
-    notice.classList.remove('open');
-    if(!modal.classList.contains('open'))document.body.style.overflow='';
-  };
-  window.drNoticeHide=function(days){
-    try{localStorage.setItem(NOTICE_KEY,String(Date.now()+days*86400000));}catch(e){}
-    window.drNoticeClose();
-  };
-  window.drNoticeGo=function(){
-    window.drNoticeClose();
-    window.open('./biotech/','_blank','noopener');   // 새 창으로 갤러리 열기
   };
 
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape')return;
     if(modal.classList.contains('open'))window.closeBiotechGallery();
-    else if(notice.classList.contains('open'))window.drNoticeClose();
   });
 
-  function suppressed(){
-    try{
-      var v=localStorage.getItem(NOTICE_KEY);
-      return !!v&&Date.now()<Number(v);
-    }catch(e){return false;}
-  }
-  window.addEventListener('load',function(){
-    if(suppressed())return;
-    var route=location.hash.replace(/^#/,'');
-    if(route&&route!=='school')return;          // 특정 메뉴 링크로 들어온 방문자는 방해하지 않는다
-    setTimeout(function(){
-      notice.classList.add('open');
-      document.body.style.overflow='hidden';
-      var go=notice.querySelector('.dr-notice-go');
-      if(go)go.focus();
-    },700);
-  });
 })();
 </script>
-<!-- ▲ 학생 결과물 전시 안내 팝업 -->
+<!-- ▲ 학생 결과물 갤러리 뷰어 -->
 </body>
 </html>
