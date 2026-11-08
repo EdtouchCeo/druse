@@ -2,11 +2,11 @@
 // 구현 프롬프트 연습의 편집 영역. App.vue의 틀(단계 목록, 모드, 내 글 점검, 인쇄)은 그대로 쓰고
 // 이 컴포넌트는 단계마다 입력 칸·용어 버튼·조립 결과·점검표만 그린다. 생성형 AI와 서버 전송은 없다.
 import { computed, nextTick, ref } from 'vue'
-import { ArrowRight, Check, CircleAlert, Copy, ExternalLink, Plus, Printer, Trash2 } from 'lucide-vue-next'
+import { ArrowRight, Check, Copy, ExternalLink, Plus, Printer, Trash2 } from 'lucide-vue-next'
 import type { Project } from '../lib/types'
 import { emptyFeature, findTerms, TERM_CATEGORY_LABELS, type CheckResult, type TermCategory } from '../lib/promptCore'
 import { assembleImplementation, checkImplementation, LIMITS, PROMPT_DICTIONARY, requiredPassed } from '../lib/promptState'
-import { BAD_GOOD_EXAMPLES, COMMON_TEMPLATES, DAMEOK_BASELINE, DAMEOK_PROMPT_TEXT, EXAMPLE_NOTICE, PRACTICE_NOTICE, PROMPT_GUIDES, READING, STEP_TERM_IDS, type PromptStepKey } from '../data/promptPractice'
+import { BAD_GOOD_EXAMPLES, COMMON_TEMPLATES, DAMEOK_BASELINE, DAMEOK_PROMPT_TEXT, EXAMPLE_NOTICE, PROMPT_GUIDES, READING, STEP_TERM_IDS, type PromptStepKey } from '../data/promptPractice'
 import { termById, termLink } from '../data/promptTerms'
 import WritingHelp from './WritingHelp.vue'
 import PromptFeatureCard from './PromptFeatureCard.vue'
@@ -155,7 +155,6 @@ async function copyPrompt() {
 
 <template>
   <div class="prompt-practice">
-    <p class="practice-notice" role="note"><CircleAlert :size="18" />{{ PRACTICE_NOTICE }}</p>
 
     <section v-if="focused" class="focus-term" :class="catClass(focused.category)" aria-live="polite">
       <p><strong>{{ focused.name }}</strong> 용어를 보고 왔습니다.
@@ -311,7 +310,6 @@ async function copyPrompt() {
 
 <style scoped>
 .prompt-practice{display:flex;flex-direction:column;gap:16px;margin-top:8px}
-.practice-notice{display:flex;align-items:center;gap:8px;margin:0;padding:12px 14px;border-radius:10px;background:#fff5e0;color:#6b4500;font-size:15px;font-weight:700;border:1px solid rgba(232,160,32,.45)}
 .cat-1{--cat:#1e3a6b;--cat-soft:#e8eef9}.cat-2{--cat:#8a5a00;--cat-soft:#fff3dc}.cat-3{--cat:#17656f;--cat-soft:#e3f4f4}.cat-x{--cat:#475569;--cat-soft:#f1f5f9}
 .cat-dot{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:50%;background:var(--cat);color:#fff;font-size:13px;font-weight:700;flex:none}
 .cat-2 .cat-dot{color:#1e2a44;background:#e8a020}

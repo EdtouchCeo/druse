@@ -25,12 +25,22 @@ try {
   // 첫 화면과 사전 읽기
   await page.goto(URL_PROMPT); await page.locator('#editor-heading').waitFor()
   assert.equal(await page.title(), '구현 프롬프트 연습 | 대륜고등학교')
-  assert.equal((await page.locator('.practice-notice').innerText()).trim(), '이 도구는 연습용입니다. 실제 수행평가 시간에는 쓰지 않습니다.')
+  assert.equal(await page.locator('.practice-notice').count(), 0, '연습용 문구는 삭제됐다')
   assert.equal(await page.locator('#editor-heading').innerText(), '사전 읽기')
   assert.equal(await page.locator('nav[aria-label="작성 단계"] button').count(), 6)
   assert.equal(await page.locator('.tool-switch button.active').innerText(), '구현 프롬프트')
   assert.match(await page.locator('.reading').innerText(), /\[역할\] → \[만들 형태\]/)
-  mark('첫 렌더: 연습용 안내 첫 줄, 사전 읽기, 여섯 단계')
+  mark('첫 렌더: 연습용 문구 없음, 사전 읽기, 여섯 단계')
+
+  // 생각을 이어 가는 도움: 접고 펼치며 상태를 기억한다
+  await page.locator('.help-collapse').click()
+  assert.equal(await page.locator('#context-help').count(), 0)
+  await page.reload(); await page.locator('#editor-heading').waitFor()
+  assert.equal(await page.locator('#context-help').count(), 0, '접은 상태가 새로고침 뒤에도 남는다')
+  await page.locator('.help-reopen').click()
+  assert.equal(await page.locator('#context-help').count(), 1)
+  assert.equal(await page.locator('.help-reopen').count(), 0)
+  mark('도움 패널 접기·펼치기와 상태 기억')
 
   // 예제로 익히기: 원고와 분리된 읽기 전용
   await step(3); await page.locator('.mode-tabs button').nth(0).click()

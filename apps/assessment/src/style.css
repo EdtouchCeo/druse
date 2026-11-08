@@ -126,3 +126,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 /* 도구 전환 4개와 연습 방식 3개를 좁은 화면에서도 한 줄 글자로 보이게 한다. */
 @media(max-width:560px){.tool-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.tool-switch button{white-space:nowrap;font-size:16px;padding:10px 6px}}
 @media(max-width:480px){.tool-switch button svg{display:none}.mode-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.mode-tabs button:first-child{grid-column:1 / -1}.mode-tabs button{white-space:nowrap;font-size:15px;padding:9px 6px}}
+
+/* 도움 패널 접기·펼치기 */
+.context-heading .help-collapse{min-height:44px;padding:6px 4px;font-size:14px;gap:5px}

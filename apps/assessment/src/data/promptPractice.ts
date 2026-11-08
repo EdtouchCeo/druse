@@ -9,7 +9,6 @@ import type { Guide } from '../lib/types'
 
 export type PromptStepKey = 'read' | 'role' | 'screen' | 'features' | 'common' | 'done'
 
-export const PRACTICE_NOTICE = '이 도구는 연습용입니다. 실제 수행평가 시간에는 쓰지 않습니다.'
 
 /** 제출 전 점검(안내자료 그대로). 구현 프롬프트에 해당하는 항목만 골랐다. */
 export const SUBMIT_CHECKS = [
