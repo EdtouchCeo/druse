@@ -1,5 +1,11 @@
 import type { Project, SaveResult } from './types'
 import { cloneProject, copy } from './model'
+import { implementationFromStorage } from './promptState'
+// 구현 프롬프트 항목이 생기기 전에 저장한 원고도 그대로 열리게 빈 상태를 채운다.
+// 한도를 넘은 칸은 잘라 살리고, 잘린 원고 id를 남겨 화면이 알리게 한다.
+const trimmedOnLoad=new Map<string,number>()
+export function takeTrimNotice(id:string):number {const n=trimmedOnLoad.get(id)??0;trimmedOnLoad.delete(id);return n}
+export const withDefaults=(p:Project):Project=>{const report={trimmed:0};const implementation=implementationFromStorage((p as Partial<Project>).implementation,report);if(report.trimmed)trimmedOnLoad.set(p.id,report.trimmed);return {...p,implementation}}
 const DB_NAME='daeryun-assessment:v1'
 function openDb():Promise<IDBDatabase> {
   return new Promise((resolve,reject)=>{
@@ -15,7 +21,7 @@ export async function listProjects():Promise<Project[]> {
   const db=await openDb()
   return new Promise((resolve,reject)=>{
     const tx=db.transaction('projects','readonly'),r=tx.objectStore('projects').getAll()
-    tx.oncomplete=()=>{db.close();resolve((r.result as Project[]).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)))}
+    tx.oncomplete=()=>{db.close();resolve((r.result as Project[]).map(withDefaults).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)))}
     tx.onerror=()=>{db.close();reject(new Error('저장한 계획을 읽지 못했습니다.'))}
   })
 }
@@ -23,7 +29,7 @@ export async function loadProject(id:string):Promise<Project|null> {
   const db=await openDb()
   return new Promise((resolve,reject)=>{
     const tx=db.transaction('projects','readonly'),r=tx.objectStore('projects').get(id)
-    tx.oncomplete=()=>{db.close();resolve(r.result??null)}
+    tx.oncomplete=()=>{db.close();resolve(r.result?withDefaults(r.result as Project):null)}
     tx.onerror=()=>{db.close();reject(new Error('계획을 열지 못했습니다.'))}
   })
 }

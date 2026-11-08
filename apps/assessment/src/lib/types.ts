@@ -15,5 +15,9 @@ export interface Project {
   social: Record<SocialKey,string>; answers: Record<Technique,Record<string,string>>; canvas: Record<CanvasKey,string>;
   sources: string; author: string; reviews: Record<string,Review>; linkedPlan: PlanSnapshot | null;
   sketch: string; variation: string;
+  /** 구현 프롬프트 연습. 예전 원고에는 없으므로 읽을 때 빈 상태로 채운다. */
+  implementation: ImplementationState;
 }
+export type { PromptState } from './promptCore'
+import type { PromptState as ImplementationState } from './promptCore'
 export interface SaveResult { project: Project; conflict: boolean }

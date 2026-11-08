@@ -119,3 +119,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(max-width:800px){.topbar{padding:12px 20px}.landing{padding:16px 16px 32px}.landing-intro{padding:26px 130px 26px 22px}.landing-intro h1{font-size:25px}.landing-char{right:10px;height:150px}.landing-intro>p br{display:none}.learning-path{padding:16px}.document-char{width:48px;height:48px}}
 @media(max-width:480px){.topbar{padding:12px 16px}.landing-intro{padding:22px 16px}.landing-intro h1{font-size:22px;max-width:calc(100% - 86px)}.landing-intro>.eyebrow{max-width:calc(100% - 86px)}.landing-char{right:4px;top:18px;bottom:auto;height:118px}.card-char{height:92px}}
 @media print{.landing-char,.card-char,.document-char{display:none}}
+
+/* 구현 프롬프트 연습과 앱 서비스 개발 용어. 첫 화면에서 두 작성 도구 아래 한 줄에 함께 놓인다. */
+.landing-card.prompt-card,.landing-card.terms-card{background:linear-gradient(160deg,#fffaf0 0%,var(--card) 55%)}
+.terms-main{flex:1;min-width:0}
+/* 도구 전환 4개와 연습 방식 3개를 좁은 화면에서도 한 줄 글자로 보이게 한다. */
+@media(max-width:560px){.tool-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.tool-switch button{white-space:nowrap;font-size:16px;padding:10px 6px}}
+@media(max-width:480px){.tool-switch button svg{display:none}.mode-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.mode-tabs button:first-child{grid-column:1 / -1}.mode-tabs button{white-space:nowrap;font-size:15px;padding:9px 6px}}

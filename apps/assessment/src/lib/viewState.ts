@@ -1,8 +1,10 @@
 import type { Project, Technique } from './types'
 import { TECHNIQUES } from '../data/questionBank'
 import { CANVAS_GUIDES, SOCIAL_GUIDES } from '../data/writingGuides'
+import { PROMPT_GUIDES } from '../data/promptPractice'
 
-type Kind = 'social' | 'business'
+type Kind = 'social' | 'business' | 'prompt'
+const stepCount = (kind: Kind) => kind === 'social' ? SOCIAL_GUIDES.length : kind === 'prompt' ? PROMPT_GUIDES.length : CANVAS_GUIDES.length
 type CursorProject = Pick<Project, 'id' | 'technique'>
 type CursorStorage = Pick<Storage, 'getItem' | 'setItem'>
 type SavedView = { step?: unknown; questions?: Partial<Record<Technique, unknown>> }
@@ -23,7 +25,7 @@ function index(value: unknown, count: number): number {
 export function readViewState(project: CursorProject, kind: Kind, storage: CursorStorage | null = browserStorage()): { step: number; question: number } {
   const saved = read(project, kind, storage)
   return {
-    step: index(saved.step, kind === 'social' ? SOCIAL_GUIDES.length : CANVAS_GUIDES.length),
+    step: index(saved.step, stepCount(kind)),
     question: index(saved.questions?.[project.technique], TECHNIQUES[project.technique].questions.length),
   }
 }
@@ -33,6 +35,6 @@ export function writeViewState(project: CursorProject, kind: Kind, step: number,
   const questions = Object.fromEntries(Object.values(TECHNIQUES).map(t => [t.key, index(saved.questions?.[t.key], t.questions.length)]))
   questions[project.technique] = index(question, TECHNIQUES[project.technique].questions.length)
   try {
-    storage.setItem(key(project, kind), JSON.stringify({ step: index(step, kind === 'social' ? SOCIAL_GUIDES.length : CANVAS_GUIDES.length), questions }))
+    storage.setItem(key(project, kind), JSON.stringify({ step: index(step, stepCount(kind)), questions }))
   } catch { /* Optional navigation state never blocks writing, saving, or backups. */ }
 }

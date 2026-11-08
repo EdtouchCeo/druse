@@ -18,7 +18,7 @@ try{
   assert.equal(await page.locator('#sub-life #assessment-preparation, #sub-life #career-plan-download').count(),0)
   await page.locator('#tab-student>.sub-nav .sub-nav-btn').filter({hasText:'평가과제 도움 자료'}).click();await visibleTab('subject')
   assert.equal((await page.locator('#assessment-preparation-title').innerText()).trim(),'AI 기반 사회 문제 비즈니스 모델 수립하기')
-  assert.equal(await page.locator('#assessment-preparation .prep-card').count(),2);assert.equal(await page.locator('#assessment-preparation').count(),1);assert.equal(await page.locator('#career-plan-download').count(),1);mark('학교생활에서 새 메뉴로 이동·교과 기본 및 정확한 제목·중복 없음')
+  assert.equal(await page.locator('#assessment-preparation .prep-card').count(),4);assert.equal(await page.locator('#assessment-preparation').count(),1);assert.equal(await page.locator('#career-plan-download').count(),1);mark('학교생활에서 새 메뉴로 이동·교과 기본 및 정확한 제목·중복 없음')
   await page.locator('#assessment-help-tab-subject').focus();await page.keyboard.press('ArrowRight');await visibleTab('activity');await page.keyboard.press('ArrowLeft');await visibleTab('subject');mark('교과·창체 탭의 방향키 이동과 선택 상태')
   await page.locator('#assessment-help-tab-activity').click();await visibleTab('activity');assert.ok(page.url().endsWith('#student/assessment-help/activity'))
   assert.ok(!(await page.locator('#assessment-help-activity').innerText()).includes('2학기'))

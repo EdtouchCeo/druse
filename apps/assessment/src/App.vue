@@ -2,10 +2,10 @@
 // 사용설명서의 대륜이 캐릭터. 빌드 경로가 붙지 않도록 문자열로 둔다.
 const CHARACTER = '/img/daeryuni/'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ArrowLeft, ArrowRight, BookOpen, Check, ChevronRight, Copy, Download, FileText, FolderOpen, LayoutGrid, Lightbulb, Menu, MoreHorizontal, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2, Upload, X } from 'lucide-vue-next'
+import { ArrowLeft, ArrowRight, BookMarked, BookOpen, Code, Check, ChevronRight, Copy, Download, FileText, FolderOpen, LayoutGrid, Lightbulb, Menu, MoreHorizontal, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2, Upload, X } from 'lucide-vue-next'
 import type { CanvasKey, Guide, Mode, Practice, Project, SocialKey, Technique } from './lib/types'
 import { createProject, cloneProject, getField, getIdeaText, isUntouchedProject, linkPlan, reviewField, setReviewChecked, setField, suggestedCanvas, touchSocial } from './lib/model'
-import { listProjects, loadProject, saveProject, deleteProject } from './lib/storage'
+import { listProjects, loadProject, saveProject, deleteProject, takeTrimNotice } from './lib/storage'
 import { readViewState, writeViewState } from './lib/viewState'
 import { documentSections, documentText, downloadBackup, importBackup, printProject, readSketch } from './lib/exportProject'
 import { TECHNIQUES } from './data/questionBank'
@@ -14,13 +14,24 @@ import { PRACTICES } from './data/practiceProblems'
 import { SOCIAL_GUIDES, CANVAS_GUIDES } from './data/writingGuides'
 import WritingHelp from './components/WritingHelp.vue'
 import ReviewPanel from './components/ReviewPanel.vue'
+import TermsGuide from './components/TermsGuide.vue'
+import PromptPractice from './components/PromptPractice.vue'
+import { PROMPT_GUIDES } from './data/promptPractice'
 
-type Kind = 'social' | 'business'
+type EditorKind = 'social' | 'business' | 'prompt'
+const SLUGS: Record<EditorKind, string> = { social: 'social-plan', business: 'business-model', prompt: 'implementation-prompt' }
+// terms는 원고가 없는 읽기 전용 화면이다. 원고 관련 함수는 editorKind를 쓴다.
+type Kind = EditorKind | 'terms'
+const kindFromPath = (path: string): Kind => path.includes('/terms') ? 'terms' : path.includes('implementation-prompt') ? 'prompt' : path.includes('business-model') ? 'business' : 'social'
 type DialogKind = '' | 'projects' | 'start' | 'preview' | 'transfer' | 'variation' | 'delete' | 'copy'
 const project = ref<Project>(createProject())
 const projects = ref<Project[]>([])
-const kind = ref<Kind>(location.pathname.includes('business-model') ? 'business' : 'social')
-const landing = ref(!/social-plan|business-model/.test(location.pathname))
+const kind = ref<Kind>(kindFromPath(location.pathname))
+const lastEditor = ref<EditorKind>('social')
+// 용어 화면의 '이 용어로 프롬프트 연습하기'에서 넘어온 용어. 주소를 다시 쓰기 전에 읽어 둔다.
+const focusTerm = new URLSearchParams(location.search).get('term') ?? ''
+const editorKind = computed<EditorKind>(() => kind.value === 'terms' ? lastEditor.value : kind.value)
+const landing = ref(!/social-plan|business-model|implementation-prompt|terms/.test(location.pathname))
 const step = ref(0)
 const loading = ref(true)
 const saveStatus = ref('불러오는 중')
@@ -57,21 +68,23 @@ const techniques = Object.values(TECHNIQUES)
 const activeTechnique = computed(() => exampleMode.value ? exampleTechnique.value : project.value.technique)
 const technique = computed(() => TECHNIQUES[activeTechnique.value])
 const example = computed(() => EXAMPLES[activeTechnique.value])
-const guides = computed<Guide[]>(() => kind.value === 'social' ? SOCIAL_GUIDES : CANVAS_GUIDES)
+const guides = computed<Guide[]>(() => kind.value === 'social' ? SOCIAL_GUIDES : kind.value === 'prompt' ? PROMPT_GUIDES : CANVAS_GUIDES)
+const fieldGroup = () => kind.value === 'social' ? 'social' : kind.value === 'prompt' ? 'prompt' : 'canvas'
 const guide = computed(() => guides.value[step.value] || guides.value[0]!)
 const situationStep = computed(() => kind.value === 'social' && guide.value.key === 'situation')
-const writingGuides = computed(() => guides.value.filter(g => kind.value !== 'social' || g.key !== 'situation'))
-const positionText = computed(() => situationStep.value ? '사전 읽기' : `${kind.value === 'social' ? step.value : step.value + 1} / ${writingGuides.value.length}`)
+const readingStep = computed(() => situationStep.value || (kind.value === 'prompt' && guide.value.key === 'read'))
+const writingGuides = computed(() => guides.value.filter(g => g.key !== 'read' && (kind.value !== 'social' || g.key !== 'situation')))
+const positionText = computed(() => readingStep.value ? '사전 읽기' : `${kind.value === 'business' ? step.value + 1 : step.value} / ${writingGuides.value.length}`)
 const ideaStep = computed(() => kind.value === 'social' && guide.value.key === 'ideas')
 const question = computed(() => technique.value.questions[activeQuestion.value] || technique.value.questions[0]!)
-const field = computed(() => ideaStep.value ? `answer:${project.value.technique}:${question.value.id}` : `${kind.value === 'social' ? 'social' : 'canvas'}:${guide.value.key}`)
+const field = computed(() => ideaStep.value ? `answer:${project.value.technique}:${question.value.id}` : `${fieldGroup()}:${guide.value.key}`)
 const currentText = computed(() => getField(project.value, field.value))
 const checks = computed(() => ideaStep.value ? question.value.checks : guide.value.checks)
 const currentReview = computed(() => project.value.reviews[field.value])
 const selectedPractice = computed(() => PRACTICES.find(p => p.id === project.value.practiceId))
-const completion = computed(() => writingGuides.value.filter(g => g.key === 'ideas' && kind.value === 'social' ? getIdeaText(project.value).trim() : getField(project.value, `${kind.value === 'social' ? 'social' : 'canvas'}:${g.key}`).trim()).length)
-const title = computed(() => kind.value === 'social' ? '사회 문제 해결 계획서' : '비즈니스 모델 수립하기')
-const sections = computed(() => documentSections(project.value, kind.value))
+const completion = computed(() => writingGuides.value.filter(g => g.key === 'ideas' && kind.value === 'social' ? getIdeaText(project.value).trim() : getField(project.value, `${fieldGroup()}:${g.key}`).trim()).length)
+const title = computed(() => kind.value === 'social' ? '사회 문제 해결 계획서' : kind.value === 'prompt' ? '구현 프롬프트 연습' : '비즈니스 모델 수립하기')
+const sections = computed(() => documentSections(project.value, editorKind.value))
 const planChanged = computed(() => !!project.value.linkedPlan && project.value.linkedPlan.revision !== project.value.socialRevision)
 const suggestions = computed(() => suggestedCanvas(project.value))
 const transferEntries = computed(() => Object.entries(suggestions.value).map(([key, value]) => ({ key: key as CanvasKey, value: value || '', label: CANVAS_GUIDES.find(g => g.key === key)?.label || key })))
@@ -81,10 +94,13 @@ const firstUnanswered = computed(() => TECHNIQUES[project.value.technique].quest
 const previousWriting = computed(() => SOCIAL_GUIDES.filter((g, index) => g.key !== 'situation' && (kind.value === 'business' || index < step.value)).map(g => ({ label: g.label, text: g.key === 'ideas' ? getIdeaText(project.value) : project.value.social[g.key as SocialKey] })).filter(item => item.text.trim()))
 const hasPlanContent = computed(() => !!project.value.social.situation.trim() || SOCIAL_GUIDES.some(g => g.key === 'ideas' ? !!getIdeaText(project.value).trim() : !!project.value.social[g.key as SocialKey].trim()))
 
-function rememberPosition() { if (initialized && !exampleMode.value && !restoringPosition) writeViewState(project.value, kind.value, step.value, activeQuestion.value) }
-function restorePosition() { restoringPosition = true; const position = readViewState(project.value, kind.value); step.value = position.step; activeQuestion.value = position.question; restoringPosition = false }
+function rememberPosition() { if (initialized && !exampleMode.value && !restoringPosition && kind.value !== 'terms') writeViewState(project.value, editorKind.value, step.value, activeQuestion.value) }
+function restorePosition() { if (kind.value === 'terms') return; restoringPosition = true; const position = readViewState(project.value, editorKind.value); step.value = position.step; activeQuestion.value = position.question; restoringPosition = false }
 watch([step, activeQuestion], () => { rememberPosition(); checksOpen.value = false }, { flush: 'sync' })
 
+// 저장 한도를 넘어 잘라 살린 칸이 있으면 작업 위치 위의 안내 띠에 남긴다.
+const trimMessage = (n: number) => `구현 프롬프트에서 저장 한도를 넘은 칸 ${n}곳을 한도에 맞춰 잘랐습니다. 잘린 칸의 끝부분을 확인해 주세요.`
+function noticeTrim(id: string) { const n = takeTrimNotice(id); if (n) error.value = trimMessage(n) }
 function announce(message: string) { toast.value = message; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.value = '' }, 4500) }
 function serialize(p: Project): Project { return JSON.parse(JSON.stringify(p)) as Project }
 function write(value: string) { try { setField(project.value, field.value, value) } catch(e) { error.value = e instanceof Error ? e.message : '입력 내용을 확인해 주세요.' } }
@@ -93,10 +109,12 @@ function startNew() { if (kind.value === 'social') openPracticePicker(); else vo
 function changeTechnique(value: Technique) { if (exampleMode.value) { exampleTechnique.value = value; activeQuestion.value = 0 } else { rememberPosition(); project.value.technique = value; touchSocial(project.value); restorePosition() } }
 function setStep(index: number) { step.value = index; mobileSteps.value = false; nextTick(() => document.querySelector<HTMLElement>('#editor-heading')?.focus()) }
 function selectQuestion(index: number) { activeQuestion.value = index; nextTick(() => { const heading = document.querySelector<HTMLElement>('#question-heading'); heading?.focus({ preventScroll: true }); heading?.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }) }) }
-function isWritten(g: Guide) { return g.key === 'ideas' && kind.value === 'social' ? !!getIdeaText(project.value).trim() : !!getField(project.value, `${kind.value === 'social' ? 'social' : 'canvas'}:${g.key}`).trim() }
+function isWritten(g: Guide) { return g.key === 'ideas' && kind.value === 'social' ? !!getIdeaText(project.value).trim() : !!getField(project.value, `${fieldGroup()}:${g.key}`).trim() }
 
 watch(project, () => {
   if (!initialized || suppressSave) return
+  // 예제를 보는 동안에는 학생 원고를 저장하지 않는다. 바뀐 값은 예제에서 나올 때 저장한다.
+  if (exampleMode.value) { dirty = true; saveStatus.value = '예제를 읽는 동안 저장하지 않음'; return }
   dirty = true; saveStatus.value = '저장 대기'; clearTimeout(saveTimer)
   saveTimer = setTimeout(() => { void persist() }, 650)
 }, { deep: true, flush: 'sync' })
@@ -127,20 +145,29 @@ async function persist(): Promise<boolean> {
 }
 
 function updateUrl(replace = false) {
-  const pathname = landing.value ? '/assessment/' : `/assessment/${kind.value === 'social' ? 'social-plan' : 'business-model'}/`
+  if (!landing.value && kind.value === 'terms') {
+    // 용어 화면은 원고 주소를 붙이지 않고, 카드 이동 주소(#id)를 보존한다.
+    const termsUrl = `/assessment/terms/${replace ? location.hash : ''}`
+    if (replace) history.replaceState({}, '', termsUrl); else history.pushState({}, '', termsUrl)
+    document.title = '앱 서비스 개발 용어 | 대륜고등학교'
+    return
+  }
+  const pathname = landing.value ? '/assessment/' : `/assessment/${SLUGS[editorKind.value]}/`
   const url = `${pathname}?project=${encodeURIComponent(project.value.id)}`
   if (replace) history.replaceState({}, '', url); else history.pushState({}, '', url)
   document.title = `${landing.value ? '수행평가 준비' : title.value} | 대륜고등학교`
 }
-async function navigate(next: Kind) { await persist(); rememberPosition(); kind.value = next; landing.value = false; if (!exampleMode.value) restorePosition(); else { step.value = 0; activeQuestion.value = 0 }; updateUrl(); nextTick(() => document.querySelector<HTMLElement>('#editor-heading')?.focus()) }
+async function navigate(next: Kind) { await persist(); rememberPosition(); if (next !== 'terms') lastEditor.value = next; kind.value = next; landing.value = false; if (!exampleMode.value) restorePosition(); else { step.value = 0; activeQuestion.value = 0 }; updateUrl(); nextTick(() => { if (next === 'terms') window.scrollTo(0, 0); document.querySelector<HTMLElement>(next === 'terms' ? '#terms-heading' : '#editor-heading')?.focus() }) }
+// 용어 화면에서 원고를 열거나 만들면 마지막으로 쓰던 작성 도구로 돌아간다.
+function leaveTerms() { if (kind.value === 'terms') kind.value = lastEditor.value }
 async function chooseProject(id: string, remember = true, openEditor = true) {
   if (!await persist()) return
   if (remember) rememberPosition()
   try {
     const loaded = await loadProject(id)
     if (!loaded) { error.value = '이 원고를 찾을 수 없습니다. 백업 파일이 있다면 불러오세요.'; return }
-    suppressSave = true; project.value = loaded; suppressSave = false; dirty = false
-    exampleMode.value = false; if (openEditor) landing.value = false; restorePosition(); dialog.value = ''; saveStatus.value = '이 기기에 저장됨'; updateUrl(true)
+    suppressSave = true; project.value = loaded; suppressSave = false; dirty = false; noticeTrim(loaded.id)
+    exampleMode.value = false; if (openEditor) { landing.value = false; leaveTerms() }; restorePosition(); dialog.value = ''; saveStatus.value = '이 기기에 저장됨'; updateUrl(true)
   } catch { error.value = '원고를 열지 못했습니다. 원고 목록을 다시 열거나 백업 파일을 불러오세요.' }
 }
 async function newProject(practice?: Practice) {
@@ -150,9 +177,9 @@ async function newProject(practice?: Practice) {
   if (practice && isUntouchedProject(project.value)) { fresh.id = project.value.id; fresh.revision = project.value.revision; fresh.createdAt = project.value.createdAt }
   if (practice) { fresh.title = practice.title; fresh.practiceId = practice.id; fresh.source = practice.source; fresh.social.situation = practice.situation; writeViewState(fresh, 'social', 0, 0); writeViewState(fresh, 'business', 0, 0) }
   suppressSave = true; project.value = fresh; suppressSave = false
-  dirty = true; await persist(); exampleMode.value = false; landing.value = false; restorePosition(); dialog.value = ''; pendingPractice.value = null; updateUrl()
+  dirty = true; await persist(); exampleMode.value = false; landing.value = false; leaveTerms(); restorePosition(); dialog.value = ''; pendingPractice.value = null; updateUrl()
 }
-async function duplicate() { if (!await persist()) return; rememberPosition(); const position = readViewState(project.value, kind.value); const copied = cloneProject(project.value); writeViewState(copied, kind.value, position.step, position.question); suppressSave = true; project.value = copied; suppressSave = false; exampleMode.value = false; restorePosition(); dirty = true; await persist(); updateUrl(true); dialog.value = ''; announce('현재 원고를 복제했습니다.') }
+async function duplicate() { if (!await persist()) return; rememberPosition(); leaveTerms(); const position = readViewState(project.value, editorKind.value); const copied = cloneProject(project.value); writeViewState(copied, editorKind.value, position.step, position.question); suppressSave = true; project.value = copied; suppressSave = false; exampleMode.value = false; restorePosition(); dirty = true; await persist(); updateUrl(true); dialog.value = ''; announce('현재 원고를 복제했습니다.') }
 async function removeProject() {
   const id = deleteId.value
   if (!deleteBackedUp.value) return
@@ -161,7 +188,7 @@ async function removeProject() {
 }
 async function importFile(event: Event) {
   const input = event.target as HTMLInputElement; const file = input.files?.[0]; if (!file) return
-  try { if (file.size > 12_000_000) throw new Error('백업 파일은 12MB 이하여야 합니다.'); const restored = importBackup(await file.text()); if (!await persist()) return; rememberPosition(); suppressSave = true; project.value = restored; suppressSave = false; dirty = true; await persist(); exampleMode.value = false; dialog.value = ''; landing.value = false; restorePosition(); updateUrl(); announce('백업을 새 원고로 불러왔습니다.') }
+  try { if (file.size > 12_000_000) throw new Error('백업 파일은 12MB 이하여야 합니다.'); const report = { trimmed: 0 }; const restored = importBackup(await file.text(), report); if (!await persist()) return; rememberPosition(); suppressSave = true; project.value = restored; suppressSave = false; dirty = true; await persist(); exampleMode.value = false; dialog.value = ''; landing.value = false; leaveTerms(); restorePosition(); updateUrl(); announce('백업을 새 원고로 불러왔습니다.'); if (report.trimmed) error.value = trimMessage(report.trimmed) }
   catch (e) { error.value = e instanceof Error ? e.message : '백업 파일을 확인해 주세요.' }
   finally { input.value = '' }
 }
@@ -182,15 +209,15 @@ function applyTransfer() {
 }
 async function createVariation() {
   if (!variationText.value.trim()) return
-  if (!await persist()) return; rememberPosition(); const position = readViewState(project.value, kind.value); const copied = cloneProject(project.value, `${project.value.title} · 조건 바꾸기`); copied.variation = variationText.value.trim(); copied.mode = 'guided'; writeViewState(copied, kind.value, position.step, position.question)
+  if (!await persist()) return; rememberPosition(); const position = readViewState(project.value, editorKind.value); const copied = cloneProject(project.value, `${project.value.title} · 조건 바꾸기`); copied.variation = variationText.value.trim(); copied.mode = 'guided'; writeViewState(copied, editorKind.value, position.step, position.question)
   suppressSave = true; project.value = copied; suppressSave = false; dirty = true; await persist(); exampleMode.value = false; restorePosition(); dialog.value = ''; updateUrl(); announce('원래 원고를 보존하고 조건 변화 연습용 사본을 만들었습니다.')
 }
 function openVariation() { if (!project.value.social.situation.trim()) { openPracticePicker(); return }; variationText.value = selectedPractice.value?.change || PRACTICES.find(p => p.technique === project.value.technique)?.change || ''; dialog.value = 'variation' }
-function setMode(mode: Mode) { rememberPosition(); const wasExample = exampleMode.value; exampleMode.value = mode === 'example'; if (exampleMode.value) exampleTechnique.value = project.value.technique; else { project.value.mode = mode; if (wasExample) restorePosition() }; checksOpen.value = false }
-async function copyDocument() { const text = documentText(project.value, kind.value); try { await navigator.clipboard.writeText(text); announce('문서 전체를 복사했습니다.') } catch { copyText.value = text; dialog.value = 'copy' } }
-function printDocument() { try { printProject(project.value, kind.value) } catch (e) { error.value = e instanceof Error ? e.message : '인쇄 창을 열지 못했습니다. 브라우저의 팝업 허용을 확인하세요.' } }
+async function setMode(mode: Mode) { if (mode === 'example' && !exampleMode.value && !await persist()) return; rememberPosition(); const wasExample = exampleMode.value; exampleMode.value = mode === 'example'; if (exampleMode.value) exampleTechnique.value = project.value.technique; else { project.value.mode = mode; if (wasExample) restorePosition() }; checksOpen.value = false; if (wasExample && !exampleMode.value && dirty) { saveStatus.value = '저장 대기'; clearTimeout(saveTimer); saveTimer = setTimeout(() => { void persist() }, 650) } }
+async function copyDocument() { const text = documentText(project.value, editorKind.value); try { await navigator.clipboard.writeText(text); announce('문서 전체를 복사했습니다.') } catch { copyText.value = text; dialog.value = 'copy' } }
+function printDocument() { try { printProject(project.value, editorKind.value) } catch (e) { error.value = e instanceof Error ? e.message : '인쇄 창을 열지 못했습니다. 브라우저의 팝업 허용을 확인하세요.' } }
 async function popstate() {
-  if (!await persist()) { updateUrl(true); return }; rememberPosition(); kind.value = location.pathname.includes('business-model') ? 'business' : 'social'; landing.value = !/social-plan|business-model/.test(location.pathname)
+  if (!await persist()) { updateUrl(true); return }; rememberPosition(); kind.value = kindFromPath(location.pathname); if (kind.value !== 'terms') lastEditor.value = kind.value; landing.value = !/social-plan|business-model|implementation-prompt|terms/.test(location.pathname)
   const id = new URLSearchParams(location.search).get('project'); if (id && id !== project.value.id) await chooseProject(id, false, !landing.value); else if (!exampleMode.value) restorePosition(); else { step.value = 0; activeQuestion.value = 0 }
 }
 function beforeUnload(event: BeforeUnloadEvent) { if (dirty || isSaving.value) { event.preventDefault(); event.returnValue = '' } }
@@ -210,7 +237,7 @@ watch(dialog, async (value, previous) => {
   else lastFocus?.focus()
 })
 onMounted(async () => {
-  try { projects.value = await listProjects(); const id = new URLSearchParams(location.search).get('project'); const existing = id ? await loadProject(id) : projects.value[0]; if (existing) project.value = existing; else { if (id) error.value = '이 주소의 원고는 현재 기기에 없습니다. 백업 파일을 불러오거나 새 원고를 작성하세요.'; dirty = true }; restorePosition(); initialized = true; await persist(); saveStatus.value = dirty ? '저장하지 못함' : '이 기기에 저장됨'; updateUrl(true) }
+  try { projects.value = await listProjects(); const id = new URLSearchParams(location.search).get('project'); const existing = id ? await loadProject(id) : projects.value[0]; if (existing) { project.value = existing; noticeTrim(existing.id) } else { if (id) error.value = '이 주소의 원고는 현재 기기에 없습니다. 백업 파일을 불러오거나 새 원고를 작성하세요.'; dirty = true }; restorePosition(); initialized = true; await persist(); saveStatus.value = dirty ? '저장하지 못함' : '이 기기에 저장됨'; updateUrl(true) }
   catch { initialized = true; dirty = true; saveStatus.value = '저장소 사용 불가'; error.value = '이 브라우저에서 기기 저장소를 열지 못했습니다. 작성은 가능하며 백업 파일을 내려받아 보관해야 합니다.' }
   finally { loading.value = false }
   window.addEventListener('popstate', popstate); window.addEventListener('beforeunload', beforeUnload)
@@ -223,7 +250,7 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="/#student/assessment-help/subject"><span class="brand-mark"><img :src="`${CHARACTER}face_smile.webp`" alt="" /></span><span><strong>대륜고등학교</strong><small>수행평가 준비</small></span></a>
-      <nav class="tool-switch" aria-label="작성 도구"><button :class="{ active: kind === 'social' && !landing }" @click="navigate('social')"><FileText :size="17" /><span>사회 문제 해결</span></button><button :class="{ active: kind === 'business' && !landing }" @click="navigate('business')"><LayoutGrid :size="17" /><span>비즈니스 모델</span></button></nav>
+      <nav class="tool-switch" aria-label="작성 도구"><button :class="{ active: kind === 'social' && !landing }" @click="navigate('social')"><FileText :size="17" /><span>사회 문제 해결</span></button><button :class="{ active: kind === 'business' && !landing }" @click="navigate('business')"><LayoutGrid :size="17" /><span>비즈니스 모델</span></button><button :class="{ active: kind === 'prompt' && !landing }" @click="navigate('prompt')"><Code :size="17" /><span>구현 프롬프트</span></button><button :class="{ active: kind === 'terms' && !landing }" @click="navigate('terms')"><BookMarked :size="17" /><span>개발 용어</span></button></nav>
       <button class="secondary projects-trigger" @click="dialog = 'projects'"><FolderOpen :size="18" /><span>내 원고</span></button>
     </header>
     <div v-if="error" class="error-banner" role="alert"><span>{{ error }}</span><button class="text-button" @click="downloadBackup(project)">원고 백업</button><button class="icon-button" aria-label="오류 안내 닫기" @click="error = ''"><X :size="18" /></button></div>
@@ -231,31 +258,41 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
 
     <main v-else-if="landing" id="workspace-main" class="landing">
       <div class="landing-intro"><img class="landing-char" :src="`${CHARACTER}pose_wave.webp`" alt="" /><span class="eyebrow">AI 문제 해결 · 수행평가 준비</span><h1>예제에서 방법을 찾고,<br />내 문제의 해결책을 씁니다.</h1><p>비슷한 새 상황에서도 스스로 계획할 수 있도록 준비하세요.<br class="desktop-only" /> 질문을 따라 쓴 계획을 비즈니스 모델로 이어갈 수 있습니다.</p></div>
-      <div class="landing-cards"><button class="landing-card social-card" @click="navigate('social')"><img class="card-char" :src="`${CHARACTER}pose_explore.webp`" alt="" /><span class="eyebrow">01 · 문제에서 해결 계획으로</span><h2>사회 문제 해결 계획서</h2><p>문제를 이해하고, 네 가지 알고리즘의 질문으로 해결 절차를 구체화합니다.</p><span class="card-link">계획서 작성하기 <ArrowRight :size="18" /></span></button><button class="landing-card business-card" @click="navigate('business')"><img class="card-char" :src="`${CHARACTER}pose_mentor.webp`" alt="" /><span class="eyebrow">02 · 해결 계획에서 서비스로</span><h2>비즈니스 모델 수립하기</h2><p>누구의 문제를 해결하는지, 어떤 가치를 어떻게 전달할지 아홉 칸에 정리합니다.</p><span class="card-link">비즈니스 모델 작성하기 <ArrowRight :size="18" /></span></button></div>
+      <div class="landing-cards"><button class="landing-card social-card" @click="navigate('social')"><img class="card-char" :src="`${CHARACTER}pose_explore.webp`" alt="" /><span class="eyebrow">01 · 문제에서 해결 계획으로</span><h2>사회 문제 해결 계획서</h2><p>문제를 이해하고, 네 가지 알고리즘의 질문으로 해결 절차를 구체화합니다.</p><span class="card-link">계획서 작성하기 <ArrowRight :size="18" /></span></button><button class="landing-card business-card" @click="navigate('business')"><img class="card-char" :src="`${CHARACTER}pose_mentor.webp`" alt="" /><span class="eyebrow">02 · 해결 계획에서 서비스로</span><h2>비즈니스 모델 수립하기</h2><p>누구의 문제를 해결하는지, 어떤 가치를 어떻게 전달할지 아홉 칸에 정리합니다.</p><span class="card-link">비즈니스 모델 작성하기 <ArrowRight :size="18" /></span></button><button class="landing-card prompt-card" @click="navigate('prompt')"><img class="card-char" :src="`${CHARACTER}pose_maker.webp`" alt="" /><span class="eyebrow">03 · 설계안에서 구현 프롬프트로</span><h2>구현 프롬프트 연습</h2><p>설계안의 기능을 [입력] → [처리] → [결과]로 옮기고, 용어 조건과 예외 상황을 점검합니다.</p><span class="card-link">프롬프트 연습하기 <ArrowRight :size="18" /></span></button><button class="landing-card terms-card" @click="navigate('terms')"><img class="card-char" :src="`${CHARACTER}pose_raise.webp`" alt="" /><span class="eyebrow">함께 보기 · 구현 프롬프트 준비</span><h2>앱 서비스 개발 용어</h2><p>프롬프트에 쓰는 개발 용어 16개를 세 범주로 나누어 뜻, 화면 예시, 쓰는 문장을 보여 줍니다.</p><span class="card-link">용어 살펴보기 <ArrowRight :size="18" /></span></button></div>
       <div class="learning-path"><div><span>1</span><p><strong>예제로 익히기</strong>완성된 글에서 해결 원리를 찾습니다.</p></div><ChevronRight :size="18" /><div><span>2</span><p><strong>도움받아 써 보기</strong>질문과 단서로 내 글을 씁니다.</p></div><ChevronRight :size="18" /><div><span>3</span><p><strong>혼자 써 보기</strong>달라진 상황에 방법을 적용합니다.</p></div></div>
       <p class="privacy-note"><ShieldCheck :size="18" /> 로그인 없이 사용할 수 있습니다. 원고와 이미지는 이 기기에 저장됩니다.</p>
     </main>
 
+    <template v-else-if="kind === 'terms'">
+      <main id="workspace-main" class="terms-main"><TermsGuide /></main>
+      <footer class="app-footer"><span>대륜고등학교 · 수행평가 준비</span><span>용어 화면은 읽기 전용이며 원고를 바꾸지 않습니다.</span></footer>
+    </template>
+
     <template v-else-if="!loading">
-      <div class="document-bar"><div class="document-title"><img class="document-char" :src="`${CHARACTER}${kind === 'social' ? 'face_thinking' : 'face_fist'}.webp`" alt="" /><span class="eyebrow">{{ kind === 'social' ? 'SOCIAL PROBLEM SOLVING' : 'LEAN CANVAS' }}</span><h1>{{ title }}</h1></div><div class="document-actions"><span class="save-status" role="status"><span :class="['status-dot', { pending: dirty || isSaving }]" />{{ saveStatus }}</span><button class="secondary" @click="dialog = 'preview'"><BookOpen :size="17" /><span>전체 보기</span></button><button class="primary" @click="printDocument"><Printer :size="17" /><span>인쇄 / PDF 저장</span></button></div></div>
+      <div class="document-bar"><div class="document-title"><img class="document-char" :src="`${CHARACTER}${kind === 'social' ? 'face_thinking' : kind === 'prompt' ? 'face_sparkle' : 'face_fist'}.webp`" alt="" /><span class="eyebrow">{{ kind === 'social' ? 'SOCIAL PROBLEM SOLVING' : kind === 'prompt' ? 'IMPLEMENTATION PROMPT' : 'LEAN CANVAS' }}</span><h1>{{ title }}</h1></div><div class="document-actions"><span class="save-status" role="status"><span :class="['status-dot', { pending: dirty || isSaving }]" />{{ saveStatus }}</span><button class="secondary" @click="dialog = 'preview'"><BookOpen :size="17" /><span>전체 보기</span></button><button class="primary" @click="printDocument"><Printer :size="17" /><span>인쇄 / PDF 저장</span></button></div></div>
       <div class="workspace-layout" :class="{ 'without-help': !helpOpen }">
         <aside class="steps-sidebar" :class="{ 'mobile-expanded': mobileSteps }">
           <button class="mobile-step-toggle" :aria-expanded="mobileSteps" @click="mobileSteps = !mobileSteps"><Menu :size="18" /> {{ guide.label }}<span>{{ positionText }}</span></button>
           <div class="sidebar-content"><div class="sidebar-heading"><span>글이 있는 항목</span><span>{{ completion }} / {{ writingGuides.length }}</span></div><div class="progress-track"><span :style="{ width: `${completion / writingGuides.length * 100}%` }" /></div><p class="progress-caption">{{ kind === 'social' ? '내용을 적은 항목 수이며 완성도를 뜻하지 않습니다.' : '내용을 적은 항목 수이며 완성도를 뜻하지 않습니다.' }}</p>
-          <nav aria-label="작성 단계"><button v-for="(g, index) in guides" :key="g.key" class="step-item" :class="{ active: index === step }" :aria-current="index === step ? 'step' : undefined" @click="setStep(index)"><span class="step-number"><BookOpen v-if="kind === 'social' && g.key === 'situation'" :size="16" /><Check v-else-if="isWritten(g) && index !== step" :size="15" /><template v-else>{{ String(kind === 'social' ? index : index + 1).padStart(2, '0') }}</template></span><span>{{ g.label }}</span><ChevronRight v-if="index === step" :size="15" /></button></nav>
-          <div class="sidebar-bottom"><p>생각을 이어 가세요.</p><button class="text-button" @click="navigate(kind === 'social' ? 'business' : 'social')">{{ kind === 'social' ? '비즈니스 모델로 이어쓰기' : '사회 문제 해결 계획서로' }}<ArrowRight :size="16" /></button><a href="/#student/assessment-help/subject"><ArrowLeft :size="14" /> 평가과제 도움 자료로</a></div></div>
+          <nav aria-label="작성 단계"><button v-for="(g, index) in guides" :key="g.key" class="step-item" :class="{ active: index === step }" :aria-current="index === step ? 'step' : undefined" @click="setStep(index)"><span class="step-number"><BookOpen v-if="(kind === 'social' && g.key === 'situation') || g.key === 'read'" :size="16" /><Check v-else-if="isWritten(g) && index !== step" :size="15" /><template v-else>{{ String(kind === 'business' ? index + 1 : index).padStart(2, '0') }}</template></span><span>{{ g.label }}</span><ChevronRight v-if="index === step" :size="15" /></button></nav>
+          <div class="sidebar-bottom"><p>생각을 이어 가세요.</p><button class="text-button" @click="navigate(kind === 'prompt' ? 'terms' : kind === 'social' ? 'business' : 'social')">{{ kind === 'prompt' ? '앱 서비스 개발 용어 보기' : kind === 'social' ? '비즈니스 모델로 이어쓰기' : '사회 문제 해결 계획서로' }}<ArrowRight :size="16" /></button><a href="/#student/assessment-help/subject"><ArrowLeft :size="14" /> 평가과제 도움 자료로</a></div></div>
         </aside>
         <main id="workspace-main" class="editor-main">
           <div class="project-heading"><label for="project-title">원고 제목</label><input id="project-title" v-model="project.title" maxlength="180" placeholder="내 프로젝트에 이름을 붙여 주세요" /><button class="icon-button" aria-label="원고 관리" @click="dialog = 'projects'"><MoreHorizontal :size="20" /></button></div>
           <div class="mode-tabs" role="group" aria-label="연습 방식"><button :class="{ active: exampleMode }" @click="setMode('example')">예제로 익히기</button><button :class="{ active: !exampleMode && project.mode !== 'solo' }" @click="setMode('guided')">도움받아 써 보기</button><button :class="{ active: !exampleMode && project.mode === 'solo' }" @click="setMode('solo')">혼자 써 보기</button></div>
           <div v-if="exampleMode" class="example-banner"><BookOpen :size="19" /><p>완성 예제를 읽고 있습니다. 내 원고는 따로 보관됩니다. 전체 보기와 인쇄에는 내 원고가 표시됩니다.</p><button class="text-button" @click="setMode('guided')">내 글로 돌아가기</button></div>
-          <div v-else-if="project.variation" class="variation-banner"><span class="eyebrow">조건 바꾸기 연습</span><p>{{ project.variation }}</p><small>제공된 변화가 해결 계획에 어떤 영향을 주는지 확인하세요. 공감하기 이후의 글을 다듬고 수정 이유를 남길 수 있습니다.</small></div>
+          <div v-else-if="project.variation && kind !== 'prompt'" class="variation-banner"><span class="eyebrow">조건 바꾸기 연습</span><p>{{ project.variation }}</p><small>제공된 변화가 해결 계획에 어떤 영향을 주는지 확인하세요. 공감하기 이후의 글을 다듬고 수정 이유를 남길 수 있습니다.</small></div>
           <div v-if="kind === 'business' && !exampleMode && hasPlanContent" class="plan-link-banner"><div><strong>{{ !project.linkedPlan ? '계획서의 생각을 이어 오세요' : planChanged ? '연결한 계획서가 수정되었습니다' : '사회 문제 해결 계획서가 연결되어 있습니다' }}</strong><p>{{ !project.linkedPlan ? '문제, 대상, 해결 절차를 참고하며 모델을 구체화합니다.' : '이미 작성한 캔버스는 유지됩니다. 필요한 항목을 선택해 가져오세요.' }}</p></div><button class="secondary" @click="openTransfer">{{ project.linkedPlan ? '연결 내용 확인' : '계획 가져오기' }}<ArrowRight :size="16" /></button></div>
           <div v-if="kind === 'business' && !exampleMode && !hasPlanContent" class="business-start-note"><h3>어떤 문제를 해결할지 먼저 살펴보세요.</h3><p>완성 예제를 읽거나, 제공된 문제로 사회 문제 해결 계획서를 준비할 수 있습니다. 바로 아래 항목에 생각을 써도 됩니다.</p><div class="button-row"><button class="secondary" @click="setMode('example')"><BookOpen :size="17" />예제로 익히기</button><button class="primary" @click="navigate('social')">계획서부터 준비하기<ArrowRight :size="17" /></button></div></div>
-          <details v-if="!exampleMode && !situationStep && (project.social.situation.trim() || previousWriting.length)" :key="project.id" class="context-reference"><summary><BookOpen :size="17" /><span>문제 상황과 앞에서 쓴 글 보기</span></summary><div class="reference-body"><section v-if="project.social.situation.trim()"><h3>제공된 문제 상황</h3><div class="situation-passages"><p v-for="(paragraph, index) in project.social.situation.split(/\n\s*\n/)" :key="index">{{ paragraph }}</p></div><small v-if="project.source">자료 출처: {{ project.source }}</small></section><section v-if="project.variation"><h3>제공된 조건 변화</h3><p>{{ project.variation }}</p></section><section v-for="item in previousWriting" :key="item.label"><h3>내가 쓴 {{ item.label }}</h3><p>{{ item.text }}</p></section></div></details>
-          <div class="editor-section-heading"><div><span class="eyebrow">{{ situationStep ? '먼저 읽기' : `STEP ${String(kind === 'social' ? step : step + 1).padStart(2, '0')}` }}</span><h2 id="editor-heading" tabindex="-1">{{ guide.label }}</h2></div><button class="help-toggle secondary" :aria-expanded="checksOpen" aria-controls="nearby-checks" @click="checksOpen = !checksOpen"><Lightbulb :size="16" />{{ checksOpen ? '확인할 점 접기' : '확인할 점' }}</button></div>
-          <section v-if="checksOpen" id="nearby-checks" class="nearby-checks"><h3>{{ situationStep ? '읽으며 확인할 것' : '이 글에서 확인할 것' }}</h3><ul><li v-for="item in checks" :key="item">{{ item }}</li></ul></section>
+          <details v-if="kind !== 'prompt' && !exampleMode && !situationStep && (project.social.situation.trim() || previousWriting.length)" :key="project.id" class="context-reference"><summary><BookOpen :size="17" /><span>문제 상황과 앞에서 쓴 글 보기</span></summary><div class="reference-body"><section v-if="project.social.situation.trim()"><h3>제공된 문제 상황</h3><div class="situation-passages"><p v-for="(paragraph, index) in project.social.situation.split(/\n\s*\n/)" :key="index">{{ paragraph }}</p></div><small v-if="project.source">자료 출처: {{ project.source }}</small></section><section v-if="project.variation"><h3>제공된 조건 변화</h3><p>{{ project.variation }}</p></section><section v-for="item in previousWriting" :key="item.label"><h3>내가 쓴 {{ item.label }}</h3><p>{{ item.text }}</p></section></div></details>
+          <div class="editor-section-heading"><div><span class="eyebrow">{{ readingStep ? '먼저 읽기' : `STEP ${String(kind === 'business' ? step + 1 : step).padStart(2, '0')}` }}</span><h2 id="editor-heading" tabindex="-1">{{ guide.label }}</h2></div><button class="help-toggle secondary" :aria-expanded="checksOpen" aria-controls="nearby-checks" @click="checksOpen = !checksOpen"><Lightbulb :size="16" />{{ checksOpen ? '확인할 점 접기' : '확인할 점' }}</button></div>
+          <section v-if="checksOpen" id="nearby-checks" class="nearby-checks"><h3>{{ readingStep ? '읽으며 확인할 것' : '이 글에서 확인할 것' }}</h3><ul><li v-for="item in checks" :key="item">{{ item }}</li></ul></section>
 
+          <template v-if="kind === 'prompt'">
+            <PromptPractice :key="`${project.id}-${guide.key}`" :project="project" :step-key="guide.key as never" :mode="exampleMode ? 'example' : project.mode === 'solo' ? 'solo' : 'guided'" :focus-term="focusTerm" @go-step="setStep" @print="printDocument" @preview="dialog = 'preview'" />
+            <ReviewPanel v-if="!exampleMode && guide.key !== 'read'" :key="field" :review="currentReview" :current="currentText" :checks="checks" @review="checkDraft" @reason="saveReason" @check="saveCheck" />
+          </template>
+          <template v-else>
           <template v-if="exampleMode">
             <label class="field-label">읽을 예제<select :value="exampleTechnique" @change="changeTechnique(($event.target as HTMLSelectElement).value as Technique)"><option v-for="t in techniques" :key="t.key" :value="t.key">{{ t.label }} · {{ EXAMPLES[t.key].title }}</option></select></label>
             <article class="example-document" :class="{ 'provided-situation': situationStep }"><span class="eyebrow">{{ example.title }}</span><h3>{{ guide.label }}</h3><p>{{ kind === 'social' ? example.social[guide.key as SocialKey] : example.canvas[guide.key as CanvasKey] }}</p><footer>자료 출처: {{ example.source }}</footer></article>
@@ -289,11 +326,12 @@ onBeforeUnmount(() => { clearTimeout(saveTimer); clearTimeout(toastTimer); windo
             <ReviewPanel :key="field" :review="currentReview" :current="currentText" :checks="checks" @review="checkDraft" @reason="saveReason" @check="saveCheck" />
             </template>
           </template>
+          </template>
 
-          <footer class="editor-navigation"><button class="secondary" :disabled="step === 0" @click="setStep(step - 1)"><ArrowLeft :size="17" />이전 항목</button><span>{{ positionText }}</span><button v-if="step < guides.length - 1" class="primary" @click="setStep(step + 1)">{{ situationStep ? '공감하기로' : '다음 항목' }}<ArrowRight :size="17" /></button><button v-else class="primary" @click="dialog = 'preview'">전체 글 확인<ArrowRight :size="17" /></button></footer>
+          <footer class="editor-navigation"><button class="secondary" :disabled="step === 0" @click="setStep(step - 1)"><ArrowLeft :size="17" />이전 항목</button><span>{{ positionText }}</span><button v-if="step < guides.length - 1" class="primary" @click="setStep(step + 1)">{{ situationStep ? '공감하기로' : readingStep ? '역할부터 쓰기' : '다음 항목' }}<ArrowRight :size="17" /></button><button v-else class="primary" @click="dialog = 'preview'">전체 글 확인<ArrowRight :size="17" /></button></footer>
         </main>
 
-        <aside v-if="helpOpen" class="context-sidebar"><div class="context-heading"><span class="eyebrow">{{ situationStep ? '제시문 읽기 도움' : '생각을 이어 가는 도움' }}</span><BookOpen :size="19" /></div><h3>{{ kind === 'social' ? '해결책보다 먼저,\n문제의 조건을 보세요.' : '누구에게 어떤\n변화를 줄 수 있나요?' }}</h3><p>{{ guide.question }}</p><div class="context-divider" /><span class="eyebrow">{{ situationStep ? '읽으며 확인할 것' : '이 항목에서 확인하기' }}</span><ul class="context-checks"><li v-for="item in guide.checks" :key="item">{{ item }}</li></ul><div v-if="kind === 'business'" class="context-note"><strong>2026 예제의 린 캔버스</strong><p>아홉 항목이 서로 연결되는지 확인하세요. 인터뷰를 마치지 않아도 바로 작성할 수 있습니다.</p></div><div v-else-if="situationStep" class="context-note"><strong>다음은 공감하기</strong><p>문제 상황은 제공된 자료입니다. 등장인물의 행동과 불편을 확인한 뒤, 다음 단계에서 자신의 생각을 씁니다.</p></div><div v-else class="context-note"><strong>상황이 바뀐다면</strong><p>같은 방법을 쓰더라도 입력, 조건, 판단 기준이 달라질 수 있습니다.</p><button class="text-button" @click="openVariation">조건 바꾸어 연습<ArrowRight :size="15" /></button></div><details class="context-sources"><summary>예제 자료의 출처</summary><p>{{ example.source }}</p><p>{{ project.source && project.source !== '직접 작성' ? project.source : '연습 문제를 선택하면 자료 출처를 확인할 수 있습니다.' }}</p></details><div class="storage-card"><ShieldCheck :size="19" /><p>이 기기에 저장됩니다.<small>다른 기기에서 이어 쓰려면 백업 파일을 내려받으세요.</small></p><button class="text-button" @click="downloadBackup(project)"><Download :size="15" />원고 백업</button></div></aside>
+        <aside v-if="helpOpen" class="context-sidebar"><div class="context-heading"><span class="eyebrow">{{ situationStep ? '제시문 읽기 도움' : '생각을 이어 가는 도움' }}</span><BookOpen :size="19" /></div><h3>{{ kind === 'social' ? '해결책보다 먼저,\n문제의 조건을 보세요.' : kind === 'prompt' ? '설계안의 기능을\n조건 문장으로 옮기세요.' : '누구에게 어떤\n변화를 줄 수 있나요?' }}</h3><p>{{ guide.question }}</p><div class="context-divider" /><span class="eyebrow">{{ situationStep ? '읽으며 확인할 것' : '이 항목에서 확인하기' }}</span><ul class="context-checks"><li v-for="item in guide.checks" :key="item">{{ item }}</li></ul><div v-if="kind === 'business'" class="context-note"><strong>2026 예제의 린 캔버스</strong><p>아홉 항목이 서로 연결되는지 확인하세요. 인터뷰를 마치지 않아도 바로 작성할 수 있습니다.</p></div><div v-else-if="situationStep" class="context-note"><strong>다음은 공감하기</strong><p>문제 상황은 제공된 자료입니다. 등장인물의 행동과 불편을 확인한 뒤, 다음 단계에서 자신의 생각을 씁니다.</p></div><div v-else-if="kind === 'prompt'" class="context-note"><strong>용어 뜻이 헷갈리면</strong><p>앱 서비스 개발 용어 화면에서 뜻, 화면 예시, 결과 확인 방법을 볼 수 있습니다.</p><a class="text-button" href="/assessment/terms/">개발 용어 보기 <ArrowRight :size="16" /></a></div><div v-else class="context-note"><strong>상황이 바뀐다면</strong><p>같은 방법을 쓰더라도 입력, 조건, 판단 기준이 달라질 수 있습니다.</p><button class="text-button" @click="openVariation">조건 바꾸어 연습<ArrowRight :size="15" /></button></div><details class="context-sources"><summary>예제 자료의 출처</summary><p>{{ example.source }}</p><p>{{ project.source && project.source !== '직접 작성' ? project.source : '연습 문제를 선택하면 자료 출처를 확인할 수 있습니다.' }}</p></details><div class="storage-card"><ShieldCheck :size="19" /><p>이 기기에 저장됩니다.<small>다른 기기에서 이어 쓰려면 백업 파일을 내려받으세요.</small></p><button class="text-button" @click="downloadBackup(project)"><Download :size="15" />원고 백업</button></div></aside>
       </div>
       <footer class="app-footer"><span>대륜고등학교 · 수행평가 준비</span><span>원고와 이미지는 서버로 전송하지 않습니다.</span></footer>
     </template>

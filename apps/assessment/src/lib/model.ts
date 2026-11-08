@@ -1,5 +1,7 @@
 import type { CanvasKey, Project, Review, SocialKey, Technique } from './types'
 import { TECHNIQUES } from '../data/questionBank'
+import { PROMPT_GUIDES } from '../data/promptPractice'
+import { emptyPromptState, isPromptStateEmpty, normalizeImplementation, stepText } from './promptState'
 
 export const SOCIAL_KEYS: SocialKey[] = ['situation','empathy','definition','ideas','prototype','test']
 export const CANVAS_KEYS: CanvasKey[] = ['problem','customerSegments','uvp','solution','channels','revenue','costs','keyMetrics','unfairAdvantage']
@@ -10,14 +12,14 @@ export function createProject(technique: Technique = 'path'): Project {
   const now = new Date().toISOString()
   return { schemaVersion:1, id:crypto.randomUUID(), revision:0, socialRevision:0, title:'나의 문제 해결 계획', createdAt:now, updatedAt:now,
     technique, mode:'guided', source:'문제 상황 선택 전', practiceId:'', same:'', different:'', choiceReason:'', social:record(SOCIAL_KEYS),
-    answers:{path:{},local:{},game:{},expert:{}}, canvas:record(CANVAS_KEYS), sources:'', author:'', reviews:{}, linkedPlan:null, sketch:'', variation:'' }
+    answers:{path:{},local:{},game:{},expert:{}}, canvas:record(CANVAS_KEYS), sources:'', author:'', reviews:{}, linkedPlan:null, sketch:'', variation:'', implementation:emptyPromptState() }
 }
 export function cloneProject(project: Project, title = `${project.title} — 새 연습`): Project {
   const clone=copy(project), now=new Date().toISOString()
   return {...clone,id:crypto.randomUUID(),title,revision:0,createdAt:now,updatedAt:now,reviews:{},linkedPlan:null}
 }
 export function isUntouchedProject(project: Project): boolean {
-  return project.title === '나의 문제 해결 계획' && !project.practiceId && !project.linkedPlan
+  return project.title === '나의 문제 해결 계획' && !project.practiceId && !project.linkedPlan && isPromptStateEmpty(project.implementation ?? emptyPromptState())
     && Object.keys(project.reviews).length === 0
     && [project.author,project.sources,project.same,project.different,project.choiceReason,project.sketch,project.variation,
       ...Object.values(project.social),...Object.values(project.canvas),...Object.values(project.answers).flatMap(answers => Object.values(answers))]
@@ -34,11 +36,13 @@ export function getIdeaText(project: Pick<Project,'technique'|'answers'|'social'
     return answer ? `${i+1}. ${answer}` : ''
   })].filter(Boolean).join('\n\n')
 }
+export const PROMPT_FIELDS=PROMPT_GUIDES.filter(g=>g.key!=='read').map(g=>`prompt:${g.key}`)
 export function getField(project: Project, field: string): string {
   const [group,key,id]=field.split(':')
   if(group==='social' && SOCIAL_KEYS.includes(key as SocialKey)) return project.social[key as SocialKey]
   if(group==='canvas' && CANVAS_KEYS.includes(key as CanvasKey)) return project.canvas[key as CanvasKey]
   if(group==='answer' && TECHNIQUE_KEYS.includes(key as Technique)) return project.answers[key as Technique][id!]??''
+  if(group==='prompt' && PROMPT_FIELDS.includes(field)) return stepText(project.implementation ?? emptyPromptState(),key!)
   return ''
 }
 export function setField(project: Project,field: string,value:string): void {
@@ -71,7 +75,7 @@ export function suggestedCanvas(project: Project): Partial<Record<CanvasKey,stri
 }
 
 // Backups are untrusted inputs: rebuild known keys instead of merging arbitrary objects.
-export function validateProject(value: unknown): Project {
+export function validateProject(value: unknown, report: { trimmed: number } = { trimmed: 0 }): Project {
   function obj(v:unknown):Record<string,unknown> { if(!v||typeof v!=='object'||Array.isArray(v)) throw new Error('계획 파일의 항목 형식을 확인해 주세요.');return v as Record<string,unknown> }
   function text(v:unknown,max=40000):string { if(typeof v!=='string'||v.length>max) throw new Error('계획 파일의 글자 수나 형식이 올바르지 않습니다.');return v }
   function num(v:unknown):number { if(!Number.isSafeInteger(v)||Number(v)<0) throw new Error('계획 파일의 버전 정보가 올바르지 않습니다.');return Number(v) }
@@ -90,10 +94,11 @@ export function validateProject(value: unknown): Project {
   p.social=strings(o.social,SOCIAL_KEYS);p.canvas=strings(o.canvas,CANVAS_KEYS);p.answers=answers(o.answers)
   p.sketch=text(o.sketch,7_000_000)
   if(p.sketch&&!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(p.sketch)) throw new Error('스케치는 PNG, JPG, WebP 이미지여야 합니다.')
+  p.implementation=normalizeImplementation(o.implementation,report)
   if(o.linkedPlan!==null) {const l=obj(o.linkedPlan);p.linkedPlan={revision:num(l.revision),at:text(l.at,100),title:text(l.title),technique:technique(l.technique),social:strings(l.social,SOCIAL_KEYS),answers:answers(l.answers)}}
   const reviews=obj(o.reviews)
   if(Object.keys(reviews).length>100) throw new Error('점검 기록이 너무 많습니다.')
-  const validFields=[...SOCIAL_KEYS.map(k=>`social:${k}`),...CANVAS_KEYS.map(k=>`canvas:${k}`),...TECHNIQUE_KEYS.flatMap(k=>TECHNIQUES[k].questions.map(q=>`answer:${k}:${q.id}`))]
+  const validFields=[...SOCIAL_KEYS.map(k=>`social:${k}`),...CANVAS_KEYS.map(k=>`canvas:${k}`),...TECHNIQUE_KEYS.flatMap(k=>TECHNIQUES[k].questions.map(q=>`answer:${k}:${q.id}`)),...PROMPT_FIELDS]
   for(const [key,value] of Object.entries(reviews)) {
     if(!validFields.includes(key)) throw new Error('지원하지 않는 점검 기록입니다.')
     const r=obj(value)
