@@ -1063,7 +1063,7 @@
     <button class="sub-nav-btn" onclick="switchSub('sub-required', this)">📚 필수 교육(연수)</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-vac41', this)">🏠 방학 중 41조 연수 신청</button>
     <button class="sub-nav-btn" onclick="switchSub('sub-leave', this)">✈️ 방학 중 복무·국외여행</button>
-    <button class="sub-nav-btn" onclick="switchSub('sub-aside', this)">🧭 Aside로 업무 덜기</button>
+    <button class="sub-nav-btn" onclick="switchSub('sub-aside', this)">🧭 AI 브라우저 Aside</button>
   </div>
 </div>
 
@@ -4099,364 +4099,412 @@
 
 </div>
 
-<!-- ===== Aside로 업무 덜기 (AI 브라우저 활용 업무 경감) ===== -->
+<!-- ===== AI 브라우저 Aside 사용법 ===== -->
 <div class="sub-panel" id="sub-aside">
 <style>
-  #sub-aside { --as-ink:#0f172a; --as-soft:#475569; --as-blue:#2a5298; --as-blue-bg:#eef3fb; --as-amber:#b45309; --as-amber-bg:#fdf6e7; }
-  #sub-aside .as-page { font-size:17px; line-height:1.75; color:var(--as-ink); word-break:keep-all; overflow-wrap:break-word; }
-  #sub-aside .as-page p { margin:0 0 12px; }
-  #sub-aside .as-page h3 { font-size:1.08rem; font-weight:700; margin:0 0 8px; letter-spacing:-0.01em; }
-  #sub-aside .as-hero { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin-bottom:12px; }
-  #sub-aside .as-eyebrow { font-size:0.88rem; color:var(--as-soft); margin-bottom:6px; }
-  #sub-aside .as-hero h2 { font-size:1.65rem; line-height:1.35; font-weight:750; letter-spacing:-0.025em; margin:0 0 12px; }
-  #sub-aside .as-lead { color:var(--as-soft); }
-  #sub-aside .as-scene { margin-top:18px; border-top:1px solid var(--border); padding-top:18px; }
-  #sub-aside .as-scene-label { font-size:0.88rem; font-weight:700; color:var(--as-blue); margin-bottom:8px; }
-  #sub-aside .as-bubble { display:block; background:var(--as-blue-bg); border:1px solid #c9d8f0; border-radius:14px 14px 14px 4px; padding:10px 14px; margin:6px 0 12px; font-weight:600; color:#1e3a6b; width:fit-content; max-width:min(640px,100%); }
-  #sub-aside .as-bubble::before { content:"교사"; display:block; font-size:0.78rem; font-weight:700; color:var(--as-blue); margin-bottom:2px; }
-  #sub-aside .as-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
-  #sub-aside .as-btn { font:inherit; font-size:0.95rem; font-weight:650; padding:10px 16px; border-radius:10px; border:1px solid var(--as-blue); background:var(--as-blue); color:#fff; cursor:pointer; min-height:44px; }
-  #sub-aside .as-btn.ghost { background:var(--surface); color:var(--as-blue); }
-  #sub-aside .as-btn:focus-visible, #sub-aside summary:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
-  #sub-aside .as-note { font-size:0.9rem; color:var(--as-soft); }
-  #sub-aside .as-key { background:var(--as-amber-bg); border:1px solid #f1d9a8; border-radius:var(--radius); padding:16px 18px; margin:12px 0 16px; font-weight:600; }
-  #sub-aside .as-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:8px 0 16px; }
-  #sub-aside .as-table-wrap .data-table { min-width:520px; margin:0; font-size:0.95rem; }
-  #sub-aside .as-table-wrap .data-table th, #sub-aside .as-table-wrap .data-table td { font-size:16px; line-height:1.6; }
-  #sub-aside .as-table-wrap .data-table th { text-transform:none; letter-spacing:0; }
-  #sub-aside .as-cases { display:grid; gap:16px; }
-  #sub-aside .as-case { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; }
-  #sub-aside .as-case.big { border-left:4px solid var(--as-blue); }
-  #sub-aside .as-case-meta { font-size:0.85rem; color:var(--as-soft); margin-bottom:4px; }
-  #sub-aside .as-case dl { margin:10px 0 0; display:grid; grid-template-columns:7.5em 1fr; gap:6px 14px; }
-  #sub-aside .as-case dt { font-weight:700; color:var(--as-soft); font-size:0.92rem; padding-top:2px; }
-  #sub-aside .as-case dd { margin:0; }
-  #sub-aside .as-result { display:inline-block; background:var(--as-amber-bg); border:1px solid #f1d9a8; color:var(--as-amber); font-weight:700; border-radius:8px; padding:2px 10px; margin:2px 4px 2px 0; }
-  #sub-aside .as-example { border:1px dashed #94a3b8; border-radius:10px; padding:10px 14px; margin-top:8px; font-size:0.95rem; }
-  #sub-aside .as-example b { color:var(--as-soft); font-size:0.85rem; }
-  #sub-aside details.as-more { margin-top:16px; }
-  #sub-aside details.as-more > summary, #sub-aside .as-faq summary { cursor:pointer; font-weight:700; color:var(--as-blue); padding:12px 16px; border:1px solid var(--border); border-radius:10px; background:var(--surface); list-style-position:inside; min-height:44px; }
-  #sub-aside details.as-more[open] > summary { margin-bottom:16px; }
-  #sub-aside .as-qa { display:grid; gap:12px; }
-  #sub-aside .as-qa > div { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; }
-  #sub-aside .as-qa h3 { color:var(--as-blue); }
-  #sub-aside .as-qa p:last-child { margin-bottom:0; }
-  #sub-aside .as-faq details { margin-bottom:8px; }
-  #sub-aside .as-faq details p { padding:10px 16px 4px; margin:0; }
-  #sub-aside .as-steps { list-style:none; padding:0; margin:8px 0 16px; counter-reset:as; display:grid; gap:12px; }
-  #sub-aside .as-steps > li { counter-increment:as; position:relative; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px 16px 62px; }
-  #sub-aside .as-steps > li::before { content:counter(as); position:absolute; left:18px; top:16px; width:30px; height:30px; border-radius:50%; background:var(--as-blue); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.95rem; }
-  #sub-aside .as-steps .as-bubble { margin-bottom:4px; }
-  #sub-aside .as-close { text-align:center; font-size:1.2rem; font-weight:750; letter-spacing:-0.02em; padding:28px 16px; margin-top:32px; border-top:1px solid var(--border); }
-  @media (max-width: 640px) {
-    #sub-aside .as-hero { padding:20px 16px; }
-    #sub-aside .as-hero h2 { font-size:1.35rem; }
-    #sub-aside .as-table-wrap .data-table { min-width:0; }
-    #sub-aside .as-table-wrap .data-table th, #sub-aside .as-table-wrap .data-table td { padding:10px 8px; font-size:15px; }
-    #sub-aside .as-case { padding:18px 16px; }
-    #sub-aside .as-case dl { grid-template-columns:1fr; gap:2px; }
-    #sub-aside .as-case dd { margin-bottom:8px; }
-    #sub-aside .as-steps > li { padding:14px 14px 14px 56px; }
-    #sub-aside .as-steps > li::before { left:14px; }
+  #sub-aside{--asd-navy:#1e3a6b;--asd-ink:#1f2a44;--asd-soft:#52607a;--asd-line:#e2e8f0;--asd-tint:#f3f6fb;--asd-gold:#e8a020;font-size:16px;line-height:1.75;color:var(--asd-ink);word-break:keep-all;overflow-wrap:anywhere;}
+  #sub-aside img{display:block;}
+  #sub-aside p{margin:0;}
+  #sub-aside .asd-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 16px;padding:30px 28px 0 36px;overflow:hidden;border-radius:16px;background:linear-gradient(135deg,#1e3a6b 0%,var(--primary) 60%,var(--primary-light) 100%);color:#fff;}
+  #sub-aside .asd-hero-copy{padding-bottom:30px;min-width:0;}
+  #sub-aside .asd-eyebrow{display:inline-block;margin-bottom:10px;padding:2px 10px;border:1px solid rgba(232,160,32,.6);border-radius:999px;background:rgba(255,255,255,.12);color:#f6d48e;font-size:.8rem;font-weight:600;}
+  #sub-aside .asd-hero h2{margin:0;color:#fff;font-size:1.8rem;line-height:1.35;font-weight:700;letter-spacing:-.02em;}
+  #sub-aside .asd-hero p{margin-top:8px;color:#dbe6ff;font-size:1.02rem;max-width:34em;}
+  #sub-aside .asd-hero img{flex:none;height:170px;width:auto;}
+  #sub-aside .asd-toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px;}
+  #sub-aside .asd-toc button{min-height:40px;padding:6px 14px;border:1px solid var(--asd-line);border-radius:999px;background:var(--surface);color:var(--asd-navy);font:inherit;font-size:15px;font-weight:600;cursor:pointer;}
+  #sub-aside .asd-toc button:hover{border-color:var(--primary-light);background:#f8fbff;}
+  #sub-aside button:focus-visible,#sub-aside summary:focus-visible,#sub-aside a:focus-visible{outline:3px solid var(--asd-gold);outline-offset:2px;}
+  #sub-aside .asd-sec{margin:0 0 20px;padding:28px;border:1px solid var(--asd-line);border-radius:16px;background:var(--surface);box-shadow:var(--shadow-sm);scroll-margin-top:90px;}
+  #sub-aside .asd-sec-head{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+  #sub-aside .asd-num{flex:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:var(--asd-navy);color:#fff;font-weight:700;font-size:15px;}
+  #sub-aside .asd-sec h3{margin:0;font-size:1.35rem;line-height:1.45;font-weight:700;letter-spacing:-.02em;color:var(--asd-navy);}
+  #sub-aside .asd-intro{margin:0 0 20px 44px;color:var(--asd-soft);max-width:60em;}
+  #sub-aside .asd-sub{margin:24px 0 10px;font-size:1.08rem;font-weight:700;color:var(--asd-navy);}
+  #sub-aside .asd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px;}
+  #sub-aside .asd-grid.four{grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));}
+  #sub-aside .asd-grid.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));}
+  #sub-aside .asd-card{padding:20px;border:1px solid var(--asd-line);border-radius:14px;background:#f8fafc;}
+  #sub-aside .asd-card h4{margin:0 0 6px;font-size:1.05rem;font-weight:700;color:var(--asd-navy);line-height:1.45;}
+  #sub-aside .asd-card p{color:#475569;font-size:15.5px;}
+  #sub-aside .asd-card .asd-tag{display:inline-block;margin-bottom:8px;padding:1px 9px;border-radius:999px;background:#e6edf8;color:var(--primary);font-size:13px;font-weight:700;}
+  #sub-aside .asd-card.pick{border:2px solid var(--primary-light);background:#fff;}
+  #sub-aside .asd-card.pick .asd-tag{background:var(--asd-gold);color:#fff;}
+  #sub-aside .asd-step{position:relative;padding-top:52px;}
+  #sub-aside .asd-step::before{content:attr(data-step);position:absolute;top:18px;left:20px;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-size:14px;font-weight:700;}
+  /* 흐름도 */
+  #sub-aside .asd-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;margin:4px 0 0;padding:0;list-style:none;}
+  #sub-aside .asd-flow li{position:relative;padding:18px 16px;border-radius:14px;background:var(--asd-tint);border:1px solid #d6e0ef;text-align:center;}
+  #sub-aside .asd-flow li:not(:last-child)::after{content:"";position:absolute;top:50%;right:-22px;width:16px;height:16px;border-top:3px solid var(--primary-light);border-right:3px solid var(--primary-light);transform:translateY(-50%) rotate(45deg);}
+  #sub-aside .asd-flow .who{display:block;font-size:13px;font-weight:700;color:var(--primary);margin-bottom:4px;}
+  #sub-aside .asd-flow strong{display:block;font-size:1.02rem;color:var(--asd-navy);line-height:1.45;}
+  #sub-aside .asd-flow small{display:block;margin-top:6px;font-size:14px;color:#52607a;line-height:1.55;}
+  #sub-aside .asd-flow li.human{background:#fff7e6;border-color:#f3d79c;}
+  #sub-aside .asd-flow li.human .who{color:#a16207;}
+  /* 비교 */
+  #sub-aside .asd-vs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--asd-line);border-radius:14px;overflow:hidden;}
+  #sub-aside .asd-vs > div{padding:18px 20px;}
+  #sub-aside .asd-vs > div + div{background:#f3f7fd;border-left:1px solid var(--asd-line);}
+  #sub-aside .asd-vs h4{margin:0 0 8px;font-size:1.02rem;color:var(--asd-navy);}
+  #sub-aside .asd-vs ul{margin:0;padding-left:18px;color:#3c4a63;}
+  #sub-aside .asd-vs li{margin:4px 0;}
+  /* 말풍선·요청 공식 */
+  #sub-aside .asd-say{display:block;width:fit-content;max-width:100%;margin:8px 0;padding:9px 14px;border-radius:14px 14px 14px 4px;background:#e8effa;border:1px solid #c9d8f0;color:#1e3a6b;font-weight:600;font-size:15.5px;line-height:1.6;}
+  #sub-aside .asd-say.bad{background:#f8f1f1;border-color:#ebcaca;color:#7f1d1d;}
+  #sub-aside .asd-formula{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 4px;}
+  #sub-aside .asd-formula span{padding:6px 12px;border-radius:10px;background:var(--asd-navy);color:#fff;font-weight:700;font-size:15px;}
+  #sub-aside .asd-formula b{color:#94a3b8;font-weight:700;}
+  #sub-aside .asd-label{display:block;font-size:13px;font-weight:700;color:var(--asd-soft);margin-top:12px;}
+  #sub-aside kbd{display:inline-block;min-width:1.6em;padding:1px 7px;border:1px solid #cbd5e1;border-bottom-width:2px;border-radius:6px;background:#fff;font-family:inherit;font-size:14px;font-weight:700;color:var(--asd-navy);}
+  #sub-aside .asd-path{display:inline-block;padding:1px 8px;border-radius:6px;background:#eef2f7;color:#24324d;font-size:15px;font-weight:600;}
+  #sub-aside .asd-note{margin-top:14px;padding:12px 16px;border-left:4px solid var(--asd-gold);border-radius:0 10px 10px 0;background:#fffaf0;color:#5b4a1f;font-size:15.5px;}
+  #sub-aside .asd-ok{color:#166534;font-weight:700;}
+  #sub-aside .asd-no{color:#b91c1c;font-weight:700;}
+  /* 표 */
+  #sub-aside .asd-table{width:100%;border-collapse:collapse;font-size:15.5px;}
+  #sub-aside .asd-table th{text-align:left;padding:10px 12px;background:#eef2f7;color:var(--asd-navy);font-weight:700;border-bottom:1px solid var(--asd-line);}
+  #sub-aside .asd-table td{padding:12px;border-bottom:1px solid var(--asd-line);vertical-align:top;}
+  #sub-aside .asd-table tr:last-child td{border-bottom:0;}
+  #sub-aside .asd-table-wrap{border:1px solid var(--asd-line);border-radius:12px;overflow:hidden;}
+  /* 예시 카드 */
+  #sub-aside .asd-ex{display:flex;flex-direction:column;padding:20px;border:1px solid var(--asd-line);border-radius:14px;background:#fff;}
+  #sub-aside .asd-ex h4{margin:0 0 4px;font-size:1.02rem;color:var(--asd-navy);}
+  #sub-aside .asd-ex .res{margin-top:10px;font-size:15px;color:#3c4a63;}
+  #sub-aside .asd-ex .res b{color:#a16207;}
+  #sub-aside .asd-ex .me{margin-top:auto;padding-top:10px;font-size:14px;color:var(--asd-soft);border-top:1px dashed var(--asd-line);}
+  #sub-aside .asd-ex .res + .me{margin-top:12px;}
+  /* 맺음 */
+  #sub-aside .asd-end{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-top:8px;padding:28px 28px 0 36px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#1e3a6b 0%,var(--primary) 70%);color:#fff;}
+  #sub-aside .asd-end-copy{padding-bottom:28px;}
+  #sub-aside .asd-end strong{display:block;font-size:1.35rem;line-height:1.5;letter-spacing:-.02em;}
+  #sub-aside .asd-end p{margin-top:8px;color:#dbe6ff;}
+  #sub-aside .asd-end a{display:inline-flex;align-items:center;min-height:44px;margin-top:14px;padding:8px 18px;border-radius:10px;background:var(--asd-gold);color:#1e293b;font-weight:700;text-decoration:none;}
+  #sub-aside .asd-end img{flex:none;height:150px;width:auto;}
+  #sub-aside .asd-asof{margin:0 0 20px;font-size:14px;color:#64748b;}
+  @media (max-width:760px){
+    #sub-aside .asd-flow{grid-template-columns:1fr;gap:26px;}
+    #sub-aside .asd-flow li:not(:last-child)::after{top:auto;bottom:-21px;right:50%;transform:translateX(50%) rotate(135deg);}
+    #sub-aside .asd-vs{grid-template-columns:1fr;}
+    #sub-aside .asd-vs > div + div{border-left:0;border-top:1px solid var(--asd-line);}
+  }
+  @media (max-width:640px){
+    #sub-aside .asd-hero{padding:22px 16px 0 20px;}
+    #sub-aside .asd-hero h2{font-size:1.4rem;}
+    #sub-aside .asd-hero img{height:120px;}
+    #sub-aside .asd-sec{padding:20px 16px;}
+    #sub-aside .asd-intro{margin-left:0;}
+    #sub-aside .asd-end{padding:22px 16px 0 20px;}
+    #sub-aside .asd-end img{height:110px;}
+    #sub-aside .asd-table thead{display:none;}
+    #sub-aside .asd-table, #sub-aside .asd-table tbody, #sub-aside .asd-table tr, #sub-aside .asd-table td{display:block;width:100%;}
+    #sub-aside .asd-table tr{padding:10px 0;border-bottom:1px solid var(--asd-line);}
+    #sub-aside .asd-table tr:last-child{border-bottom:0;}
+    #sub-aside .asd-table td{border:0;padding:3px 14px;}
+    #sub-aside .asd-table td:first-child{font-weight:700;color:var(--asd-navy);}
   }
 </style>
 
-<div class="as-page">
-
-  <h2 class="section-title">AI 브라우저 Aside로 업무 덜기</h2>
-
-  <!-- 1. 첫 화면 -->
-  <div class="as-hero">
-    <p class="as-eyebrow">업무 경감 · 2026년 11월 기준</p>
-    <h2>챗GPT는 알려 주고,<br>Aside는 해 줍니다</h2>
-    <p class="as-lead">Aside는 AI 브라우저입니다. 크롬 같은 인터넷 창인데, 옆에 일을 시킬 수 있는 AI가 붙어 있습니다. 내가 로그인해 둔 에듀파인과 나이스 화면을 그 AI가 보고, 클릭하고, 입력하고, 저장까지 합니다.</p>
-
-    <div class="as-scene">
-      <p class="as-scene-label">오전 8시, K-에듀파인 품의 화면</p>
-      <p>오후 연수와 저녁 협의회를 앞둔 아침입니다. 교사가 화면 옆 패널에 한 줄을 적습니다.</p>
-      <span class="as-bubble">관련 같음. 오늘 협의회 품의, 11명, 240,000원, 명단 붙임</span>
-      <p>예산 선택, 개요, 품목, 명단 파일 첨부, 저장까지 끝난 화면이 돌아옵니다. 결재요청 버튼은 교사가 누릅니다.</p>
+  <div class="asd-hero">
+    <div class="asd-hero-copy">
+      <span class="asd-eyebrow">업무 경감 · AI 도구</span>
+      <h2>AI 브라우저 Aside 사용법</h2>
+      <p>말로 시키면 내가 로그인한 화면에서 클릭, 입력, 저장까지 해 주는 브라우저입니다. 설치부터 학교 업무에 쓰는 법까지 순서대로 안내합니다.</p>
     </div>
-
-    <div class="as-actions">
-      <button type="button" class="as-btn" onclick="document.getElementById('aside-subscription').scrollIntoView({behavior:'smooth', block:'start'})">내 구독으로 되나요?</button>
-      <button type="button" class="as-btn ghost" onclick="document.getElementById('aside-cases').scrollIntoView({behavior:'smooth', block:'start'})">사례부터 보기</button>
-    </div>
-  </div>
-  <p class="as-note">요금과 연결할 수 있는 구독은 바뀔 수 있습니다. 설치 전에 <a href="https://www.aside.com/pricing" target="_blank" rel="noopener">Aside 공식 요금 페이지</a>와 설정 화면에서 다시 확인하세요.</p>
-
-  <!-- 2. 30초 이해 -->
-  <h2 class="section-title" style="margin-top:36px;">30초 이해: 챗GPT와 무엇이 다른가</h2>
-  <p>Aside는 에이전트입니다. 에이전트는 말로 시키면 화면을 보고 클릭하고 입력까지 하는 AI를 말합니다.</p>
-  <div class="as-table-wrap">
-    <table class="data-table">
-      <thead><tr><th></th><th>챗GPT, Claude 앱</th><th>Aside</th></tr></thead>
-      <tbody>
-        <tr><td><strong>하는 일</strong></td><td>답과 문안을 알려 준다</td><td>그 문안대로 화면에서 입력하고 저장까지 한다</td></tr>
-        <tr><td><strong>어디서</strong></td><td>AI 사이트 안에서</td><td>내가 로그인해 둔 업무 사이트(에듀파인, 나이스 등)에서</td></tr>
-        <tr><td><strong>기억</strong></td><td>대화가 끝나면 맥락을 다시 설명한다</td><td>결재라인, 메신저 형식 같은 내 규칙을 기억한다</td></tr>
-      </tbody>
-    </table>
+    <img src="img/daeryuni/pose_maker.webp" alt="" loading="lazy">
   </div>
 
-  <!-- 3. 내 구독으로 시작하기 -->
-  <h2 class="section-title" id="aside-subscription" style="margin-top:36px; scroll-margin-top:80px;">내 구독으로 시작하기</h2>
-  <p class="as-key">Aside는 무료로 설치하고, 지금 쓰는 ChatGPT나 Claude 구독을 연결해서 쓸 수 있습니다. 연결한 구독으로 일하면 Aside 크레딧은 줄지 않습니다.</p>
-  <p>구독 연결은 이미 돈을 내고 쓰는 ChatGPT나 Claude 계정으로 로그인해서, 그 AI를 Aside 안에서 쓰는 것입니다. 크레딧은 Aside가 자체로 주는 AI 사용량이고, 무료 요금제에도 매달 들어옵니다.</p>
-  <div class="as-table-wrap">
-    <table class="data-table">
-      <thead><tr><th>지금 쓰는 구독</th><th>Aside에서</th><th>안내</th></tr></thead>
-      <tbody>
-        <tr><td>ChatGPT Plus</td><td>연결 가능</td><td>설정 &gt; Models에서 ChatGPT 구독으로 로그인</td></tr>
-        <tr><td>Claude Pro</td><td>연결 가능</td><td>설정 &gt; Models에서 Claude 구독으로 로그인</td></tr>
-        <tr><td>Gemini 유료 요금제</td><td>구독 연결은 안 됨</td><td>Aside 무료 크레딧으로 Gemini 등 기본 모델 사용</td></tr>
-        <tr><td>구독 없음</td><td>무료로 시작</td><td>무료 요금제에 매달 500 크레딧</td></tr>
-      </tbody>
-    </table>
+  <nav class="asd-toc" aria-label="이 페이지의 목차">
+    <button type="button" onclick="document.getElementById('asd-what').scrollIntoView({behavior:'smooth',block:'start'})">Aside란</button>
+    <button type="button" onclick="document.getElementById('asd-start').scrollIntoView({behavior:'smooth',block:'start'})">설치·시작</button>
+    <button type="button" onclick="document.getElementById('asd-ai').scrollIntoView({behavior:'smooth',block:'start'})">AI 연결</button>
+    <button type="button" onclick="document.getElementById('asd-task').scrollIntoView({behavior:'smooth',block:'start'})">일 시키기</button>
+    <button type="button" onclick="document.getElementById('asd-safe').scrollIntoView({behavior:'smooth',block:'start'})">권한·안전</button>
+    <button type="button" onclick="document.getElementById('asd-memory').scrollIntoView({behavior:'smooth',block:'start'})">기억·반복</button>
+    <button type="button" onclick="document.getElementById('asd-examples').scrollIntoView({behavior:'smooth',block:'start'})">활용 예시</button>
+    <button type="button" onclick="document.getElementById('asd-trouble').scrollIntoView({behavior:'smooth',block:'start'})">문제 해결</button>
+  </nav>
+  <p class="asd-asof">2026년 11월 기준. Aside 공식 도움말을 바탕으로 정리했습니다. 메뉴 이름과 요금은 바뀔 수 있습니다.</p>
+
+  <!-- 1. Aside란 -->
+  <section class="asd-sec" id="asd-what">
+    <div class="asd-sec-head"><span class="asd-num">1</span><h3>Aside는 이렇게 일합니다</h3></div>
+    <p class="asd-intro">크롬과 같은 인터넷 창에 일을 맡길 수 있는 AI가 붙어 있습니다. AI가 화면을 직접 보고 다루는 방식을 에이전트라고 부릅니다.</p>
+
+    <ol class="asd-flow" aria-label="Aside 작업 흐름">
+      <li><span class="who">교사</span><strong>말로 요청</strong><small>"견적서 품목을 품의에 넣어 줘"</small></li>
+      <li><span class="who">Aside</span><strong>화면 읽기</strong><small>열린 페이지, 파일, 이전 기록 확인</small></li>
+      <li><span class="who">Aside</span><strong>클릭·입력·저장</strong><small>내가 로그인한 사이트에서 직접 작업</small></li>
+      <li class="human"><span class="who">교사</span><strong>확인·최종 실행</strong><small>결재요청, 발송, 결제는 사람이 누름</small></li>
+    </ol>
+
+    <p class="asd-sub">챗GPT 앱과 무엇이 다른가</p>
+    <div class="asd-vs">
+      <div>
+        <h4>챗GPT, Claude 앱</h4>
+        <ul>
+          <li>답과 문안을 알려 줍니다.</li>
+          <li>내가 복사해서 업무 사이트에 붙여 넣습니다.</li>
+          <li>새 대화에서는 맥락을 다시 설명합니다.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Aside</h4>
+        <ul>
+          <li>그 문안대로 화면에 입력하고 저장합니다.</li>
+          <li>로그인해 둔 에듀파인, 나이스에서 바로 작업합니다.</li>
+          <li>결재라인, 공지 형식 같은 내 규칙을 기억합니다.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 설치·시작 -->
+  <section class="asd-sec" id="asd-start">
+    <div class="asd-sec-head"><span class="asd-num">2</span><h3>설치하고 시작하기</h3></div>
+    <p class="asd-intro">처음 한 번만 하면 됩니다. 설치 전에 학교의 프로그램 설치·개인정보 지침을 확인하세요.</p>
+    <div class="asd-grid four">
+      <div class="asd-card asd-step" data-step="1">
+        <h4>내려받아 설치</h4>
+        <p><a href="https://aside.com/download" target="_blank" rel="noopener">aside.com/download</a>에서 내 컴퓨터용 설치 파일을 받습니다.</p>
+        <span class="asd-label">지원 환경</span>
+        <p>Windows 10(22H2 이상), Windows 11, macOS 15 이상</p>
+      </div>
+      <div class="asd-card asd-step" data-step="2">
+        <h4>계정 만들기</h4>
+        <p>Aside를 열고 로그인하거나 새 계정을 만듭니다. 무료 요금제로 시작할 수 있습니다.</p>
+      </div>
+      <div class="asd-card asd-step" data-step="3">
+        <h4>크롬 정보 가져오기</h4>
+        <p>방문 기록, 쿠키, 즐겨찾기를 가져옵니다. 로그인 상태가 이어져 업무 사이트에 바로 들어갈 수 있습니다.</p>
+        <span class="asd-label">실패하면</span>
+        <p>크롬을 완전히 닫고(작업 관리자에서 Chrome 종료) 다시 시도합니다.</p>
+      </div>
+      <div class="asd-card asd-step" data-step="4">
+        <h4>비밀번호 관리자 설정</h4>
+        <p>저장한 비밀번호는 자동 입력으로만 쓰이고 AI에게는 보이지 않습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. AI 연결 -->
+  <section class="asd-sec" id="asd-ai">
+    <div class="asd-sec-head"><span class="asd-num">3</span><h3>어떤 AI로 일할지 정하기</h3></div>
+    <p class="asd-intro">Aside가 주는 기본 모델로 바로 쓸 수 있고, 이미 쓰는 AI 구독을 연결할 수도 있습니다. 연결은 <span class="asd-path">설정 › Models › Providers › Connect</span>에서 합니다.</p>
+
+    <div class="asd-grid">
+      <div class="asd-card pick">
+        <span class="asd-tag">구독이 있다면</span>
+        <h4>내 구독 연결</h4>
+        <p>ChatGPT 구독, Claude 구독(Pro·Max)을 연결할 수 있습니다. 팝업 창에서 그 계정으로 로그인하면 끝납니다.</p>
+      </div>
+      <div class="asd-card">
+        <span class="asd-tag">구독이 없다면</span>
+        <h4>Aside 기본 모델</h4>
+        <p>무료 요금제에 매달 500 크레딧이 들어옵니다. 크레딧은 Aside가 주는 AI 사용량입니다.</p>
+      </div>
+      <div class="asd-card">
+        <span class="asd-tag">Gemini 사용자</span>
+        <h4>구독 연결은 안 됨</h4>
+        <p>Gemini는 구독 연결 목록에 없습니다. 기본 모델을 쓰거나 Google API 키를 연결합니다.</p>
+      </div>
+    </div>
+
+    <p class="asd-sub">Aside 요금제</p>
+    <div class="asd-table-wrap">
+      <table class="asd-table">
+        <thead><tr><th>요금제</th><th>월 요금</th><th>사용량</th></tr></thead>
+        <tbody>
+          <tr><td>무료</td><td>0원</td><td>월 500 크레딧, 반복 작업 3개까지</td></tr>
+          <tr><td>Pro</td><td>20달러</td><td>무료의 3배, 반복 작업 무제한, 심층 조사(Ultrabrowse)</td></tr>
+          <tr><td>Max</td><td>200달러</td><td>무료의 40배</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="asd-note">처음에는 <strong>무료 요금제에 내 구독을 연결</strong>하는 것으로 충분합니다. 개인 구독은 본인만 씁니다. 계정 하나를 여러 교사가 함께 쓰면 각 서비스 약관에 어긋날 수 있습니다.</p>
+  </section>
+
+  <!-- 4. 일 시키기 -->
+  <section class="asd-sec" id="asd-task">
+    <div class="asd-sec-head"><span class="asd-num">4</span><h3>일 시키기</h3></div>
+    <p class="asd-intro">일을 맡기는 곳은 두 군데입니다. 지금 보는 화면에서 할 일이면 사이드 패널, 여러 사이트나 파일을 오가는 일이면 작업 페이지를 씁니다.</p>
+
+    <div class="asd-grid two">
+      <div class="asd-card">
+        <span class="asd-tag">지금 보는 화면에서</span>
+        <h4>사이드 패널</h4>
+        <p>열려 있는 페이지가 자동으로 첨부되어 Aside가 그 화면을 읽고 작업합니다. 품의 입력, 서류 대조처럼 한 화면에서 끝나는 일에 맞습니다.</p>
+        <span class="asd-label">단축키</span>
+        <p><kbd>Ctrl</kbd> + <kbd>E</kbd> Aside에게 묻기 · <kbd>Ctrl</kbd> + <kbd>S</kbd> 사이드바 열고 닫기</p>
+      </div>
+      <div class="asd-card">
+        <span class="asd-tag">여러 사이트·파일을 오가며</span>
+        <h4>작업 페이지</h4>
+        <p>품의 저장 후 메신저 문안 작성, 출장 입력처럼 이어지는 일을 한 번에 맡깁니다. 만든 파일은 작업 화면에서 미리 볼 수 있습니다.</p>
+        <span class="asd-label">단축키</span>
+        <p><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd> 새 작업 · 맥은 <kbd>Ctrl</kbd> 대신 <kbd>Cmd</kbd></p>
+      </div>
+    </div>
+
+    <p class="asd-sub">요청은 이렇게 쓰면 잘 됩니다</p>
+    <div class="asd-formula" aria-label="요청 공식">
+      <span>어디서</span><b>+</b><span>무엇을</span><b>+</b><span>어디까지</span><b>+</b><span>하지 말 것</span>
+    </div>
+    <div class="asd-grid two" style="margin-top:12px;">
+      <div>
+        <span class="asd-label">모호한 요청</span>
+        <span class="asd-say bad">품의 처리해 줘</span>
+      </div>
+      <div>
+        <span class="asd-label">잘 되는 요청</span>
+        <span class="asd-say">에듀파인 지출품의에 견적서 PDF 품목을 넣고 저장까지 해 줘. 결재요청은 누르지 마.</span>
+      </div>
+    </div>
+    <p style="margin-top:12px;">요청 칸에서 <kbd>@</kbd>를 입력하면 탭이나 파일을 골라 첨부할 수 있습니다. 금액, 인원, 날짜처럼 필요한 정보는 처음에 한꺼번에 주면 되묻는 일이 줄어듭니다.</p>
+
+    <p class="asd-sub">작업 도중에</p>
+    <div class="asd-grid">
+      <div class="asd-card">
+        <h4>방향이 틀렸을 때</h4>
+        <p>진행 중에 바로 메시지를 보내 고칩니다(Steer). 지금 일을 끝낸 뒤 반영하게 할 수도 있습니다(Queue). 방식은 <span class="asd-path">설정 › Agents › Chat</span>에서 고릅니다.</p>
+      </div>
+      <div class="asd-card">
+        <h4>작업이 멈춰 있을 때</h4>
+        <p>대개 승인이나 답을 기다리는 중입니다. 작업을 열어 요청을 확인하고 승인, 거절, 답변을 합니다. 로그인·본인 확인 화면은 직접 끝낸 뒤 다시 진행합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 권한·안전 -->
+  <section class="asd-sec" id="asd-safe">
+    <div class="asd-sec-head"><span class="asd-num">5</span><h3>권한과 안전</h3></div>
+    <p class="asd-intro">작업마다 Aside가 내 컴퓨터의 파일을 어디까지 다룰지 정합니다. 학교 업무에는 기본값인 Guard를 권합니다.</p>
+    <div class="asd-grid">
+      <div class="asd-card">
+        <span class="asd-tag">읽기 전용</span>
+        <h4>보기만 함</h4>
+        <p>화면과 파일을 읽기만 하고 파일을 바꾸지 않습니다. 서류 대조, 검토에 맞습니다.</p>
+      </div>
+      <div class="asd-card pick">
+        <span class="asd-tag">Guard · 기본값 · 권장</span>
+        <h4>허락한 폴더에서만</h4>
+        <p>승인한 폴더에서만 작업하고, 다른 폴더에 접근할 때는 먼저 묻습니다.</p>
+      </div>
+      <div class="asd-card">
+        <span class="asd-tag">전체 접근</span>
+        <h4>컴퓨터 전체</h4>
+        <p>어디든 읽고 쓸 수 있습니다. 학생 자료가 있는 컴퓨터에서는 쓰지 않습니다.</p>
+      </div>
+    </div>
+
+    <p class="asd-sub">사람이 하는 일, Aside가 하는 일</p>
+    <div class="asd-table-wrap">
+      <table class="asd-table">
+        <thead><tr><th>구분</th><th>Aside에게 맡김</th><th>교사가 직접</th></tr></thead>
+        <tbody>
+          <tr><td>문서·결재</td><td>입력, 첨부, 저장, 서류 대조</td><td>결재요청, 출장 승인요청</td></tr>
+          <tr><td>소통</td><td>메신저·답장 문안 작성</td><td>발송</td></tr>
+          <tr><td>구매</td><td>장바구니 수량 맞추기</td><td>결제</td></tr>
+          <tr><td>학생 기록</td><td>문장 다듬기 초안</td><td>학생별 확인, 나이스 입력</td></tr>
+          <tr><td>못 다루는 것</td><td>붙여 넣을 문안 작성</td><td>에듀파인 기안기, 업무 메신저(설치형 프로그램) 조작</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="asd-note">결제, 게시, 메시지 발송 같은 민감한 동작은 내 확인을 기다립니다. 세부 규칙은 <span class="asd-path">설정 › Agents</span>에서 허용·확인·차단으로 바꿀 수 있습니다. 학교 시스템은 화면을 새로 고치면 저장하지 않은 내용이 사라질 수 있으니 <strong>중간중간 저장</strong>하세요.</p>
+  </section>
+
+  <!-- 6. 기억·반복 -->
+  <section class="asd-sec" id="asd-memory">
+    <div class="asd-sec-head"><span class="asd-num">6</span><h3>기억과 반복 작업</h3></div>
+    <p class="asd-intro">한 번 알려 준 규칙은 다음 작업에 이어지고, 정기적으로 하는 일은 예약해 둘 수 있습니다.</p>
+    <div class="asd-grid two">
+      <div class="asd-card">
+        <span class="asd-tag">기억</span>
+        <h4>내 규칙을 알려 두기</h4>
+        <span class="asd-say">이 공지 두 개 형식으로 기억해</span>
+        <p>이후 공지 초안이 처음부터 그 형식으로 나옵니다. 저장된 기억은 <span class="asd-path">설정 › Memory</span>에서 보고 고칩니다. 보관 기간(30일, 90일, 계속)을 정하거나 기억을 끌 수도 있습니다.</p>
+      </div>
+      <div class="asd-card">
+        <span class="asd-tag">반복 작업(Routines)</span>
+        <h4>정해진 때에 자동으로</h4>
+        <span class="asd-say">매주 금요일 오후, 이번 주 처리한 업무 요약해 줘</span>
+        <p><span class="asd-path">설정 › Routines</span>에서 만들고, 일시 정지·삭제·지금 실행을 할 수 있습니다. 무료 요금제는 3개까지 켤 수 있습니다.</p>
+      </div>
+    </div>
+    <p class="asd-note">비밀번호, 학생 개인정보처럼 남기면 안 되는 내용은 기억시키지 않습니다. 기억 목록을 가끔 열어 확인하세요.</p>
+  </section>
+
+  <!-- 7. 활용 예시 -->
+  <section class="asd-sec" id="asd-examples">
+    <div class="asd-sec-head"><span class="asd-num">7</span><h3>학교 업무 활용 예시</h3></div>
+    <p class="asd-intro">한 교사가 실제로 맡긴 일입니다. 이름, 문서번호, 연락처는 지웠고, 일부 요청은 취지만 짧게 옮겼습니다.</p>
+    <div class="asd-grid">
+      <div class="asd-ex">
+        <h4>서류 대조</h4>
+        <span class="asd-say">○○○○ 문서와 정합성 검토</span>
+        <p class="res">봉사활동 계획서와 결과보고서를 대조해 <b>누락 1명, 학번 오타 1건</b>을 찾음</p>
+        <p class="me">교사: 담임교사에게 보완 요청</p>
+      </div>
+      <div class="asd-ex">
+        <h4>견적서 → 품의 입력</h4>
+        <span class="asd-say">견적서 품목 넣어줘, 영어 빼고</span>
+        <p class="res">품명은 한글, 모델명은 규격 칸으로 나눠 입력. <b>요구금액이 견적서와 일치</b></p>
+        <p class="me">교사: 금액 확인 후 결재요청</p>
+      </div>
+      <div class="asd-ex">
+        <h4>품의, 안내, 출장을 한 번에</h4>
+        <span class="asd-say">관련 같음. 오늘 협의회 품의…</span>
+        <p class="res">품의 저장, 안내 메신저 문안, <b>출장자 11명 일괄 입력</b>까지 이어서 처리</p>
+        <p class="me">교사: 여비 여부 결정, 승인요청</p>
+      </div>
+      <div class="asd-ex">
+        <h4>장바구니 수량 맞추기</h4>
+        <span class="asd-say">견적서대로 수량 맞춰 줘</span>
+        <p class="res">상품 코드로 찾아 <b>40개 → 15개</b>로 수정. 견적서에 없는 상품은 그대로 둠</p>
+        <p class="me">교사: 결제</p>
+      </div>
+      <div class="asd-ex">
+        <h4>수업 자료 수치 확인</h4>
+        <span class="asd-say">슬라이드 수치가 실제 데이터와 맞는지 확인해 줘</span>
+        <p class="res">원 데이터를 내려받아 직접 세어 <b>344 → 334 → 333행</b>, 슬라이드와 일치 확인</p>
+        <p class="me">교사: 수업에 활용</p>
+      </div>
+      <div class="asd-ex">
+        <h4>세특 문장 다듬기</h4>
+        <span class="asd-say">활동 먼저, 근거 뒤에 평가 순서로 고쳐 줘</span>
+        <p class="res">57건의 첫 문장을 같은 구조로 고친 <b>초안</b>을 만듦</p>
+        <p class="me">교사: 학생별로 확인한 뒤 나이스 입력</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 문제 해결 -->
+  <section class="asd-sec" id="asd-trouble">
+    <div class="asd-sec-head"><span class="asd-num">8</span><h3>이럴 때는 이렇게</h3></div>
+    <div class="asd-table-wrap">
+      <table class="asd-table">
+        <thead><tr><th>상황</th><th>해결 방법</th></tr></thead>
+        <tbody>
+          <tr><td>작업이 멈춰 있다</td><td>작업을 열어 승인·답변을 기다리는지 확인합니다. 로그인·본인 확인 화면은 직접 끝내고 다시 진행합니다.</td></tr>
+          <tr><td>엉뚱하게 진행된다</td><td>진행 중에 바로 메시지를 보내 방향을 고칩니다.</td></tr>
+          <tr><td>사용 한도에 걸렸다</td><td>다른 구독 모델이나 Aside 기본 모델로 바꿔 이어 갑니다. 화면을 여러 번 읽는 작업은 일반 대화보다 사용량이 많습니다.</td></tr>
+          <tr><td>크롬 정보를 못 가져온다</td><td>작업 관리자에서 Chrome을 모두 종료하거나, 컴퓨터를 다시 켠 뒤 크롬을 열기 전에 가져옵니다.</td></tr>
+          <tr><td>비밀번호 자동 입력이 안 된다</td><td><span class="asd-path">설정 › Passwords</span>에서 자동 입력이 켜져 있는지, 제외 사이트에 들어가 있지 않은지 확인합니다.</td></tr>
+          <tr><td>입력한 내용이 사라졌다</td><td>학교 시스템은 새로 고치면 지워질 수 있습니다. 긴 입력은 중간에 저장하도록 요청에 적어 둡니다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="asd-end">
+    <div class="asd-end-copy">
+      <strong>서류 대조와 입력은 AI에게,<br>판단과 결재는 교사에게.</strong>
+      <p>처음에는 공지 형식 기억시키기, 견적서 품목 정리처럼 결과를 바로 확인할 수 있는 일부터 맡겨 보세요.</p>
+      <a href="https://docs.aside.com/help/get-started.md" target="_blank" rel="noopener">Aside 공식 도움말 보기 →</a>
+    </div>
+    <img src="img/daeryuni/pose_thumb.webp" alt="" loading="lazy">
   </div>
-  <p>Aside 요금제는 무료(0원, 월 500 크레딧), Pro(월 20달러), Max(월 200달러)가 있습니다. <strong>처음에는 무료 요금제에 내 구독을 연결하는 것으로 충분합니다.</strong></p>
-
-  <h3 style="margin-top:20px;">연결하는 방법</h3>
-  <ol class="as-steps">
-    <li>Aside를 설치하고 설정을 엽니다.</li>
-    <li>Models 항목에서 Connect를 누릅니다.</li>
-    <li>지금 쓰는 ChatGPT 또는 Claude 구독 계정으로 로그인합니다.</li>
-  </ol>
-  <p class="as-note">개인 구독은 본인만 씁니다. 계정 하나를 여러 교사가 함께 쓰면 각 서비스 약관에 어긋날 수 있습니다. 설치 전에 학교와 교육청의 개인정보, 프로그램 설치 지침을 먼저 확인하세요.</p>
-
-  <!-- 4. 한 교사의 일주일 -->
-  <h2 class="section-title" id="aside-cases" style="margin-top:36px; scroll-margin-top:80px;">한 교사의 일주일</h2>
-  <p>2026년 11월 5일부터 11일까지 한 교사가 Aside로 처리한 업무 기록입니다. 이름, 연락처, 문서번호는 지우거나 ○○○로 바꿨습니다.</p>
-
-  <div class="as-cases">
-
-    <article class="as-case big">
-      <p class="as-case-meta">사례 10 · 11월 11일</p>
-      <h3>협의회 당일 아침: 품의, 안내, 출장을 한 흐름으로</h3>
-      <p>오후 연수와 저녁 협의회를 앞두고 아침에 품의, 안내 메신저, 출장 신청을 끝내야 했습니다. 참석자는 처음 신청 명단과 달라져 있었습니다.</p>
-      <span class="as-bubble">관련 같음. 오늘 협의회 품의…</span>
-      <span class="as-bubble">메신저 작성</span>
-      <span class="as-bubble">출장 상신</span>
-      <dl>
-        <dt>Aside가 한 일</dt>
-        <dd>지난 품의에서 관련 문서번호를 가져오고, 금액이 꼭 맞는 협의회 예산을 골라 품의를 저장했습니다. 지도 링크로 식당 주소를 확인해 안내문을 썼고, 메신저 받는 사람 12명을 명단과 대조했습니다. 나이스 교직원 목록에서 한 명씩 찾아 출장자를 일괄 입력했습니다.</dd>
-        <dt>결과</dt>
-        <dd><span class="as-result">출장자 11명 일괄 입력</span><span class="as-result">받는 사람 12명 대조</span></dd>
-        <dt>사람이 한 일</dt>
-        <dd>Aside가 휴대폰 번호, 종료 시각, 여비 여부, 상신을 누가 할지를 한 번에 물었습니다. 교사는 여비를 받지 않기로 정하고, 연락처 입력과 승인요청은 직접 했습니다.</dd>
-      </dl>
-      <p style="margin-top:12px;">에듀파인, 지도, 나이스를 오가도 업무 흐름이 끊기지 않습니다. 앞 단계에서 정한 사실이 다음 단계에 그대로 이어집니다.</p>
-    </article>
-
-    <article class="as-case big">
-      <p class="as-case-meta">사례 1 · 11월 5일</p>
-      <h3>봉사활동 시수 서류, 계획서와 대조하기</h3>
-      <p>검토 담당 교사로서 담임교사들이 올린 봉사활동 시수 부여 서류를 반마다 계획서와 대조해야 했습니다. 교사는 문서번호 네 자리만 말했습니다.</p>
-      <span class="as-bubble">○○○○ 문서와 정합성 검토</span>
-      <dl>
-        <dt>Aside가 한 일</dt>
-        <dd>문서등록대장에서 계획 문서를 찾고, 계획서와 결과보고서 한글 파일을 읽어 기간, 시간(50분 = 1시간), 학생 명단, 장소, 활동 내용을 대조했습니다.</dd>
-        <dt>결과</dt>
-        <dd><span class="as-result">학생 1명 누락 발견</span><span class="as-result">학번 오타 1건 발견</span></dd>
-        <dt>다음부터</dt>
-        <dd>결재라인과 개인정보 공개 기준을 검토 체크리스트로 기억해, 다음 검토부터 같은 기준을 적용합니다.</dd>
-      </dl>
-    </article>
-
-    <article class="as-case big">
-      <p class="as-case-meta">사례 3 · 11월 6일</p>
-      <h3>"영어 빼고": 견적서 품목을 품의에 입력하기</h3>
-      <p>피지컬 컴퓨팅 물품 견적서의 품목을 에듀파인 품의에 한 줄씩 옮겨야 했습니다.</p>
-      <span class="as-bubble">견적서 품목 넣어줘, 영어 빼고</span>
-      <dl>
-        <dt>Aside가 한 일</dt>
-        <dd>품명은 한글로, 모델명은 규격 칸으로 나누고, 견적 총액에 맞도록 부가세 포함 단가로 넣었습니다.</dd>
-        <dt>결과</dt>
-        <dd><span class="as-result">요구금액 1,264,620원, 견적서와 일치</span></dd>
-        <dt>실패에서 배운 것</dt>
-        <dd>화면을 새로 고쳐 저장하지 않은 내용이 사라진 적이 있었습니다. 지금은 고치기 전에 내용을 기록해 두고, 저장을 먼저 권합니다. <strong>학교 시스템에서는 저장을 자주 하세요.</strong></dd>
-      </dl>
-    </article>
-
-  </div>
-
-  <details class="as-more">
-    <summary>사례 7개 더 보기</summary>
-    <div class="as-cases">
-
-      <article class="as-case">
-        <p class="as-case-meta">사례 2 · 11월 6일</p>
-        <h3>지출품의와 견적서 대조</h3>
-        <dl>
-          <dt>장면</dt>
-          <dd>동아리 운영경비 지출품의가 결재대기에 올라왔습니다.</dd>
-          <dt>Aside가 한 일</dt>
-          <dd>붙임 견적서 PDF를 읽고 금액을 맞춰 보았습니다. 결재경로에 교감이 없는 것을 보고, 추측하지 않고 교사에게 물었습니다.</dd>
-          <dt>결과</dt>
-          <dd>"10만 원 미만은 행정실장 전결"이라는 답을 듣고, 해당 품의(72,200원)가 규칙에 맞는다고 정리했습니다. 같은 질문은 다시 하지 않습니다.</dd>
-        </dl>
-      </article>
-
-      <article class="as-case">
-        <p class="as-case-meta">사례 4 · 11월 9일</p>
-        <h3>장바구니를 견적서 수량에 맞추기</h3>
-        <dl>
-          <dt>Aside가 한 일</dt>
-          <dd>견적서의 상품 코드로 상품을 찾아 장바구니 수량을 견적서대로 고쳤습니다. 견적서에 없는 상품은 건드리지 않았습니다.</dd>
-          <dt>결과</dt>
-          <dd><span class="as-result">수량 40개 → 15개로 수정</span></dd>
-          <dt>사람이 한 일</dt>
-          <dd>결제 버튼은 교사가 눌렀습니다.</dd>
-        </dl>
-      </article>
-
-      <article class="as-case">
-        <p class="as-case-meta">사례 5 · 11월 9일</p>
-        <h3>다른 AI가 만든 수업 슬라이드를 실제 데이터로 확인</h3>
-        <dl>
-          <dt>Aside가 한 일</dt>
-          <dd>교과서 PDF에서 해당 쪽을 찾아 읽고, Kaggle에서 실제 펭귄 데이터를 받아 행 수와 결측값을 직접 셌습니다.</dd>
-          <dt>결과</dt>
-          <dd><span class="as-result">344행 → 결측 제거 334행 → 이상값 제거 333행</span> 슬라이드의 수치와 일치했습니다. Kaggle은 로그인해야 내려받을 수 있다는 점도 수업 준비 사항으로 정리했습니다.</dd>
-        </dl>
-      </article>
-
-      <article class="as-case">
-        <p class="as-case-meta">사례 6 · 11월 5일~6일</p>
-        <h3>연수 준비: 설문 결과에서 명단, 기안 문안, 안내까지</h3>
-        <dl>
-          <dt>Aside가 한 일</dt>
-          <dd>신청 설문 엑셀에서 신청자를 뽑아 한글 명단 파일을 만들고, 기안문 문안과 메신저 안내문을 썼습니다.</dd>
-          <dt>사람이 한 일</dt>
-          <dd>기안기는 별도 프로그램이라 Aside가 상신하지 못합니다. 교사가 문안을 붙여 넣고 상신했습니다.</dd>
-        </dl>
-      </article>
-
-      <article class="as-case">
-        <p class="as-case-meta">사례 7 · 11월 5일</p>
-        <h3>내 말투를 배운 메신저 공지</h3>
-        <p>예전에 보낸 메시지 두 개를 붙여 넣고 이렇게 말했습니다.</p>
-        <span class="as-bubble">이 형식으로 기억해</span>
-        <dl>
-          <dt>결과</dt>
-          <dd>이후 공지 초안은 처음부터 [말머리]제목, 인사, 번호 항목, "○○○ 올림" 형식으로 나옵니다. 파일 비밀번호 같은 민감한 값은 기억하지 않았습니다.</dd>
-        </dl>
-        <div class="as-example">
-          <b>예시 (가상의 내용)</b><br>
-          [안내] 11월 교과협의회 일정<br>
-          선생님들, 안녕하십니까.<br>
-          1. 일시: 11. 26.(목) 16:30<br>
-          2. 장소: 2층 협의실<br>
-          ○○○ 올림
-        </div>
-      </article>
-
-      <article class="as-case">
-        <p class="as-case-meta">사례 8 · 11월 10일</p>
-        <h3>정중한 답장도 내 말투로</h3>
-        <span class="as-bubble">'○○님, 차가워진 날씨에 잘 지내시죠?'로 시작해서 답장</span>
-        <dl>
-          <dt>결과</dt>
-          <dd>외부 기관의 자문 요청을 수락하는 답장 초안이 나왔습니다. 첫 문장을 정해 주면 그 어조에 맞춰 나머지를 씁니다.</dd>
-        </dl>
-      </article>
-
-      <article class="as-case">
-        <p class="as-case-meta">사례 9 · 11월 10일</p>
-        <h3>학생부 세특 문장 다듬기</h3>
-        <dl>
-          <dt>Aside가 한 일</dt>
-          <dd>세특 57건의 첫 문장을 '활동 먼저, 근거 뒤에 평가' 구조로 고치고, 교사가 정한 규칙을 검증 스크립트로 확인했습니다.</dd>
-          <dt>사람이 한 일</dt>
-          <dd>모든 결과는 초안입니다. 교사가 학생별로 확인한 뒤 나이스에 입력합니다.</dd>
-        </dl>
-        <div class="as-example">
-          <b>예시 (가상의 문장)</b><br>
-          고치기 전: 탐구심이 뛰어난 학생으로, 데이터 분석 프로젝트에서 결측값 처리 방법을 비교함.<br>
-          고친 뒤: 데이터 분석 프로젝트에서 결측값을 지울 때와 평균으로 채울 때의 결과를 비교하고, 그 차이를 근거로 처리 방법을 정함. 이 과정에서 자료를 끝까지 확인하는 탐구 태도를 보임.
-        </div>
-      </article>
-
-    </div>
-  </details>
-
-  <!-- 5. 사례에서 보이는 특징 -->
-  <h2 class="section-title" style="margin-top:36px;">사례에서 보이는 특징</h2>
-  <div class="as-table-wrap">
-    <table class="data-table">
-      <thead><tr><th>특징</th><th>사례</th><th>쉬운 설명</th></tr></thead>
-      <tbody>
-        <tr><td><strong>내 화면에서 직접 한다</strong></td><td>1, 2, 3, 4, 10</td><td>에듀파인, 나이스, 쇼핑몰에 다시 로그인하지 않고 옆에서 바로 작업</td></tr>
-        <tr><td><strong>내 규칙을 기억한다</strong></td><td>1, 2, 7, 10</td><td>결재라인, 공개 기준, 메신저 형식을 한 번 들으면 다음부터 적용</td></tr>
-        <tr><td><strong>짧게 말해도 알아듣는다</strong></td><td>1, 3, 10</td><td>"관련 같음", "영어 빼고", "출장 상신"</td></tr>
-        <tr><td><strong>파일을 읽고 만든다</strong></td><td>1, 5, 6, 10</td><td>한글, PDF, 엑셀을 읽고 한글 명단을 만든다</td></tr>
-        <tr><td><strong>원자료로 확인한다</strong></td><td>1, 5</td><td>계획서와 결과보고서 대조, 실제 데이터로 수치 확인</td></tr>
-        <tr><td><strong>모르면 묻고, 못 하면 말한다</strong></td><td>2, 6, 10</td><td>규칙과 개인 정보는 묻고, 다루지 못하는 프로그램은 미리 밝힌다</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 6. 한도를 아끼는 사용법 -->
-  <h2 class="section-title" style="margin-top:36px;">사용 한도를 아끼는 법</h2>
-  <p>사용 한도는 구독 AI를 일정 시간 동안 쓸 수 있는 양입니다. 다 쓰면 잠시 기다려야 합니다. 브라우저 작업은 화면을 읽고 여러 번 클릭하기 때문에 일반 대화보다 사용량이 훨씬 많아서, 월 3만 원 안팎의 구독은 생각보다 빨리 한도에 닿을 수 있습니다.</p>
-  <ol class="as-steps">
-    <li><strong>한 번에 한 가지 일만 맡깁니다.</strong> 끝나면 새 대화로 시작합니다.</li>
-    <li><strong>필요한 정보를 처음에 한꺼번에 줍니다.</strong> 금액, 인원, 날짜, 붙임을 함께 주면 되묻는 횟수가 줄어듭니다.</li>
-    <li><strong>검색, 요약 같은 가벼운 일은 Aside 기본 모델로 돌립니다.</strong> 무료 크레딧을 씁니다.</li>
-    <li><strong>한도에 걸리면 모델을 바꿔 이어 갑니다.</strong> 다른 구독 모델이나 기본 모델로 바꾸면 됩니다.</li>
-  </ol>
-  <p class="as-note">한도 숫자는 각 서비스가 수시로 바꾸고 쓰는 양에 따라 달라서 적지 않았습니다.</p>
-
-  <!-- 7. 걱정되는 점과 사람의 몫 -->
-  <h2 class="section-title" style="margin-top:36px;">걱정되는 점과 사람의 몫</h2>
-  <div class="as-qa">
-    <div>
-      <h3>잘못 누르면 어떡하나요?</h3>
-      <p>결재요청, 출장 승인요청, 결제, 메신저 발송, 나이스 입력은 사람이 누릅니다. Aside는 그 직전까지 준비하고 멈춥니다.</p>
-    </div>
-    <div>
-      <h3>못 하는 것은 무엇인가요?</h3>
-      <p>에듀파인 기안기(별도 프로그램)와 업무 메신저(데스크톱 앱)는 직접 다루지 못합니다. 대신 붙여 넣을 문안을 만들어 줍니다.</p>
-    </div>
-    <div>
-      <h3>개인정보는 괜찮나요?</h3>
-      <p>휴대폰 번호처럼 저장되지 않은 정보는 추측해서 채우지 않고 묻습니다. 학생부 결과는 초안이고 교사가 학생별로 검토합니다. 사용 전에 학교와 교육청의 개인정보, 프로그램 설치 지침을 먼저 확인하세요.</p>
-    </div>
-    <div>
-      <h3>만든 파일은 믿어도 되나요?</h3>
-      <p>한글 파일은 한글에서 직접 열어 확인한 뒤 씁니다.</p>
-    </div>
-    <div>
-      <h3>저장 습관</h3>
-      <p>학교 시스템은 화면을 새로 고치면 저장하지 않은 내용이 사라질 수 있습니다. 중간중간 저장하세요.</p>
-    </div>
-  </div>
-
-  <!-- 8. 처음 해 볼 일 -->
-  <h2 class="section-title" style="margin-top:36px;">처음 해 볼 일 3가지</h2>
-  <p>틀려도 부담이 적고, 결과를 바로 확인할 수 있는 일부터 시작하세요.</p>
-  <ol class="as-steps">
-    <li>내가 보낸 메신저 공지 두 개를 붙여 넣고 말합니다.<span class="as-bubble">이 형식 기억해</span></li>
-    <li>견적서 PDF를 열어 두고 말합니다.<span class="as-bubble">품목 정리해 줘</span></li>
-    <li>계획서와 결과보고서를 주고 말합니다.<span class="as-bubble">다른 점 찾아 줘</span></li>
-  </ol>
-
-  <!-- 9. 자주 묻는 질문 -->
-  <h2 class="section-title" style="margin-top:36px;">자주 묻는 질문</h2>
-  <div class="as-faq">
-    <details><summary>ChatGPT Plus만 있는데 써도 되나요?</summary><p>네. 설정 &gt; Models에서 구독을 연결하면 됩니다.</p></details>
-    <details><summary>Gemini 구독은요?</summary><p>구독 연결 목록에 없습니다. Aside 무료 크레딧으로 기본 모델을 쓸 수 있습니다.</p></details>
-    <details><summary>돈이 더 드나요?</summary><p>Aside는 무료 요금제로 시작할 수 있습니다. 연결한 구독으로 일하면 Aside 크레딧은 줄지 않습니다.</p></details>
-    <details><summary>맥에서도 되나요?</summary><p>macOS와 Windows를 지원합니다.</p></details>
-    <details><summary>동료와 계정을 같이 써도 되나요?</summary><p>개인 구독은 본인만 씁니다.</p></details>
-  </div>
-
-  <!-- 10. 맺음 -->
-  <p class="as-close">서류 대조와 입력은 AI에게,<br>판단과 결재는 교사에게.</p>
 
 </div>
-</div>
-
 <!-- ===== 주간 교육활동 안내 (부서별 월 캘린더) ===== -->
 <div class="sub-panel" id="sub-weekly">
   <style>
