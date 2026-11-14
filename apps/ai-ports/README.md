@@ -33,6 +33,19 @@ node apps/ai-ports/smoke.mjs [스크린샷 폴더]
 
 헤드리스 Chrome으로 비로그인·교사·개인 키 상태의 화면과 요청 헤더를 확인한다. Cloud Run·Supabase·Gemini 요청은 모두 가로채 가짜로 답하므로 실제 AI를 호출하지 않는다.
 
+```
+node apps/ai-ports/smoke-evalplan-form.mjs --edtouch <edtouch01 저장소> [--out <폴더>]
+```
+
+`/evalplan/` 결과 화면의 저장 묶음과 한글 양식을 1440·320px에서 확인한다. 결과 상태는 edtouch01 `_workspace/evalplan_form_fixtures.mjs`의 저장본으로 만든다. `--out`을 주면 내려받은 hwpx를 남긴다. 한글에서 열리는지는 edtouch01 작업 폴더의 `hwp_pdf.py`로 따로 확인한다.
+
+## /evalplan/의 저장 묶음
+
+- 대륜고에는 문서작성 AI(`/docai`)가 없다. 결과 화면의 묶음은 MD 저장·PDF 저장·한글로 편집만 보인다(`patches.mjs`가 `ExportActions`의 단추 목록을 줄인다).
+- 한글로 편집은 양식 정보 창을 열고, 창에서 한글 파일을 내려받는다. 창의 문서작성 AI 단추는 패치로 뺐다.
+- 넘기기 모듈 `lib/export/handoff`는 `evalplan/src/daeryun-port/evalplan/exportHandoff.ts`로 바꿔 번들에 `/docai` 주소가 들어가지 않게 했다.
+- 양식 틀은 원본 `v2/public/evalplan-forms/`에서 꺼내 `output/web/evalplan/evalplan-forms/`에 싣는다(`patches.mjs`의 `staticFiles`). 화면은 `/evalplan/evalplan-forms/2026/task1.hwpx`를 받는다. `/evalplan/` 아래라 화면과 같은 교사 게이트를 받는다.
+
 ## 서버 AI 계약
 
 - 교사: `Authorization: Bearer <Supabase access token>`과 `x-auth-site: daeryun`을 보낸다.

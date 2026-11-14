@@ -91,6 +91,11 @@ async function build(app) {
   mkdirSync(out, { recursive: true })
   renameSync(join(dist, `${app}.html`), join(out, 'index.html'))
   cpSync(join(dist, 'assets'), join(out, 'assets'), { recursive: true })
+  // 화면이 fetch하는 정적 파일(예: /evalplan/의 한글 양식 틀). 커밋된 원본에서 꺼낸 것을 싣는다.
+  for (const [from, to] of spec.staticFiles || []) {
+    if (!existsSync(join(work, from))) throw new Error(`원본에 ${from}이 없습니다. patches.mjs의 staticFiles를 확인하세요.`)
+    cpSync(join(work, from), join(out, to), { recursive: true })
+  }
 
   unlinkSync(link)
   console.log(`${app}: output/web/${app}/ 갱신(원본 ${commit})`)

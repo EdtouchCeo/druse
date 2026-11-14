@@ -90,7 +90,40 @@ const usingServer = computed(() => {
       `$1\n        <p v-if="status === 'idle' && canGenerate && !connOk" class="$2">\n          {{ serverEndedNow ? '위의 교사 로그인을 마치거나 AI 설정에서 개인 키를 고르면 생성할 수 있습니다.' : '위의 AI 설정을 마치면 생성할 수 있습니다.' }}\n        </p>`,
     ],
   ],
+  // 공용 저장·편집 묶음. 대륜고에는 문서작성 AI가 없으므로 MD 저장·PDF 저장·한글로 편집만 보인다.
+  // 한글로 편집은 EvalPlanView가 hwpxAction으로 양식 정보 창을 열고, 그 창에서 한글 파일을 내려받는다.
+  'src/components/export/ExportActions.vue': [
+    ['보일 단추', "const ALL: Format[] = ['md', 'pdf', 'hwpx', 'xlsx', 'pptx']\n", "const ALL: Format[] = ['md', 'pdf', 'hwpx']\n"],
+    [
+      '편집 단추 안내',
+      '<span class="text-sm text-muted-foreground break-keep">문서작성 AI 새 탭에서 엽니다.</span>',
+      '<span class="text-sm text-muted-foreground break-keep">한글로 편집은 양식 모양의 한글 파일을 내려받습니다.</span>',
+    ],
+  ],
+  'src/components/evalPlan/EvalPlanFormInfoDialog.vue': [
+    [
+      '문서작성 AI 단추',
+      /\n {10}<Button type="button" variant="soft" :disabled="!!busy" :aria-busy="busy === 'docai' \? 'true' : undefined" @click="toDocAi">[\s\S]*?문서작성 AI에서 편집\n {10}<\/Button>/,
+      '',
+    ],
+    [
+      '새 탭 차단 안내',
+      /\n {8}<p v-if="blocked" class="[^"]*" role="alert">\n {10}브라우저가 새 탭을 막았습니다\.[^\n]*\n {8}<\/p>/,
+      '',
+    ],
+  ],
+  // 양식 틀은 build.mjs가 output/web/evalplan/evalplan-forms/에 싣는다. /evalplan/ 아래라 화면과 같은 교사 게이트를 받는다.
+  'src/lib/evalPlan/hwpxForm.ts': [
+    [
+      '양식 틀 주소',
+      "export const EVALPLAN_FORM_URL = '/evalplan-forms/2026/task1.hwpx'",
+      "export const EVALPLAN_FORM_URL = '/evalplan/evalplan-forms/2026/task1.hwpx'",
+    ],
+  ],
 }
 
-export const forbidden = ['initializeApp', 'firebaseapp.com', 'getAuth(', 'idToken', '승인 교육자만 쓸', '교육자 회원', 'EdTouch 서버 제공']
-export const required = ['generate-open', 'x-auth-site', 'dr_sess_v1', 'Anthropic']
+/** build.mjs가 원본 커밋에서 꺼내 output/web/evalplan/ 아래로 함께 싣는 정적 파일. [원본 경로, 싣는 경로] */
+export const staticFiles = [['public/evalplan-forms', 'evalplan-forms']]
+
+export const forbidden = ['initializeApp', 'firebaseapp.com', 'getAuth(', 'idToken', '승인 교육자만 쓸', '교육자 회원', 'EdTouch 서버 제공', 'docai?handoff', '문서작성 AI 새 탭에서 엽니다', '문서작성 AI에서 편집']
+export const required = ['generate-open', 'x-auth-site', 'dr_sess_v1', 'Anthropic', '/evalplan/evalplan-forms/2026/task1.hwpx', '한글 파일 받기']
