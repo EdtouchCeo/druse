@@ -17,6 +17,8 @@ export default defineConfig({
       { find: /^@\/lib\/llmDefaults$/, replacement: src('daeryun-port/record/llmDefaults.ts') },
       { find: /^@\/components\/ServerLlmNotice\.vue$/, replacement: src('daeryun-port/record/ServerLlmNotice.vue') },
       { find: /^@\/components\/ServerEndedHint\.vue$/, replacement: src('daeryun-port/record/ServerEndedHint.vue') },
+      // 대륜고에는 문서작성 AI(/docai)가 없다. 넘기기 모듈을 내려받기 안내만 하는 포트 파일로 바꾼다.
+      { find: /^@\/lib\/export\/handoff$/, replacement: src('daeryun-port/common/exportHandoff.ts') },
       { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
     ],
   },

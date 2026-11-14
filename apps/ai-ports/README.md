@@ -39,12 +39,26 @@ node apps/ai-ports/smoke-evalplan-form.mjs --edtouch <edtouch01 저장소> [--ou
 
 `/evalplan/` 결과 화면의 저장 묶음과 한글 양식을 1440·320px에서 확인한다. 결과 상태는 edtouch01 `_workspace/evalplan_form_fixtures.mjs`의 저장본으로 만든다. `--out`을 주면 내려받은 hwpx를 남긴다. 한글에서 열리는지는 edtouch01 작업 폴더의 `hwp_pdf.py`로 따로 확인한다.
 
-## /evalplan/의 저장 묶음
+```
+node apps/ai-ports/smoke-record-form.mjs [--out <폴더>]
+node apps/ai-ports/smoke-backward-export.mjs [--out <폴더>]
+```
 
-- 대륜고에는 문서작성 AI(`/docai`)가 없다. 결과 화면의 묶음은 MD 저장·PDF 저장·한글로 편집만 보인다(`patches.mjs`가 `ExportActions`의 단추 목록을 줄인다).
-- 한글로 편집은 양식 정보 창을 열고, 창에서 한글 파일을 내려받는다. 창의 문서작성 AI 단추는 패치로 뺐다.
-- 넘기기 모듈 `lib/export/handoff`는 `evalplan/src/daeryun-port/evalplan/exportHandoff.ts`로 바꿔 번들에 `/docai` 주소가 들어가지 않게 했다.
-- 양식 틀은 원본 `v2/public/evalplan-forms/`에서 꺼내 `output/web/evalplan/evalplan-forms/`에 싣는다(`patches.mjs`의 `staticFiles`). 화면은 `/evalplan/evalplan-forms/2026/task1.hwpx`를 받는다. `/evalplan/` 아래라 화면과 같은 교사 게이트를 받는다.
+`/record/`는 시험용 누적 결과 두 줄로 학년도·학적변동 입력, 엑셀 내려받기(양식 채우기), 표 아래 MD 저장을 확인한다. 내려받은 xlsx의 모양은 openpyxl로 따로 본다. `/backward/`는 단원·차시 설계 저장본을 '이어서 하기'로 복원해 완료 화면의 MD 저장을 확인한다. 둘 다 1440·320px에서 본다.
+
+## 저장 묶음(문서작성 AI 없음)
+
+대륜고에는 문서작성 AI(`/docai`)가 없고, 대륜고 주소는 edtouch.ai 문서작성 AI가 받는 주소도 아니다. 그래서 세 화면 모두 문서작성 AI로 넘기는 단추와 안내 문구를 뺐다.
+
+- 넘기기 모듈은 포트 파일로 바꿔 번들에 `docai?handoff`가 들어가지 않게 했다. `/evalplan/`·`/record/`는 `lib/export/handoff`를 `common/exportHandoff.ts`로, `/backward/`는 `lib/export/crossWindowHandoff`를 `backward/src/backward-standalone/exportHandoff.ts`로 바꾼다. 빌드 검사가 이 문자열을 금지한다.
+- `/evalplan/`: 묶음은 MD 저장·PDF 저장·한글로 편집만 보인다. 한글로 편집은 양식 정보 창을 열고 창에서 한글 파일을 내려받는다. 창의 문서작성 AI 단추는 패치로 뺐다. 양식 틀은 `output/web/evalplan/evalplan-forms/`에 싣고 화면은 `/evalplan/evalplan-forms/2026/task1.hwpx`를 받는다.
+- `/record/`: 표 위의 학년도·학적변동 입력과 '엑셀 내려받기'(양식 채우기)는 그대로다. 표 아래 묶음은 MD 저장만 남기고 넘기기 안내 줄을 뺐다. 양식은 `output/web/record/record-forms/`에 싣고 화면은 `/record/record-forms/2026/record-form.xlsx`를 받는다(원본이 `BASE_URL` 기준이라 주소 패치는 없다).
+- `/backward/`: 단원·차시 완료 화면의 묶음은 MD 저장만 보이고 제목에서 '편집'을 뺐다. 기존 설계안·활동지 PDF는 그대로다.
+- 양식 파일은 `patches.mjs`의 `staticFiles`로 지정하고, `build.mjs`가 커밋된 원본에서 꺼내 싣는다. 두 양식 모두 화면 폴더 아래라 화면과 같은 교사 게이트를 받는다.
+
+## /backward/와 EdTouch 로그인
+
+data_analysis 93b5fc1부터 원본은 EdTouch 로그인으로 서버 AI를 연다(`useLlmMode`의 `llmFetch`·`aiBlockReason`, `ServerAiGate`). 대륜고판은 그 자리를 `transport.ts`(교사 세션·개인 키)와 셸의 `AiAccessBar`로 바꾼다. 원본에서 이 부분이 다시 바뀌면 `backward/patches.mjs`의 `useBackwardApi.ts`·`WizardShell.vue` 기준 문자열부터 고친다.
 
 ## 서버 AI 계약
 

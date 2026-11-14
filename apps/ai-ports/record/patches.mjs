@@ -50,7 +50,30 @@ export const patches = {
     ],
     ['추출 안내', 'AI(Gemini/Ollama 비전)로 텍스트를 추출합니다', 'AI로 텍스트를 추출합니다'],
   ],
+  // 대륜고에는 문서작성 AI가 없다. 표 아래 묶음은 MD 저장만 남기고 넘기기 안내 줄을 뺀다.
+  // 엑셀은 표 위의 '엑셀 내려받기'(양식 채우기)로 받는다.
+  'src/components/record/RecordTable.vue': [
+    [
+      '묶음 단추',
+      `<ExportActions :doc="exportDoc" :formats="['md', 'xlsx']" :xlsx-file="makeXlsx" :disabled="!yearValid" />`,
+      `<ExportActions :doc="exportDoc" :formats="['md']" :disabled="!yearValid" />`,
+    ],
+    [
+      '넘기기 안내',
+      /\n {6}<p class="mt-2 text-xs text-muted-foreground break-keep">문서작성 AI로 넘길 때는 이 브라우저 안의 저장소만 쓰며 서버로 보내지 않습니다\.<\/p>/,
+      '',
+    ],
+  ],
+  // 공용 묶음. 편집 단추를 아예 목록에서 빼고, 문서작성 AI 안내 문구를 번들에서 지운다.
+  'src/components/export/ExportActions.vue': [
+    ['보일 단추', "const ALL: Format[] = ['md', 'pdf', 'hwpx', 'xlsx', 'pptx']\n", "const ALL: Format[] = ['md', 'pdf']\n"],
+    ['편집 단추 안내', /\n {8}<span class="text-sm text-muted-foreground break-keep">문서작성 AI 새 탭에서 엽니다\.<\/span>/, ''],
+  ],
+  // 양식은 build.mjs가 output/web/record/record-forms/에 싣는다. 화면은 BASE_URL(/record/) 기준으로 받으므로 주소 패치는 없다.
 }
 
-export const forbidden = ['initializeApp', 'firebaseapp.com', 'getAuth(', 'idToken', '승인 교육자만 쓸', '교육자 회원', 'EdTouch 서버 제공', '서버 제공 (무료']
-export const required = ['generate-open', 'x-auth-site', 'dr_sess_v1', 'Anthropic', 'dataBase64']
+/** build.mjs가 원본 커밋에서 꺼내 output/web/record/ 아래로 함께 싣는 정적 파일. [원본 경로, 싣는 경로] */
+export const staticFiles = [['public/record-forms', 'record-forms']]
+
+export const forbidden = ['initializeApp', 'firebaseapp.com', 'getAuth(', 'idToken', '승인 교육자만 쓸', '교육자 회원', 'EdTouch 서버 제공', '서버 제공 (무료', 'docai?handoff', '문서작성 AI 새 탭에서 엽니다', '문서작성 AI로 넘길 때는']
+export const required = ['generate-open', 'x-auth-site', 'dr_sess_v1', 'Anthropic', 'dataBase64', 'record-forms/2026/record-form.xlsx', '엑셀 내려받기']
