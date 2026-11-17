@@ -5,7 +5,8 @@
  * 문안 출처: edtouch _workspace/ai-setup-easy-20261021/00_contract.md (세 사이트 공통). daeryun에는 서버 제공 AI가 없다.
  * 본체의 AI 설정을 고치면 이 파일도 함께 고친다.
  *
- *   drAi.call(prompt, schema, onMsg) → Promise<object>   구조화(JSON) 응답
+ *   drAi.call(prompt, schema, onMsg, opts) → Promise<object>   구조화(JSON) 응답
+ *     opts.images: [{ mimeType, data(base64) }] — 그림으로 함께 보낼 이미지(없으면 글만 보낸다)
  *   drAi.has()                       → 설정 완료 여부
  *   drAi.open()                      → 설정 창 열기 (저장하면 'drai-change' 이벤트)
  *   drAi.label()                     → "Gemini 무료 키" 같은 현재 연결 이름
@@ -16,15 +17,18 @@
   // 사이트별 설정(같은 파일을 daeryun.life와 edtouch.ai가 함께 쓴다). 없으면 daeryun 기본값.
   //   storageKey: AI 설정 저장 키, seedKey: 저장값이 없을 때 대신 읽을 키,
   //   openExternal: 설정 창을 이 모듈 대신 부모 사이트가 열게 하는 함수(예: edtouch의 전역 AI 설정 창)
+  //   serverLlm: 부모 사이트의 서버 AI 호출 함수(req → 응답 글). 있으면 저장값 'server'를 받아들이고, 저장값이 없을 때의 기본값이 된다.
   var CFG = window.DR_AI_CONFIG || {};
   var AI_KEY = CFG.storageKey || 'dr_tt_llm_v1';
   var SEED_KEY = CFG.seedKey || '';
+  var SERVER_LLM = typeof CFG.serverLlm === 'function' ? CFG.serverLlm : null;
   // 폴백은 반드시 실재하는 모델이어야 한다 — flash-lite는 일부 키에서 404가 나 원래 오류를 뒤덮는 실사고(특기사항 AI, 2026-07)
   var GEM_DEFAULT = 'gemini-3.5-flash', GEM_FALLBACK = 'gemini-2.5-flash';
   var BRIDGE = 'http://127.0.0.1:47321';
   var BRIDGE_DOWN = '연결 도우미가 실행 중이 아닙니다. 연결 도우미 창을 연 뒤 다시 눌러 주세요. 크롬이 이 기기 접근을 허용할지 물으면 허용을 누릅니다.';
   var BRIDGE_DENIED = '브라우저가 이 사이트의 내 PC 접근을 막아 두었습니다. 주소창 왼쪽 아이콘을 눌러 사이트 설정에서 로컬 네트워크 접근을 허용으로 바꾼 뒤 새로고침해 주세요.';
   var SCOPE = {
+    server: '입력한 글은 EdTouch 서버를 거쳐 Anthropic으로 전송됩니다. EdTouch 서버에는 저장하지 않습니다.',
     gemini: '입력한 글은 Google로 전송됩니다. 키는 이 브라우저에만 저장됩니다.',
     bridge: '입력한 글은 내 PC를 거쳐 Anthropic이나 OpenAI로 전송되고, 내 구독 사용 한도에서 차감됩니다.',
     ollama: '입력한 글이 이 PC 밖으로 나가지 않습니다. PC 사양에 따라 느릴 수 있습니다.'
@@ -35,23 +39,24 @@
     try {
       var s = JSON.parse(localStorage.getItem(AI_KEY) || (SEED_KEY ? localStorage.getItem(SEED_KEY) : null));
       if (s && typeof s === 'object') return {
-        provider: s.provider === 'ollama' ? 'ollama' : s.provider === 'bridge' ? 'bridge' : 'gemini',
+        provider: s.provider === 'server' && SERVER_LLM ? 'server' : s.provider === 'ollama' ? 'ollama' : s.provider === 'bridge' ? 'bridge' : 'gemini',
         gemini: { apiKey: ((s.gemini && s.gemini.apiKey) || '').trim(), model: ((s.gemini && s.gemini.model) || '').trim() || GEM_DEFAULT },
         ollama: { url: ((s.ollama && s.ollama.url) || '').trim() || 'http://localhost:11434', model: ((s.ollama && s.ollama.model) || '').trim() },
         bridge: { provider: (s.bridge && s.bridge.provider) === 'codex' ? 'codex' : 'claude', model: ((s.bridge && s.bridge.model) || '').trim() }
       };
     } catch (e) {}
-    return { provider: 'gemini', gemini: { apiKey: '', model: GEM_DEFAULT }, ollama: { url: 'http://localhost:11434', model: '' }, bridge: { provider: 'claude', model: '' } };
+    return { provider: SERVER_LLM ? 'server' : 'gemini', gemini: { apiKey: '', model: GEM_DEFAULT }, ollama: { url: 'http://localhost:11434', model: '' }, bridge: { provider: 'claude', model: '' } };
   }
   // 구독 연결은 저장만 하면 '설정됨'으로 본다(본체와 같다). 실제 실행 여부는 첫 요청에서 확인된다.
-  function has(s) { s = s || load(); if (s.provider === 'bridge') return true; return s.provider === 'gemini' ? !!s.gemini.apiKey : !!(s.ollama.url && s.ollama.model); }
-  function isSaved() { try { return !!(localStorage.getItem(AI_KEY) || (SEED_KEY && localStorage.getItem(SEED_KEY))); } catch (e) { return false; } }
+  function has(s) { s = s || load(); if (s.provider === 'bridge' || s.provider === 'server') return true; return s.provider === 'gemini' ? !!s.gemini.apiKey : !!(s.ollama.url && s.ollama.model); }
+  function isSaved() { if (SERVER_LLM) return true; try { return !!(localStorage.getItem(AI_KEY) || (SEED_KEY && localStorage.getItem(SEED_KEY))); } catch (e) { return false; } }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
   function label() {
     var s = load();
     if (!isSaved() || !has(s)) return '';
+    if (s.provider === 'server') return 'EdTouch 서버 AI';
     if (s.provider === 'bridge') return s.bridge.provider === 'codex' ? 'ChatGPT 구독' : 'Claude 구독';
     if (s.provider === 'ollama') return 'Ollama · ' + s.ollama.model;
     return 'Gemini · ' + s.gemini.model;
@@ -305,14 +310,14 @@
     if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
     throw new Error('AI 응답을 해석하지 못했습니다. 다시 시도해 주세요.');
   }
-  async function geminiOnce(model, key, prompt, gSchema, thinking) {
+  async function geminiOnce(model, key, prompt, gSchema, thinking, images) {
     var cfg = { maxOutputTokens: 8192, responseMimeType: 'application/json', responseSchema: gSchema };
     if (thinking) cfg.thinkingConfig = { thinkingBudget: 0 };
     var res;
     try {
       res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: cfg })
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }].concat((images || []).map(function (im) { return { inlineData: { mimeType: im.mimeType, data: im.data } }; })) }], generationConfig: cfg })
       });
     } catch (e) { var ne = new Error('네트워크 오류로 Gemini에 연결하지 못했습니다.'); ne.status = 0; throw ne; }
     if (!res.ok) {
@@ -332,17 +337,35 @@
     if (!text.trim()) throw new Error('Gemini가 빈 응답을 반환했습니다. 다시 시도해 주세요.');
     return text;
   }
-  async function call(prompt, schema, onMsg) {
+  // Ollama 모델이 그림을 읽는지 묻는다. 확인할 수 없으면(옛 Ollama) null.
+  async function ollamaVision(base, model) {
+    try {
+      var r = await fetch(base + '/api/show', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: model }) });
+      if (!r.ok) return null;
+      var d = await r.json();
+      if (!Array.isArray(d.capabilities)) return null;
+      return d.capabilities.indexOf('vision') >= 0;
+    } catch (e) { return null; }
+  }
+  async function call(prompt, schema, onMsg, opts) {
     var s = load();
     if (!has(s)) throw new Error('먼저 AI 설정을 완료해 주세요.');
     onMsg = onMsg || function () {};
+    var images = (opts && Array.isArray(opts.images) ? opts.images : []).filter(function (im) { return im && im.mimeType && im.data; });
+    if (s.provider === 'server') {
+      // 자격 확인·토큰·오류 문구는 부모 화면의 호출기가 맡는다. 문서 전체를 고치는 응답이 잘리지 않게 상한을 넉넉히 둔다.
+      onMsg('AI가 답을 만드는 중…');
+      var req = { prompt: prompt, schema: schema, maxOutputTokens: 16384, label: 'docai' };
+      if (images.length) req.images = images.map(function (im) { return { mimeType: im.mimeType, dataBase64: im.data }; });
+      return parse(await SERVER_LLM(req));
+    }
     if (s.provider === 'bridge') {
       onMsg((s.bridge.provider === 'codex' ? 'ChatGPT' : 'Claude') + '가 답을 만드는 중…');
       var res;
       try {
         res = await fetch(BRIDGE + '/generate', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ provider: s.bridge.provider, model: s.bridge.model || undefined, prompt: prompt, schema: schema })
+          body: JSON.stringify({ provider: s.bridge.provider, model: s.bridge.model || undefined, prompt: prompt, schema: schema, attachments: images.length ? images : undefined })
         });
       } catch (e) { throw new Error(await bridgeDownMsg()); }
       var data = null; try { data = await res.json(); } catch (e) {}
@@ -353,9 +376,13 @@
     if (s.provider === 'ollama') {
       onMsg('내 PC의 AI가 답을 만드는 중…');
       var base = s.ollama.url.replace(/\/$/, ''), r;
+      if (images.length && (await ollamaVision(base, s.ollama.model)) === false) {
+        throw new Error('Ollama 모델 "' + s.ollama.model + '"은(는) 그림을 읽지 못합니다. 그림을 읽는 모델(예: gemma3, qwen2.5vl)로 바꾸거나 이미지 선택을 풀고 보내 주세요.');
+      }
       // 문서 전체를 보내므로 기본 문맥 길이로는 앞부분이 잘린다. 생각하는 모델(qwen3 등)은 생각만 하다
       // 빈 답을 내기 쉬워 생각을 끈다. 생각 기능이 없는 모델이 think를 거부하면 빼고 한 번 더 보낸다.
       var ollamaBody = { model: s.ollama.model, stream: false, think: false, options: { num_ctx: 16384 }, messages: [{ role: 'user', content: prompt }], format: schema };
+      if (images.length) ollamaBody.messages[0].images = images.map(function (im) { return im.data; });
       for (var tries = 0; tries < 2; tries++) {
         try {
           r = await fetch(base + '/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ollamaBody) });
@@ -384,7 +411,7 @@
       for (var attempt = 0; attempt < 3; attempt++) {
         try {
           onMsg('AI가 답을 만드는 중…');
-          return parse(await geminiOnce(models[m], s.gemini.apiKey, prompt, gSchema, thinking));
+          return parse(await geminiOnce(models[m], s.gemini.apiKey, prompt, gSchema, thinking, images));
         } catch (e) {
           lastErr = e;
           if (e.thinkRej && thinking) { thinking = false; continue; }

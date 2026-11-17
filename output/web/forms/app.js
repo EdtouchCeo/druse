@@ -1,4 +1,4 @@
-/* 업무 양식 AI — 작업 공간 (1단계: 탭·자료·임의 한글·관리자 양식)
+/* 문서작성 AI(대륜고, 옛 이름 업무 양식 AI) — 작업 공간 (1단계: 탭·자료·임의 한글·관리자 양식)
  *
  * 화면: 왼쪽 AI 대화, 오른쪽 탭. 한글 탭은 rhwp 편집기 하나를 돌려 쓰고(탭을 바꿀 때 내보내 두었다 다시 연다),
  * PDF·엑셀·파워포인트·붙여넣기 탭은 읽기 전용 미리보기와 자료로만 쓴다.
@@ -6,7 +6,7 @@
  * 교사 문서·대화는 브라우저 메모리에만 있다. 서버(forms-templates)에는 관리자가 올린 양식만 있다.
  */
 import { createEditor } from './lib/rhwp-editor/index.js';
-import { KIND_OF, KIND_LABEL, readPdf, readSheet, readPptx, readText, readPaste } from './sources.js';
+import { KIND_OF, KIND_LABEL, readImage, IMG_SEND_MAX, IMG_SEND_TOTAL, readPdf, readSheet, readPptx, readText, readPaste } from './sources.js';
 import * as Deck from './deck.js';
 import * as Sheet from './sheet.js';
 
@@ -22,7 +22,7 @@ const SESSION_KEY = 'dr_sess_v1';
 const SB_URL = 'https://aafpkfcxzdrguuctdwth.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhZnBrZmN4emRyZ3V1Y3Rkd3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEwNjYsImV4cCI6MjA5MjMwNzA2Nn0.1VWheZHC2qNwWJhJ6KTFhjfFf9-bAfAdjzja2cD-xmw';
 
-// 사이트별 설정(같은 파일을 daeryun.life 업무 양식 AI와 edtouch.ai 문서작성 AI가 함께 쓴다). 없으면 daeryun 기본값.
+// 사이트별 설정(같은 파일을 daeryun.life 문서작성 AI(/forms/)와 edtouch.ai 문서작성 AI가 함께 쓴다). 없으면 daeryun 기본값.
 //   gate: 교사 확인(본 사이트 세션)을 이 화면이 직접 할지 — edtouch는 앱 라우터가 이미 확인한다
 //   serverForms: 관리자 양식(서버) 목록·관리 화면을 쓸지
 //   role: AI에게 알려 줄 사용자 설명
@@ -311,6 +311,11 @@ function buildView(t) {
   if (t.srcErr) { box.innerHTML = head + `<div class="viewer-note">${esc(t.srcErr)}</div>`; return box; }
   const s = t.src;
   const noteHtml = s.note ? `<div class="viewer-note">${esc(s.note)}</div>` : '';
+  if (t.kind === 'image') {
+    box.innerHTML = `<div class="viewer-head">이미지 자료입니다. 고른 상태로 보내면 AI가 그림을 함께 봅니다.</div>` + noteHtml +
+      `<img class="image-view" src="${esc(s.preview.url)}" alt="${esc(t.name)}">`;
+    return box;
+  }
   if (t.kind === 'pdf') {
     box.innerHTML = head + noteHtml;
     renderPdfPages(box, s.preview.doc);
@@ -365,28 +370,48 @@ async function readSource(t, bytes, clip) {
     t.srcErr = '이 파일을 읽지 못했습니다. ' + (t.kind === 'pptx' ? '.ppt 형식이면 파워포인트에서 .pptx로 다시 저장해 주세요.' : '파일이 손상되었거나 암호가 걸려 있는지 확인해 주세요.');
   }
 }
-async function addFiles(list) {
+// opts.attach: 대화 입력칸의 첨부(단추·붙여넣기)에서 왔다. 한글이 아닌 파일은 화면을 바꾸지 않고 자료로 고른다.
+// opts.paste: 클립보드 캡처라 이름을 '캡처 N'으로 붙인다.
+let captureSeq = 0;
+async function addFiles(list, opts) {
+  opts = opts || {};
   const files = Array.from(list || []);
-  let last = null;
+  let last = null, attached = 0;
   for (const f of files) {
-    const kind = KIND_OF(f.name);
-    if (!kind) { note(f.name + '은(는) 열 수 없는 형식입니다. 한글·PDF·엑셀·파워포인트(.pptx)·글 파일을 올려 주세요.'); continue; }
+    const kind = KIND_OF(f.name) || (/^image\//i.test(f.type || '') ? 'image' : '');
+    if (!kind) { note(f.name + '은(는) 열 수 없는 형식입니다. 한글·PDF·엑셀·파워포인트(.pptx)·글·이미지 파일을 올려 주세요.'); continue; }
     if (f.size > 30 * 1024 * 1024) { note(f.name + '은(는) 30MB를 넘어 열지 않았습니다.'); continue; }
     const bytes = new Uint8Array(await f.arrayBuffer());
+    if (kind === 'image') {
+      const name = opts.paste ? '캡처 ' + (++captureSeq) : f.name;
+      let src;
+      try { src = await readImage(bytes, f); }
+      catch (e) { console.warn(e); note(name + ': ' + (e && e.message ? e.message : '그림을 읽지 못했습니다.')); continue; }
+      newTab({ name, kind: 'image', src, use: true });
+      attached++;
+      continue;
+    }
     const t = newTab({ name: f.name, kind, bytes, loadName: f.name });
     if (kind !== 'hwp') { cover('wait', '<div>' + esc(f.name) + '을(를) 읽는 중입니다…</div>'); await readSource(t, bytes); cover(null); }
     if (kind === 'xlsx' && CFG.sheets && !t.srcErr) {
       try { await Sheet.prepare(t, bytes, f.name); if (t.sheetNote) note(f.name + ': ' + t.sheetNote); }
       catch (e) { console.warn(e); note(f.name + '은(는) 편집기로 열지 못해 자료로만 씁니다. 엑셀에서 .xlsx로 다시 저장하면 고칠 수 있습니다.'); }
     }
+    if (opts.attach && kind !== 'hwp') { t.use = true; t.attached = true; attached++; continue; }
     last = t;
     if (kind === 'hwp') await activate(t.id); // 한글은 열 때 편집기로 확인하고 hwpx로 바꿔 둔다
   }
   if (last) await activate(last.id);
+  else if (attached) {
+    renderTabs();
+    if (window.matchMedia('(max-width: 900px)').matches) setPane('chat');
+  }
   renderSources();
 }
 $('file-input').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
 ['btn-open', 'btn-open2'].forEach((id) => $(id).addEventListener('click', () => $('file-input').click()));
+$('attach-input').addEventListener('change', (e) => { addFiles(e.target.files, { attach: true }); e.target.value = ''; });
+$('btn-attach').addEventListener('click', () => $('attach-input').click());
 // 새 한글: 빈 A4 문서(blank.hwpx)로 한글 탭을 열고, 열려 있던 문서가 있으면 자료로 고른다.
 let hwpSeq = 0;
 if ($('btn-new-hwp')) $('btn-new-hwp').addEventListener('click', async () => {
@@ -444,10 +469,21 @@ let pasteSeq = 0;
 document.addEventListener('paste', async (e) => {
   const el = e.target;
   if ($('app').hidden || !$('admin-modal').hidden) return;
-  if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.isContentEditable)) return;
   const clip = e.clipboardData; if (!clip) return;
-  if (clip.files && clip.files.length) { e.preventDefault(); addFiles(clip.files); return; }
-  const hasTable = /<table/i.test(clip.getData('text/html') || '');
+  const files = Array.from(clip.files || []);
+  const imgs = files.filter((f) => /^image\//i.test(f.type || ''));
+  const plain = (clip.getData('text/plain') || '').trim();
+  const html = clip.getData('text/html') || '';
+  // 캡처 화면: 글 없이 그림만 있다. 입력칸 안에서 붙여도 첨부로 받는다.
+  // 엑셀·한글에서 복사한 표는 그림도 함께 들어오므로 글이 있으면 글로 다룬다.
+  const capture = imgs.length && imgs.length === files.length && !plain;
+  if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.isContentEditable)) {
+    if (capture && el.id === 'prompt') { e.preventDefault(); addFiles(imgs, { attach: true, paste: true }); }
+    return;
+  }
+  if (capture) { e.preventDefault(); addFiles(imgs, { attach: true, paste: true }); return; }
+  const hasTable = /<table/i.test(html);
+  if (files.length && files.length > imgs.length) { e.preventDefault(); addFiles(files); return; }
   if (!hasTable && !(clip.getData('text/plain') || '').trim()) return;
   e.preventDefault();
   const t = newTab({ name: (hasTable ? '붙여넣은 표 ' : '붙여넣은 글 ') + (++pasteSeq), kind: 'paste' });
@@ -541,13 +577,30 @@ function renderSources() {
   const others = state.tabs.filter((t) => t.id !== state.targetId);
   $('sources-box').hidden = !others.length;
   $('sources-list').innerHTML = others.map((t) => {
-    const info = t.kind === 'hwp' ? '한글 문서' : t.kind === 'slides' ? 'PPT ' + t.deck.slides.length + '장' : isSheet(t) && !t.orig ? '새 엑셀' : t.srcErr ? '읽지 못함' : (srcSize(t).toLocaleString() + '자' + (srcSize(t) > SRC_LIMIT ? ', 앞부분만 보냄' : ''));
+    const info = t.kind === 'image' ? Math.max(1, Math.round((t.src.size || 0) / 1024)).toLocaleString() + 'KB' : t.kind === 'hwp' ? '한글 문서' : t.kind === 'slides' ? 'PPT ' + t.deck.slides.length + '장' : isSheet(t) && !t.orig ? '새 엑셀' : t.srcErr ? '읽지 못함' : (srcSize(t).toLocaleString() + '자' + (srcSize(t) > SRC_LIMIT ? ', 앞부분만 보냄' : ''));
     return `<li><label><input type="checkbox" data-use="${t.id}"${t.use && !t.srcErr ? ' checked' : ''}${t.srcErr ? ' disabled' : ''}><span>${esc(t.name)} <small>(${esc(KIND_LABEL[t.kind])}, ${info})</small></span></label></li>`;
   }).join('');
   const n = others.filter((t) => t.use && !t.srcErr).length;
   $('sources-sum').textContent = '함께 보낼 자료 ' + n + '개';
+  renderChips(others.filter((t) => t.use && !t.srcErr));
   renderAi();
 }
+// 입력칸 위: 이번에 함께 보낼 자료. 빼기 단추는 선택만 푼다(탭은 남는다).
+function renderChips(list) {
+  const box = $('attach-chips');
+  box.hidden = !list.length;
+  box.innerHTML = list.map((t) =>
+    `<span class="att" title="${esc(t.name)}">` +
+    (t.kind === 'image' ? `<img src="${esc(t.src.preview.url)}" alt="">` : `<span class="att-kind">${esc(KIND_LABEL[t.kind] || '')}</span>`) +
+    `<span class="att-name">${esc(t.name)}</span>` +
+    `<button type="button" class="att-x" data-unuse="${t.id}" aria-label="${esc(t.name)} 빼기">✕</button></span>`).join('');
+}
+$('attach-chips').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-unuse]'); if (!b) return;
+  const t = tab(b.dataset.unuse); if (t) t.use = false;
+  renderSources();
+  $('prompt').focus();
+});
 $('sources-list').addEventListener('change', (e) => {
   const c = e.target.closest('[data-use]'); if (!c) return;
   const t = tab(c.dataset.use); if (t) t.use = c.checked;
@@ -653,9 +706,10 @@ function renderAi() {
   chip.classList.toggle('off', !label);
   chip.textContent = label ? 'AI: ' + label : 'AI 설정 필요';
   chip.title = 'AI 연결 방법 바꾸기';
-  const n = state.tabs.filter((t) => t.id !== state.targetId && t.use && !t.srcErr).length;
+  const picked = state.tabs.filter((t) => t.id !== state.targetId && t.use && !t.srcErr);
+  const ni = picked.filter((t) => t.kind === 'image').length, n = picked.length - ni;
   $('scope').textContent = label
-    ? '보낼 때 고칠 문서' + (n ? '와 고른 자료 ' + n + '개' : '') + '의 내용을 함께 보냅니다. ' + drAi.scope()
+    ? '보낼 때 고칠 문서' + (n ? '와 고른 자료 ' + n + '개' : '') + '의 내용을 함께 보냅니다.' + (ni ? ' 이미지 ' + ni + '장도 같은 곳으로 함께 보냅니다.' : '') + ' ' + drAi.scope()
     : '처음 한 번 AI 설정에서 Gemini 무료 키나 구독 연결을 등록하면 쓸 수 있습니다.';
 }
 $('ai-chip').addEventListener('click', () => drAi.open());
@@ -673,7 +727,7 @@ function renderEmpty() {
   const lead = sheet ? 'AI가 엑셀의 값과 수식, 글자 모양·색·테두리를 고칩니다. 요청하지 않은 서식은 받을 때 그대로 남습니다. 표의 칸을 눌러 값을 직접 고칠 수도 있습니다.'
     : deck ? (deck.slides.length ? 'AI가 PPT의 글과 장을 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다. 화면의 글을 눌러 직접 고칠 수도 있습니다.'
       : '만들 발표 자료의 주제·대상·장 수를 적어 주세요. AI가 장 구성을 짠 뒤 내용을 채웁니다.')
-    : state.targetId ? 'AI가 고칠 문서를 바로 채우고 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다.' : '양식에서 시작하거나 한글 파일을 열면 AI가 문서를 채웁니다. PPT를 만들어 달라고 하면 새 PPT 탭이 열립니다.';
+    : state.targetId ? 'AI가 고칠 문서를 바로 채우고 고칩니다. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다.' : '양식에서 시작하거나 한글 파일을 열면 AI가 문서를 채웁니다. PPT를 만들어 달라고 하면 새 PPT 탭이 열립니다. 캡처 화면은 요청 칸에 Ctrl+V(맥은 Cmd+V)로 붙여 넣습니다.';
   $('chat-log').innerHTML = `<div class="empty" id="empty">
     <h3>하고 싶은 말을 적어 보세요</h3>
     <p>${lead}</p>
@@ -691,7 +745,7 @@ $('chat-log').addEventListener('click', (e) => {
     if (!saved || state.busy) return;
     delete state.retries[r.dataset.retry]; r.disabled = true;
     $('prompt').value = saved.request;
-    send(saved.sourceIds);
+    send(saved.sourceIds ? saved.sourceIds.filter((id) => { const x = tab(id); return x && x.use; }) : null);
   }
 });
 function changesHtml(changes, problems) {
@@ -800,7 +854,13 @@ async function collectSources(ids) {
   const pool = ids ? ids.map(tab).filter(Boolean) : state.tabs.filter((t) => t.use);
   const list = pool.filter((t) => t.id !== state.targetId && !t.srcErr);
   const out = []; let total = 0;
+  const nImg = list.filter((t) => t.kind === 'image').length; let kImg = 0;
   for (const t of list) {
+    if (t.kind === 'image') {
+      kImg++;
+      out.push({ id: t.id, name: t.name, kind: KIND_LABEL.image, text: '[이미지 ' + kImg + '/' + nImg + '] ' + t.src.text, image: t.src.image, size: t.src.size || 0, thumb: t.src.preview.url });
+      continue;
+    }
     let text = (await sourceText(t)).trim();
     if (!text) continue;
     let cut = false;
@@ -812,8 +872,18 @@ async function collectSources(ids) {
   }
   return out;
 }
+// 보낼 이미지. 장수·용량을 넘으면 보내기 전에 멈춘다.
+function imageOpts(sources) {
+  const imgs = sources.filter((x) => x.image);
+  if (!imgs.length) return undefined;
+  if (imgs.length > IMG_SEND_MAX) throw new Error('이미지는 한 번에 ' + IMG_SEND_MAX + '장까지 보낼 수 있습니다. 지금 ' + imgs.length + '장을 골랐습니다. 입력칸 위에서 몇 장을 빼고 다시 보내 주세요.');
+  const total = imgs.reduce((n, x) => n + x.size, 0);
+  if (total > IMG_SEND_TOTAL) throw new Error('고른 이미지가 모두 ' + (total / 1048576).toFixed(1) + 'MB라 한 번에 보낼 수 없습니다. 6.5MB 이하가 되도록 몇 장을 빼고 다시 보내 주세요.');
+  return { images: imgs.map((x) => x.image) };
+}
 async function send(sourceIds) {
   if (state.busy) return;
+  let sentImages = [];
   const request = $('prompt').value.trim();
   if (!request) { $('prompt').focus(); return; }
   if (!drAi.has()) { drAi.open(); return; }
@@ -827,7 +897,7 @@ async function send(sourceIds) {
     note('새 엑셀 탭을 만들었습니다.' + (from ? ' "' + from.name + '"을(를) 자료로 씁니다.' : ''));
     target = t2;
   } else if (CFG.sheets && target && target.kind === 'hwp' && Sheet.mentionsSheet(request) && !Deck.mentionsDeck(request)) {
-    const lastSheet = state.tabs.filter(isSheet).pop();
+    const lastSheet = state.tabs.filter((x) => isSheet(x) && !x.attached).pop(); // 자료로 첨부한 엑셀은 고칠 대상으로 바꾸지 않는다
     if (lastSheet) { await activate(lastSheet.id); state.targetId = lastSheet.id; note('"' + lastSheet.name + '"을(를) 고칩니다.'); target = lastSheet; }
   }
   // 한글 문서를 고치다가 PPT를 만들어 달라고 하면 새 PPT 탭을 열고, 그 한글 문서를 자료로 쓴다.
@@ -851,16 +921,19 @@ async function send(sourceIds) {
     const all = await collectSources(sourceIds);
     const sources = all.filter((s) => !s.skipped), skipped = all.filter((s) => s.skipped);
     state.retries[retryId] = { request, sourceIds: all.map((s) => s.id) };
+    sentImages = sources.filter((s) => s.image).map((s) => s.id);
+    const iopts = imageOpts(sources);
     const retryBtn = '<br><button class="btn small" type="button" data-retry="' + retryId + '">다시 보내기</button>';
-    addMsg('me', esc(request) + (sources.length ? '<div class="files">자료: ' + esc(sources.map((s) => s.name).join(', ')) + '</div>' : ''));
+    const thumbs = sources.filter((s) => s.image).map((s) => `<img src="${esc(s.thumb)}" alt="${esc(s.name)}">`).join('');
+    addMsg('me', esc(request) + (sources.length ? '<div class="files">자료: ' + esc(sources.map((s) => s.name).join(', ')) + '</div>' : '') + (thumbs ? '<div class="thumbs">' + thumbs + '</div>' : ''));
     $('prompt').value = '';
     const cuts = sources.filter((s) => s.cut).map((s) => s.name);
     if (cuts.length) note('자료가 길어 앞부분만 보냅니다: ' + cuts.join(', ') + '. 필요한 부분이 뒤에 있으면 그 내용을 요청 칸에 적어 주세요.');
     if (skipped.length) note('자료가 너무 많아 보내지 못한 파일: ' + skipped.map((s) => s.name).join(', ') + '. 필요하면 다른 자료의 선택을 풀고 다시 보내 주세요.');
     wait = addMsg('ai wait', '<span class="spin"></span><span>문서를 읽는 중…</span>');
     const say = (t) => { wait.lastElementChild.textContent = t; };
-    if (target && target.kind === 'slides') { await sendSlides(target, request, sources, wait, say, retryId); return; }
-    if (isSheet(target)) { await sendSheet(target, request, sources, wait, say, retryId); return; }
+    if (target && target.kind === 'slides') { await sendSlides(target, request, sources, wait, say, retryId, iopts); return; }
+    if (isSheet(target)) { await sendSheet(target, request, sources, wait, say, retryId, iopts); return; }
 
     let doc = null, shaBefore = null, map = '';
     if (target) {
@@ -877,7 +950,7 @@ async function send(sourceIds) {
       map = mi.text;
       if (mi.truncated) note('문서가 길어 뒤의 ' + mi.truncated + '줄은 AI에게 보내지 않았습니다. 그 부분은 편집기에서 직접 고쳐 주세요.');
     }
-    const out = await drAi.call(buildPrompt({ target, form: target && target.form, map, request, sources }), SCHEMA, say);
+    const out = await drAi.call(buildPrompt({ target, form: target && target.form, map, request, sources }), SCHEMA, say, iopts);
     const reply = String((out && out.reply) || '').trim() || '요청을 처리했습니다.';
     const edits = target && Array.isArray(out && out.edits) ? out.edits : [];
     let res = { changes: [], problems: [] }, applied = null;
@@ -931,13 +1004,20 @@ async function send(sourceIds) {
     addMsg('err', esc(m) + '<br><button class="btn small" type="button" data-retry="' + retryId + '">다시 보내기</button>');
     if (!state.retries[retryId]) state.retries[retryId] = { request, sourceIds: null };
     if (/^먼저 AI 설정/.test(m)) drAi.open();
-  } finally { setBusy(false); }
+  } finally {
+    setBusy(false);
+    // 캡처는 한 번 묻고 끝나는 경우가 많다. 보낸 이미지는 선택을 푼다(탭은 남아 다시 고를 수 있다). 실패하면 그대로 둔다.
+    if (sentImages.length && !state.retries[retryId]) {
+      sentImages.forEach((id) => { const t = tab(id); if (t) t.use = false; });
+      renderSources();
+    }
+  }
 }
 // PPT 탭: 비어 있으면 새로 만들고(장 구성 → 6장씩 채우기), 있으면 장·칸 주소로 고친다.
-async function sendSlides(target, request, sources, wait, say, retryId) {
+async function sendSlides(target, request, sources, wait, say, retryId, iopts) {
   const ctx = { role: CFG.role, today: today(), request, sources, name: baseName(target.name), history: state.history.slice(-HISTORY_TURNS) };
   const before = Deck.clone(target.deck);
-  const call = (prompt, schema) => drAi.call(prompt, schema, say);
+  const call = (prompt, schema) => drAi.call(prompt, schema, say, iopts);
   let reply = '', res = { changes: [], problems: [] };
   if (!target.deck.slides.length) {
     say('PPT를 만드는 중…');
@@ -983,17 +1063,17 @@ function sheetPrompt(target, map, request, sources) {
     '- reply는 교사에게 보여 줄 답이다. 존댓말로 무엇을 고쳤는지와 교사가 확인할 것을 세 문장 이내로 쓴다. 엑셀 조작법을 늘어놓지 않는다.');
   return L.join('\n');
 }
-async function sendSheet(target, request, sources, wait, say, retryId) {
+async function sendSheet(target, request, sources, wait, say, retryId, iopts) {
   if (!(await activate(target.id, true)) || !Sheet.isMounted(target)) throw new Error('엑셀을 열지 못해 요청을 보내지 않았습니다.');
   let before = JSON.parse(JSON.stringify(Sheet.snapshot(target))), opsLen = target.rowOps.length;
   const mi = Sheet.sheetMap(before, MAP_LIMIT);
   if (mi.truncated) note('엑셀이 길어 뒤의 ' + mi.truncated + '줄은 AI에게 보내지 않았습니다. 그 부분은 표에서 직접 고쳐 주세요.');
   const prompt = sheetPrompt(target, mi.text, request, sources);
-  let out = await drAi.call(prompt, Sheet.SHEET_SCHEMA, say);
+  let out = await drAi.call(prompt, Sheet.SHEET_SCHEMA, say, iopts);
   // 만들거나 꾸미라는 요청에 묻기만 하고 돌아오면 한 번만 다시 부탁한다.
   if (!(Array.isArray(out && out.edits) && out.edits.length) && Sheet.wantsSheetAction(request)) {
     say('표에 바로 넣도록 다시 요청하는 중…');
-    const again = await drAi.call(prompt + '\n\n[다시 요청] 앞선 답은 edits가 비어 있었다. 이 요청은 묻지 말고 지금 처리한다. 모르는 값은 빈 칸으로 두고 머리글과 아는 값부터 edits에 넣는다. 정말 할 수 없는 작업이면 edits를 비우고 그 이유만 한 문장으로 쓴다.', Sheet.SHEET_SCHEMA, say);
+    const again = await drAi.call(prompt + '\n\n[다시 요청] 앞선 답은 edits가 비어 있었다. 이 요청은 묻지 말고 지금 처리한다. 모르는 값은 빈 칸으로 두고 머리글과 아는 값부터 edits에 넣는다. 정말 할 수 없는 작업이면 edits를 비우고 그 이유만 한 문장으로 쓴다.', Sheet.SHEET_SCHEMA, say, iopts);
     if (Array.isArray(again && again.edits) && again.edits.length) out = again;
   }
   const reply = String((out && out.reply) || '').trim() || '요청을 처리했습니다.';

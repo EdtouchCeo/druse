@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- /forms 처럼 끝 / 없이 열어도 편집기·양식 파일 경로가 맞도록 기준 주소를 고정한다 -->
 <base href="/forms/">
-<title>업무 양식 AI · 대륜고 사용설명서</title>
+<title>문서작성 AI · 대륜고 사용설명서</title>
 <meta name="description" content="한글·엑셀·파워포인트·PDF 파일을 불러와 왼쪽 대화로 AI에게 문서를 채우고 고치게 합니다. 학교 양식은 목록에서 골라 바로 시작합니다.">
 <link rel="icon" href="/favicon.ico">
 <style>
@@ -99,6 +99,21 @@
   .ai-chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); background: var(--muted); border-radius: 999px; padding: 4px 10px; font-size: 0.78rem; cursor: pointer; min-height: 32px; max-width: 100%; }
   .ai-chip.off { background: var(--warn-soft); border-color: #fcd34d; color: var(--warn); font-weight: 700; }
   .scope { font-size: 0.75rem; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
+  .prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .prompt-head .lbl { margin: 0; }
+  .attach-btn { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #cbd5e1; background: #fff; border-radius: 999px; padding: 4px 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer; min-height: 32px; white-space: nowrap; }
+  .attach-btn:hover { border-color: var(--primary); color: var(--primary-dark); }
+  .attach-btn:focus-visible, .att-x:focus-visible { outline: 3px solid rgba(79,70,229,0.35); outline-offset: 1px; }
+  .attach-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; max-height: 132px; overflow-y: auto; }
+  .att { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; border: 1px solid var(--border); background: var(--muted); border-radius: 10px; padding: 3px 3px 3px 4px; font-size: 0.78rem; }
+  .att img { width: 36px; height: 36px; object-fit: cover; border-radius: 6px; background: #fff; flex-shrink: 0; }
+  .att-kind { font-size: 0.7rem; border-radius: 4px; padding: 1px 5px; background: #fff; color: var(--text-2); flex-shrink: 0; }
+  .att-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+  .att-x { border: none; background: transparent; cursor: pointer; color: var(--text-2); border-radius: 6px; min-width: 32px; min-height: 32px; font-size: 0.8rem; }
+  .att-x:hover { background: #fff; color: #b91c1c; }
+  .msg.me .thumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .msg.me .thumbs img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; background: #fff; }
+  .image-view { display: block; max-width: 100%; height: auto; margin: 12px auto; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
 
   /* 오른쪽: 탭과 문서 */
   .work { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
@@ -210,7 +225,7 @@
 </head>
 <body data-pane="chat">
 <header class="top">
-  <h1>업무 양식 AI</h1>
+  <h1>문서작성 AI</h1>
   <button class="btn small" type="button" id="btn-forms" hidden>양식에서 시작</button>
   <button class="btn small" type="button" id="btn-open" hidden>파일 열기</button>
   <button class="btn small" type="button" id="btn-admin" hidden>양식 관리</button>
@@ -227,7 +242,8 @@
   </div>
   <a class="back" href="/">← 대륜고 사용설명서</a>
 </header>
-<input type="file" id="file-input" class="sr-only" multiple accept=".hwp,.hwpx,.pdf,.xlsx,.xls,.csv,.pptx,.txt,.md" tabindex="-1">
+<input type="file" id="file-input" class="sr-only" multiple accept=".hwp,.hwpx,.pdf,.xlsx,.xls,.csv,.pptx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.bmp" tabindex="-1">
+<input type="file" id="attach-input" class="sr-only" multiple accept=".hwp,.hwpx,.pdf,.xlsx,.xls,.csv,.pptx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.bmp,image/*" tabindex="-1">
 
 <div class="gate" id="gate" hidden>
   <div class="gate-box">
@@ -259,7 +275,11 @@
         <summary id="sources-sum">함께 보낼 자료</summary>
         <ul id="sources-list"></ul>
       </details>
-      <label class="lbl" for="prompt">요청</label>
+      <div class="prompt-head">
+        <label class="lbl" for="prompt">요청</label>
+        <button class="attach-btn" type="button" id="btn-attach" title="이미지·PDF·엑셀·파워포인트·글 파일을 자료로 붙입니다. 캡처 화면은 요청 칸에 Ctrl+V(맥은 Cmd+V)로 붙여 넣습니다.">파일 첨부</button>
+      </div>
+      <div class="attach-chips" id="attach-chips" role="group" hidden aria-label="함께 보낼 자료"></div>
       <textarea id="prompt" rows="3"></textarea>
       <div class="row">
         <button class="ai-chip" type="button" id="ai-chip"></button>

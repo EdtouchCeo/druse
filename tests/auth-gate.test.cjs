@@ -93,6 +93,8 @@ for (const p of PROTECTED) {
 test('회원은 교사 경로에서 403, 시간표는 통과', async () => {
   const member = issued('member');
   assert.equal((await run('/record/', { value: member })).res.status, 403);
+  assert.equal((await run('/forms/', { value: member })).res.status, 403);
+  assert.equal((await run('/forms/app.js', { value: member })).res.status, 403);
   assert.equal((await run('/_gated/teacher/index.html', { value: member })).res.status, 403);
   assert.equal((await run('/_gated/member/index.html', { value: member })).ctx.nextCalls, 1);
   const tt = await run('/_timetable_data.json', { value: member });
