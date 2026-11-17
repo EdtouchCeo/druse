@@ -16,6 +16,9 @@ import CaseActionsDialog from './components/CaseActionsDialog.vue'
 import ConnectionStatus from './components/ConnectionStatus.vue'
 import {analysisReportIssue} from './lib/reports'
 import RecordEvidence from './components/RecordEvidence.vue'
+import InterviewWorkspace from './components/InterviewWorkspace.vue'
+import LocalJobStatus from './components/LocalJobStatus.vue'
+import {interviewRequest} from './lib/interview'
 import StudentUnderstanding from './components/StudentUnderstanding.vue'
 import ConsultationEditor from './components/ConsultationEditor.vue'
 import {finalizationIssues,normalizeConsultation,guidanceIssues} from './lib/workflow'
@@ -30,8 +33,11 @@ const AdminPanel=defineAsyncComponent(()=>import('./components/AdminPanel.vue'))
 const adminOpen=ref(new URLSearchParams(location.search).get('admin')==='1'),adminBusy=ref(false)
 const transport=shallowRef<Transport|null>(null),health=ref<Health|null>(null),cases=ref<CounselingCase[]>([])
 const checkingConnection=ref(true),accessFailure=ref<{status:number;code:string}|null>(null)
-const draft=ref<CounselingCase|null>(null),savedStamp=ref(''),selectedSessionId=ref(''),search=ref(''),tab=ref<'understanding'|'counseling'|'consultation'|'record'|'analysis'|'review'|'dashboard'>('understanding')
-const requestCancellable=ref(false),busy=ref(''),error=ref(''),notice=ref(''),conflict=ref(false),activeJob=ref<Job|null>(null),sidebarOpen=ref(false),authToken=ref('')
+const draft=ref<CounselingCase|null>(null),savedStamp=ref(''),selectedSessionId=ref(''),search=ref(''),tab=ref<'understanding'|'counseling'|'consultation'|'record'|'analysis'|'review'|'dashboard'|'interview'>('understanding')
+const interviewDirty=ref(false)
+const operationBusy=ref(''),interviewBusy=ref('')
+const busy=computed({get:()=>operationBusy.value||interviewBusy.value,set:(value:string)=>{operationBusy.value=value}})
+const requestCancellable=ref(false),error=ref(''),notice=ref(''),conflict=ref(false),activeJob=ref<Job|null>(null),sidebarOpen=ref(false),authToken=ref('')
 const studentPreview=ref(false),reportKind=ref<'analysis'|'strategy'>('strategy')
 const strategyReportActive=computed(()=>reportKind.value==='strategy')
 const newOpen=ref(false),importBundle=ref<Backup|null>(null),importAcknowledged=ref(false),reviewAcknowledged=ref(false)
@@ -156,7 +162,7 @@ async function initialize(){
      else cases.value=(await transport.value.list(AbortSignal.any([controller!.signal,AbortSignal.timeout(15000)]))).map(c=>teacher.value?normalizeCase(c):studentView(c)).filter((c):c is CounselingCase=>Boolean(c))
      if(!canManage.value)adminOpen.value=false
      newTeacher.value=health.value.teacher?.display_name||''
-     if(cases.value.length)setCase(cases.value[0]!)
+     await selectInitialCase()
      if(localMode.value){fixtures.value=await transport.value.fixtures();model.value=health.value.ollama.models[0]?.name||''}
      else{const module=await import('./lib/cloudTransport');settings.value=module.loadAiSettings()}
     }
@@ -184,7 +190,7 @@ async function completeAuthentication(token:string){
   health.value=await transport.value!.authenticate(token)
   if(!health.value.teacher?.approved)throw new Error('승인된 교사 계정을 확인하지 못했습니다. 다시 연결해 주세요.')
   authToken.value='';cases.value=await transport.value!.list();newTeacher.value=health.value.teacher.display_name||'';fixtures.value=await transport.value!.fixtures();model.value=health.value.ollama.models[0]?.name||''
-  if(cases.value.length)setCase(cases.value[0]!)
+  await selectInitialCase()
   notice.value='교사 계정이 연결되었습니다. 이 화면에서 학생 자료·분석·전략 작성을 이어가세요.'
  })
  if(error.value){clearStudentState();health.value=null;return false}
@@ -247,7 +253,7 @@ function returnToWorkspace(){
  try{window.opener.focus();window.close()}catch{/* Keep the completion panel and return button if the browser cannot close it. */}
 }
 async function persist(){if(!draft.value)throw new Error('상담을 먼저 선택해 주세요.');if(dirty.value){for(const item of draft.value.sessions){normalizeProfile(item.profile);normalizeConsultation(item.consultation)};if(session.value?.confirmed||session.value?.guidance)throw new Error('확정한 상담은 다음 회차에 이어서 작성해 주세요.');const id=selectedSessionId.value;setCase(await transport.value!.save(clone(draft.value)),id)}return draft.value!}
-function mayLeave(){return !dirty.value||window.confirm('저장하지 않은 작성 내용이 있습니다. 이 화면의 변경을 버리고 이동할까요?')}
+function mayLeave(){return !(dirty.value||interviewDirty.value)||window.confirm('저장하지 않은 작성 내용이 있습니다. 이 화면의 변경을 버리고 이동할까요?')}
 function caseLabel(value:CounselingCase){return [value.student.student_number,value.student.name].filter(Boolean).join(' ')}
 function closeCaseAction(){if(busy.value)return;caseAction.value=null;actionCase.value=null;deleteAcknowledged.value=false;actionLoaded.value=false;error.value='';conflict.value=false}
 async function openCaseAction(value:CounselingCase,kind:'download'|'delete'){
@@ -399,6 +405,26 @@ async function refineExtraction(){
 }
 async function waitJob(job:Job){activeJob.value=job;while(['queued','running'].includes(activeJob.value.state)){await new Promise<void>((resolve,reject)=>{const signal=controller?.signal;if(signal?.aborted){reject(new DOMException('Cancelled','AbortError'));return}const timer=setTimeout(()=>{signal?.removeEventListener('abort',abort);resolve()},900);const abort=()=>{clearTimeout(timer);reject(new DOMException('Cancelled','AbortError'))};signal?.addEventListener('abort',abort,{once:true})});activeJob.value=await transport.value!.job(job.id,controller?.signal)}const outcome=activeJob.value;setCase(await transport.value!.get(draft.value!.id),selectedSessionId.value);if(outcome.state==='failed'||outcome.state==='needs_revision')throw new Error(outcome.message||'작업을 완료하지 못했습니다. 모델 상태와 입력을 확인해 주세요.');notice.value=outcome.message||(outcome.state==='cancelled'?'작업을 취소했습니다.':'작업 결과를 확인해 주세요.')}
 async function analyze(){await execute('Ollama 분석을 준비하고 있습니다.',async()=>{if(!model.value)throw new Error('설치된 로컬 모델을 선택해 주세요.');const value=await persist();await waitJob(await transport.value!.analyze(value,selectedSessionId.value,model.value,session.value!.topic));tab.value='dashboard'})}
+async function recoverJob(job:Job){
+ if(busy.value||dirty.value||interviewDirty.value||!draft.value)return
+ if(job.session_id)selectedSessionId.value=job.session_id
+ await execute('진행 중인 분석에 다시 연결하고 있습니다.',async()=>{await waitJob(job);if(job.kind?.startsWith('interview-'))tab.value='interview'})
+}
+async function selectInitialCase(){
+ if(!cases.value.length)return
+ if(localMode.value){
+  try{const value=await interviewRequest<{jobs:Job[]}>('/jobs',health.value?.csrf_token||'');const job=value.jobs.find(j=>cases.value.some(c=>c.id===j.case_id));const current=cases.value.find(c=>c.id===job?.case_id);if(current){setCase(current,job?.session_id);return}}catch{/* The status panel provides a retry without discarding saved cases. */}
+ }
+ setCase(cases.value[0]!)
+}
+async function resumeCheckpoint(value:{kind:string;session_id:string;model:string}){
+ if(!draft.value||dirty.value||interviewDirty.value)return
+ await execute('저장 구간부터 이어서 분석을 준비합니다.',async()=>{
+  selectedSessionId.value=value.session_id;model.value=value.model
+  const result=await interviewRequest<{job:Job}>('/cases/'+encodeURIComponent(draft.value!.id)+'/resume',health.value?.csrf_token||'',{revision:draft.value!.revision,session_id:value.session_id,kind:value.kind})
+  await waitJob(result.job);tab.value=value.kind.startsWith('interview-')?'interview':'dashboard'
+ })
+}
 async function completeConsultation(){if(!session.value||locked.value)return;await execute('상담 반영 기록을 저장하고 있습니다.',async()=>{const current=session.value!;const completed=normalizeConsultation({...current.consultation,status:'completed'});current.consultation=completed;await persist();tab.value='counseling';notice.value='상담 내용을 저장했습니다. 전략 생성 버튼으로 이 내용을 반영한 전략을 만들 수 있습니다.'})}
 function adoptPreparationCard(card:StrategyPreparationCard){
  if(!teacher.value||planLocked.value||!session.value||!strategy.value)return
@@ -456,7 +482,7 @@ function referenceSchoolActivity(activity:SchoolActivity,semester:number|null){
 function prepareFromProfile(){if(!teacher.value||planLocked.value||!session.value?.profile||!strategy.value)return;try{const profile=normalizeProfile(session.value.profile);session.value.strategy=adoptProfile(profile,strategy.value);if(!session.value.topic.trim())session.value.topic='학생 자료를 바탕으로 한 학기 전략';tab.value='counseling';notice.value='입력 자료에서 교사가 검토할 계획을 준비했습니다. 상담 내용과 학생부 분석을 더해 구체적인 전략으로 발전시키세요.'}catch(e){error.value=readableError(e)}}
 function adoptFindings(){if(!localMode.value||planLocked.value||!strategy.value||!analysis.value||!session.value)return;session.value.strategy=applyAnalysis(strategy.value,analysis.value);tab.value='counseling';notice.value='빈 강점·보완점 항목에 분석 초안을 반영했습니다. 교사가 근거를 확인하고 편집한 뒤 저장해 주세요.'}
 function addAnalysisAction(text:string){if(!planLocked.value&&session.value?.strategy){const current=session.value.strategy.inquiry_plan;session.value.strategy.inquiry_plan=[current,text].filter(Boolean).join('\n\n');tab.value='counseling';notice.value='탐구·준비 방향에 담았습니다. 학생의 관심과 상담 내용에 맞게 다듬으세요.'}}
-function beforeUnload(event:BeforeUnloadEvent){if(dirty.value||busy.value||adminBusy.value){event.preventDefault();event.returnValue=''}}
+function beforeUnload(event:BeforeUnloadEvent){if(dirty.value||interviewDirty.value||busy.value||adminBusy.value){event.preventDefault();event.returnValue=''}}
 onMounted(()=>{document.title=connectionOnly?'교사 계정 연결 · 학종 전략실':'학종 전략실';void initialize();window.addEventListener('beforeunload',beforeUnload);window.addEventListener('keydown',modalKeyboard);window.addEventListener('message',receiveTeacherConnection);window.addEventListener('storage',refreshConnectionLogin);window.addEventListener('focus',refreshConnectionLogin)})
 onBeforeUnmount(()=>{clearTimeout(connectionTimer);clearTimeout(loginRefreshTimer);controller?.abort();window.removeEventListener('beforeunload',beforeUnload);window.removeEventListener('keydown',modalKeyboard);window.removeEventListener('message',receiveTeacherConnection);window.removeEventListener('storage',refreshConnectionLogin);window.removeEventListener('focus',refreshConnectionLogin)})
 </script>
@@ -482,6 +508,7 @@ onBeforeUnmount(()=>{clearTimeout(connectionTimer);clearTimeout(loginRefreshTime
 
 <div v-if="error&&!newOpen&&!caseAction" class="message error" role="alert"><AlertCircle :size="20"/><span>{{error}}</span><div class="button-row"><button v-if="conflict&&draft" @click="exportJson">작성 내용 백업</button><button v-if="conflict" @click="reload">최신 기록 불러오기</button><button class="icon-button" aria-label="오류 안내 닫기" @click="error=''"><X :size="17"/></button></div></div>
 <div v-if="notice" class="message success" role="status"><Check :size="18"/><span>{{notice}}</span><button class="icon-button" aria-label="알림 닫기" @click="notice=''"><X :size="16"/></button></div>
+<LocalJobStatus v-if="teacher&&localMode&&draft&&health" :key="draft.id+health.teacher?.id" :case-id="draft.id" :session-id="selectedSessionId" :token="health.csrf_token||''" :busy="!!busy" :dirty="dirty||interviewDirty" :tracking="activeJob?.id||''" @recover="recoverJob" @resume="resumeCheckpoint"/>
 <div v-if="busy" class="jobbar" role="status" aria-live="polite"><LoaderCircle class="spin" :size="19"/><span>{{activeJob?.message||busy}}<small v-if="jobStage">{{jobStage}}</small></span><button v-if="activeJob||requestCancellable" class="secondary compact" @click="cancel">{{activeJob?'분석 취소':'요청 취소'}}</button></div>
 
 <main v-if="connectionOnly" id="main" class="welcome connection-welcome">
@@ -523,7 +550,7 @@ onBeforeUnmount(()=>{clearTimeout(connectionTimer);clearTimeout(loginRefreshTime
   <div class="session-bar"><div class="session-list" aria-label="전략 회차"><button v-for="(item,index) in draft.sessions" :key="item.id" :class="{active:item.id===selectedSessionId}" @click="selectSession(item.id)"><span>{{index+1}}회</span>{{item.date}}<Check v-if="item.confirmed" :size="14"/></button></div><button v-if="teacher" class="text-button" :disabled="!!busy" @click="nextSession"><Plus :size="16"/>회차 추가</button></div>
   <div v-if="teacher" class="context-strip"><span><CalendarDays :size="16"/>{{currentSessionIndex+1}}차 전략</span><span v-if="published" class="badge success">학생 안내 완료</span><span v-else-if="session.confirmed" class="badge success">{{health?.demo?'합성 시연 확정':'교사 확인 완료'}}</span><span v-else class="badge">전략 초안</span></div>
   <div v-if="teacher&&session.confirmed" class="inline-note"><ShieldCheck :size="18"/><span>확정한 전략입니다. 수정은 새 회차에서 진행하세요.</span><button v-if="teacher" class="text-button" :disabled="!!busy" @click="nextSession">다음 회차 만들기</button></div>
-  <nav v-if="teacher&&localMode" class="tabs workflow-tabs" aria-label="전략 작업"><button :class="{active:dataTab}" @click="tab='understanding'"><BookOpen :size="17"/>학생 자료·로컬 분석</button><button :class="{active:tab==='consultation'}" @click="tab='consultation'"><MessageSquare :size="17"/>교사 관찰·상담 <small>선택</small></button><button :class="{active:tab==='dashboard'}" @click="tab='dashboard';refreshPreparationHash()"><FileText :size="17"/>결과 대시보드</button><button class="text-button" @click="tab='counseling'">기존 전략 기록</button></nav>
+  <nav v-if="teacher&&localMode" class="tabs workflow-tabs" aria-label="전략 작업"><button :class="{active:dataTab}" @click="tab='understanding'"><BookOpen :size="17"/>학생 자료·로컬 분석</button><button :class="{active:tab==='consultation'}" @click="tab='consultation'"><MessageSquare :size="17"/>교사 관찰·상담 <small>선택</small></button><button :class="{active:tab==='dashboard'}" @click="tab='dashboard';refreshPreparationHash()"><FileText :size="17"/>결과 대시보드</button><button :class="{active:tab==='interview'}" @click="tab='interview'"><MessageSquare :size="17"/>학생부 모의면접</button><button class="text-button" @click="tab='counseling'">기존 전략 기록</button></nav>
   <nav v-if="teacher&&!localMode" class="tabs workflow-tabs" aria-label="전략 작업"><button :class="{active:dataTab}" @click="tab='understanding'"><span aria-hidden="true">01</span>자료·분석</button><button :class="{active:['counseling','consultation'].includes(tab)}" @click="tab='counseling'"><span aria-hidden="true">02</span>상담·전략 수립</button><button :class="{active:tab==='review'}" @click="tab='review'"><span aria-hidden="true">03</span>분석·전략 보고서</button></nav>
   <PreparationDashboard v-if="teacher&&localMode&&tab==='dashboard'" :case-value="draft" :session="session" :busy="!!busy" :initial-stage="preparationStage" :generation-error="error" :progress="activeJob?.message||busy" :current-source-hash="dirty?'':preparationHash" @generate="generatePreparation" @download="downloadPreparation" @analyze="tab='analysis'" @settings="tab='analysis'"/>
 
@@ -531,6 +558,7 @@ onBeforeUnmount(()=>{clearTimeout(connectionTimer);clearTimeout(loginRefreshTime
   <nav v-if="teacher&&dataTab" class="data-tools" aria-label="자료 분석 도구"><button :class="{active:tab==='understanding'}" @click="tab='understanding'"><BookOpen :size="16"/>학생 기본자료</button><button :class="{active:tab==='record'}" @click="tab='record'"><FileText :size="16"/>학생부 PDF 근거</button><button v-if="localMode" :class="{active:tab==='analysis'}" @click="tab='analysis'"><Sparkles :size="16"/>학생부 상세 분석</button></nav>
 
   <StudentUnderstanding v-if="teacher&&tab==='understanding'&&session.profile" :session="session" :student="draft.student" :locked="locked" :plan-locked="planLocked" :local-mode="localMode" :school-context="schoolContext" @adopt="prepareFromProfile" @select-plan="adoptPreparationCard" @strategy="tab='counseling'" @record="tab='record'" @analysis="tab='analysis'" @evidence="showEvidence"><template #school-context><SchoolContextCards :data="schoolContext" :student="draft.student" :subjects="session.profile.selected_subjects" :locked="planLocked" @adopt="referenceSchoolTask" @adopt-activity="referenceSchoolActivity"/></template></StudentUnderstanding>
+  <InterviewWorkspace v-if="teacher&&localMode&&health" v-show="tab==='interview'" :key="draft.id+session.id" :inert="!!operationBusy" :value="draft" :session-id="session.id" :health="health" :active="tab==='interview'&&!operationBusy" :parent-dirty="dirty" @dirty="interviewDirty=$event" @busy="interviewBusy=$event" @record="tab='record'"/>
   <section v-if="teacher&&['counseling','consultation'].includes(tab)" class="strategy-studio">
    <div class="studio-heading"><h2>상담을 바탕으로 학습·진로 전략 수립</h2><p>학생부에서 확인한 배움과 학생의 관심을 연결해 교과·창체·봉사·독서·행동특성별 준비 방향, 탐구 주제와 남은 학년의 전략을 정리합니다.</p></div>
    <details class="card consultation-input"><summary>상담 내용 입력·수정 <span>{{session.consultation?.status==='completed'?'기록 있음':'선택'}}</span></summary><ConsultationEditor v-if="session.consultation" :session="session" :locked="locked" @prepare="tab='counseling'" @complete="completeConsultation" @final="tab='review'"/></details>

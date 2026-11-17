@@ -12,7 +12,7 @@ export type RecordSection = {id:string;category:string;label:string;school_stage
 export type SchoolRecord = {id:string;filename:string;sha256:string;page_count:number;school_stage:string;sections:RecordSection[];warnings:string[];readable_pages:number[];unreadable_pages:number[];extraction_review?:{checked:number;changed:number;uncertain:number;skipped:number;failed:number;ocr_message?:string;checks?:{label:string;pages:number[];result:string}[]}}
 export type Finding = {text:string;evidence_ids:string[];guidance:string;quote?:string;area?:string}
 export type AnalysisAction = {text:string;reason:string;evidence_ids:string[];area?:string;expected_output?:string;review_criteria?:string;teacher_support?:string}
-export type Analysis = {summary:string;strengths:Finding[];improvements:Finding[];questions:string[];actions:AnalysisAction[];limitations:string[];model:string;created_at:string;record_sha256?:string}
+export type Analysis = {summary:string;strengths:Finding[];improvements:Finding[];questions:string[];actions:AnalysisAction[];limitations:string[];model:string;created_at:string;record_sha256?:string;analysis_details?:{synthesis?:{method?:string}}}
 export type Review = {state:'passed'|'needs_revision'|'pending';method:'manual'|'ollama';content_hash:string;notes:string[];created_at:string}
 export type Strategy = {target_major:string;target_path:string;strengths:string;gaps:string;subject_plan:string;inquiry_plan:string;activity_plan:string;semester_plan:string;student_message:string}
 export type Preparation = {prepared_at:string;prepared_by:string;topic:string;strategy:Strategy;actions:Action[]}
@@ -24,7 +24,7 @@ export type StudentProfile = {target_major:string;interests:string;learning_conc
 export type Session = {preparation_reports?:PreparationReports;student_snapshot?:Student;imported_unverified?:boolean;id:string;date:string;topic:string;student_question:string;context:string;evidence_notes:string;teacher_opinion:string;profile?:StudentProfile;student_admission_targets?:AdmissionTarget[];workflow_version?:2;preparation?:Preparation|null;consultation?:Consultation;imported_history?:{preparation_imported?:boolean;[key:string]:unknown};strategy?:Strategy;guidance?:Guidance|null;actions:Action[];next_date:string;record:SchoolRecord|null;analysis:Analysis|null;review:Review|null;confirmed:Record<string,unknown>|null}
 export type CounselingCase = {schema_version:1;id:string;revision:number;privacy:'local_only'|'standard';created_at:string;updated_at:string;origin:string;imported_from?:unknown;student:Student;teacher:{display_name:string};current_session_id:string;sessions:Session[]}
 export type Backup = {format:'daeryun-counseling';version:1;case:CounselingCase}
-export type Job = {id:string;state:'queued'|'running'|'succeeded'|'needs_revision'|'failed'|'cancelled';stage?:string;message?:string;case_id?:string}
+export type Job = {id:string;state:'queued'|'running'|'succeeded'|'needs_revision'|'failed'|'cancelled';stage?:string;message?:string;case_id?:string;session_id?:string;kind?:string;model?:string;updated_at?:string;checkpoint?:{completed:number;reused:number;checkpoint_available:boolean}}
 export type Fixture = {id:string;title:string;description:string}
 export type AiSettings = {provider:'server'|'gemini'|'ollama';model:string;apiKey:string;ollamaUrl:string}
 export interface Transport {

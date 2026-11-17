@@ -9,6 +9,7 @@ const groups=computed(()=>groupedFindings(props.analysis,props.record))
 </script>
 <template>
  <div class="structured-analysis">
+  <p v-if="analysis.analysis_details?.synthesis?.method==='verified_batch_merge'" class="analysis-note" role="status">원문 대조를 마친 구간별 분석을 모은 결과입니다. 종합 선택을 완료하지 못했으므로 제안의 중복과 우선순위는 교사가 확인해 주세요.</p>
   <section class="analysis-synthesis"><h3>종합 분석</h3><ResultText :text="analysis.summary"/></section>
   <section v-if="groups.length" class="analysis-domains"><h3>영역별 강점과 지원 방향</h3>
    <article v-for="group in groups" :key="group.area" class="analysis-domain">

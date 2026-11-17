@@ -56,7 +56,7 @@ test('native health entry preserves automatic strong context and exposes no prof
  };
  const entry=(await import('../netlify/functions/counseling-health.mjs')).default;
  const response=await entry(new Request('https://site.synthetic.invalid/.netlify/functions/counseling-health'));
- assert.equal(response.status,200);const value=await response.json();assert.equal(value.version,'1.0.3');assert.equal(value.storage_ready,true);assert.equal(value.school_auth_ready,true);assert.equal(value.server_ai_configured,false);
+ assert.equal(response.status,200);const value=await response.json();assert.equal(value.version,'1.1.2');assert.equal(value.storage_ready,true);assert.equal(value.school_auth_ready,true);assert.equal(value.server_ai_configured,false);
  assert.equal(requests.length,2);assert.ok(requests.every(r=>!r.method||r.method.toUpperCase()==='GET'));
  assert.ok(!JSON.stringify(value).includes('synthetic'));assert.equal(response.headers.get('cache-control'),'no-store');
 });
@@ -92,10 +92,12 @@ test('server AI defaults reuse site credentials while explicit false always disa
  process.env.VERTEX_SA_KEY='synthetic-only';process.env.LLM_MODEL='synthetic-model';assert.deepEqual(getCounselingAiConfig(),{enabled:true,model:'synthetic-model'});
 });
 test('private strategy model is configured independently of legacy site AI',()=>{
- assert.deepEqual(getPrivateStrategyAiConfig(),{enabled:false,model:'gemini-3.6-flash'});
+ const claude={enabled:true,model:'claude (서버 AI)'};
+ assert.deepEqual(getPrivateStrategyAiConfig(),{enabled:false,model:'gemini-3.6-flash',provider:'claude',claude});
  process.env.GEMINI_API_KEY='synthetic-only';process.env.LLM_MODEL='legacy-model';
- assert.deepEqual(getPrivateStrategyAiConfig(),{enabled:true,model:'gemini-3.6-flash'});
+ assert.deepEqual(getPrivateStrategyAiConfig(),{enabled:true,model:'gemini-3.6-flash',provider:'claude',claude});
  process.env.COUNSELING_STRATEGY_MODEL='strategy-model';assert.equal(getPrivateStrategyAiConfig().model,'strategy-model');
  assert.equal(getCounselingAiConfig().model,'legacy-model');
- process.env.COUNSELING_SERVER_AI_ENABLED='false';assert.equal(getPrivateStrategyAiConfig().enabled,false);
+ process.env.COUNSELING_SERVER_AI_ENABLED='false';assert.equal(getPrivateStrategyAiConfig().enabled,false);assert.equal(getPrivateStrategyAiConfig().claude.enabled,false);
+ process.env.COUNSELING_SERVER_AI_ENABLED='true';process.env.COUNSELING_STRATEGY_PROVIDER='gemini';assert.equal(getPrivateStrategyAiConfig().claude.enabled,false);assert.equal(getPrivateStrategyAiConfig().provider,'gemini');delete process.env.COUNSELING_STRATEGY_PROVIDER;process.env.COUNSELING_SERVER_AI_ENABLED='false';
 });

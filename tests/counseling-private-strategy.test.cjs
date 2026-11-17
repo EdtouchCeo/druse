@@ -331,3 +331,98 @@ test('retired free-text endpoint keeps RBAC and rejects without reading cases or
   assert.equal(count, 0); assert.ok(!calls.some(call => /cases|students|assignments/.test(call.url)));
   assert.ok(!result.body.includes('SYNTHETIC_PRIVATE_FREE_TEXT'));
 });
+
+// ── 서버 AI(Claude) 연결 ──
+const R = require('../netlify/functions/_lib/counseling-claude-relay');
+const { getPrivateStrategyAiConfig } = require('../netlify/functions/_lib/counseling-ai-config');
+
+test('Claude relay receives only the constructed prompt, a JSON schema and the teacher session for approval', async () => {
+  const input = request({ section_id: 'target_basis' });
+  const built = S.buildPayload(input, 'gemini-3.6-flash');
+  let seen;
+  const result = await R.callClaudeRelay({ token: 'SYNTHETIC_AUTH_TOKEN', payload: built.payload, fetchImpl: async (url, options) => { seen = { url: String(url), options }; return Response.json({ text: '```json\n' + JSON.stringify(modelDocument(built.context)) + '\n```' }); } });
+  assert.equal(seen.url, R.DEFAULT_URL);
+  assert.equal(seen.options.headers.Authorization, 'Bearer SYNTHETIC_AUTH_TOKEN');
+  assert.equal(seen.options.headers['x-auth-site'], 'daeryun');
+  const body = JSON.parse(seen.options.body);
+  assert.deepEqual(Object.keys(body).sort(), ['label', 'maxOutputTokens', 'prompt', 'schema']);
+  assert.equal(body.prompt, built.payload.contents[0].parts[0].text);
+  assert.equal(body.maxOutputTokens, 8000);
+  assert.equal(body.schema.type, 'object'); assert.equal(body.schema.additionalProperties, false);
+  assert.equal(body.schema.properties.sections.items.properties.items.items.properties.steps.type, 'array');
+  assert.ok(!/"(?:OBJECT|ARRAY|STRING)"/.test(JSON.stringify(body.schema)));
+  for (const forbidden of ['SYNTHETIC_AUTH_TOKEN', 'SYNTHETIC_SERVICE_KEY', 'SYNTHETIC_PROVIDER_KEY', '대륜', 'case_id', 'student_id']) assert.ok(!seen.options.body.includes(forbidden), forbidden);
+  assert.equal(result.ok, true);
+  assert.equal(S.normalizeModelResponse(result, built.context, 'claude').sections.length, 1);
+});
+
+test('Claude relay failures expose only a status and never the upstream error text', async () => {
+  const built = S.buildPayload(request({ section_id: 'target_basis' }), 'gemini-3.6-flash');
+  const failed = await R.callClaudeRelay({ token: 'SYNTHETIC_AUTH_TOKEN', payload: built.payload, fetchImpl: async () => Response.json({ code: 'EDUCATOR_ONLY', error: 'SYNTHETIC_PRIVATE_PROVIDER_ERROR' }, { status: 403 }) });
+  assert.deepEqual(failed, { ok: false, status: 403, data: null, code: 'EDUCATOR_ONLY', via: 'claude' });
+  assert.equal((await R.callClaudeRelay({ token: 'SYNTHETIC_AUTH_TOKEN', payload: built.payload, fetchImpl: async () => Response.json({ text: '  ' }) })).ok, false);
+  let called = 0;
+  assert.equal((await R.callClaudeRelay({ token: '', payload: built.payload, fetchImpl: async () => { called++; } })).status, 503);
+  const previous = process.env.COUNSELING_CLAUDE_RELAY_URL;
+  try { process.env.COUNSELING_CLAUDE_RELAY_URL = 'http://insecure.synthetic.invalid/x'; assert.equal(R.relayUrl(), ''); assert.equal((await R.callClaudeRelay({ token: 'T', payload: built.payload, fetchImpl: async () => { called++; } })).status, 503); }
+  finally { if (previous === undefined) delete process.env.COUNSELING_CLAUDE_RELAY_URL; else process.env.COUNSELING_CLAUDE_RELAY_URL = previous; }
+  assert.equal(called, 0);
+});
+
+test('handler uses Claude first, labels the report with it and leaves Gemini untouched', async () => {
+  mockAuth(); let gemini = 0, sent;
+  const input = request({ section_id: 'target_basis' });
+  const context = S.makeContext(input);
+  const result = await createHandler(async () => { gemini++; }, async args => { sent = args; return response(modelDocument(context)); })(event(input));
+  assert.equal(result.statusCode, 200);
+  assert.equal(parse(result).model, 'claude (서버 AI)');
+  assert.equal(gemini, 0); assert.equal(sent.token, 'SYNTHETIC_AUTH_TOKEN');
+  assert.ok(!JSON.stringify(sent.payload).includes('SYNTHETIC_AUTH_TOKEN'));
+});
+
+test('Claude works without any Gemini credential, and the provider switch or the off flag disables it', async () => {
+  mockAuth();
+  const input = request({ section_id: 'target_basis' });
+  const context = S.makeContext(input);
+  const saved = process.env.GEMINI_API_KEY; delete process.env.GEMINI_API_KEY;
+  try {
+    let claude = 0;
+    const handler = createHandler(async () => { throw Error('Gemini must not run'); }, async () => { claude++; return response(modelDocument(context)); });
+    assert.equal((await handler(event(input))).statusCode, 200); assert.equal(claude, 1);
+    process.env.COUNSELING_STRATEGY_PROVIDER = 'gemini';
+    assert.equal(getPrivateStrategyAiConfig().claude.enabled, false);
+    const off = await handler(event(input)); assert.equal(off.statusCode, 503); assert.equal(claude, 1);
+    delete process.env.COUNSELING_STRATEGY_PROVIDER; process.env.COUNSELING_SERVER_AI_ENABLED = 'false';
+    assert.equal((await handler(event(input))).statusCode, 503); assert.equal(claude, 1);
+  } finally { delete process.env.COUNSELING_STRATEGY_PROVIDER; process.env.GEMINI_API_KEY = saved; }
+});
+
+test('a failed Claude call hands the same payload to Gemini once and does not return to Claude', async () => {
+  const input = request({ section_id: 'target_basis' });
+  const context = S.makeContext(input);
+  for (const failure of [{ ok: false, status: 403, data: null }, { ok: false, status: 503, data: null }, 'throw']) {
+    const order = []; let claudePayload;
+    const report = await generateStrategy(input, { model: 'gemini-3.6-flash', enabled: true }, async args => { order.push('gemini'); assert.deepEqual(args.payload, claudePayload); return response(modelDocument(context)); }, Date.now() + 55000,
+      { token: 'T', model: 'claude (서버 AI)', call: async args => { order.push('claude'); claudePayload = args.payload; if (failure === 'throw') throw Error('SYNTHETIC_PRIVATE_PROVIDER_ERROR'); return failure; } });
+    assert.deepEqual(order, ['claude', 'gemini']); assert.equal(report.model, 'gemini-3.6-flash');
+  }
+  let claude = 0;
+  await assert.rejects(generateStrategy(input, { model: 'gemini-3.6-flash', enabled: false }, async () => { throw Error('Gemini is not configured'); }, Date.now() + 55000,
+    { token: 'T', model: 'claude', call: async () => { claude++; return { ok: false, status: 429, data: null }; } }), error => error.code === 'AI_QUOTA');
+  assert.equal(claude, 1);
+});
+
+test('a Claude draft that misses the quality bar is repaired by Claude while time allows', async () => {
+  const input = request({ section_id: 'target_basis' });
+  const context = S.makeContext(input);
+  const valid = modelDocument(context), short = structuredClone(valid); short.sections[0].items[0].detail = '짧은 설명';
+  const sent = [];
+  const report = await generateStrategy(input, { model: 'gemini-3.6-flash', enabled: true }, async () => { throw Error('Gemini must not run'); }, Date.now() + 55000,
+    { token: 'T', model: 'claude', call: async args => { sent.push(args.payload); return response(sent.length === 1 ? short : valid); } });
+  assert.equal(sent.length, 2); assert.equal(report.model, 'claude');
+  assert.ok(sent[1].contents[0].parts.at(-1).text.includes('품질 보완 지시'));
+  const order = [];
+  await generateStrategy(input, { model: 'gemini-3.6-flash', enabled: true }, async () => { order.push('gemini'); return response(valid); }, Date.now() + 20000,
+    { token: 'T', model: 'claude', call: async () => { order.push('claude'); return response(short); } });
+  assert.deepEqual(order, ['claude', 'gemini']);
+});
