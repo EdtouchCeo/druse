@@ -365,7 +365,18 @@
 
 <script>
   // 엑셀 고치기를 켠다. 머리글 색은 대륜고 슬라이드 테마의 남색이다.
-  window.FORMS_CONFIG = { sheets: true, sheetNavy: '1B2470' };
+  // serverRelay: 승인 교사 세션으로 부르는 서버 AI(Claude) 주소. /evalplan/이 쓰는 것과 같다.
+  window.FORMS_CONFIG = { sheets: true, sheetNavy: '1B2470', serverRelay: 'https://service-63986215827.us-west1.run.app/api/llm/generate-open' };
+  // 서버 AI를 기본 연결로 둔다. 개인 연결 설정(dr_tt_llm_v1)은 본체의 시간표 AI와 함께 쓰므로 서버 선택은 따로 적는다.
+  // serverEnd는 서버(data_analysis llm-access.ts의 SERVER_AI_END)와 같은 값이다. 지나면 개인 연결로 돌아간다.
+  window.DR_AI_CONFIG = {
+    serverLlm: function (req) { return window.drFormsServerLlm(req); },
+    serverPrefKey: 'dr_forms_ai_v1',
+    serverEnd: '2026-12-12T00:00:00Z',
+    serverName: '서버 AI (Claude)',
+    serverScope: '입력한 글은 서버를 거쳐 Anthropic으로 전송됩니다. 서버에는 저장하지 않습니다.',
+    serverHelp: '승인 교사 로그인으로 바로 씁니다. 2026년 12월 12일 오전 9시까지 제공합니다. 그 뒤에는 개인 연결을 골라야 합니다.'
+  };
 </script>
 <script src="../lib/jszip.min.js"></script>
 <script src="../lib/xlsx.full.min.js"></script>

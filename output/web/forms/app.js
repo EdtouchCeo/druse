@@ -25,6 +25,7 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // 사이트별 설정(같은 파일을 daeryun.life 문서작성 AI(/forms/)와 edtouch.ai 문서작성 AI가 함께 쓴다). 없으면 daeryun 기본값.
 //   gate: 교사 확인(본 사이트 세션)을 이 화면이 직접 할지 — edtouch는 앱 라우터가 이미 확인한다
 //   serverForms: 관리자 양식(서버) 목록·관리 화면을 쓸지
+//   serverRelay: 교사 세션으로 부를 서버 AI 주소(있으면 window.drFormsServerLlm을 만든다)
 //   role: AI에게 알려 줄 사용자 설명
 //   slideTheme·slideAssets·pptxLib: 새 PPT의 양식(slides.js 테마), 양식 그림 주소, 파워포인트 도구 주소
 const CFG = Object.assign({ gate: true, serverForms: true, role: '대륜고등학교 교사',
@@ -74,6 +75,48 @@ async function api(action, payload) {
   let d = {}; try { d = await r.json(); } catch (e) {}
   if (!r.ok) { const e = new Error(d.error || '요청을 처리하지 못했습니다(' + r.status + ').'); e.status = r.status; throw e; }
   return d;
+}
+
+/* ── 서버 AI (FORMS_CONFIG.serverRelay가 있을 때만) ──
+ * 교사 세션 토큰으로 서버를 직접 부른다. 승인 교사인지는 서버가 확인한다. /evalplan/ 포트의 serverLlm.ts와 같은 계약이다.
+ * 401이면 세션을 갱신해 한 번만 다시 보낸다. 실패 문구는 서버가 준 것을 그대로 보인다. */
+if (CFG.serverRelay) {
+  const NEED_LOGIN = '교사 로그인이 필요합니다. 대륜고 사용 설명서에서 로그인한 뒤 다시 보내 주세요. AI 설정에서 개인 연결을 고를 수도 있습니다.';
+  const FALLBACK = {
+    403: '승인된 교사 계정만 서버 AI를 쓸 수 있습니다. AI 설정에서 개인 연결을 고를 수도 있습니다.',
+    400: '입력 내용을 처리하지 못했습니다. 자료가 너무 길거나 형식이 맞지 않는지 확인해 주세요.',
+    413: '보낸 내용이 너무 큽니다. 자료나 이미지 선택을 줄여 다시 보내 주세요.',
+    429: '지금 이용자가 많아 잠시 이용이 어렵습니다. 잠시 후 다시 시도해 주세요.',
+    busy: 'AI 서버가 혼잡합니다. 30초쯤 뒤에 다시 시도해 주세요.'
+  };
+  window.drFormsServerLlm = async function (req) {
+    let s = getSession();
+    if (!s || !s.token) throw new Error(NEED_LOGIN);
+    if (s.refresh_token && (!s.expires_at || Date.now() > s.expires_at - 60000)) await refreshSession();
+    const body = JSON.stringify({ prompt: req.prompt, schema: req.schema, maxOutputTokens: req.maxOutputTokens, label: req.label, images: req.images });
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 300000);
+    const post = () => fetch(CFG.serverRelay, {
+      method: 'POST', signal: ctrl.signal, body,
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + ((getSession() || {}).token || ''), 'x-auth-site': 'daeryun' }
+    });
+    let res;
+    try {
+      res = await post();
+      if (res.status === 401 && await refreshSession()) res = await post();
+    } catch (e) {
+      if (e && e.name === 'AbortError') throw new Error('AI 응답이 너무 오래 걸려 중단했습니다. 잠시 후 다시 시도해 주세요.');
+      throw new Error('네트워크 오류로 AI 서버에 연결하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.');
+    } finally { clearTimeout(timer); }
+    let data = null; try { data = await res.json(); } catch (e) {}
+    if (!res.ok) {
+      const said = data && typeof data.error === 'string' ? data.error.trim() : '';
+      throw new Error(res.status === 401 ? NEED_LOGIN
+        : said || FALLBACK[res.status] || (res.status >= 502 && res.status <= 504 ? FALLBACK.busy : '요청을 처리하지 못했습니다(' + res.status + '). 잠시 후 다시 시도해 주세요.'));
+    }
+    const text = String((data && data.text) || '').trim();
+    if (!text) throw new Error('AI가 빈 응답을 반환했습니다. 다시 시도해 주세요.');
+    return text;
+  };
 }
 
 /* ── 표시 도우미 ── */
@@ -505,7 +548,7 @@ async function loadForms() {
 function renderFormCards() {
   document.querySelector('.forms-list').hidden = !state.forms.length && !CFG.serverForms;
   $('form-cards').innerHTML = state.forms.length ? state.forms.map((f) =>
-    `<button type="button" class="form-card" data-form="${esc(f.id)}"><b>${esc(f.title)}</b><small>${esc(f.dept || '')}${f.meta && f.meta.year ? ' · ' + esc(f.meta.year) + '학년도' : ''}</small></button>`).join('')
+    `<button type="button" class="form-card" data-form="${esc(f.id)}"><b>${esc(f.title)}</b><small>${esc(f.dept || '')}${f.meta && f.meta.year ? ' · ' + esc(f.meta.year) + '학년도' : ''}${f.form && f.form.app ? ' · 입력 화면' : ''}</small></button>`).join('')
     : '<p class="hint">등록된 양식이 없습니다.</p>';
 }
 $('form-cards').addEventListener('click', (e) => { const b = e.target.closest('[data-form]'); if (b) openForm(b.dataset.form); });
@@ -535,6 +578,7 @@ async function openForm(id, opts) {
     if (b) f = state.forms.find((x) => !x.builtin && x.title === b.title);
   }
   if (!f) { note('양식을 찾지 못했습니다. 목록을 새로 고쳐 주세요.'); return null; }
+  if (f.builtin && f.form.app) { openAppForm(f); return null; }
   cover('wait', '<div>' + esc(f.title) + ' 양식을 여는 중입니다…</div>');
   try {
     let bytes, form, loadName;
@@ -558,6 +602,80 @@ async function openForm(id, opts) {
     return null;
   }
 }
+
+/* ── 입력 화면이 있는 양식 (forms.js 항목의 app) ──
+ * 같은 사이트의 다른 화면을 이 화면 위에 겹쳐 띄운다. 그 화면이 만든 한글 파일을 받아 고칠 문서로 연다.
+ * 계약: 자식 → { type:'dr-forms-open', v:1, name, bytes:ArrayBuffer }, 부모 → { type:'dr-forms-opened', v:1, ok, message }.
+ * 받는 메시지는 같은 주소(origin)이고 우리가 띄운 창에서 온 것만 쓴다. 창은 닫아도 지우지 않고 감춰, 다시 열면 하던 작업이 남아 있다. */
+const appForms = new Map();
+const APP_FORM_MAX = 20 * 1024 * 1024;
+(function injectAppFormCss() {
+  const st = document.createElement('style');
+  st.textContent = '.app-form{position:fixed;inset:0;z-index:3000;display:flex;flex-direction:column;background:#fff}' +
+    '.app-form[hidden]{display:none}' +
+    '.app-form-bar{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 12px;background:#1a3a6b;color:#fff;word-break:keep-all}' +
+    '.app-form-bar b{font-size:.95rem;flex:0 1 auto}' +
+    '.app-form-bar span{flex:1 1 0;min-width:0;font-size:.8rem;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+    '.app-form-x{flex:0 0 auto;min-height:44px;min-width:64px;padding:0 14px;border:1px solid rgba(255,255,255,.6);border-radius:22px;background:transparent;color:#fff;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer}' +
+    '.app-form-x:focus-visible{outline:3px solid #fff;outline-offset:2px}' +
+    '.app-form iframe{flex:1 1 auto;width:100%;border:0;background:#fff}' +
+    '@media (max-width:520px){.app-form-bar span{display:none}}';
+  document.head.appendChild(st);
+})();
+function openAppForm(f) {
+  const form = f.form;
+  let a = appForms.get(f.id);
+  if (!a) {
+    const wrap = document.createElement('div');
+    wrap.className = 'app-form'; wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true'); wrap.setAttribute('aria-label', form.title);
+    wrap.innerHTML = '<div class="app-form-bar"><b>' + esc(form.title) + '</b><span>' + esc(form.appHint || '') + '</span>' +
+      '<button type="button" class="app-form-x">닫기</button></div>';
+    const frame = document.createElement('iframe');
+    frame.title = form.title; frame.src = form.app;
+    wrap.appendChild(frame);
+    wrap.querySelector('.app-form-x').addEventListener('click', () => closeAppForm(f.id));
+    wrap.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAppForm(f.id); });
+    document.body.appendChild(wrap);
+    a = { wrap, frame, f };
+    appForms.set(f.id, a);
+  }
+  a.opener = document.activeElement;
+  a.wrap.hidden = false;
+  a.wrap.querySelector('.app-form-x').focus();
+}
+function closeAppForm(id) {
+  const a = appForms.get(id);
+  if (!a || a.wrap.hidden) return;
+  a.wrap.hidden = true;
+  if (a.opener && a.opener.focus && document.contains(a.opener)) a.opener.focus();
+}
+window.addEventListener('message', async (e) => {
+  const d = e.data;
+  if (!d || d.v !== 1 || d.type !== 'dr-forms-open' || e.origin !== location.origin) return;
+  const a = [...appForms.values()].find((x) => x.frame.contentWindow === e.source);
+  if (!a) return;
+  const reply = (o) => { try { e.source.postMessage(Object.assign({ type: 'dr-forms-opened', v: 1 }, o), location.origin); } catch (err) {} };
+  try {
+    if (state.busy) throw new Error('문서작성 AI가 답을 만드는 중입니다. 끝난 뒤 다시 눌러 주세요.');
+    if (!(d.bytes instanceof ArrayBuffer) || !d.bytes.byteLength) throw new Error('받은 파일이 비어 있습니다. 다시 눌러 주세요.');
+    if (d.bytes.byteLength > APP_FORM_MAX) throw new Error('파일이 너무 큽니다(20MB 초과).');
+    const bytes = new Uint8Array(d.bytes);
+    if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) throw new Error('한글(.hwpx) 파일이 아닙니다.');
+    const form = a.f.form;
+    const name = baseName(String(d.name || form.title).slice(0, 120)) || form.title;
+    const t = newTab({ name, kind: 'hwp', bytes, loadName: name + '.hwpx', form: Object.assign({}, form, { fileName: () => name + '.hwpx' }), formRef: a.f });
+    if (!(await activate(t.id))) throw new Error('편집기에 문서를 열지 못했습니다. 한글 파일 받기로 내려받은 뒤 이 화면에 올려 주세요.');
+    state.targetId = t.id;
+    renderTarget(); renderEmpty();
+    reply({ ok: true });
+    closeAppForm(a.f.id);
+    note('「' + name + '」 문서를 열었습니다. 왼쪽 대화로 이어서 고칠 수 있습니다.');
+    $('prompt').focus();
+  } catch (err) {
+    console.error(err);
+    reply({ ok: false, message: (err && err.message) || '문서를 열지 못했습니다.' });
+  }
+});
 
 /* ── 고칠 문서·자료 선택 ── */
 function renderTarget() {
@@ -711,6 +829,7 @@ function renderAi() {
   $('scope').textContent = label
     ? '보낼 때 고칠 문서' + (n ? '와 고른 자료 ' + n + '개' : '') + '의 내용을 함께 보냅니다.' + (ni ? ' 이미지 ' + ni + '장도 같은 곳으로 함께 보냅니다.' : '') + ' ' + drAi.scope()
     : '처음 한 번 AI 설정에서 Gemini 무료 키나 구독 연결을 등록하면 쓸 수 있습니다.';
+  // 서버 AI가 기본인 화면에서는 어느 연결로 보내는지 단추 이름으로 알 수 있다.
 }
 $('ai-chip').addEventListener('click', () => drAi.open());
 window.addEventListener('drai-change', renderAi);

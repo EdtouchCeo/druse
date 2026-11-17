@@ -2,11 +2,15 @@
 /* 대륜고판 셸. 2026-11-05 서버 AI(Claude) 연결에 맞춰 푸터 문구를 고쳤다. */
 import { House } from 'lucide-vue-next'
 import logo from './daeryun-logo.png'
+import { isFormsEmbed } from './formsEmbed'
+
+// 문서작성 AI 안에서 열리면 부모 화면이 창 제목과 닫기 단추를 가지므로 위쪽 띠와 푸터를 숨긴다.
+const embedded = isFormsEmbed()
 </script>
 
 <template>
   <div class="flex min-h-screen flex-col bg-background text-foreground">
-    <header class="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
+    <header v-if="!embedded" class="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
       <div class="container mx-auto max-w-5xl px-4 md:px-6">
         <div class="flex h-14 items-center justify-between gap-3">
           <div class="flex min-w-0 items-center gap-2">
@@ -29,7 +33,7 @@ import logo from './daeryun-logo.png'
     <main class="flex-1">
       <RouterView />
     </main>
-    <footer class="border-t border-border py-6 text-center text-xs text-muted-foreground">
+    <footer v-if="!embedded" class="border-t border-border py-6 text-center text-xs text-muted-foreground">
       <p>개발 및 운영 : 교사 홍대화</p>
       <p class="mx-auto mt-1.5 max-w-3xl break-keep px-4">
         승인 교사는 로그인하면 서버 AI(Claude)를 쓸 수 있습니다. 이때 입력한 내용은 답변을 만들기 위해 Anthropic으로 전송되며, 서버에는 저장하지 않습니다.

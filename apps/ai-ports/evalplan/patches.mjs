@@ -96,11 +96,67 @@ const usingServer = computed(() => {
     ['보일 단추', "const ALL: Format[] = ['md', 'pdf', 'hwpx', 'xlsx', 'pptx']\n", "const ALL: Format[] = ['md', 'pdf', 'hwpx']\n"],
     [
       '편집 단추 안내',
-      '<span class="text-sm text-muted-foreground break-keep">문서작성 AI 새 탭에서 엽니다.</span>',
-      '<span class="text-sm text-muted-foreground break-keep">한글로 편집은 양식 모양의 한글 파일을 내려받습니다.</span>',
+      '<span v-if="!hideEditHint" class="text-sm text-muted-foreground break-keep">문서작성 AI 새 탭에서 엽니다.</span>',
+      '<span v-if="!hideEditHint" class="text-sm text-muted-foreground break-keep">한글로 편집은 양식 모양의 한글 파일을 내려받습니다.</span>',
     ],
   ],
+  // 문서작성 AI(/forms/) 안에서 열린 경우(?embed=forms + 부모 창)에만 '문서작성 AI에서 열기'를 주 단추로 보인다.
+  // 단독 화면에서는 embedMode가 false라 단추가 없고 '한글 파일 받기'가 지금처럼 주 단추다.
   'src/components/evalPlan/EvalPlanFormInfoDialog.vue': [
+    [
+      '문서작성 AI 연결 import',
+      "import { sendToDocAi } from '@/lib/export/handoff'\n",
+      "import { sendToDocAi } from '@/lib/export/handoff'\nimport { isFormsEmbed, sendToForms } from '@/daeryun-port/evalplan/formsEmbed'\n",
+    ],
+    [
+      '문서작성 AI에서 열기 함수',
+      "const inputClass =\n",
+      `const embedMode = isFormsEmbed()
+
+async function toForms() {
+  if (busy.value) return
+  error.value = ''
+  notice.value = ''
+  blocked.value = false
+  busy.value = 'docai'
+  try {
+    const file = await make()
+    const result = await sendToForms(file.name, file.bytes)
+    busy.value = null
+    if (result.ok) emit('close')
+    else error.value = result.message
+  } catch (err) {
+    const why = reasonOf(err)
+    error.value = \`한글 파일을 만들지 못했습니다.\${why ? \` \${why}\` : ''}\`
+  } finally {
+    busy.value = null
+  }
+}
+
+const inputClass =
+`,
+    ],
+    [
+      '문서작성 AI에서 열기 단추',
+      `<div class="flex flex-wrap items-center gap-2">
+          <Button type="button" variant="brand" :disabled="!!busy" :aria-busy="busy === 'download' ? 'true' : undefined" @click="download">`,
+      `<div class="flex flex-wrap items-center gap-2">
+          <Button
+            v-if="embedMode"
+            type="button"
+            variant="brand"
+            class="min-h-11 break-keep"
+            :disabled="!!busy"
+            :aria-busy="busy === 'docai' ? 'true' : undefined"
+            data-forms-open
+            @click="toForms"
+          >
+            <LoaderCircle v-if="busy === 'docai'" class="animate-spin" aria-hidden="true" />
+            <FileText v-else aria-hidden="true" />
+            문서작성 AI에서 열기
+          </Button>
+          <Button type="button" :variant="embedMode ? 'soft' : 'brand'" :disabled="!!busy" :aria-busy="busy === 'download' ? 'true' : undefined" @click="download">`,
+    ],
     [
       '문서작성 AI 단추',
       /\n {10}<Button type="button" variant="soft" :disabled="!!busy" :aria-busy="busy === 'docai' \? 'true' : undefined" @click="toDocAi">[\s\S]*?문서작성 AI에서 편집\n {10}<\/Button>/,
@@ -126,4 +182,4 @@ const usingServer = computed(() => {
 export const staticFiles = [['public/evalplan-forms', 'evalplan-forms']]
 
 export const forbidden = ['initializeApp', 'firebaseapp.com', 'getAuth(', 'idToken', '승인 교육자만 쓸', '교육자 회원', 'EdTouch 서버 제공', 'docai?handoff', '문서작성 AI 새 탭에서 엽니다', '문서작성 AI에서 편집']
-export const required = ['generate-open', 'x-auth-site', 'dr_sess_v1', 'Anthropic', '/evalplan/evalplan-forms/2026/task1.hwpx', '한글 파일 받기']
+export const required = ['dr-forms-open', 'dr-forms-opened', 'generate-open', 'x-auth-site', 'dr_sess_v1', 'Anthropic', '/evalplan/evalplan-forms/2026/task1.hwpx', '한글 파일 받기']

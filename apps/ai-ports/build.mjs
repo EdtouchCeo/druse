@@ -97,7 +97,8 @@ async function build(app) {
     cpSync(join(work, from), join(out, to), { recursive: true })
   }
 
-  unlinkSync(link)
+  // 원본 node_modules를 연결했을 때만 연결을 푼다. npm ci로 받은 진짜 폴더는 임시 폴더와 함께 남긴다.
+  if (lstatSync(link).isSymbolicLink()) unlinkSync(link)
   console.log(`${app}: output/web/${app}/ 갱신(원본 ${commit})`)
   return commit
 }

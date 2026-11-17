@@ -2,7 +2,8 @@
  *
  * 본체(index.html)의 시간표 AI 설정(window.drAiCall·drAiOpen)과 같은 저장 키(dr_tt_llm_v1)·같은 문안·
  * 같은 호출 사다리를 쓴다. 같은 오리진이므로 어느 화면에서 한 번 설정하면 이 브라우저의 모든 AI 기능이 함께 쓴다.
- * 문안 출처: edtouch _workspace/ai-setup-easy-20261021/00_contract.md (세 사이트 공통). daeryun에는 서버 제공 AI가 없다.
+ * 문안 출처: edtouch _workspace/ai-setup-easy-20261021/00_contract.md (세 사이트 공통).
+ * 서버 AI는 사이트 설정이 호출기(serverLlm)를 줄 때만 선택지로 보인다. daeryun은 문서작성 AI(/forms/)만 준다.
  * 본체의 AI 설정을 고치면 이 파일도 함께 고친다.
  *
  *   drAi.call(prompt, schema, onMsg, opts) → Promise<object>   구조화(JSON) 응답
@@ -18,17 +19,27 @@
   //   storageKey: AI 설정 저장 키, seedKey: 저장값이 없을 때 대신 읽을 키,
   //   openExternal: 설정 창을 이 모듈 대신 부모 사이트가 열게 하는 함수(예: edtouch의 전역 AI 설정 창)
   //   serverLlm: 부모 사이트의 서버 AI 호출 함수(req → 응답 글). 있으면 저장값 'server'를 받아들이고, 저장값이 없을 때의 기본값이 된다.
+  //   serverPrefKey: 서버 AI를 쓸지 따로 적어 두는 저장 키. 있으면 개인 연결 설정(storageKey)에는 'server'를 쓰지 않는다
+  //     (같은 설정을 읽는 다른 화면이 서버 연결을 모를 때 쓴다). 값은 'server' 또는 'personal'이고, 없으면 서버 AI가 기본이다.
+  //   serverEnd: 서버 AI 제공 종료 시각(ISO). 지나면 서버 선택지를 감추고 개인 연결로 돌아간다. 서버의 종료 시각과 같은 값을 넣는다.
+  //   serverName·serverScope·serverHelp: 서버 연결의 이름, 전송 범위 한 줄, 설정 창 안내
   var CFG = window.DR_AI_CONFIG || {};
   var AI_KEY = CFG.storageKey || 'dr_tt_llm_v1';
   var SEED_KEY = CFG.seedKey || '';
   var SERVER_LLM = typeof CFG.serverLlm === 'function' ? CFG.serverLlm : null;
+  var SERVER_END = CFG.serverEnd ? Date.parse(CFG.serverEnd) : NaN;
+  var PREF_KEY = CFG.serverPrefKey || '';
+  var SERVER_NAME = CFG.serverName || 'EdTouch 서버 AI';
+  var SERVER_HELP = CFG.serverHelp || '설정할 것이 없습니다. 저장을 누르면 바로 씁니다.';
+  function serverOn() { return !!SERVER_LLM && !(SERVER_END && Date.now() >= SERVER_END); }
+  function pref() { if (!PREF_KEY) return ''; try { return localStorage.getItem(PREF_KEY) || ''; } catch (e) { return ''; } }
   // 폴백은 반드시 실재하는 모델이어야 한다 — flash-lite는 일부 키에서 404가 나 원래 오류를 뒤덮는 실사고(특기사항 AI, 2026-07)
   var GEM_DEFAULT = 'gemini-3.5-flash', GEM_FALLBACK = 'gemini-2.5-flash';
   var BRIDGE = 'http://127.0.0.1:47321';
   var BRIDGE_DOWN = '연결 도우미가 실행 중이 아닙니다. 연결 도우미 창을 연 뒤 다시 눌러 주세요. 크롬이 이 기기 접근을 허용할지 물으면 허용을 누릅니다.';
   var BRIDGE_DENIED = '브라우저가 이 사이트의 내 PC 접근을 막아 두었습니다. 주소창 왼쪽 아이콘을 눌러 사이트 설정에서 로컬 네트워크 접근을 허용으로 바꾼 뒤 새로고침해 주세요.';
   var SCOPE = {
-    server: '입력한 글은 EdTouch 서버를 거쳐 Anthropic으로 전송됩니다. EdTouch 서버에는 저장하지 않습니다.',
+    server: CFG.serverScope || '입력한 글은 EdTouch 서버를 거쳐 Anthropic으로 전송됩니다. EdTouch 서버에는 저장하지 않습니다.',
     gemini: '입력한 글은 Google로 전송됩니다. 키는 이 브라우저에만 저장됩니다.',
     bridge: '입력한 글은 내 PC를 거쳐 Anthropic이나 OpenAI로 전송되고, 내 구독 사용 한도에서 차감됩니다.',
     ollama: '입력한 글이 이 PC 밖으로 나가지 않습니다. PC 사양에 따라 느릴 수 있습니다.'
@@ -36,27 +47,39 @@
   var codexModels = [];
 
   function load() {
+    var out = { provider: 'gemini', gemini: { apiKey: '', model: GEM_DEFAULT }, ollama: { url: 'http://localhost:11434', model: '' }, bridge: { provider: 'claude', model: '' } };
+    var found = false;
     try {
       var s = JSON.parse(localStorage.getItem(AI_KEY) || (SEED_KEY ? localStorage.getItem(SEED_KEY) : null));
-      if (s && typeof s === 'object') return {
-        provider: s.provider === 'server' && SERVER_LLM ? 'server' : s.provider === 'ollama' ? 'ollama' : s.provider === 'bridge' ? 'bridge' : 'gemini',
-        gemini: { apiKey: ((s.gemini && s.gemini.apiKey) || '').trim(), model: ((s.gemini && s.gemini.model) || '').trim() || GEM_DEFAULT },
-        ollama: { url: ((s.ollama && s.ollama.url) || '').trim() || 'http://localhost:11434', model: ((s.ollama && s.ollama.model) || '').trim() },
-        bridge: { provider: (s.bridge && s.bridge.provider) === 'codex' ? 'codex' : 'claude', model: ((s.bridge && s.bridge.model) || '').trim() }
-      };
+      if (s && typeof s === 'object') {
+        found = true;
+        out = {
+          provider: s.provider === 'server' ? 'server' : s.provider === 'ollama' ? 'ollama' : s.provider === 'bridge' ? 'bridge' : 'gemini',
+          gemini: { apiKey: ((s.gemini && s.gemini.apiKey) || '').trim(), model: ((s.gemini && s.gemini.model) || '').trim() || GEM_DEFAULT },
+          ollama: { url: ((s.ollama && s.ollama.url) || '').trim() || 'http://localhost:11434', model: ((s.ollama && s.ollama.model) || '').trim() },
+          bridge: { provider: (s.bridge && s.bridge.provider) === 'codex' ? 'codex' : 'claude', model: ((s.bridge && s.bridge.model) || '').trim() }
+        };
+      }
     } catch (e) {}
-    return { provider: SERVER_LLM ? 'server' : 'gemini', gemini: { apiKey: '', model: GEM_DEFAULT }, ollama: { url: 'http://localhost:11434', model: '' }, bridge: { provider: 'claude', model: '' } };
+    if (PREF_KEY) {
+      // 서버 선택은 따로 적어 둔다. 개인 연결 설정은 그대로 남아 있어 언제든 되돌릴 수 있다.
+      if (out.provider === 'server') out.provider = 'gemini';
+      if (serverOn() && pref() !== 'personal') out.provider = 'server';
+    } else if (out.provider === 'server') {
+      if (!serverOn()) out.provider = 'gemini';
+    } else if (!found && serverOn()) out.provider = 'server';
+    return out;
   }
   // 구독 연결은 저장만 하면 '설정됨'으로 본다(본체와 같다). 실제 실행 여부는 첫 요청에서 확인된다.
   function has(s) { s = s || load(); if (s.provider === 'bridge' || s.provider === 'server') return true; return s.provider === 'gemini' ? !!s.gemini.apiKey : !!(s.ollama.url && s.ollama.model); }
-  function isSaved() { if (SERVER_LLM) return true; try { return !!(localStorage.getItem(AI_KEY) || (SEED_KEY && localStorage.getItem(SEED_KEY))); } catch (e) { return false; } }
+  function isSaved() { if (serverOn()) return true; try { return !!(localStorage.getItem(AI_KEY) || (SEED_KEY && localStorage.getItem(SEED_KEY))); } catch (e) { return false; } }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
   function label() {
     var s = load();
     if (!isSaved() || !has(s)) return '';
-    if (s.provider === 'server') return 'EdTouch 서버 AI';
+    if (s.provider === 'server') return SERVER_NAME;
     if (s.provider === 'bridge') return s.bridge.provider === 'codex' ? 'ChatGPT 구독' : 'Claude 구독';
     if (s.provider === 'ollama') return 'Ollama · ' + s.ollama.model;
     return 'Gemini · ' + s.gemini.model;
@@ -112,12 +135,14 @@
     '<div class="drai-head"><h2 id="drai-title">AI 설정</h2><button type="button" class="drai-x" data-close aria-label="닫기">✕</button></div>' +
     '<div class="drai-body">' +
     '<div class="ai-lbl" id="drai-method-lbl" style="margin-top:0;">AI 연결 방법</div>' +
-    '<p class="ai-help" style="margin:0 0 8px;">처음이라면 Gemini 무료 키를 고르세요. 구글 계정만 있으면 바로 받을 수 있습니다.</p>' +
+    '<p class="ai-help" id="drai-method-help" style="margin:0 0 8px;">처음이라면 Gemini 무료 키를 고르세요. 구글 계정만 있으면 바로 받을 수 있습니다.</p>' +
     '<div role="radiogroup" aria-labelledby="drai-method-lbl" class="ai-choices">' +
+    '<label class="ai-choice" id="drai-srv-choice" style="display:none;"><input type="radio" name="drai-provider" value="server"><span><b id="drai-srv-name"></b><small>설정 없이 바로 씁니다.</small></span></label>' +
     '<label class="ai-choice"><input type="radio" name="drai-provider" value="gemini"><span><b>Gemini 무료 키</b><small>구글에서 받은 키를 붙여 넣습니다.</small></span></label>' +
     '<label class="ai-choice"><input type="radio" name="drai-provider" value="bridge"><span><b>구독 연결 (Claude · ChatGPT)</b><small>유료 구독이 있을 때, 이 PC에서 씁니다.</small></span></label>' +
     '<label class="ai-choice"><input type="radio" name="drai-provider" value="ollama"><span><b>Ollama (내 PC)</b><small>기록이 PC 밖으로 나가지 않습니다. 설치가 필요합니다.</small></span></label>' +
     '</div>' +
+    '<div id="drai-srv" style="display:none;"><p class="ai-help" id="drai-srv-help"></p></div>' +
     '<div id="drai-gem">' +
     '<ol class="ai-steps">' +
     '<li>Google AI Studio를 열고 구글 계정으로 로그인합니다. <a class="ai-linkbtn" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio 열기</a></li>' +
@@ -185,7 +210,7 @@
     $('drai-save').addEventListener('click', save);
     return modal;
   }
-  function getProv() { var el = modal.querySelector('input[name=drai-provider]:checked'); var v = el ? el.value : 'gemini'; return v === 'ollama' || v === 'bridge' ? v : 'gemini'; }
+  function getProv() { var el = modal.querySelector('input[name=drai-provider]:checked'); var v = el ? el.value : 'gemini'; return v === 'ollama' || v === 'bridge' || (v === 'server' && serverOn()) ? v : 'gemini'; }
   function setProv(v) { modal.querySelectorAll('input[name=drai-provider]').forEach(function (r) { r.checked = (r.value === v); }); }
   function setMsg(kind, text) { $('drai-msg').innerHTML = text ? '<span class="' + kind + '">' + esc(text) + '</span>' : ''; }
   function provChange() {
@@ -193,6 +218,8 @@
     $('drai-gem').style.display = p === 'gemini' ? '' : 'none';
     $('drai-oll').style.display = p === 'ollama' ? '' : 'none';
     $('drai-brg').style.display = p === 'bridge' ? '' : 'none';
+    $('drai-srv').style.display = p === 'server' ? '' : 'none';
+    $('drai-test').style.display = p === 'server' ? 'none' : '';
     $('drai-scope').textContent = SCOPE[p];
     setMsg('', '');
   }
@@ -215,7 +242,13 @@
     if (typeof CFG.openExternal === 'function') { CFG.openExternal(); return; }
     ensureModal();
     lastFocus = document.activeElement;
-    var s = load();
+    var s = load(), on = serverOn();
+    $('drai-srv-choice').style.display = on ? '' : 'none';
+    $('drai-srv-name').textContent = SERVER_NAME;
+    $('drai-srv-help').textContent = SERVER_HELP;
+    $('drai-method-help').textContent = on
+      ? SERVER_NAME + '는 설정 없이 바로 씁니다. 개인 연결을 쓰려면 아래에서 고르세요.'
+      : '처음이라면 Gemini 무료 키를 고르세요. 구글 계정만 있으면 바로 받을 수 있습니다.';
     setProv(s.provider);
     $('drai-gem-key').value = s.gemini.apiKey; $('drai-gem-model').value = s.gemini.model;
     $('drai-oll-url').value = s.ollama.url; $('drai-oll-model').value = s.ollama.model;
@@ -233,7 +266,12 @@
   function save() {
     var s = readForm();
     if (!has(s)) { setMsg('err', s.provider === 'gemini' ? 'API 키를 입력해 주세요.' : 'Ollama 주소와 모델명을 입력해 주세요.'); return; }
-    try { localStorage.setItem(AI_KEY, JSON.stringify(s)); } catch (e) {}
+    try {
+      if (PREF_KEY) {
+        localStorage.setItem(PREF_KEY, s.provider === 'server' ? 'server' : 'personal');
+        if (s.provider !== 'server') localStorage.setItem(AI_KEY, JSON.stringify(s));
+      } else localStorage.setItem(AI_KEY, JSON.stringify(s));
+    } catch (e) {}
     close();
     window.dispatchEvent(new CustomEvent('drai-change'));
   }
@@ -434,7 +472,7 @@
   }
 
   // 다른 창(부모 사이트의 설정 창 등)에서 설정을 바꾸면 화면 표시를 새로 고친다.
-  window.addEventListener('storage', function (e) { if (e.key === AI_KEY || (SEED_KEY && e.key === SEED_KEY)) window.dispatchEvent(new CustomEvent('drai-change')); });
+  window.addEventListener('storage', function (e) { if (e.key === AI_KEY || (SEED_KEY && e.key === SEED_KEY) || (PREF_KEY && e.key === PREF_KEY)) window.dispatchEvent(new CustomEvent('drai-change')); });
 
   window.drAi = {
     call: call,
