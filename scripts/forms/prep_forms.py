@@ -3,12 +3,58 @@
 원본: input/teacher/각종 양식/*.hwpx
 실행: python scripts/forms/prep_forms.py "<원본 폴더>" output/web/forms/templates
 하는 일: 예시로 적혀 있던 값(이름, 날짜, 수업 내용)을 비우고 줄 배치 캐시를 지운다. 항목 이름과 안내문은 그대로 둔다.
+본문 밖에 남는 원본 흔적도 지운다. 미리보기 글(Preview/PrvText.txt)과 미리보기 그림(Preview/PrvImage.png)에는
+예시 값이 그대로 들어 있고, content.hpf에는 만든 사람 이름이 있다. 편집기는 이 항목을 새로 만들지 않으므로
+틀에 남으면 교사가 내려받는 모든 문서에 따라간다. 빈 문서(forms/blank.hwpx)의 값으로 바꾼다.
+기존 틀만 다시 지우려면: python scripts/forms/prep_forms.py --scrub output/web/forms/templates
 양식이 바뀌면 아래 문구 일치(assert)가 실패한다. 실패한 위치를 새 양식에 맞게 고친다.
 틀을 다시 만들면 output/web/forms/forms.js의 작성 기준(칸 위치)도 함께 확인한다.
 """
 import io, os, re, sys, zipfile
 
+SCRUB_ONLY = sys.argv[1] == '--scrub'
 SRC, DST = sys.argv[1], sys.argv[2]
+BLANK = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../output/web/forms/blank.hwpx'))
+BLANK_IMAGE = BLANK.read('Preview/PrvImage.png')
+
+
+def scrub(name, data):
+    """본문이 아닌 항목에서 원본 문서의 흔적을 지운다."""
+    if name == 'Preview/PrvText.txt':
+        return b'\r\n'
+    if name == 'Preview/PrvImage.png':
+        return BLANK_IMAGE
+    if name == 'Contents/content.hpf':
+        t = data.decode('utf-8')
+        t = re.sub(r'(<opf:title>)[^<]*(</opf:title>)', r'\1\2', t)
+        t = re.sub(r'(<opf:meta name="(?:creator|lastsaveby|CreatedDate|ModifiedDate|date|subject|description|keyword)" content="text">)[^<]*(</opf:meta>)', r'\1\2', t)
+        return t.encode('utf-8')
+    return data
+
+
+def rewrite(src_zip, dst_path, section=None):
+    buf = io.BytesIO()
+    out = zipfile.ZipFile(buf, 'w')
+    for info in src_zip.infolist():
+        data = section if (section is not None and info.filename == 'Contents/section0.xml') else scrub(info.filename, src_zip.read(info.filename))
+        # mimetype은 압축하지 않은 첫 항목이어야 한다(HWPX 규칙).
+        kind = zipfile.ZIP_STORED if info.filename == 'mimetype' else zipfile.ZIP_DEFLATED
+        out.writestr(zipfile.ZipInfo(info.filename, date_time=(2026, 11, 17, 0, 0, 0)), data, kind)
+    out.close()
+    open(dst_path, 'wb').write(buf.getvalue())
+    return len(buf.getvalue())
+
+
+if SCRUB_ONLY:
+    for fn in sorted(os.listdir(DST)):
+        if fn.endswith('.hwpx'):
+            z = zipfile.ZipFile(os.path.join(DST, fn))
+            names = [i.filename for i in z.infolist()]
+            keep = {n: z.read(n) for n in names}
+            z.close()
+            src = zipfile.ZipFile(io.BytesIO(open(os.path.join(DST, fn), 'rb').read()))
+            print('SCRUB', fn, rewrite(src, os.path.join(DST, fn)))
+    sys.exit(0)
 TC = re.compile(r'<hp:tc\b.*?</hp:tc>', re.S)
 TBL = re.compile(r'<hp:tbl\b.*?</hp:tbl>', re.S)
 PARA = re.compile(r'<hp:p\b[^>]*>.*?</hp:p>', re.S)
@@ -76,16 +122,7 @@ class Form:
         self.sec = self.sec[:m.start()] + fn(m.group(0)) + self.sec[m.end():]
 
     def save(self, name):
-        buf = io.BytesIO()
-        out = zipfile.ZipFile(buf, 'w')
-        for info in self.z.infolist():
-            data = self.sec.encode('utf-8') if info.filename == 'Contents/section0.xml' else self.z.read(info.filename)
-            # mimetype은 압축하지 않은 첫 항목이어야 한다(HWPX 규칙).
-            kind = zipfile.ZIP_STORED if info.filename == 'mimetype' else zipfile.ZIP_DEFLATED
-            out.writestr(zipfile.ZipInfo(info.filename, date_time=(2026, 11, 17, 0, 0, 0)), data, kind)
-        out.close()
-        open(os.path.join(DST, name), 'wb').write(buf.getvalue())
-        print('OK', name, len(buf.getvalue()))
+        print('OK', name, rewrite(self.z, os.path.join(DST, name), self.sec.encode('utf-8')))
 
 
 # 1. 1학급 1캠페인 활동 결과보고서
@@ -96,6 +133,7 @@ f.save('campaign-result.hwpx')
 
 # 2. 결석신고서: 손으로 쓰는 빈 양식이라 그대로 둔다.
 f = Form('결석신고서.hwpx')
+f.sub('재1헝 재2호', '제1항 제2호')  # 원본 양식의 오탈자
 f.save('absence-report.hwpx')
 
 # 3. 교수-학습 지도안(약안)
@@ -118,6 +156,7 @@ f.save('service-cert.hwpx')
 # 6. 수업 참관록
 f = Form('수업 참관록 양식.hwpx')
 f.put(1, 0, 1, '20   년    월    일(   요일)      교시')
+f.sub('평가 측도', '평가 척도')  # 원본 양식의 오탈자
 f.save('class-observation.hwpx')
 
 # 7. 월중 행사표: 날짜 숫자는 두고 요일·행사·비고를 비운다.

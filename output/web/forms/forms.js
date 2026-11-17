@@ -112,7 +112,7 @@ window.DR_FORMS = [
       return ['참가학생 칸에 들어 있는 이름: ' + n + '명'];
     },
     fileName: function (doc) {
-      var m = (doc.items['T1:r0c0'] ? doc.text('T1:r0c0') : '').match(/(\d)\s*학년\s*(\d{1,2})\s*반/);
+      var m = (doc.items['T1:r0c0'] ? doc.text('T1:r0c0') : '').match(/([1-3])\s*학년\s*([1-9]\d?)\s*반/);
       return '1학급 1캠페인 활동 결과보고서' + (m ? '(' + m[1] + '-' + m[2] + ')' : '') + '.hwpx';
     },
     suggestions: [
@@ -143,7 +143,7 @@ window.DR_FORMS = [
     title: '봉사활동 운영 계획서',
     dept: '창의인성부',
     template: 'templates/service-plan.hwpx',
-    fileName: function (doc) { return (doc.items.P1 ? doc.text('P1').trim() : '봉사활동 운영 계획') + '.hwpx'; },
+    fileName: function (doc) { var t = doc.items.P1 ? doc.text('P1').trim() : ''; return (t && !/00실/.test(t) ? t : '봉사활동 운영 계획서') + '.hwpx'; },
     suggestions: [
       '첨부한 명단으로 참여자와 봉사 기간을 채워 줘.',
       '봉사 장소는 도서실이야. 제목과 내용을 맞춰 줘.',
@@ -156,7 +156,7 @@ window.DR_FORMS = [
       '- "1. 목적"의 가·나 문장과 "5. 봉사활동 운영 지침"의 가·나·다 문장은 교사가 요청할 때만 고친다.',
       '- "2. 봉사활동 내용 : " 뒤에 "도서실 청소"처럼 쓴다. "3. 봉사활동 영역 : "은 환경보호활동, 이웃돕기활동, 캠페인활동 가운데 하나다.',
       '- T1 둘째 줄: 봉사활동 기간 "2026.09.01.(화)-2026.10.30.(금)", 봉사활동 시간 "12:55 – 13:20(25분)", 봉사활동 인원 "8명". 요일은 날짜에 맞게 계산한다.',
-      '  봉사 시수 인정 칸은 세 줄이다: "1회\\n25분\\n(50분을 1시간으로 인정)". 1회 시간이 바뀌면 둘째 줄만 바꾼다.',
+      '  봉사 시수 인정 칸은 두 줄이다: "1회 / 25분\\n(50분을 1시간으로 인정)". 1회 시간이 바뀌면 첫 줄의 시간만 바꾼다.',
       '- T2 참여자: 줄마다 학년, 반, 번호, 이름 칸을 set으로 쓴다. fill_rows는 쓰지 않는다(봉사 기간 칸이 두 줄씩 묶여 있다).',
       '  봉사 기간 칸은 두 학생이 한 칸을 함께 쓴다. "9/1~9/12"처럼 쓴다. 한 기간에 두 명이 아니면 reply에서 교사에게 알린다.',
       '  학생이 8명보다 많으면 표에 줄이 모자란다. 넣지 못한 학생을 reply에서 알리고, 교사가 편집기에서 줄을 더하도록 안내한다. 남는 줄은 비워 둔다.',
@@ -168,7 +168,7 @@ window.DR_FORMS = [
     title: '봉사활동 확인서',
     dept: '창의인성부',
     template: 'templates/service-cert.hwpx',
-    fileName: function (doc) { return (doc.items.P3 ? doc.text('P3').trim() : '봉사활동 확인서') + '.hwpx'; },
+    fileName: function (doc) { var t = doc.items.P3 ? doc.text('P3').trim() : ''; return (t && !/00실/.test(t) ? t : '봉사활동 확인서') + '.hwpx'; },
     suggestions: [
       '첨부한 운영 계획서 내용으로 확인서를 채워 줘.',
       '참가 학생의 봉사 시간을 채워 줘. 한 번에 25분이고 ',
@@ -322,7 +322,7 @@ window.DR_FORMS = [
     title: '학교운영위원회 제안서',
     dept: '행정실',
     template: 'templates/sc-proposal.hwpx',
-    fileName: function (doc) { return (doc.items.P1 ? doc.text('P1').trim() : '학교운영위원회 제안서') + '.hwpx'; },
+    fileName: function (doc) { var t = doc.items.P1 ? doc.text('P1').trim() : ''; return (t && !/^0000/.test(t) ? t : '학교운영위원회 제안서') + '.hwpx'; },
     suggestions: [
       '이 안건으로 제안서를 써 줘: ',
       '첨부한 공문을 관련 근거로 넣어 줘.',
