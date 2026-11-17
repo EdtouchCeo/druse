@@ -1,49 +1,72 @@
 /* 슬라이드 덱 렌더러 — 한 정의에서 화면 미리보기(HTML)와 파워포인트(.pptx)를 함께 만든다.
  *
- * 덱: { theme: 'edtouch' | 'daeryun', title, slides: [{ layout, ...내용, notes, source }] }
+ * 덱: { theme: 'edtouch'(표준) | 'daeryun'(대륜고), title, slides: [{ layout, ...내용, notes, source }] }
  * 레이아웃 함수는 도형 목록(사각형·글·그림·표)을 돌려주고, 두 출력기가 같은 목록을 그린다.
  * 좌표 단위는 인치, 화면은 16:9(13.333 × 7.5)이다. 글자 크기는 pt.
  * 글 도형의 path(예: 'bullets.2.title')는 미리보기에서 직접 고친 글을 덱 데이터에 되돌려 쓰는 주소다.
+ *
+ * 디자인 기준은 강의 슬라이드 제작 하네스의 제작 지침 §4-B와 대륜고 학생 수업용 디자인을 따른다.
+ *   - 밝은 바탕과 파스텔 카드. 어두운 색은 표지·구역 표지·마무리와 장마다 한두 곳의 강조에만 쓴다.
+ *   - 글자: 제목 28pt, 카드·항목 제목 19~20pt, 설명 15~17pt, 숫자 강조 40pt, 출처·쪽 번호 10~11pt.
+ *   - 머리말(tag)은 AI나 교사가 적었을 때만 보인다. 영어 장식 라벨은 넣지 않는다.
+ *   - 표준 양식(열쇠 edtouch)은 로고와 캐릭터를 넣지 않는다. 학교 양식(daeryun)은 교표와 대륜이 캐릭터를 쓴다.
+ *   - 캐릭터(테마에 chars가 있을 때): 표지·구역 표지·질문·마무리처럼 장의 역할을 알리는 장에만 둔다.
+ *     비율을 지키고 좌우를 뒤집지 않는다. 본문 장은 character 값이 있고 항목이 4개 이하일 때만 오른쪽에 둔다.
  *
  * 브라우저에서는 window.DrSlides, Node에서는 module.exports로 쓴다.
  */
 (function (root) {
   'use strict';
   var W = 13.333, H = 7.5;
+  var X0 = 0.55, CW = 12.23, TOP = 1.85;
 
   /* ── 테마 ── */
   var THEMES = {
+    // 일반 강의·연수용 표준 양식(강의 슬라이드 제작 하네스의 표준 테마). 로고와 캐릭터를 넣지 않는다.
+    // 열쇠 이름 'edtouch'는 저장된 덱과 사이트 설정(slideTheme) 때문에 그대로 둔다.
     edtouch: {
-      id: 'edtouch', name: 'EdTouch AI',
+      id: 'edtouch', name: '표준',
       font: '맑은 고딕', mono: 'Consolas',
-      navy: '1E1E32', ink: '202124', body: '3C4043', gray: '80868B', light: 'C7CBD1',
-      card: 'F6F6F9', border: 'E3E3EA', white: 'FFFFFF',
-      main: 'EE3B2E', second: 'EC2E7A',
-      accents: ['EE3B2E', 'EC2E7A', '4285F4', '34A853', 'F9AB00'],
-      tints: ['FDEDEB', 'FDEBF2', 'E9F1FE', 'E7F4EB', 'FEF3DC'],
-      logos: { wide: { key: 'edtouch-wide', ratio: 1622 / 7468 }, stack: { key: 'edtouch-stack', ratio: 2732 / 3456 } },
-      brand: function (o) { return [img(W - 0.45 - 1.45, 0.42, 1.45, 1.45 * this.logos.wide.ratio, this.logos.wide.key)]; },
-      coverMark: function () { var w = 1.25; return [img(W - 0.75 - w, 0.62, w, w * this.logos.stack.ratio, this.logos.stack.key)]; },
-      endMark: function () { var w = 1.6; return [img((W - w) / 2, 1.55, w, w * this.logos.stack.ratio, this.logos.stack.key)]; }
+      navy: '1E3373', ink: '222B38', body: '222B38', gray: '5B6470', light: 'B8C7D9',
+      card: 'EEF7FB', border: 'D6E4EE', white: 'FFFFFF',
+      main: '1D7CC3', second: 'E07312',
+      accents: ['1D7CC3', 'E07312', '26408E', '2E9E5B'],
+      tints: ['D8ECF8', 'FCE9D6', 'E3EFFB', 'E2F4E8'],
+      onDark: 'DCE6F7', onDarkAccent: 'FFE88A',
+      brand: function () { return []; }
     },
+    // 색은 2026 중3 입학설명회 창의인성부 덱 기준(대륜고 학생 수업용 디자인 §2). 강조색 순환은 블루 → 오렌지 → 네이비 → 그린이다.
     daeryun: {
       id: 'daeryun', name: '대륜고등학교',
       font: '맑은 고딕', mono: 'Consolas',
-      navy: '1B2470', ink: '1F2330', body: '3A4150', gray: '7A8193', light: 'C5CAD6',
-      card: 'F4F6FA', border: 'DFE3EC', white: 'FFFFFF',
-      main: '1E9645', second: 'C9A227',
-      accents: ['1E9645', '2F4BB8', 'C9A227', '3A86C8', 'D2553D'],
-      tints: ['E6F4EB', 'E8ECFA', 'FAF3DD', 'E6F1FA', 'FBEAE6'],
+      navy: '1E3373', ink: '222B38', body: '222B38', gray: '5B6470', light: 'B8C7D9',
+      card: 'EEF7FB', border: 'D6E4EE', white: 'FFFFFF',
+      main: '1D7CC3', second: 'E07312',
+      accents: ['1D7CC3', 'E07312', '26408E', '2E9E5B'],
+      tints: ['D8ECF8', 'FCE9D6', 'E3EFFB', 'E2F4E8'],
+      onDark: 'DCE6F7', onDarkAccent: 'FFE88A',
       logos: { mark: { key: 'daeryun-logo', ratio: 375 / 568 } },
+      // 대륜이 캐릭터(가상 캐릭터, 대륜고 1학년). ratio는 그림의 가로 / 세로.
+      chars: {
+        greeting: { key: 'dr-char-greeting', ratio: 386 / 760 },
+        question: { key: 'dr-char-question', ratio: 443 / 760 },
+        think: { key: 'dr-char-think', ratio: 395 / 760 },
+        peer: { key: 'dr-char-peer', ratio: 750 / 760 },
+        practice: { key: 'dr-char-practice', ratio: 510 / 760 },
+        explore: { key: 'dr-char-explore', ratio: 508 / 760 },
+        counsel: { key: 'dr-char-counsel', ratio: 900 / 716 },
+        good: { key: 'dr-char-good', ratio: 362 / 760 },
+        walk: { key: 'dr-char-walk', ratio: 446 / 760 }
+      },
       brand: function () {
         var h = 0.5, w = h / this.logos.mark.ratio;
-        return [img(W - 0.45 - w - 1.32, 0.38, w, h, this.logos.mark.key),
-          txt(W - 0.45 - 1.25, 0.38, 1.25, h, [[run('대륜고등학교', 11, true, this.navy)]], { valign: 'middle' })];
-      },
-      coverMark: function () { var h = 1.1, w = h / this.logos.mark.ratio; return [img(W - 0.75 - w, 0.62, w, h, this.logos.mark.key)]; },
-      endMark: function () { var h = 1.25, w = h / this.logos.mark.ratio; return [img((W - w) / 2, 1.5, w, h, this.logos.mark.key)]; }
+        return [img(W - 0.45 - w - 1.4, 0.36, w, h, this.logos.mark.key),
+          txt(W - 0.45 - 1.33, 0.36, 1.33, h, [[run('대륜고등학교', 12, true, this.navy)]], { valign: 'middle' })];
+      }
     }
   };
+  // 본문 장에 둘 수 있는 캐릭터 장면(값 → 뜻). AI는 이 값만 쓴다.
+  var CHARACTER_ROLES = { question: '질문·발문', think: '생각할 시간·성찰', peer: '모둠·짝 활동', practice: '실습·만들기', explore: '조사·탐구', counsel: '상담·피드백', good: '정리·칭찬' };
 
   /* ── 도형 만들기 ── */
   function rect(x, y, w, h, fill, o) { o = o || {}; return { t: 'rect', x: x, y: y, w: w, h: h, fill: fill, line: o.line, lw: o.lw, r: o.r, shape: o.shape }; }
@@ -61,37 +84,59 @@
     var t = txt(x, y, w, h, [[run(value, size, bold, color, o.font)]], o);
     t.path = path; return t;
   }
-  function table(x, y, colW, rowH, rows, th, o) { o = o || {}; return { t: 'table', x: x, y: y, colW: colW, rowH: rowH, rows: rows, th: th, path: o.path }; }
+  function table(x, y, colW, rowH, rows, th, o) { o = o || {}; return { t: 'table', x: x, y: y, colW: colW, rowH: rowH, rows: rows, th: th, path: o.path, size: o.size }; }
 
   function clampList(a, n) { return Array.isArray(a) ? a.slice(0, n) : []; }
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function acc(th, i) { return th.accents[i % th.accents.length]; }
+  function tint(th, i) { return th.tints[i % th.tints.length]; }
+
+  /* ── 캐릭터 ── */
+  // 바닥(bottom)에 발을 맞추고 가로는 가운데(cx)에 둔다. 폭이 maxW를 넘는 넓은 그림은 높이를 줄여 비율을 지킨다.
+  function character(th, pose, cx, bottom, h, maxW) {
+    var c = th.chars && th.chars[pose];
+    if (!c) return [];
+    var w = h * c.ratio;
+    if (maxW && w > maxW) { w = maxW; h = w / c.ratio; }
+    return [img(cx - w / 2, bottom - h, w, h, c.key)];
+  }
+  // 본문 장의 캐릭터: 테마에 캐릭터가 있고 장에 character 값이 있으면 오른쪽 3.1인치를 비운다.
+  function sidePose(th, s, fallback) {
+    var p = (s.character && CHARACTER_ROLES[s.character] ? s.character : '') || fallback || '';
+    return th.chars && th.chars[p] ? p : '';
+  }
 
   /* ── 공통 틀 ── */
   function frame(th) { return [rect(0.12, 0.12, 13.09, 7.26, null, { line: th.border, lw: 1.25, r: 0.2 })]; }
-  function pageNo(th, n, total) { return [txt(11.68, 7.06, 1.1, 0.24, [[run(pad2(n) + ' / ' + total, 10, false, th.gray, th.mono)]], { align: 'right' })]; }
+  function pageNo(th, n, total, color) { return [txt(11.68, 7.04, 1.1, 0.26, [[run(pad2(n) + ' / ' + total, 10.5, false, color || th.gray, th.mono)]], { align: 'right' })]; }
   function source(th, s) {
     if (!s.source) return [];
-    return [edit(0.55, 7.06, 9.8, 0.24, '출처: ' + s.source, 9, false, th.gray, null)];
+    return [edit(X0, 7.04, 9.8, 0.26, '출처: ' + s.source, 10.5, false, th.gray, null)];
   }
-  function header(th, s, n, total, defTag, accent) {
+  function header(th, s, n, total, accent) {
     accent = accent || th.main;
     var out = frame(th);
-    var badge = rect(0.55, 0.42, 0.42, 0.42, th.navy, { r: 0.1 });
-    out.push(badge, txt(0.55, 0.42, 0.42, 0.42, [[run(pad2(n), 14, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
-    out.push(edit(1.12, 0.45, 7.6, 0.32, s.tag || defTag, 12, true, accent, 'tag'));
-    out.push(edit(0.55, 0.86, 10.4, 0.62, s.title || '', 25, true, th.navy, 'title', { valign: 'middle' }));
-    out.push(rect(0.55, 1.52, 2.2, 0.045, accent), rect(2.79, 1.52, 0.6, 0.045, th.second));
+    out.push(rect(X0, 0.42, 0.46, 0.46, th.navy, { r: 0.1 }));
+    out.push(txt(X0, 0.42, 0.46, 0.46, [[run(pad2(n), 15, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
+    // 머리말은 적혀 있을 때만 보인다. 비어 있으면 제목이 그 자리까지 쓴다.
+    if (s.tag) out.push(edit(1.16, 0.44, 7.6, 0.4, s.tag, 13, true, accent, 'tag', { valign: 'middle' }));
+    out.push(edit(X0, 0.92, 10.6, 0.66, s.title || '', 28, true, th.navy, 'title', { valign: 'middle' }));
+    out.push(rect(X0, 1.64, 2.2, 0.05, accent), rect(2.79, 1.64, 0.6, 0.05, th.second));
     return out.concat(th.brand(), pageNo(th, n, total), source(th, s));
   }
-  // 아래쪽 강조 상자(핵심 한 줄). 있으면 본문 영역이 줄어든다.
-  function note(th, s, label) {
+  // 아래쪽 핵심 한 줄. 있으면 본문 영역이 줄어든다. 상자에 가두지 않고 큰 글자 한 줄로 둔다.
+  function note(th, s, w) {
     if (!s.note) return [];
-    var y = 6.3, h = 0.6;
-    return [rect(0.55, y, 12.23, h, th.tints[0], { r: 0.08 }), rect(0.55, y + 0.1, 0.07, h - 0.2, th.main),
-      txt(0.85, y, 1.4, h, [[run(label || 'KEY POINT', 11, true, th.main, th.mono)]], { valign: 'middle' }),
-      edit(2.25, y, 10.3, h, s.note, 13.5, false, th.ink, 'note', { valign: 'middle' })];
+    var y = 6.2, h = 0.66;
+    return [rect(X0, y + 0.08, 0.09, h - 0.16, th.second),
+      edit(X0 + 0.28, y, (w || CW) - 0.28, h, s.note, 20, true, th.navy, 'note', { valign: 'middle' })];
   }
-  function bodyBottom(s) { return s.note ? 6.1 : 6.85; }
+  function bodyBottom(s) { return s.note ? 6.05 : 6.8; }
+  // 카드 묶음의 높이와 시작 위치. 쓸 수 있는 높이가 maxH보다 크면 maxH로 줄이고 남는 공간의 0.4만큼 내려 가운데쯤에 둔다.
+  function block(s, maxH, bottom) {
+    var top = TOP + 0.1, avail = (bottom || bodyBottom(s)) - top, h = Math.min(avail, maxH);
+    return { top: top + (avail - h) * 0.4, h: h };
+  }
 
   /* ── 레이아웃 ── */
   var LAYOUTS = {};
@@ -99,20 +144,29 @@
   LAYOUTS.cover = {
     label: '표지',
     draw: function (th, s) {
-      var o = frame(th);
-      o.push(rect(0.12, 0.12, 13.09, 0.07, th.main));
-      o.push(oval(9.9, 4.3, 4.6, 4.6, th.tints[0]), oval(9.25, 4.95, 1.6, 1.6, null, { line: th.main, lw: 1.5 }), oval(11.95, 3.55, 0.32, 0.32, th.second));
-      o = o.concat(th.coverMark());
-      o.push(edit(0.95, 0.85, 8.5, 0.32, s.org || '', 12, false, th.gray, 'org'));
-      o.push(edit(0.95, 1.45, 8.6, 0.32, s.kicker || '', 13, true, th.main, 'kicker'));
-      o.push(edit(0.95, 1.95, 8.8, 2.0, s.title || '', 40, true, th.navy, 'title', { valign: 'middle', line: 1.05 }));
-      o.push(rect(0.95, 4.12, 1.6, 0.06, th.main), rect(2.6, 4.12, 0.45, 0.06, th.second));
-      o.push(edit(0.95, 4.35, 8.6, 0.9, s.subtitle || '', 17, false, th.body, 'subtitle', { line: 1.15 }));
+      // 왼쪽 네이비 패널에 제목, 오른쪽 연한 패널. 학교 양식은 오른쪽에 교표와 캐릭터를 두고, 표준 양식은 도형만 둔다.
+      var LW = 8.5, cx = LW + (W - LW) / 2;
+      var o = [rect(0, 0, LW, H, th.navy), rect(LW, 0, W - LW, H, th.card)];
+      o.push(edit(0.9, 0.8, 7.0, 0.4, s.org || '', 15, false, th.onDark, 'org', { valign: 'middle' }));
+      o.push(edit(0.9, 1.45, 7.0, 0.42, s.kicker || '', 16, true, th.onDarkAccent, 'kicker', { valign: 'middle' }));
+      o.push(edit(0.9, 2.0, 7.1, 2.4, s.title || '', 44, true, th.white, 'title', { valign: 'middle', line: 1.08 }));
+      o.push(rect(0.9, 4.62, 1.5, 0.07, th.second));
+      o.push(edit(0.9, 4.86, 7.1, 0.9, s.subtitle || '', 20, false, th.onDark, 'subtitle', { line: 1.15 }));
       if (s.presenter || s.date) {
-        o.push(rect(0.95, 5.75, 4.2, 0.95, th.card, { r: 0.08 }), rect(0.95, 5.88, 0.07, 0.69, th.main));
-        o.push(edit(1.25, 5.85, 3.8, 0.3, s.date || '', 11, false, th.gray, 'date'));
-        o.push(edit(1.25, 6.15, 3.8, 0.42, s.presenter || '', 17, true, th.navy, 'presenter'));
+        o.push(edit(0.9, 6.0, 7.0, 0.36, s.date || '', 14, false, th.onDark, 'date', { valign: 'middle' }));
+        o.push(edit(0.9, 6.38, 7.0, 0.5, s.presenter || '', 19, true, th.white, 'presenter', { valign: 'middle' }));
       }
+      if (th.logos) {
+        var mh = 0.62, mw = mh / th.logos.mark.ratio;
+        o.push(img(cx - (mw + 1.75) / 2, 0.62, mw, mh, th.logos.mark.key));
+        o.push(txt(cx - (mw + 1.75) / 2 + mw + 0.15, 0.62, 1.6, mh, [[run('대륜고등학교', 15, true, th.navy)]], { valign: 'middle' }));
+      }
+      if (th.chars) {
+        o.push(oval(cx - 1.75, 6.55, 3.5, 0.5, th.tints[0]));
+        return o.concat(character(th, 'greeting', cx, 6.9, 4.9));
+      }
+      o.push(oval(cx - 1.55, 2.2, 3.1, 3.1, th.tints[0]), oval(cx + 0.35, 1.55, 1.25, 1.25, th.tints[1]), oval(cx - 1.95, 4.75, 0.9, 0.9, th.tints[3]));
+      o.push(rect(cx - 0.75, 3.35, 1.5, 0.12, th.main), rect(cx - 0.75, 3.63, 1.05, 0.12, th.second), rect(cx - 0.75, 3.91, 1.3, 0.12, th.navy));
       return o;
     },
     fields: 'org(기관·행사), kicker(짧은 머리말), title(제목, 2줄 이내), subtitle, date, presenter'
@@ -121,16 +175,20 @@
   LAYOUTS.agenda = {
     label: '목차',
     draw: function (th, s, n, total) {
-      var o = header(th, s, n, total, 'AGENDA');
+      var o = header(th, s, n, total);
       var items = clampList(s.items, 6), rows = Math.ceil(items.length / 2) || 1, col2 = items.length > 3;
-      var n2 = col2 ? rows : items.length || 1, rowH = Math.min(1.25, 4.6 / n2), y0 = 1.95 + Math.max(0, (4.7 - n2 * rowH) / 2) * 0.7;
+      var n2 = col2 ? rows : items.length || 1, gap = 0.2, avail = 6.8 - TOP - 0.1;
+      var rowH = Math.min(1.45, (avail - gap * (n2 - 1)) / n2), y0 = TOP + 0.1 + Math.max(0, (avail - n2 * rowH - gap * (n2 - 1)) / 2) * 0.5;
       items.forEach(function (it, i) {
         var c = col2 ? (i < rows ? 0 : 1) : 0, r = col2 ? (i < rows ? i : i - rows) : i;
-        var x = 0.85 + c * 6.2, y = y0 + r * rowH, w = col2 ? 5.6 : 11.6;
-        o.push(txt(x, y, 0.8, 0.5, [[run(pad2(i + 1), 22, true, th.accents[i % th.accents.length], th.mono)]], { valign: 'middle' }));
-        o.push(edit(x + 0.95, y, w - 1, 0.5, it.title, 17, true, th.navy, 'items.' + i + '.title', { valign: 'middle' }));
-        if (it.sub) o.push(edit(x + 0.95, y + 0.5, w - 1, 0.36, it.sub, 12, false, th.gray, 'items.' + i + '.sub'));
-        o.push(rect(x, y + rowH - 0.18, w, 0.012, th.border));
+        var w = col2 ? (CW - 0.3) / 2 : CW, x = X0 + c * (w + 0.3), y = y0 + r * (rowH + gap), a = acc(th, i);
+        o.push(rect(x, y, w, rowH, tint(th, i), { r: 0.1 }));
+        o.push(rect(x + 0.25, y + (rowH - 0.72) / 2, 0.72, 0.72, a, { r: 0.12 }));
+        o.push(txt(x + 0.25, y + (rowH - 0.72) / 2, 0.72, 0.72, [[run(pad2(i + 1), 19, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
+        if (it.sub) {
+          o.push(edit(x + 1.2, y + rowH / 2 - 0.5, w - 1.4, 0.5, it.title, 21, true, th.navy, 'items.' + i + '.title', { valign: 'middle' }));
+          o.push(edit(x + 1.2, y + rowH / 2, w - 1.4, 0.42, it.sub, 15, false, th.gray, 'items.' + i + '.sub', { valign: 'middle' }));
+        } else o.push(edit(x + 1.2, y, w - 1.4, rowH, it.title, 21, true, th.navy, 'items.' + i + '.title', { valign: 'middle' }));
       });
       return o;
     },
@@ -140,52 +198,94 @@
   LAYOUTS.section = {
     label: '구역 표지',
     draw: function (th, s, n, total) {
-      var o = frame(th);
-      o.push(rect(0.12, 0.12, 0.14, 7.26, th.main));
+      // 왼쪽 네이비 띠에 큰 번호, 오른쪽에 제목. 학교 양식은 다음 내용으로 걸어가는 캐릭터를 둔다.
+      var no = s.no || 1, BW = 4.2;
+      var o = [rect(0, 0, BW, H, th.navy)];
+      o.push(txt(0.6, 2.3, BW - 1.2, 1.9, [[run(pad2(no), 110, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
+      o.push(rect(BW / 2 - 0.7, 4.45, 1.4, 0.07, th.second));
+      o.push(rect(BW + 0.75, 2.45, 1.5, 0.07, th.main));
+      o.push(edit(BW + 0.75, 2.7, 7.9, 1.15, s.title || '', 36, true, th.navy, 'title', { valign: 'middle', line: 1.08 }));
+      o.push(edit(BW + 0.75, 3.95, th.chars ? 5.6 : 7.9, 0.9, s.sub || '', 20, false, th.gray, 'sub', { line: 1.15 }));
       o = o.concat(th.brand());
-      var no = s.no || 1;
-      o.push(txt(1.0, 1.55, 4, 1.4, [[run(pad2(no), 80, true, th.tints[0], th.mono)]], { valign: 'bottom' }));
-      o.push(txt(1.05, 3.05, 4, 0.3, [[run('SECTION ' + pad2(no), 12, true, th.main, th.mono)]]));
-      o.push(edit(1.0, 3.4, 10.8, 0.95, s.title || '', 34, true, th.navy, 'title', { valign: 'middle' }));
-      o.push(edit(1.0, 4.4, 10.8, 0.5, s.sub || '', 16, false, th.gray, 'sub'));
-      o.push(rect(1.0, 5.15, 1.8, 0.05, th.main));
+      if (th.chars) {
+        o.push(oval(W - 3.05, 6.5, 2.6, 0.4, th.tints[0]));
+        o = o.concat(character(th, 'walk', W - 1.75, 6.85, 3.5));
+      }
       return o.concat(pageNo(th, n, total));
     },
     fields: 'no(구역 번호), title, sub'
   };
 
+  // 글머리표 줄을 나열하지 않는다. 항목마다 번호 배지와 파스텔 줄 카드로 그린다.
   LAYOUTS.bullets = {
-    label: '글머리',
+    label: '항목',
     draw: function (th, s, n, total) {
-      var o = header(th, s, n, total, 'KEY CONTENT');
-      var items = clampList(s.bullets, 6), top = 1.95, bottom = bodyBottom(s);
-      var avail = bottom - top, rowH = Math.min(1.2, avail / Math.max(items.length, 1));
-      var y0 = top + Math.max(0, (avail - items.length * rowH) / 2) * 0.6;
+      var o = header(th, s, n, total);
+      var items = clampList(s.bullets, 6), pose = items.length <= 4 ? sidePose(th, s) : '';
+      var cw = pose ? CW - 3.1 : CW, top = TOP + 0.1, bottom = bodyBottom(s), gap = 0.16, k = Math.max(items.length, 1);
+      var rowH = Math.min(1.35, (bottom - top - gap * (k - 1)) / k);
+      var y0 = top + Math.max(0, (bottom - top - k * rowH - gap * (k - 1)) / 2) * 0.4;
       items.forEach(function (b, i) {
-        var y = y0 + i * rowH;
-        o.push(rect(0.85, y + 0.13, 0.13, 0.13, th.accents[i % 2 ? 1 : 0]));
-        o.push(edit(1.2, y, 11.4, 0.42, b.title, 17, true, th.navy, 'bullets.' + i + '.title', { valign: 'middle' }));
-        if (b.sub) o.push(edit(1.2, y + 0.42, 11.4, rowH - 0.5, b.sub, 13, false, th.body, 'bullets.' + i + '.sub', { line: 1.1 }));
+        var y = y0 + i * (rowH + gap), a = acc(th, i), bs = Math.min(0.62, rowH - 0.2);
+        o.push(rect(X0, y, cw, rowH, tint(th, i), { r: 0.1 }));
+        o.push(rect(X0 + 0.22, y + (rowH - bs) / 2, bs, bs, a, { r: 0.12 }));
+        o.push(txt(X0 + 0.22, y + (rowH - bs) / 2, bs, bs, [[run(String(i + 1), 18, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
+        var tx = X0 + 0.22 + bs + 0.25, tw = cw - (tx - X0) - 0.2;
+        if (b.sub && rowH >= 0.86) {
+          o.push(edit(tx, y + 0.06, tw, rowH * 0.46, b.title, 20, true, th.navy, 'bullets.' + i + '.title', { valign: 'middle' }));
+          o.push(edit(tx, y + rowH * 0.5, tw, rowH * 0.46, b.sub, 15.5, false, th.body, 'bullets.' + i + '.sub', { line: 1.1 }));
+        } else o.push(edit(tx, y, tw, rowH, b.title, 20, true, th.navy, 'bullets.' + i + '.title', { valign: 'middle' }));
       });
-      return o.concat(note(th, s));
+      if (pose) {
+        o.push(oval(W - 0.45 - 2.9, 6.5, 2.7, 0.4, th.tints[0]));
+        o = o.concat(character(th, pose, W - 0.45 - 1.55, 6.8, 3.6, 2.9));
+      }
+      return o.concat(note(th, s, cw));
     },
-    fields: 'bullets[{title(핵심 한 줄), sub(설명 1~2줄)}] 3~6개, note(핵심 한 줄, 선택)'
+    fields: 'bullets[{title(핵심 한 줄), sub(설명 1~2줄)}] 3~6개, note(핵심 한 줄, 선택), character(선택)'
+  };
+
+  // 청중에게 던지는 질문 한 개와 생각할 점. 캐릭터가 있는 테마는 손 든 대륜이를 둔다.
+  LAYOUTS.question = {
+    label: '질문',
+    draw: function (th, s, n, total) {
+      var o = header(th, s, n, total);
+      var pose = sidePose(th, s, 'question'), cw = pose ? CW - 3.3 : CW, hints = clampList(s.hints, 3);
+      var qh = hints.length ? 2.0 : 3.6, top = TOP + 0.15 + (hints.length ? 0 : 0.5);
+      o.push(rect(X0, top, cw, qh, th.tints[0], { r: 0.14 }));
+      o.push(rect(X0, top + 0.3, 0.1, qh - 0.6, th.main));
+      o.push(edit(X0 + 0.45, top, cw - 0.85, qh, s.question || '', 27, true, th.navy, 'question', { valign: 'middle', line: 1.15 }));
+      var y0 = top + qh + 0.28, rowH = Math.min(0.82, (6.8 - y0 - 0.14 * 2) / 3);
+      hints.forEach(function (hText, i) {
+        var y = y0 + i * (rowH + 0.14), a = acc(th, i + 1);
+        o.push(rect(X0, y, cw, rowH, th.white, { line: th.border, lw: 1, r: 0.1 }));
+        o.push(oval(X0 + 0.25, y + (rowH - 0.4) / 2, 0.4, 0.4, a));
+        o.push(txt(X0 + 0.25, y + (rowH - 0.4) / 2, 0.4, 0.4, [[run(String(i + 1), 14, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
+        o.push(edit(X0 + 0.85, y, cw - 1.05, rowH, hText, 18, false, th.ink, 'hints.' + i, { valign: 'middle', line: 1.1 }));
+      });
+      if (pose) {
+        o.push(oval(W - 0.45 - 3.0, 6.5, 2.8, 0.42, th.tints[0]));
+        o = o.concat(character(th, pose, W - 0.45 - 1.6, 6.8, 4.2, 3.0));
+      }
+      return o;
+    },
+    fields: 'question(질문 한 문장), hints[생각할 점] 0~3개, character(선택)'
   };
 
   LAYOUTS.cards = {
     label: '카드',
     draw: function (th, s, n, total) {
-      var o = header(th, s, n, total, 'KEY POINTS');
-      var cards = clampList(s.cards, 4), k = Math.max(cards.length, 1), gap = 0.3;
-      var w = (12.23 - gap * (k - 1)) / k, top = 1.95, h = bodyBottom(s) - top;
+      var o = header(th, s, n, total);
+      var cards = clampList(s.cards, 4), k = Math.max(cards.length, 1), gap = 0.28;
+      var w = (CW - gap * (k - 1)) / k, bl = block(s, 4.1), top = bl.top, h = bl.h;
       cards.forEach(function (c, i) {
-        var x = 0.55 + i * (w + gap), a = th.accents[i % th.accents.length], t = th.tints[i % th.tints.length];
-        o.push(rect(x, top, w, h, th.card, { r: 0.1 }), rect(x, top, w, 0.06, a));
-        o.push(oval(x + 0.3, top + 0.35, 0.55, 0.55, t), txt(x + 0.3, top + 0.35, 0.55, 0.55, [[run(pad2(i + 1), 13, true, a, th.mono)]], { align: 'center', valign: 'middle' }));
-        o.push(edit(x + 0.3, top + 1.1, w - 0.6, 0.85, c.title, 17, true, th.navy, 'cards.' + i + '.title', { line: 1.05 }));
-        o.push(edit(x + 0.3, top + 2.0, w - 0.6, h - 2.2, c.body, 13, false, th.body, 'cards.' + i + '.body', { line: 1.2 }));
+        var x = X0 + i * (w + gap), a = acc(th, i);
+        o.push(rect(x, top, w, h, tint(th, i), { r: 0.12 }), rect(x, top, w, 0.62, a, { r: 0.12 }), rect(x, top + 0.3, w, 0.32, a));
+        o.push(txt(x + 0.25, top, 0.8, 0.62, [[run(pad2(i + 1), 16, true, th.white, th.mono)]], { valign: 'middle' }));
+        o.push(edit(x + 0.25, top + 0.78, w - 0.5, 1.05, c.title, 20, true, th.navy, 'cards.' + i + '.title', { line: 1.08, valign: 'middle' }));
+        o.push(edit(x + 0.25, top + 1.95, w - 0.5, h - 2.15, c.body, k >= 4 ? 15.5 : 17, false, th.body, 'cards.' + i + '.body', { line: 1.22 }));
       });
-      return o.concat(note(th, s, 'SUMMARY'));
+      return o.concat(note(th, s));
     },
     fields: 'cards[{title, body(2~4줄)}] 2~4개, note(선택)'
   };
@@ -193,21 +293,21 @@
   LAYOUTS.compare = {
     label: '비교',
     draw: function (th, s, n, total) {
-      var o = header(th, s, n, total, 'COMPARISON');
-      var top = 1.95, h = bodyBottom(s) - top, w = 5.75;
-      [['left', 0, 0.55], ['right', 2, 7.03]].forEach(function (p) {
-        var side = s[p[0]] || {}, a = th.accents[p[1]], t = th.tints[p[1]], x = p[2];
-        o.push(rect(x, top, w, h, t, { r: 0.1 }));
-        o.push(rect(x + (w - 2.6) / 2, top + 0.3, 2.6, 0.48, a, { r: 0.24 }));
-        o.push(edit(x + (w - 2.6) / 2, top + 0.3, 2.6, 0.48, side.label || '', 14, true, th.white, p[0] + '.label', { align: 'center', valign: 'middle' }));
-        clampList(side.items, 5).forEach(function (it, i) {
-          var y = top + 1.05 + i * Math.min(0.78, (h - 1.25) / 5);
-          o.push(oval(x + 0.4, y + 0.14, 0.12, 0.12, a));
-          o.push(edit(x + 0.68, y, w - 1.0, 0.7, it, 14, false, th.ink, p[0] + '.items.' + i, { line: 1.1 }));
+      var o = header(th, s, n, total);
+      var bl = block(s, 4.4), top = bl.top, h = bl.h, w = 5.75;
+      [['left', 0, X0], ['right', 1, 7.03]].forEach(function (p) {
+        var side = s[p[0]] || {}, a = acc(th, p[1]), x = p[2], items = clampList(side.items, 5);
+        o.push(rect(x, top, w, h, tint(th, p[1]), { r: 0.12 }), rect(x, top, w, 0.72, a, { r: 0.12 }), rect(x, top + 0.36, w, 0.36, a));
+        o.push(edit(x + 0.2, top, w - 0.4, 0.72, side.label || '', 19, true, th.white, p[0] + '.label', { align: 'center', valign: 'middle' }));
+        var rowH = Math.min(0.95, (h - 0.95) / Math.max(items.length, 1));
+        items.forEach(function (it, i) {
+          var y = top + 0.9 + i * rowH;
+          o.push(oval(x + 0.35, y + rowH / 2 - 0.08, 0.16, 0.16, a));
+          o.push(edit(x + 0.7, y, w - 1.0, rowH, it, 17, false, th.ink, p[0] + '.items.' + i, { line: 1.12, valign: 'middle' }));
         });
       });
-      o.push(oval(6.27, top + h / 2 - 0.38, 0.76, 0.76, th.navy), txt(6.27, top + h / 2 - 0.38, 0.76, 0.76, [[run('VS', 14, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
-      return o.concat(note(th, s, 'INSIGHT'));
+      o.push(oval(6.3, top + h / 2 - 0.36, 0.73, 0.73, th.navy), txt(6.3, top + h / 2 - 0.36, 0.73, 0.73, [[run('↔', 20, true, th.white)]], { align: 'center', valign: 'middle' }));
+      return o.concat(note(th, s));
     },
     fields: 'left{label, items[] 2~5개}, right{label, items[]}, note(선택)'
   };
@@ -215,15 +315,17 @@
   LAYOUTS.table = {
     label: '표',
     draw: function (th, s, n, total) {
-      var o = header(th, s, n, total, 'TABLE');
+      var o = header(th, s, n, total);
       var rows = clampList(s.rows, 8).map(function (r) { return clampList(r, 5).map(function (c) { return c == null ? '' : String(c); }); });
       var cols = rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0) || 1;
       rows = rows.map(function (r) { while (r.length < cols) r.push(''); return r; });
-      var first = Math.min(3.2, 12.23 / cols * 1.2), rest = (12.23 - first) / Math.max(cols - 1, 1);
-      var colW = cols === 1 ? [12.23] : [first].concat(Array(cols - 1).fill(rest));
-      var avail = bodyBottom(s) - 2.0, rowH = Math.min(0.62, avail / Math.max(rows.length, 1));
-      if (rows.length) o.push(table(0.55, 2.0, colW, rowH, rows, th, { path: 'rows' }));
-      return o.concat(note(th, s, 'READING GUIDE'));
+      var first = Math.min(3.2, CW / cols * 1.2), rest = (CW - first) / Math.max(cols - 1, 1);
+      var colW = cols === 1 ? [CW] : [first].concat(Array(cols - 1).fill(rest));
+      var top = TOP + 0.1, avail = bodyBottom(s) - top, rowH = Math.min(1.0, avail / Math.max(rows.length, 1));
+      // 5줄·4칸 안쪽이면 강의 거리에서 읽히는 큰 글자를 쓴다.
+      var size = rows.length <= 5 && cols <= 4 ? 18 : rows.length <= 6 ? 16 : 14.5;
+      if (rows.length) o.push(table(X0, top, colW, rowH, rows, th, { path: 'rows', size: size }));
+      return o.concat(note(th, s));
     },
     fields: 'rows[[머리글...], [칸...]...] 첫 줄은 머리글, 최대 8줄 5칸, note(선택)'
   };
@@ -231,17 +333,18 @@
   LAYOUTS.process = {
     label: '단계',
     draw: function (th, s, n, total) {
-      var o = header(th, s, n, total, 'PROCESS');
-      var steps = clampList(s.steps, 5), k = Math.max(steps.length, 1), gap = 0.45;
-      var w = (12.23 - gap * (k - 1)) / k, top = 1.95 + Math.max(0, (bodyBottom(s) - 1.95 - 3.2) / 2) * 0.7;
+      var o = header(th, s, n, total);
+      var steps = clampList(s.steps, 5), k = Math.max(steps.length, 1), gap = 0.5;
+      var w = (CW - gap * (k - 1)) / k, bl = block(s, 3.7), top = bl.top, h = bl.h;
       steps.forEach(function (st, i) {
-        var x = 0.55 + i * (w + gap), a = th.accents[i % th.accents.length], cx = x + w / 2;
-        o.push(oval(cx - 0.42, top, 0.84, 0.84, a), txt(cx - 0.42, top, 0.84, 0.84, [[run(pad2(i + 1), 16, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
-        if (i < k - 1) o.push(txt(x + w, top, gap, 0.84, [[run('›', 26, true, th.light)]], { align: 'center', valign: 'middle' }));
-        o.push(edit(x, top + 1.05, w, 0.5, st.title, 16, true, a, 'steps.' + i + '.title', { align: 'center', valign: 'middle' }));
-        o.push(edit(x + 0.05, top + 1.6, w - 0.1, Math.min(1.6, bodyBottom(s) - top - 1.7), st.body, 12.5, false, th.body, 'steps.' + i + '.body', { align: 'center', line: 1.2 }));
+        var x = X0 + i * (w + gap), a = acc(th, i);
+        o.push(rect(x, top, w, h, tint(th, i), { r: 0.12 }), rect(x, top, w, 0.95, a, { r: 0.12 }), rect(x, top + 0.48, w, 0.47, a));
+        o.push(txt(x + 0.18, top + 0.06, 0.6, 0.36, [[run(pad2(i + 1), 13, true, th.white, th.mono)]], { valign: 'middle' }));
+        o.push(edit(x + 0.15, top + 0.36, w - 0.3, 0.56, st.title, k >= 5 ? 17 : 19, true, th.white, 'steps.' + i + '.title', { align: 'center', valign: 'middle', line: 1.05 }));
+        if (i < k - 1) o.push(txt(x + w, top + h / 2 - 0.4, gap, 0.8, [[run('▶', 18, true, th.light)]], { align: 'center', valign: 'middle' }));
+        o.push(edit(x + 0.2, top + 1.15, w - 0.4, h - 1.35, st.body, k >= 5 ? 14.5 : 16, false, th.body, 'steps.' + i + '.body', { line: 1.22 }));
       });
-      return o.concat(note(th, s, 'TIP'));
+      return o.concat(note(th, s));
     },
     fields: 'steps[{title, body}] 3~5개, note(선택)'
   };
@@ -249,17 +352,17 @@
   LAYOUTS.stats = {
     label: '수치',
     draw: function (th, s, n, total) {
-      var o = header(th, s, n, total, 'KEY NUMBERS');
-      var st = clampList(s.stats, 4), k = Math.max(st.length, 1), gap = 0.3;
-      var w = (12.23 - gap * (k - 1)) / k, top = 2.05, h = Math.min(3.4, bodyBottom(s) - top - 0.1);
+      var o = header(th, s, n, total);
+      var st = clampList(s.stats, 4), k = Math.max(st.length, 1), gap = 0.28;
+      var w = (CW - gap * (k - 1)) / k, bl = block(s, 4.0), top = bl.top, h = bl.h;
       st.forEach(function (it, i) {
-        var x = 0.55 + i * (w + gap), a = th.accents[i % th.accents.length];
-        o.push(rect(x, top, w, h, th.card, { r: 0.1 }), rect(x, top, w, 0.06, a));
-        o.push(edit(x, top + 0.4, w, 0.95, it.value, 36, true, a, 'stats.' + i + '.value', { align: 'center', valign: 'middle', font: th.mono }));
-        o.push(edit(x + 0.15, top + 1.45, w - 0.3, 0.45, it.label, 14, true, th.navy, 'stats.' + i + '.label', { align: 'center', valign: 'middle' }));
-        o.push(edit(x + 0.2, top + 1.95, w - 0.4, h - 2.1, it.sub || '', 11, false, th.gray, 'stats.' + i + '.sub', { align: 'center', line: 1.15 }));
+        var x = X0 + i * (w + gap), a = acc(th, i);
+        o.push(rect(x, top, w, h, tint(th, i), { r: 0.12 }), rect(x, top, w, 0.1, a));
+        o.push(edit(x + 0.1, top + 0.45, w - 0.2, 1.25, it.value, k >= 4 ? 38 : 44, true, a, 'stats.' + i + '.value', { align: 'center', valign: 'middle', font: th.mono }));
+        o.push(edit(x + 0.2, top + 1.8, w - 0.4, 0.9, it.label, 19, true, th.navy, 'stats.' + i + '.label', { align: 'center', valign: 'middle', line: 1.08 }));
+        o.push(edit(x + 0.25, top + 2.8, w - 0.5, h - 3.0, it.sub || '', 14.5, false, th.gray, 'stats.' + i + '.sub', { align: 'center', line: 1.2 }));
       });
-      return o.concat(note(th, s, 'INSIGHT'));
+      return o.concat(note(th, s));
     },
     fields: 'stats[{value(숫자·짧은 값), label, sub(근거·단위)}] 2~4개, note(선택)'
   };
@@ -267,20 +370,20 @@
   LAYOUTS.summary = {
     label: '정리',
     draw: function (th, s, n, total) {
-      var o = header(th, s, n, total, 'WRAP UP');
-      var pts = clampList(s.points, 4), k = Math.max(pts.length, 1), gap = 0.3;
-      var w = (12.23 - gap * (k - 1)) / k, top = 2.0, h = s.next ? 3.55 : 4.7;
+      var o = header(th, s, n, total);
+      var pts = clampList(s.points, 4), k = Math.max(pts.length, 1), gap = 0.28;
+      var w = (CW - gap * (k - 1)) / k, bl = block(s, 3.9, s.next ? 5.55 : 6.8), top = bl.top, h = bl.h;
       pts.forEach(function (p, i) {
-        var x = 0.55 + i * (w + gap), a = th.accents[i % th.accents.length];
-        o.push(rect(x, top, w, 0.05, a));
-        o.push(txt(x, top + 0.2, 1, 0.4, [[run(pad2(i + 1), 15, true, a, th.mono)]]));
-        o.push(edit(x, top + 0.65, w, 0.75, p.title, 16, true, th.navy, 'points.' + i + '.title', { line: 1.05 }));
-        o.push(edit(x, top + 1.45, w, h - 1.5, p.body, 12.5, false, th.body, 'points.' + i + '.body', { line: 1.2 }));
+        var x = X0 + i * (w + gap), a = acc(th, i);
+        o.push(rect(x, top, w, h, tint(th, i), { r: 0.12 }), rect(x, top, w, 0.1, a));
+        o.push(oval(x + 0.25, top + 0.35, 0.56, 0.56, a), txt(x + 0.25, top + 0.35, 0.56, 0.56, [[run(String(i + 1), 17, true, th.white, th.mono)]], { align: 'center', valign: 'middle' }));
+        o.push(edit(x + 0.25, top + 1.05, w - 0.5, 0.95, p.title, 20, true, th.navy, 'points.' + i + '.title', { line: 1.08 }));
+        o.push(edit(x + 0.25, top + 2.05, w - 0.5, h - 2.2, p.body, k >= 4 ? 15 : 16.5, false, th.body, 'points.' + i + '.body', { line: 1.22 }));
       });
       if (s.next) {
-        o.push(rect(0.55, 5.75, 12.23, 1.0, th.navy, { r: 0.08 }));
-        o.push(txt(0.9, 5.75, 1.6, 1.0, [[run('NEXT STEP', 11, true, th.second, th.mono)]], { valign: 'middle' }));
-        o.push(edit(2.55, 5.75, 9.9, 1.0, s.next, 15, true, th.white, 'next', { valign: 'middle' }));
+        o.push(rect(X0, 5.75, CW, 1.0, th.navy, { r: 0.1 }));
+        o.push(txt(0.9, 5.75, 1.7, 1.0, [[run('다음 단계', 14, true, th.onDarkAccent || th.second)]], { valign: 'middle' }));
+        o.push(edit(2.6, 5.75, 9.9, 1.0, s.next, 19, true, th.white, 'next', { valign: 'middle' }));
       }
       return o;
     },
@@ -290,12 +393,19 @@
   LAYOUTS.end = {
     label: '마무리',
     draw: function (th, s) {
-      var o = frame(th);
-      o.push(oval(11.0, 5.4, 3.6, 3.6, th.tints[0]));
-      o = o.concat(th.endMark());
-      o.push(edit(1, 3.3, 11.33, 0.9, s.title || '감사합니다', 38, true, th.navy, 'title', { align: 'center', valign: 'middle' }));
-      o.push(edit(1, 4.3, 11.33, 0.5, s.sub || '', 15, false, th.gray, 'sub', { align: 'center' }));
-      o.push(edit(1, 4.85, 11.33, 0.4, s.contact || '', 12, false, th.gray, 'contact', { align: 'center' }));
+      // 네이비 전면. 학교 양식은 흰 배지 위의 교표와 캐릭터를 둔다.
+      var o = [rect(0, 0, W, H, th.navy), oval(8.75, 1.55, 4.4, 4.4, '26408E')];
+      if (th.logos) {
+        var mh = 0.6, mw = mh / th.logos.mark.ratio;
+        o.push(rect(0.9, 0.7, mw + 2.15, mh + 0.3, th.white, { r: 0.12 }), img(1.05, 0.85, mw, mh, th.logos.mark.key));
+        o.push(txt(1.05 + mw + 0.12, 0.85, 1.75, mh, [[run('대륜고등학교', 14, true, th.navy)]], { valign: 'middle' }));
+      }
+      o.push(rect(0.95, 2.6, 1.5, 0.07, th.second));
+      o.push(edit(0.95, 2.85, 7.6, 1.2, s.title || '감사합니다', 46, true, th.white, 'title', { valign: 'middle' }));
+      o.push(edit(0.95, 4.15, 7.6, 0.7, s.sub || '', 20, false, th.onDark, 'sub', { line: 1.15 }));
+      o.push(edit(0.95, 4.95, 7.6, 0.45, s.contact || '', 15, false, th.onDark, 'contact'));
+      if (th.chars) return o.concat(character(th, 'good', 10.95, 6.75, 4.7));
+      o.push(oval(9.55, 2.35, 2.8, 2.8, '1D7CC3'), oval(11.75, 1.95, 1.0, 1.0, 'E07312'), oval(9.2, 4.9, 0.7, 0.7, '2E9E5B'));
       return o;
     },
     fields: 'title(기본 감사합니다), sub, contact'
@@ -304,6 +414,18 @@
   function shapesFor(deck, i) {
     var th = THEMES[deck.theme] || THEMES.edtouch, s = deck.slides[i] || {}, L = LAYOUTS[s.layout] || LAYOUTS.bullets;
     return L.draw(th, s, i + 1, deck.slides.length);
+  }
+  // 이 덱이 실제로 쓰는 그림 키. 파워포인트로 받을 때 필요한 그림만 불러온다.
+  function assetKeys(deck) {
+    var keys = {};
+    deck.slides.forEach(function (s, i) { shapesFor(deck, i).forEach(function (sh) { if (sh.t === 'img') keys[sh.key] = 1; }); });
+    return Object.keys(keys);
+  }
+  // 캐릭터가 그려지는 장인가(표지·구역 표지·질문·마무리는 테마가 정하고, 항목 장은 character 값으로 정한다).
+  function hasCharacter(deck, i) {
+    var th = THEMES[deck.theme] || THEMES.edtouch;
+    if (!th.chars) return false;
+    return shapesFor(deck, i).some(function (sh) { return sh.t === 'img' && /^dr-char-/.test(sh.key); });
   }
 
   /* ── 화면 미리보기 ── */
@@ -333,12 +455,13 @@
         var ed = sh.path && opts.editable ? ' contenteditable="plaintext-only" spellcheck="false" data-path="' + esc(sh.path) + '"' : '';
         html += '<div class="sl-s sl-t' + (sh.path ? ' sl-e' : '') + '"' + ed + ' style="' + cssBox(sh) + 'display:flex;flex-direction:column;justify-content:' + jc + ';">' + inner + '</div>';
       } else if (sh.t === 'table') {
+        var fs = sh.size || 14.5;
         var rowsHtml = sh.rows.map(function (r, ri) {
           return '<tr style="height:' + sh.rowH + 'in">' + r.map(function (c, ci) {
             var head = ri === 0, bg = head ? th.navy : ri % 2 === 0 ? th.card : th.white;
             var color = head ? th.white : ci === 0 ? th.navy : th.body;
             var ed2 = opts.editable ? ' contenteditable="plaintext-only" spellcheck="false" data-path="' + sh.path + '.' + ri + '.' + ci + '"' : '';
-            return '<td' + ed2 + ' style="box-sizing:border-box;overflow:hidden;background:#' + bg + ';color:#' + color + ';font-size:' + (head ? 13.5 : 12.5) + 'pt;font-weight:' + (head || ci === 0 ? 700 : 400) + ';padding:0.04in 0.1in 0.04in 0.14in;border:0.5pt solid #' + th.border + ';vertical-align:middle;line-height:1.2;">' + esc(c) + '</td>';
+            return '<td' + ed2 + ' style="box-sizing:border-box;overflow:hidden;background:#' + bg + ';color:#' + color + ';font-size:' + (head ? fs + 1 : fs) + 'pt;font-weight:' + (head || ci === 0 ? 700 : 400) + ';padding:0.04in 0.1in 0.04in 0.16in;border:0.5pt solid #' + th.border + ';vertical-align:middle;line-height:1.2;">' + esc(c) + '</td>';
           }).join('') + '</tr>';
         }).join('');
         var tw = sh.colW.reduce(function (a, b) { return a + b; }, 0);
@@ -350,7 +473,7 @@
   }
   var CSS = '.sl-page{position:relative;width:13.333in;height:7.5in;background:#fff;overflow:hidden;font-family:"맑은 고딕","Malgun Gothic",Pretendard,"Noto Sans KR",sans-serif;word-break:keep-all;overflow-wrap:anywhere;color:#202124}' +
     '.sl-s{position:absolute;box-sizing:border-box;margin:0}.sl-t{overflow:visible}.sl-t p{white-space:pre-line}.sl-e[contenteditable]{outline:none;border-radius:4px;cursor:text}' +
-    '.sl-e[contenteditable]:hover{box-shadow:0 0 0 1.5pt rgba(79,70,229,.35)}.sl-e[contenteditable]:focus{box-shadow:0 0 0 2pt rgba(79,70,229,.8);background:rgba(255,255,255,.6)}' +
+    '.sl-e[contenteditable]:hover{box-shadow:0 0 0 1.5pt rgba(79,70,229,.35)}.sl-e[contenteditable]:focus{box-shadow:0 0 0 2pt rgba(79,70,229,.8);background:rgba(255,255,255,.18)}' +
     '.sl-page td[contenteditable]:focus{outline:2pt solid rgba(79,70,229,.8);outline-offset:-2pt}';
 
   /* ── 파워포인트 ── */
@@ -385,11 +508,12 @@
           if (!runs.some(function (r) { return r.text; })) return;
           slide.addText(runs, { x: sh.x, y: sh.y, w: sh.w, h: sh.h, margin: 0, align: sh.align, valign: sh.valign, lineSpacingMultiple: sh.line, fit: 'none', wrap: true });
         } else if (sh.t === 'table') {
+          var fs = sh.size || 14.5;
           var rows = sh.rows.map(function (r, ri) {
             return r.map(function (c, ci) {
               var head = ri === 0;
               return { text: c, options: { fill: { color: head ? th.navy : ri % 2 === 0 ? th.card : th.white }, color: head ? th.white : ci === 0 ? th.navy : th.body,
-                bold: head || ci === 0, fontSize: head ? 13.5 : 12.5, fontFace: th.font, valign: 'middle', lang: 'ko-KR', margin: [0.04, 0.1, 0.04, 0.14] } };
+                bold: head || ci === 0, fontSize: head ? fs + 1 : fs, fontFace: th.font, valign: 'middle', lang: 'ko-KR', margin: [0.04, 0.1, 0.04, 0.16] } };
             });
           });
           slide.addTable(rows, { x: sh.x, y: sh.y, colW: sh.colW, rowH: sh.rowH, border: { type: 'solid', pt: 0.5, color: th.border } });
@@ -450,7 +574,8 @@
     return Object.keys(LAYOUTS).map(function (k) { return '- ' + k + ' (' + LAYOUTS[k].label + '): ' + LAYOUTS[k].fields; }).join('\n');
   }
 
-  var api = { THEMES: THEMES, LAYOUTS: LAYOUTS, W: W, H: H, shapesFor: shapesFor, renderHtml: renderHtml, CSS: CSS, buildPptx: buildPptx, finalizePptx: finalizePptx,
+  var api = { THEMES: THEMES, LAYOUTS: LAYOUTS, CHARACTER_ROLES: CHARACTER_ROLES, W: W, H: H, shapesFor: shapesFor, assetKeys: assetKeys, hasCharacter: hasCharacter,
+    renderHtml: renderHtml, CSS: CSS, buildPptx: buildPptx, finalizePptx: finalizePptx,
     getPath: getPath, setPath: setPath, mapText: mapText, layoutGuide: layoutGuide };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.DrSlides = api;
 })(typeof window !== 'undefined' ? window : this);

@@ -221,11 +221,76 @@
     body[data-pane=chat] .work { display: none; }
     .grid2 { grid-template-columns: 1fr; }
   }
+
+  /* ── 2026-11-17 첫 화면·로그인 상태 ── */
+  body { font-size: 16px; }
+  header.top { padding: 10px 18px; gap: 10px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; margin-right: 8px; text-decoration: none; }
+  .brand img { height: 30px; width: auto; }
+  .brand h1 { font-size: 1.15rem; margin: 0; }
+  .auth { display: inline-flex; align-items: center; gap: 8px; }
+  .auth-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px; font-size: 0.86rem; font-weight: 700; white-space: nowrap; border: 1px solid var(--border); background: var(--muted); color: var(--text-2); }
+  .auth-chip::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #94a3b8; flex: 0 0 auto; }
+  .auth-chip[data-state=ok] { background: var(--ok-soft); border-color: #86efac; color: var(--ok); }
+  .auth-chip[data-state=ok]::before { background: #16a34a; }
+  .auth-chip[data-state=none], .auth-chip[data-state=denied], .auth-chip[data-state=error] { background: var(--warn-soft); border-color: #fcd34d; color: var(--warn); }
+  .auth-chip[data-state=none]::before, .auth-chip[data-state=denied]::before, .auth-chip[data-state=error]::before { background: #f59e0b; }
+  .auth-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 18px; background: #fff7e6; border-bottom: 1px solid #fcd34d; color: #7c4a03; font-size: 0.95rem; word-break: keep-all; }
+  .auth-bar[hidden] { display: none; }
+  .auth-bar p { flex: 1 1 320px; margin: 0; }
+  .auth-bar .btn { min-height: 44px; padding: 0 20px; font-size: 0.95rem; }
+  .auth-bar.nudge { animation: nudge 0.5s ease; }
+  @keyframes nudge { 0%, 100% { background: #fff7e6; } 40% { background: #fde68a; } }
+  body.locked .form-card, body.locked .tile, body.locked .composer .btn, body.locked .chip { opacity: 0.72; }
+
+  .start { padding: 28px 20px 40px; background: #f4f8fc; }
+  .start-inner { max-width: 980px; }
+  .hero { position: relative; display: flex; align-items: flex-end; gap: 16px; background: #1e3373; color: #fff; border-radius: 20px; padding: 26px 30px 24px; overflow: hidden; }
+  .hero-text { flex: 1 1 auto; min-width: 0; word-break: keep-all; }
+  .hero-text h2 { font-size: 1.6rem; font-weight: 800; line-height: 1.35; margin-bottom: 8px; }
+  .hero-text p { font-size: 1rem; color: #dce6f7; line-height: 1.65; max-width: 34em; }
+  .hero-text .step { display: inline-block; margin-top: 12px; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,0.14); color: #ffe88a; font-size: 0.88rem; font-weight: 700; }
+  .hero img { flex: 0 0 auto; height: 168px; width: auto; margin: -8px 4px -24px 0; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+  .tile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; min-height: 104px; padding: 16px 16px 14px; border-radius: 16px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-family: inherit; color: var(--text); border-top: 5px solid var(--primary); word-break: keep-all; }
+  .tile b { font-size: 1.08rem; font-weight: 800; }
+  .tile span { font-size: 0.86rem; color: var(--text-2); line-height: 1.5; }
+  .tile:hover { box-shadow: 0 6px 18px rgba(30,51,115,0.12); transform: translateY(-1px); }
+  .tile.t-open { border-top-color: #1e3373; background: #eef3fb; }
+  .tile.t-hwp { border-top-color: #1d7cc3; }
+  .tile.t-xlsx { border-top-color: #2e9e5b; }
+  .tile.t-pptx { border-top-color: #e07312; }
+  .drop { margin-top: 12px; border: 2px dashed #b8c7d9; border-radius: 14px; padding: 12px 16px; background: transparent; }
+  .drop p { margin: 0; font-size: 0.92rem; color: var(--text-2); }
+  .forms-list { margin-top: 28px; }
+  .forms-list h3 { font-size: 1.12rem; margin-bottom: 4px; }
+  .forms-list .lead { font-size: 0.92rem; color: var(--text-2); margin-bottom: 12px; }
+  .form-cards { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+  .form-card { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 8px; min-height: 92px; padding: 14px 16px; border-radius: 14px; border-left: 5px solid #94a3b8; font-family: inherit; word-break: keep-all; }
+  .form-card b { font-size: 1.02rem; line-height: 1.4; }
+  .form-card small { align-self: flex-start; font-size: 0.8rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: #f1f5f9; color: #475569; }
+  .form-card[data-dept="연구부"] { border-left-color: #1d7cc3; } .form-card[data-dept="연구부"] small { background: #d8ecf8; color: #14507f; }
+  .form-card[data-dept="창의인성부"] { border-left-color: #e07312; } .form-card[data-dept="창의인성부"] small { background: #fce9d6; color: #8a4508; }
+  .form-card[data-dept="교무부"] { border-left-color: #26408e; } .form-card[data-dept="교무부"] small { background: #e3effb; color: #26408e; }
+  .form-card[data-dept="행정실"] { border-left-color: #2e9e5b; } .form-card[data-dept="행정실"] small { background: #e2f4e8; color: #1c6a3b; }
+  .form-card:hover { box-shadow: 0 6px 18px rgba(30,51,115,0.1); }
+
+  .chat-head h2 { font-size: 1.05rem; }
+  .empty::before { content: ''; display: block; width: 112px; height: 150px; margin: 0 auto 10px; background: url(slides/dr-char-question.png) center / contain no-repeat; }
+  .empty h3 { font-size: 1.15rem; }
+  .empty p { font-size: 0.95rem; line-height: 1.7; }
+  .chip { font-size: 0.92rem; min-height: 40px; }
+  .lbl { font-size: 0.9rem; }
+  .composer textarea { font-size: 1rem; }
+  .ai-chip { font-size: 0.86rem; min-height: 36px; }
+  .scope { font-size: 0.82rem; }
+  @media (max-width: 900px) { .tiles { grid-template-columns: repeat(2, 1fr); } .hero img { height: 120px; } .hero-text h2 { font-size: 1.3rem; } }
+  @media (max-width: 520px) { .hero { padding: 20px 18px; } .hero img { display: none; } .auth-chip { font-size: 0.8rem; padding: 0 10px; } header.top .back { display: none; } .empty::before { width: 84px; height: 112px; } }
 </style>
 </head>
 <body data-pane="chat">
 <header class="top">
-  <h1>문서작성 AI</h1>
+  <a class="brand" href="/" data-free title="대륜고 사용설명서로 가기"><img src="slides/daeryun-logo.png" alt="대륜고등학교"><h1>문서작성 AI</h1></a>
   <button class="btn small" type="button" id="btn-forms" hidden>양식에서 시작</button>
   <button class="btn small" type="button" id="btn-open" hidden>파일 열기</button>
   <button class="btn small" type="button" id="btn-admin" hidden>양식 관리</button>
@@ -240,8 +305,16 @@
       <button type="button" data-format="xlsx" hidden>엑셀로 받기 (.xlsx)</button>
     </div>
   </div>
-  <a class="back" href="/">← 대륜고 사용설명서</a>
+  <span class="auth" data-free>
+    <span class="auth-chip" id="auth-chip" role="status" aria-live="polite" data-state="checking">확인 중</span>
+    <a class="btn small primary" id="auth-login" href="/#login" hidden>로그인</a>
+  </span>
+  <a class="back" href="/" data-free>← 대륜고 사용설명서</a>
 </header>
+<div class="auth-bar" id="auth-bar" role="alert" data-free hidden>
+  <p id="auth-bar-text"></p>
+  <a class="btn primary" id="auth-bar-login" href="/#login">로그인하고 쓰기</a>
+</div>
 <input type="file" id="file-input" class="sr-only" multiple accept=".hwp,.hwpx,.pdf,.xlsx,.xls,.csv,.pptx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.bmp" tabindex="-1">
 <input type="file" id="attach-input" class="sr-only" multiple accept=".hwp,.hwpx,.pdf,.xlsx,.xls,.csv,.pptx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.bmp,image/*" tabindex="-1">
 
@@ -254,7 +327,7 @@
 </div>
 
 <main id="app" hidden>
-  <div class="tabs-m" role="tablist" aria-label="화면 전환">
+  <div class="tabs-m" role="tablist" aria-label="화면 전환" data-free>
     <button type="button" role="tab" id="pane-chat" aria-selected="true">AI 도우미</button>
     <button type="button" role="tab" id="pane-work" aria-selected="false">문서</button>
   </div>
@@ -298,18 +371,26 @@
       <div id="sheet" hidden></div>
       <div class="start" id="start">
         <div class="start-inner">
-          <div class="drop" id="drop">
-            <h2>파일을 끌어다 놓거나 열어 주세요</h2>
-            <p>한글(.hwp·.hwpx)과 엑셀(.xlsx)은 바로 고칠 수 있습니다. PDF·파워포인트는 자료로 열어 한글·엑셀을 채우거나 새 PPT를 만들 때 씁니다.</p>
-            <div class="start-actions">
-              <button class="btn primary" type="button" id="btn-open2">파일 열기</button>
-              <button class="btn" type="button" id="btn-new-hwp">새 한글 만들기</button>
-              <button class="btn" type="button" id="btn-new-sheet">새 엑셀 만들기</button>
-              <button class="btn" type="button" id="btn-new-deck">새 PPT 만들기</button>
+          <div class="hero">
+            <div class="hero-text">
+              <h2>어떤 문서를 만들까요?</h2>
+              <p>문서를 고르고 AI 도우미에 하고 싶은 말을 적으면 AI가 채웁니다. 고친 곳은 대화에 표시되고 한 번에 되돌릴 수 있습니다.</p>
+              <span class="step">1. 문서 고르기 → 2. AI 도우미에 요청 적기 → 3. 확인하고 받기</span>
             </div>
+            <img src="slides/dr-char-practice.png" alt="">
+          </div>
+          <div class="tiles">
+            <button class="tile t-open" type="button" id="btn-open2"><b>파일 열기</b><span>한글, 엑셀, PDF, 파워포인트, 이미지</span></button>
+            <button class="tile t-hwp" type="button" id="btn-new-hwp"><b>새 한글 문서</b><span>빈 문서에서 가정통신문, 계획서 쓰기</span></button>
+            <button class="tile t-xlsx" type="button" id="btn-new-sheet"><b>새 엑셀</b><span>명단, 일정표, 집계표 만들기</span></button>
+            <button class="tile t-pptx" type="button" id="btn-new-deck"><b>새 PPT</b><span>자료로 학교 양식 발표 자료 만들기</span></button>
+          </div>
+          <div class="drop" id="drop">
+            <p>파일을 이 화면에 끌어다 놓아도 열립니다. 한글과 엑셀은 바로 고치고, PDF·파워포인트·이미지는 자료로 씁니다.</p>
           </div>
           <div class="forms-list">
             <h3>학교 양식에서 시작</h3>
+            <p class="lead">양식을 고르면 빈 양식이 열립니다. 칸에 넣을 내용을 AI 도우미에 적어 주세요.</p>
             <div class="form-cards" id="form-cards"><p class="hint">양식 목록을 불러오는 중입니다…</p></div>
           </div>
         </div>

@@ -55,7 +55,9 @@ export function requiredTier(p) {
   if (/^\/_timetable_[^/]*$/.test(p) || under(p, '/_gated/member')) return 'member';
   if (p === '/_school_content.html') return null;
   if (p.startsWith('/_')) return 'teacher';
-  if (['/record', '/backward', '/schedule', '/evalplan', '/forms', '/bw-api'].some((d) => under(p, d))) return 'teacher';
+  // 문서작성 AI(/forms/)는 화면을 누구에게나 보이고 화면 안에서 로그인 상태를 알린다. 쓰기는 교사 로그인 뒤에만 되고,
+  // 학교 양식 틀과 서버 기능(양식 목록, 서버 AI)은 교사 확인을 따로 거친다.
+  if (['/record', '/backward', '/schedule', '/evalplan', '/forms/templates', '/bw-api'].some((d) => under(p, d))) return 'teacher';
   if (p === '/build-emb.html' || p === '/build-emb') return 'teacher';
   if (/^\/data\/(law|curr|neis)_[^/]*$/.test(p)) return 'teacher';
   return null;

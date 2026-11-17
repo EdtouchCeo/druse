@@ -29,7 +29,7 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 //   role: AI에게 알려 줄 사용자 설명
 //   slideTheme·slideAssets·pptxLib: 새 PPT의 양식(slides.js 테마), 양식 그림 주소, 파워포인트 도구 주소
 const CFG = Object.assign({ gate: true, serverForms: true, role: '대륜고등학교 교사',
-  slideTheme: 'daeryun', slideAssets: { 'daeryun-logo': 'slides/daeryun-logo.png' }, pptxLib: '../lib/pptxgen.bundle.js', sheets: false, univerBase: 'lib/univer/' }, window.FORMS_CONFIG || {});
+  slideTheme: 'daeryun', slideAssets: { 'daeryun-logo': 'slides/daeryun-logo.png', 'dr-char-greeting': 'slides/dr-char-greeting.png', 'dr-char-question': 'slides/dr-char-question.png', 'dr-char-think': 'slides/dr-char-think.png', 'dr-char-peer': 'slides/dr-char-peer.png', 'dr-char-practice': 'slides/dr-char-practice.png', 'dr-char-explore': 'slides/dr-char-explore.png', 'dr-char-counsel': 'slides/dr-char-counsel.png', 'dr-char-good': 'slides/dr-char-good.png', 'dr-char-walk': 'slides/dr-char-walk.png' }, pptxLib: '../lib/pptxgen.bundle.js', sheets: false, univerBase: 'lib/univer/' }, window.FORMS_CONFIG || {});
 const abs = (u) => new URL(u, document.baseURI).href;
 const SLIDE_ASSETS = Object.fromEntries(Object.entries(CFG.slideAssets).map(([k, u]) => [k, abs(u)]));
 const isSheet = (t) => !!t && t.kind === 'xlsx' && !!t.wbData;
@@ -548,7 +548,7 @@ async function loadForms() {
 function renderFormCards() {
   document.querySelector('.forms-list').hidden = !state.forms.length && !CFG.serverForms;
   $('form-cards').innerHTML = state.forms.length ? state.forms.map((f) =>
-    `<button type="button" class="form-card" data-form="${esc(f.id)}"><b>${esc(f.title)}</b><small>${esc(f.dept || '')}${f.meta && f.meta.year ? ' · ' + esc(f.meta.year) + '학년도' : ''}${f.form && f.form.app ? ' · 입력 화면' : ''}</small></button>`).join('')
+    `<button type="button" class="form-card" data-form="${esc(f.id)}" data-dept="${esc(f.dept || '')}"><b>${esc(f.title)}</b><small>${esc(f.dept || '')}${f.meta && f.meta.year ? ' · ' + esc(f.meta.year) + '학년도' : ''}${f.form && f.form.app ? ' · 입력 화면' : ''}</small></button>`).join('')
     : '<p class="hint">등록된 양식이 없습니다.</p>';
 }
 $('form-cards').addEventListener('click', (e) => { const b = e.target.closest('[data-form]'); if (b) openForm(b.dataset.form); });
@@ -1134,7 +1134,7 @@ async function send(sourceIds) {
 }
 // PPT 탭: 비어 있으면 새로 만들고(장 구성 → 6장씩 채우기), 있으면 장·칸 주소로 고친다.
 async function sendSlides(target, request, sources, wait, say, retryId, iopts) {
-  const ctx = { role: CFG.role, today: today(), request, sources, name: baseName(target.name), history: state.history.slice(-HISTORY_TURNS) };
+  const ctx = { role: CFG.role, today: today(), request, sources, theme: target.deck.theme, name: baseName(target.name), history: state.history.slice(-HISTORY_TURNS) };
   const before = Deck.clone(target.deck);
   const call = (prompt, schema) => drAi.call(prompt, schema, say, iopts);
   let reply = '', res = { changes: [], problems: [] };
@@ -1465,20 +1465,92 @@ async function receiveHandoff(key) {
   await addFiles(files);
   note('융합 수업 설계실에서 한글 문서 ' + files.length + '개를 열었습니다. 여기서 고친 내용은 설계실로 돌아가지 않습니다. 다 고친 뒤 받기 버튼으로 저장해 주세요.');
 }
+/* ── 로그인 상태 (CFG.gate) ──
+ * 화면은 로그인 전에도 보인다. 쓰기(양식 열기, 파일 열기, 보내기)는 승인된 교사로 확인된 뒤에만 된다.
+ * 양식 틀 파일과 서버 기능은 서버가 따로 막는다. 여기서는 화면의 단추를 잠그고 로그인으로 안내한다.
+ * 다른 탭에서 로그인·로그아웃하면 storage 이벤트와 창 복귀 때 다시 확인한다. */
+const auth = { state: CFG.gate ? 'checking' : 'ok', name: '', message: '' };
+const locked = () => auth.state !== 'ok';
+const loginUrl = () => '/?gate_return=' + encodeURIComponent(location.pathname + location.search) + '#login';
+function renderAuth() {
+  const chip = $('auth-chip'), bar = $('auth-bar');
+  if (!chip || !bar) return;
+  const text = {
+    checking: ['확인 중', '로그인 상태를 확인하고 있습니다.'],
+    ok: ['로그인됨' + (auth.name ? ' · ' + auth.name + ' 선생님' : ''), ''],
+    none: ['로그인 안 됨', '지금은 둘러보기만 할 수 있습니다. 승인된 교사 계정으로 로그인하면 양식 열기, 파일 열기, AI 요청을 쓸 수 있습니다.'],
+    denied: ['교사 승인 필요', auth.message || '이 계정은 교사 승인이 확인되지 않았습니다. 관리자에게 승인을 요청해 주세요.'],
+    error: ['확인 실패', (auth.message || '로그인 상태를 확인하지 못했습니다.') + ' 잠시 뒤 다시 확인해 주세요.']
+  }[auth.state];
+  chip.textContent = text[0];
+  chip.dataset.state = auth.state;
+  $('auth-login').hidden = auth.state === 'ok' || auth.state === 'checking';
+  $('auth-login').textContent = auth.state === 'none' ? '로그인' : auth.state === 'denied' ? '다른 계정으로 로그인' : '다시 확인';
+  $('auth-login').href = loginUrl();
+  bar.hidden = auth.state === 'ok';
+  $('auth-bar-text').textContent = text[1];
+  $('auth-bar-login').hidden = auth.state !== 'none' && auth.state !== 'denied';
+  $('auth-bar-login').href = loginUrl();
+  document.body.classList.toggle('locked', locked());
+  $('prompt').disabled = locked();
+  if (locked()) $('prompt').placeholder = '로그인하면 요청을 적을 수 있습니다.';
+}
+let authBusy = null;
+function checkAuth() {
+  if (authBusy) return authBusy;
+  authBusy = (async () => {
+    const was = auth.state, s = getSession();
+    if (!s || !s.token) { auth.state = 'none'; auth.name = ''; state.isAdmin = false; }
+    else {
+      try {
+        const me = await api('me');
+        auth.state = 'ok'; auth.name = me.name || ''; auth.message = '';
+        state.isAdmin = !!me.isAdmin && CFG.serverForms;
+        // 양식 틀과 평가 계획 화면은 서버 쿠키로 확인한다. 본 사이트를 거치지 않고 들어온 경우를 위해 여기서도 받아 둔다.
+        try { await fetch('/.netlify/functions/auth-session', { method: 'POST', credentials: 'same-origin', headers: { Authorization: 'Bearer ' + (getSession() || {}).token } }); } catch (e) {}
+      } catch (e) {
+        auth.state = e.status === 403 ? 'denied' : e.status === 401 ? 'none' : 'error';
+        auth.name = ''; auth.message = e.status === 401 ? '' : e.message || ''; state.isAdmin = false;
+      }
+    }
+    renderAuth();
+    if ($('btn-admin')) $('btn-admin').hidden = !state.isAdmin;
+    if (was !== 'checking' && was !== auth.state) { renderEmpty(); if (auth.state === 'ok') { renderAi(); await loadForms(); } }
+  })().finally(() => { authBusy = null; });
+  return authBusy;
+}
+if (CFG.gate) {
+  // 잠긴 동안에는 화면의 조작을 막고 로그인 안내로 눈을 돌린다. data-free가 붙은 곳(로그인, 사용설명서로 가기, 화면 전환)은 그대로 둔다.
+  const nudge = () => {
+    const bar = $('auth-bar'); if (!bar) return;
+    bar.classList.remove('nudge'); void bar.offsetWidth; bar.classList.add('nudge');
+    const go = !$('auth-bar-login').hidden ? $('auth-bar-login') : $('auth-login');
+    if (go && !go.hidden) go.focus();
+  };
+  const block = (e) => {
+    if (!locked() || auth.state === 'checking') return;
+    const t = e.target;
+    if (t && t.closest && t.closest('[data-free]')) return;
+    if (e.type === 'click' && !(t && t.closest && t.closest('button, a, .form-card, select, input, textarea, [role=tab], .drop'))) return;
+    e.preventDefault(); e.stopPropagation();
+    if (e.type !== 'dragover') nudge();
+  };
+  ['click', 'submit', 'drop', 'dragover', 'paste'].forEach((ev) => window.addEventListener(ev, block, true));
+  window.addEventListener('storage', (e) => { if (e.key === SESSION_KEY || e.key === null) checkAuth(); });
+  const recheck = () => { const has = !!((getSession() || {}).token); if (has !== (auth.state === 'ok') || auth.state === 'error') checkAuth(); };
+  window.addEventListener('focus', recheck);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) recheck(); });
+  if ($('auth-login')) $('auth-login').addEventListener('click', (e) => { if (auth.state === 'error') { e.preventDefault(); checkAuth(); } });
+}
 async function boot() {
-  if (CFG.gate) {
-    try {
-      const me = await api('me');
-      state.isAdmin = !!me.isAdmin && CFG.serverForms;
-    } catch (e) { showGate(e); return; }
-  }
+  if (CFG.gate) await checkAuth();
   $('app').hidden = false;
   ['btn-forms', 'btn-open'].forEach((id) => { $(id).hidden = false; });
   $('btn-admin').hidden = !state.isAdmin;
   renderTabs(); renderTarget(); renderSources(); renderAi(); renderEmpty(); updateDownload();
   await loadForms();
   const q = new URLSearchParams(location.search);
-  if (q.get('form')) await openForm(q.get('form'));
+  if (q.get('form') && !locked()) await openForm(q.get('form'));
   if (q.get('admin') === '1' && state.isAdmin) openAdmin();
   if (q.get('handoff')) await receiveHandoff(q.get('handoff'));
 }

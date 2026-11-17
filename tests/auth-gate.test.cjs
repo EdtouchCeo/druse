@@ -74,11 +74,11 @@ test('함수 쿠키와 엣지 검증이 서로 호환되고 위조·만료는 �
 });
 
 const PROTECTED = [
-  '/record/', '/record', '/record/index.html', '/record/assets/x.js', '/backward/', '/schedule/', '/evalplan/', '/forms/',
-  '/forms/app.js', '/bw-api/x', '/build-emb.html', '/data/law_search.json', '/data/curr_emb.bin', '/data/neis_struct.json',
+  '/record/', '/record', '/record/index.html', '/record/assets/x.js', '/backward/', '/schedule/', '/evalplan/', '/forms/templates/a.hwpx',
+  '/forms/templates', '/bw-api/x', '/build-emb.html', '/data/law_search.json', '/data/curr_emb.bin', '/data/neis_struct.json',
   '/_gated/teacher/index.html', '/_gated/member/index.html',
   // 우회 시도
-  '/RECORD/', '/Record/index.html', '//record/', '/record//index.html', '/%72ecord/', '/FORMS/APP.JS', '/_GATED/TEACHER/INDEX.HTML',
+  '/RECORD/', '/Record/index.html', '//record/', '/record//index.html', '/%72ecord/', '/FORMS/TEMPLATES/A.HWPX', '/forms//templates/a.hwpx', '/_GATED/TEACHER/INDEX.HTML',
 ];
 for (const p of PROTECTED) {
   test(`비로그인은 차단: ${p}`, async () => {
@@ -93,8 +93,12 @@ for (const p of PROTECTED) {
 test('회원은 교사 경로에서 403, 시간표는 통과', async () => {
   const member = issued('member');
   assert.equal((await run('/record/', { value: member })).res.status, 403);
-  assert.equal((await run('/forms/', { value: member })).res.status, 403);
-  assert.equal((await run('/forms/app.js', { value: member })).res.status, 403);
+  assert.equal((await run('/forms/templates/a.hwpx', { value: member })).res.status, 403);
+  // 문서작성 AI 화면과 도구 파일은 공개다(쓰기는 화면이 로그인 뒤에만 연다).
+  for (const pub of ['/forms/', '/forms', '/forms/index.html', '/forms/app.js', '/forms/blank.hwpx', '/forms/slides/dr-char-good.png']) {
+    assert.equal((await run(pub)).ctx.nextCalls, 1, pub);
+    assert.equal((await run(pub, { value: member })).ctx.nextCalls, 1, pub);
+  }
   assert.equal((await run('/_gated/teacher/index.html', { value: member })).res.status, 403);
   assert.equal((await run('/_gated/member/index.html', { value: member })).ctx.nextCalls, 1);
   const tt = await run('/_timetable_data.json', { value: member });

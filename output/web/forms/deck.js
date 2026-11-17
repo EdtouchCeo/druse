@@ -33,9 +33,10 @@ export const SLIDE_SCHEMA = {
     items: { type: 'array', items: ITEM },
     left: SIDE, right: SIDE,
     rows: { type: 'array', items: { type: 'array', items: { type: 'string' } } },
-    note: { type: 'string' }, notes: { type: 'string' }, source: { type: 'string' }
+    note: { type: 'string' }, notes: { type: 'string' }, source: { type: 'string' },
+    character: { type: 'string', enum: [''].concat(Object.keys(S.CHARACTER_ROLES)) }
   },
-  required: ['layout', 'tag', 'title', 'subtitle', 'org', 'date', 'presenter', 'items', 'left', 'right', 'rows', 'note', 'notes', 'source']
+  required: ['layout', 'tag', 'title', 'subtitle', 'org', 'date', 'presenter', 'items', 'left', 'right', 'rows', 'note', 'notes', 'source', 'character']
 };
 const s = (v) => (v == null ? '' : String(v)).trim();
 const list = (a) => (Array.isArray(a) ? a : []);
@@ -48,7 +49,10 @@ export function normalizeSlide(u, no) {
     case 'cover': Object.assign(out, { kicker: s(u.tag), subtitle: s(u.subtitle), org: s(u.org), date: s(u.date), presenter: s(u.presenter) }); delete out.tag; break;
     case 'agenda': out.items = items.map((it) => ({ title: it.title, sub: it.body })); break;
     case 'section': Object.assign(out, { no: no || 1, sub: s(u.subtitle) }); break;
-    case 'bullets': out.bullets = items.map((it) => ({ title: it.title, sub: it.body })); break;
+    case 'bullets': out.bullets = items.map((it) => ({ title: it.title, sub: it.body })); if (S.CHARACTER_ROLES[u.character]) out.character = u.character; break;
+    case 'question': Object.assign(out, { question: s(u.subtitle) || (items[0] ? items[0].title : ''),
+      hints: (s(u.subtitle) ? items : items.slice(1)).map((it) => [it.title, it.body].filter(Boolean).join(' – ')).slice(0, 3) });
+      if (S.CHARACTER_ROLES[u.character]) out.character = u.character; out.note = ''; break;
     case 'cards': out.cards = items.map((it) => ({ title: it.title, body: it.body })); break;
     case 'process': out.steps = items.map((it) => ({ title: it.title, body: it.body })); break;
     case 'stats': out.stats = items.map((it) => ({ value: it.value || it.title, label: it.value ? it.title : '', sub: it.body })); break;
@@ -59,35 +63,72 @@ export function normalizeSlide(u, no) {
   }
   return out;
 }
-// 구역 표지 번호를 순서대로 다시 매긴다.
-export function renumber(deck) { let n = 0; deck.slides.forEach((sl) => { if (sl.layout === 'section') sl.no = ++n; }); }
+// 구역 표지 번호를 순서대로 다시 매기고 캐릭터 규칙을 맞춘다.
+export function renumber(deck) {
+  let n = 0;
+  deck.slides.forEach((sl) => { if (sl.layout === 'section') sl.no = ++n; });
+  limitCharacters(deck);
+}
+// 캐릭터는 장의 역할을 알리는 장에만 둔다(강의 슬라이드 제작 지침). 코드가 세어 맞춘다.
+//  - 항목 장의 character는 항목이 4개 이하일 때만 남긴다.
+//  - 바로 앞 장과 같은 장면이면 뺀다.
+//  - 캐릭터가 나오는 장이 전체의 3분의 1(올림)을 넘으면 뒤쪽 항목 장부터 뺀다. 표지·구역 표지·질문·마무리는 그대로 둔다.
+export function limitCharacters(deck) {
+  const th = S.THEMES[deck.theme];
+  if (!th || !th.chars) { deck.slides.forEach((sl) => { delete sl.character; }); return; }
+  const poseOf = (sl) => (sl.layout === 'question' ? (S.CHARACTER_ROLES[sl.character] ? sl.character : 'question') : sl.layout === 'bullets' ? sl.character || '' : '');
+  deck.slides.forEach((sl, i) => {
+    if (sl.layout !== 'bullets' && sl.layout !== 'question') { delete sl.character; return; }
+    if (!S.CHARACTER_ROLES[sl.character]) { delete sl.character; return; }
+    if (sl.layout === 'bullets' && (sl.bullets || []).length > 4) { delete sl.character; return; }
+    const prev = deck.slides[i - 1];
+    if (prev && poseOf(prev) && poseOf(prev) === poseOf(sl)) delete sl.character;
+  });
+  const max = Math.max(3, Math.ceil(deck.slides.length / 3));
+  let count = deck.slides.filter((sl, i) => S.hasCharacter(deck, i)).length;
+  for (let i = deck.slides.length - 1; i >= 0 && count > max; i--) {
+    const sl = deck.slides[i];
+    if (sl.layout === 'bullets' && sl.character) { delete sl.character; count--; }
+  }
+}
 
 /* ── 프롬프트 ── */
 const RULES = [
-  '[슬라이드 글쓰기]',
-  '- 화면 글은 명사형·핵심구·행동형(~하기)으로 쓴다. 화면에는 ~다·~한다·~이다·~합니다로 끝나는 문장을 쓰지 않는다. 실제 질문과 직접 인용은 원래 말투를 지킨다.',
-  '- 한 항목에는 핵심 하나만 담는다. 항목은 40자 안팎, 카드·단계 설명은 60자 안팎, 제목은 25자 안팎으로 쓴다. 길면 항목을 나누거나 발표 노트로 옮긴다.',
-  '- 제목은 그 장의 주제나 핵심이 드러나는 핵심구로 쓴다. "이론", "데이터" 같은 분류명을 제목 앞에 붙이지 않는다.',
-  '- 수치에는 단위·기준 시점·대상을 붙인다. 자료에 없는 사실, 수치, 날짜, 이름, 기관은 지어내지 않는다. 확인할 수 없으면 쓰지 않는다.',
-  '- notes(발표 노트)는 보고체(~한다, ~이다)로 화면 내용의 의미·근거·사례를 2~4문장으로 설명한다. ~합니다·~습니다·~요로 끝내지 않는다. 화면 글을 그대로 반복하지 않는다.',
+  '[슬라이드 글쓰기] 강의 슬라이드 제작 지침을 따른다.',
+  '- 화면 글은 명사형·핵심구·행동형(~하기)으로 쓴다. 화면에는 ~다·~한다·~이다·~합니다로 끝나는 문장을 쓰지 않는다. 청중이 실제로 답할 질문과 직접 인용, 원문 공식 문구는 원래 말투를 지킨다.',
+  '- 한 장에는 메시지 하나만 담는다. 한 항목에도 핵심 하나만 담는다. 항목은 40자 안팎, 카드·단계 설명은 60자 안팎, 제목은 25자 안팎으로 쓴다. 길면 항목을 나누거나 발표 노트로 옮긴다.',
+  '- 제목은 본문에 실제로 나오는 낱말로 그 장의 대상과 내용을 적는다. 대상과 내용을 함께 밝힐 때는 "대상 – 내용" 형태로 쓴다(예: "수행평가 – 채점 기준 3단계").',
+  '- 꾸민 제목을 쓰지 않는다. 쉼표로 두 구를 맞세운 제목("세 가지 변화, 하나의 방향"), 비유와 의인화("빠지기 쉬운 함정"), 구호형 대조("A에서 B로", "A가 아니라 B"), 수식이 길어 대상이 뒤로 밀린 제목을 쓰지 않는다. "이론", "데이터" 같은 분류명을 제목 앞에 붙이지 않는다.',
+  '- note(장의 핵심 한 줄)도 같은 기준으로 쓴다. 운율을 맞춘 구호 대신 관계가 보이는 표현으로 쓴다(예: "자료 확인 → 초안 작성 → 동료 검토"). 모든 장에 넣지 않는다. 그 장의 결론이 따로 있을 때만 쓴다.',
+  '- 개수는 숫자와 단위로 쓴다("세 가지" 대신 "3가지"). 대상의 공식 이름을 줄여 부르지 않는다. 수치에는 단위·기준 시점·대상을 붙인다.',
+  '- 자료에 없는 사실, 수치, 날짜, 이름, 기관, 행사명은 지어내지 않는다. 확인할 수 없으면 쓰지 않는다. 과장, 훈계, 근거 없는 단정, 이모지와 느낌표 장식을 쓰지 않는다.',
+  '- notes(발표 노트)는 보고체(~한다, ~이다)로 화면 내용의 의미·근거·사례를 2~4문장으로 설명한다. ~합니다·~습니다·~요로 끝내지 않는다. 화면 글을 그대로 반복하지 않는다. 표와 단계는 읽는 순서를 풀어 준다.',
   '- source에는 그 장의 근거가 된 자료 이름과 쪽·위치를 짧게 적는다(예: 연수자료.pdf 3쪽). 근거 자료가 없는 장(표지·목차·마무리)은 빈 문자열로 둔다.',
-  '- tag는 영어 대문자 짧은 머리말(예: WHY, PROCESS, KEY NUMBERS)이다. 표지의 tag는 행사·과정 이름 같은 짧은 머리말이다.'
+  '- tag는 비워 둔다(""). 그 장이 속한 구역 이름을 꼭 보여야 할 때만 짧은 한국어로 쓴다. 영어 머리말(WHY, KEY POINTS 등)은 쓰지 않는다. 표지의 tag는 행사·과정 이름이다.'
 ].join('\n');
-function fieldGuide() {
-  return [
+function fieldGuide(theme) {
+  const L = [
     '[레이아웃과 채울 필드] 모든 필드를 응답에 넣고, 쓰지 않는 필드는 "" 또는 []로 둔다.',
-    '- cover(표지): title(2줄 이내, 줄바꿈은 \\n), subtitle, tag(머리말), org(학교·학년·행사), date(교사나 자료가 알려 준 발표 날짜만, 없으면 ""), presenter(알려 준 발표자만, 없으면 "")',
+    '- cover(표지): title(2줄 이내, 줄바꿈은 \\n), subtitle, tag(행사·과정 이름), org(학교·학년·행사), date(교사나 자료가 알려 준 발표 날짜만, 없으면 ""), presenter(알려 준 발표자만, 없으면 "")',
     '- agenda(목차): title="목차", items 3~6개(title=구역 이름, body=한 줄 설명)',
     '- section(구역 표지): title, subtitle(한 줄)',
-    '- bullets(글머리): items 3~5개(title=핵심 한 줄, body=짧은 풀이), note(강조 한 줄, 선택)',
+    '- bullets(항목): items 3~5개(title=핵심 한 줄, body=짧은 풀이), note(선택)',
+    '- question(질문): title(짧은 이름, 예: "생각해 보기"), subtitle=청중에게 던질 질문 한 문장(질문형 그대로), items 0~3개(title=생각할 점이나 보기), 정답과 해설은 notes에 쓴다',
     '- cards(카드): items 2~4개(title, body), note(선택)',
     '- compare(비교): left·right 각각 label과 items 2~5개, note(선택)',
-    '- table(표): rows 첫 줄이 머리글, 최대 8줄 5칸, note(선택)',
+    '- table(표): rows 첫 줄이 머리글. 5줄 4칸 안쪽을 권장하고 최대 8줄 5칸, note(선택)',
     '- process(단계): items 3~5개(title=단계 이름, body=할 일), note(선택)',
     '- stats(수치): items 2~4개(value=숫자와 단위 예: 12건, title=무엇의 수치, body=기준·출처), note(선택)',
     '- summary(정리): items 2~4개(title, body), note=다음 행동 한 줄(선택)',
     '- end(마무리): title(기본 감사합니다), subtitle, presenter(연락처·모둠 이름)'
-  ].join('\n');
+  ];
+  if (S.THEMES[theme] && S.THEMES[theme].chars) L.push(
+    '[캐릭터] 이 양식에는 대륜고 캐릭터 "대륜이"가 있다. 표지, 구역 표지, 질문, 마무리 장에는 자동으로 들어간다.',
+    '- bullets 장에만 character를 줄 수 있다. 항목이 4개 이하이고 장의 역할이 장면과 맞을 때만 쓴다: ' + Object.entries(S.CHARACTER_ROLES).map(([k, v]) => k + '=' + v).join(', ') + '.',
+    '- 개념 설명, 표, 수치 장에는 쓰지 않는다. 덱 전체에서 캐릭터가 나오는 장은 3분의 1 이하로 하고 이어지는 두 장에 같은 장면을 쓰지 않는다. 나머지 장의 character는 ""로 둔다.',
+    '- 대륜이는 가상 캐릭터다. 실제 학생의 발언이나 사례처럼 쓰지 않는다.');
+  else L.push('- character는 항상 ""로 둔다.');
+  return L.join('\n');
 }
 function sourcesBlock(sources) {
   if (!sources.length) return ['[자료] 없음. 교사의 요청 문장만 근거로 쓴다. 구체적인 사실·수치가 필요하면 지어내지 말고 reply에서 자료를 요청한다.'];
@@ -118,10 +159,12 @@ export function outlinePrompt(ctx) {
     '[할 일] 발표 자료의 장 구성만 먼저 정한다. 본문은 다음 단계에서 채운다.',
     '- 장 수: 교사가 정했으면 그대로, 정하지 않았으면 자료 분량에 맞춰 8~12장. 최대 ' + MAX_SLIDES + '장.',
     '- 첫 장은 cover, 마지막 장은 end. 8장 이상이면 둘째 장에 agenda를 둔다. 큰 묶음이 2개 이상이면 묶음 앞에 section을 둔다. 마지막 바로 앞은 summary를 권장한다.',
-    '- 본문 장은 내용 관계에 맞는 레이아웃을 고른다: 나열=bullets·cards, 순서=process, 대조=compare, 수치=stats, 여러 속성 비교=table.',
-    '- 같은 레이아웃이 세 장 넘게 이어지지 않게 한다.',
+    '- 10장이 넘으면 전체 흐름을 3~5부로 나누고 부마다 section을 둔다.',
+    '- 본문 장은 글 목록으로 쓰기 전에 내용의 관계를 먼저 정하고 맞는 레이아웃을 고른다: 순서·절차=process, 두 대상 대조=compare, 결과 숫자=stats, 같은 기준의 여러 속성=table, 병렬 항목=cards, 청중에게 던지는 질문=question. 어느 것도 맞지 않을 때만 bullets를 쓴다.',
+    '- bullets는 전체 본문 장의 3분의 1을 넘기지 않는다. 같은 레이아웃이 세 장 넘게 이어지지 않게 한다. 같은 역할의 장(예: 사례 장)은 같은 레이아웃을 쓴다.',
+    '- 수업용이면 도입이나 정리 앞에 question을 1~2장 둘 수 있다. 질문은 자료로 답할 수 있는 것만 쓴다.',
     '- plan에는 그 장에 담을 내용과 근거 자료의 위치(파일 이름·쪽)를 한두 문장으로 쓴다.',
-    '- title은 그 장의 제목 초안이다. 전체 발표 제목은 title(최상위)에 쓴다.',
+    '- title은 그 장의 제목 초안이다. 아래 제목 규칙을 지킨다. 전체 발표 제목은 title(최상위)에 쓴다.',
     '- reply는 교사에게 보여 줄 짧은 안내다. 존댓말로 몇 장을 어떤 흐름으로 만드는지 쓴다. 자료가 부족하면 무엇이 더 필요한지 쓴다.',
     '', RULES]).join('\n');
 }
@@ -130,7 +173,7 @@ export function fillPrompt(ctx, outline, from, to) {
   const L = head(ctx).concat(['', '[이번 요청]', ctx.request, ''], sourcesBlock(ctx.sources), ['',
     '[전체 구성] 발표 제목: ' + outline.title]);
   outline.slides.forEach((o, i) => L.push((i + 1) + '. [' + o.layout + '] ' + o.title + ' — ' + o.plan));
-  L.push('', '[할 일] 위 구성 가운데 ' + (from + 1) + '~' + to + '번 장의 본문을 채운다. slides 배열에 ' + (to - from) + '개를 순서대로 넣는다. 레이아웃은 구성대로 쓴다.', '', fieldGuide(), '', RULES);
+  L.push('', '[할 일] 위 구성 가운데 ' + (from + 1) + '~' + to + '번 장의 본문을 채운다. slides 배열에 ' + (to - from) + '개를 순서대로 넣는다. 레이아웃은 구성대로 쓴다.', '', fieldGuide(ctx.theme), '', RULES);
   return L.join('\n');
 }
 export const EDIT_SCHEMA = {
@@ -156,12 +199,12 @@ export function editPrompt(ctx, deck) {
     '- 장 번호는 모두 위 [PPT 현재 내용]의 번호로 쓴다. 같은 응답 안에서 장을 넣거나 지워도 번호를 다시 세지 않는다.',
     '- 쓰지 않는 필드는 "", [], 0으로 둔다(slide 안의 필드 포함).',
     '- 요청과 관계없는 장과 칸은 고치지 않는다.',
-    '- reply는 교사에게 보여 줄 답이다. 존댓말로 무엇을 고쳤는지 쓴다.', '', fieldGuide(), '', RULES]).join('\n');
+    '- reply는 교사에게 보여 줄 답이다. 존댓말로 무엇을 고쳤는지 쓴다.', '', fieldGuide(deck.theme), '', RULES]).join('\n');
 }
 
 /* ── 고치기 적용 ── */
 const PART = { title: '제목', tag: '머리말', subtitle: '부제', kicker: '머리말', org: '기관', date: '날짜', presenter: '발표자', note: '강조 문구', notes: '발표 노트',
-  source: '출처', sub: '설명', body: '설명', label: '이름', value: '값', next: '다음 행동', contact: '연락처',
+  source: '출처', question: '질문', hints: '생각할 점', sub: '설명', body: '설명', label: '이름', value: '값', next: '다음 행동', contact: '연락처',
   items: '항목', bullets: '항목', cards: '카드', steps: '단계', stats: '수치', points: '항목', left: '왼쪽', right: '오른쪽', rows: '표' };
 function labelOf(n, path) {
   return 'S' + n + ' ' + path.split('.').map((p) => (/^\d+$/.test(p) ? String(+p + 1) : PART[p] || p)).join(' ');
@@ -173,6 +216,7 @@ const FIELDS = {
   agenda: ['tag', 'title', 'items.N.title', 'items.N.sub'],
   section: ['title', 'sub'],
   bullets: ['tag', 'title', 'note', 'bullets.N.title', 'bullets.N.sub'],
+  question: ['tag', 'title', 'question', 'hints.N'],
   cards: ['tag', 'title', 'note', 'cards.N.title', 'cards.N.body'],
   compare: ['tag', 'title', 'note', 'left.label', 'right.label', 'left.items.N', 'right.items.N'],
   table: ['tag', 'title', 'note', 'rows.R.C'],
@@ -181,7 +225,7 @@ const FIELDS = {
   summary: ['tag', 'title', 'next', 'points.N.title', 'points.N.body'],
   end: ['title', 'sub', 'contact']
 };
-const MAX_ITEMS = { agenda: 6, bullets: 6, cards: 4, compare: 5, table: 8, process: 5, stats: 4, summary: 4 };
+const MAX_ITEMS = { agenda: 6, bullets: 6, question: 3, cards: 4, compare: 5, table: 8, process: 5, stats: 4, summary: 4 };
 function fieldOk(sl, path) {
   if (path === 'notes' || path === 'source') return true;
   const max = MAX_ITEMS[sl.layout] || 6;
@@ -210,7 +254,7 @@ export function deckMap(deck) {
   });
   return L.join('\n');
 }
-const hasContent = (nu) => !!(nu.title || nu.subtitle || nu.sub || ['items', 'bullets', 'cards', 'steps', 'stats', 'points', 'rows'].some((k) => Array.isArray(nu[k]) && nu[k].length) ||
+const hasContent = (nu) => !!(nu.title || nu.subtitle || nu.sub || nu.question || ['items', 'bullets', 'cards', 'steps', 'stats', 'points', 'rows'].some((k) => Array.isArray(nu[k]) && nu[k].length) ||
   (nu.left && nu.left.items && nu.left.items.length) || (nu.right && nu.right.items && nu.right.items.length));
 export function applyDeckEdits(deck, edits) {
   const changes = [], problems = [];
@@ -394,7 +438,9 @@ async function toDataUrl(url) {
 export async function buildPptxBlob(deck, assets, libUrl) {
   const PptxGenJS = await loadPptxLib(libUrl);
   const data = {};
-  for (const [k, url] of Object.entries(assets || {})) { try { data[k] = { data: await toDataUrl(url) }; } catch (e) { console.warn(e); } }
+  // 이 덱이 실제로 쓰는 그림만 불러온다(캐릭터 그림은 장면마다 수백 KB다).
+  const used = new Set(S.assetKeys(deck));
+  for (const [k, url] of Object.entries(assets || {})) { if (!used.has(k)) continue; try { data[k] = { data: await toDataUrl(url) }; } catch (e) { console.warn(e); } }
   const pptx = new PptxGenJS();
   S.buildPptx(pptx, deck, data);
   const raw = await pptx.write({ outputType: 'arraybuffer' });

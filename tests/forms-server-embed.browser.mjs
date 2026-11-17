@@ -216,6 +216,21 @@ const m = await ev(`const x = document.querySelector('.app-form-x').getBoundingC
   return { xh: x.height, xr: x.right, ww: w.width, fh: f.height, sw: document.documentElement.scrollWidth };`)
 ok('375px: 닫기 단추 44px 이상, 넘침 없음', m.xh >= 44 && m.xr <= 375 && m.ww <= 375 && m.fh > 500, m)
 
+// ── 5. 로그인 상태 표시와 잠금 ──
+await ev("document.querySelector('.app-form-x').click(); return true")
+await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
+ok('로그인하면 상태 표시가 로그인됨', await ev("const c = document.getElementById('auth-chip'); return c.dataset.state === 'ok' && /로그인됨/.test(c.textContent) && document.getElementById('auth-bar').hidden && !document.body.classList.contains('locked')"), await ev("return document.getElementById('auth-chip').textContent"))
+await ev("window.__keep2 = localStorage.getItem('dr_sess_v1'); localStorage.removeItem('dr_sess_v1'); window.dispatchEvent(new StorageEvent('storage', { key: 'dr_sess_v1' })); return true")
+ok('로그아웃되면 화면은 남고 안내 띠가 보임', await until("document.getElementById('auth-chip').dataset.state === 'none'") && await ev("return !document.getElementById('app').hidden && !document.getElementById('auth-bar').hidden && document.body.classList.contains('locked') && document.getElementById('prompt').disabled"))
+ok('로그인 주소에 돌아올 경로가 있음', await ev("return document.getElementById('auth-bar-login').getAttribute('href') === '/?gate_return=' + encodeURIComponent('/forms/index.html') + '#login'"), await ev("return document.getElementById('auth-bar-login').getAttribute('href')"))
+const lockedTabs = await ev('return __drForms.state.tabs.length')
+await ev("document.getElementById('btn-forms').click(); return true"); await sleep(200)
+await ev("const c = document.querySelector('#form-cards .form-card'); if (c) c.click(); document.getElementById('btn-new-hwp').click(); document.getElementById('btn-send').click(); return true"); await sleep(500)
+ok('잠긴 동안 양식·새 문서·보내기가 동작하지 않음', (await ev('return __drForms.state.tabs.length')) === lockedTabs && await ev("return !document.querySelector('.app-form:not([hidden])')"))
+ok('잠긴 단추를 누르면 로그인 단추로 초점 이동', await ev("return document.activeElement && document.activeElement.id === 'auth-bar-login'"))
+await ev("localStorage.setItem('dr_sess_v1', window.__keep2); window.dispatchEvent(new StorageEvent('storage', { key: 'dr_sess_v1' })); return true")
+ok('다시 로그인하면 잠금이 풀림', await until("document.getElementById('auth-chip').dataset.state === 'ok' && !document.body.classList.contains('locked') && !document.getElementById('prompt').disabled"))
+
 ok('화면 예외 없음', logs.length === 0, logs)
 console.log(`forms server·embed smoke: ${pass}/${pass + fail} PASS`)
 ws.close(); chrome.kill(); server.close()
