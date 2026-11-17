@@ -37,7 +37,7 @@ const tabs = [
             v-for="t in tabs"
             :key="t.to"
             :to="t.to"
-            class="shrink-0 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-semibold transition-colors"
+            class="shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2.5 text-sm font-semibold transition-colors sm:px-3"
             :class="$route.path === t.to ? 'border-brand text-brand' : 'border-transparent text-muted-foreground hover:text-foreground'"
           >
             {{ t.label }}

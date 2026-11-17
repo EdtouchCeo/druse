@@ -6,8 +6,9 @@ import { mkdtempSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'n
 import { tmpdir } from 'node:os'
 import { dirname, extname, join, normalize, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { inflateRawSync } from 'node:zlib'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'output', 'web')
+const ROOT =resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'output', 'web')
 const SHOTS = process.argv[2]
 if (SHOTS) mkdirSync(SHOTS, { recursive: true })
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe'
@@ -328,7 +329,8 @@ check('세션 토큰 미전송', !r[0]?.headers.authorization && !r[0]?.headers[
 
 /* ── /record/ ── */
 const OBS = 'textarea[placeholder^="학생을 관찰한"]'
-const NAME = 'input[placeholder="학생 이름"]'
+const NAME = 'input[id^="record-name-"]'
+const CLASSNO = 'input[id^="record-classno-"]'
 async function fillRecord() {
   await waitFor(`!!document.querySelector(${JSON.stringify(OBS)})`)
   await setValue(NAME, '김철수')
@@ -352,7 +354,7 @@ for (const route of ['sebak', 'club', 'jayul', 'jinro', 'haengtuk']) {
   t = await text()
   check(`${route} 화면과 로그인 안내`, t.includes('특기사항 생성') && t.includes('교사 로그인 후 이용할 수 있습니다'))
   check(`${route} 셸과 푸터`, t.includes('학생부 특기사항 AI') && t.includes('개발 및 운영 : 교사 홍대화'))
-  check(`${route} 가림 안내 유지`, t.includes('마스킹'))
+  check(`${route} 가림 안내 유지`, t.includes('학생 이름은 AI로 보내기 전에 가립니다'))
   check(`${route} Anthropic 안내`, t.includes('Anthropic으로 전송'))
   for (const w of FORBIDDEN_WORDS) check(`${route} 문구 없음: ${w}`, !t.includes(w))
 }
@@ -453,7 +455,131 @@ check('Ollama 저장값 유지', !(await text()).includes('교사 로그인 후 
 await open('/record/#/sebak', { 'edtouch-record-llm': { provider: 'bridge', gemini: { apiKey: '', model: '' }, ollama: {}, bridge: { provider: 'claude', model: '' } } })
 check('구독 연결 저장값 유지', !(await text()).includes('교사 로그인 후 이용할 수 있습니다'))
 
-console.log(failed ? `\n실패 ${failed}건` : '\n전부 통과')
+/* ── /record/ 여러 학생을 이어서 쓰고 엑셀 양식에 쌓기, 진로 500자·행동특성 300자 ── */
+const chars = (s) => Array.from(s).length
+const sentenceOf = (n, tag) => tag.repeat(n - 2) + '함.'
+const bodyOf = (...lens) => lens.map((n, i) => sentenceOf(n, '가나다라마바사아자차'[i % 10])).join(' ')
+const aiBody = (body) => ({ status: 200, body: { text: JSON.stringify({ body, competencies: ['자료 분석 능력'] }) } })
+const draft = () => js(`[...document.querySelectorAll('textarea')].find((t) => t.placeholder.startsWith('생성된 본문'))?.value ?? ''`)
+const tableRows = () => js(`JSON.stringify(JSON.parse(localStorage.getItem(location.hash.includes('jinro') ? 'edtouch-record-jinro-v1' : 'edtouch-record-haengtuk-v1') || '[]').map((r) => ({ classNo: r.classNo, name: r.name, chars: r.chars, bytes: r.bytes })))`).then(JSON.parse)
+const LONG_OBS = '급식 잔반량 자료 45일치를 모아 엑셀로 정리하고 선형 회귀와 결정 트리로 예측 오차를 비교함. '.repeat(8)
+async function writeStudent(classNo, name, replies) {
+  let i = 0
+  handler = (c) => (c.url.includes('supabase.co') ? REFRESH_OK : aiBody(replies[Math.min(i++, replies.length - 1)]))
+  await setValue(CLASSNO, classNo)
+  await setValue(NAME, name)
+  await setValue(OBS, `${name} 학생 관찰 기록. ${LONG_OBS}`)
+  await sleep(150)
+  const before = await draft()
+  await clickText('특기사항 생성')
+  await waitFor(`(() => { const t = [...document.querySelectorAll('textarea')].find((t) => t.placeholder.startsWith('생성된 본문')); return !!t && t.value !== ${JSON.stringify(before)} && !document.body.innerText.includes('생성 중') })()`, 15000)
+  return draft()
+}
+/** zip 안의 파일 하나를 꺼낸다(외부 패키지 없이). */
+function unzipEntry(buf, name) {
+  const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]))
+  let p = buf.readUInt32LE(eocd + 16)
+  for (let n = buf.readUInt16LE(eocd + 10); n > 0; n--) {
+    const method = buf.readUInt16LE(p + 10)
+    const size = buf.readUInt32LE(p + 20)
+    const nameLen = buf.readUInt16LE(p + 28)
+    const local = buf.readUInt32LE(p + 42)
+    const entry = buf.toString('utf8', p + 46, p + 46 + nameLen)
+    if (entry === name) {
+      const start = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28)
+      const data = buf.subarray(start, start + size)
+      return (method === 0 ? data : inflateRawSync(data)).toString('utf8')
+    }
+    p += 46 + nameLen + buf.readUInt16LE(p + 30) + buf.readUInt16LE(p + 32)
+  }
+  return ''
+}
+const cellText = (sheet, ref) => (sheet.match(new RegExp(`<c r="${ref}"[^>]*>(?:<is><t[^>]*>([\\s\\S]*?)</t></is>)?`))?.[1] ?? '')
+
+console.log('\n[record] 진로: 학생을 이어서 추가')
+await open('/record/#/jinro', { dr_sess_v1: SESSION })
+await waitFor(`!!document.querySelector(${JSON.stringify(OBS)})`)
+t = await text()
+check('진로 안내에 500자와 1,500바이트', t.includes('공백 포함 500자, 1,500바이트'))
+check('빈 표가 다음 행동을 알림', t.includes('다음 학생도 같은 방법으로 이어서 추가'))
+await shot('record-jinro-empty-1280')
+
+let d1 = await writeStudent('2-14', '김대륜', [bodyOf(120, 120, 120, 100)]) // 463자, 목표 범위 안
+check('첫 학생 초안 463자', chars(d1) === 463, String(chars(d1)))
+check('분량 표시에 상한 500자', (await text()).includes('상한 500자, 1,500바이트'))
+await sleep(700); await js(`[...document.querySelectorAll('textarea')].find((t) => t.placeholder.startsWith('생성된 본문')).closest('.rounded-2xl').scrollIntoView({ behavior: 'instant', block: 'start' }); true`); await sleep(200)
+await shot('record-jinro-result-1280')
+await clickText('표에 추가')
+await sleep(400)
+let saved = await tableRows()
+check('표에 1명', saved.length === 1 && saved[0].name === '김대륜' && saved[0].classNo === '2-14', JSON.stringify(saved))
+check('다음 학생 안내', (await text()).includes('김대륜 학생을 표에 추가했습니다. 지금 1명입니다.'))
+check('반/번호와 성명 칸이 비워짐', (await js(`document.querySelector(${JSON.stringify(NAME)}).value + '|' + document.querySelector(${JSON.stringify(CLASSNO)}).value`)) === '|')
+check('반/번호 칸에 초점', await js(`document.activeElement === document.querySelector(${JSON.stringify(CLASSNO)})`))
+
+// 둘째 학생: 처음 320자로 짧게 와서 보충(470자)한다
+let d2 = await writeStudent('2-15', '박샛별', [bodyOf(110, 110, 100), bodyOf(120, 120, 120, 107)])
+check('둘째 학생은 320자에서 470자로 보충', chars(d2) === 470, String(chars(d2)))
+await clickText('표에 추가')
+await sleep(400)
+
+// 셋째 학생: AI가 세 번 모두 560자를 돌려줘도 500자를 넘지 않는다
+const over560 = bodyOf(100, 100, 100, 100, 100, 55)
+let d3 = await writeStudent('2-16', '이한결', [over560, over560, over560])
+check('셋째 학생은 560자가 와도 500자 이내', chars(d3) <= 500 && chars(d3) >= 400, String(chars(d3)))
+check('문장을 뺀 사실을 알림', (await text()).includes('상한을 넘어 뒤쪽 문장'))
+await clickText('표에 추가')
+await sleep(400)
+saved = await tableRows()
+check('표에 3명이 순서대로', saved.map((r) => r.name).join() === '김대륜,박샛별,이한결', JSON.stringify(saved))
+check('세 명 모두 500자·1,500바이트 이내', saved.every((r) => r.chars <= 500 && r.bytes <= 1500), JSON.stringify(saved))
+t = await text()
+check('표에 글자 수와 바이트가 보임', t.includes('463자') && t.includes('바이트') && t.includes('전체 보기'))
+await sleep(900); await js(`document.querySelector('[data-record-form-settings]').closest('.rounded-2xl').scrollIntoView({ behavior: 'instant', block: 'start' }); true`); await sleep(200)
+await shot('record-jinro-table-1280')
+
+await js(`window.__dl = []; const c = URL.createObjectURL; URL.createObjectURL = (b) => { const u = c(b); window.__dl.push({ u, b }); return u };
+  const k = HTMLAnchorElement.prototype.click; HTMLAnchorElement.prototype.click = function () { if (this.download) { const d = window.__dl.find((x) => x.u === this.href); if (d) d.name = this.download; return } return k.call(this) }; true`)
+await setValue('[data-record-school-year]', '2026')
+await clickText('엑셀 내려받기')
+check('엑셀 내려받음', await waitFor('window.__dl.some((d) => d.name && d.name.endsWith(".xlsx"))', 15000))
+const xlsxB64 = await js(`(async () => { const d = window.__dl.find((x) => x.name && x.name.endsWith('.xlsx')); const u8 = new Uint8Array(await d.b.arrayBuffer()); let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode(...u8.subarray(i, i + 0x8000)); return btoa(s) })()`)
+const xlsx = Buffer.from(xlsxB64, 'base64')
+if (SHOTS) writeFileSync(join(SHOTS, 'record-jinro-3명.xlsx'), xlsx)
+const sheet = unzipEntry(xlsx, 'xl/worksheets/sheet1.xml')
+check('엑셀 2~4행에 세 학생', ['C2', 'C3', 'C4'].map((r) => cellText(sheet, r)).join() === '김대륜,박샛별,이한결', ['C2', 'C3', 'C4'].map((r) => cellText(sheet, r)).join())
+check('엑셀 반/번호·학년도·학적변동', cellText(sheet, 'B3') === '2-15' && cellText(sheet, 'A4') === '2026' && cellText(sheet, 'D2') === '재학')
+check('엑셀 본문이 초안과 같고 500자 이내', cellText(sheet, 'E2') === d1 && cellText(sheet, 'E3') === d2 && cellText(sheet, 'E4') === d3 && [d1, d2, d3].every((b) => chars(b) <= 500))
+check('엑셀 5행은 빈 서식 행', cellText(sheet, 'C5') === '')
+
+await width(375)
+await sleep(300)
+check('375px 가로 넘침 없음', await noOverflow())
+await js('window.scrollTo(0, 0); true')
+await shot('record-jinro-375')
+await width(1280)
+
+console.log('\n[record] 행동특성: 300자')
+await open('/record/#/haengtuk', { dr_sess_v1: SESSION })
+await waitFor(`!!document.querySelector(${JSON.stringify(OBS)})`)
+t = await text()
+check('행동특성 안내에 300자와 900바이트', t.includes('공백 포함 300자, 900바이트'))
+check('옛 안내(1,500바이트·약 500자) 없음', !t.includes('약 500자') && !t.includes('1,500바이트(공백'))
+await shot('record-haengtuk-1280')
+let h1 = await writeStudent('2-14', '김대륜', [bodyOf(80, 80, 80, 80), bodyOf(95, 95, 95)]) // 323자 → 287자
+check('323자가 오면 287자로 줄임', chars(h1) === 287, String(chars(h1)))
+check('분량 표시에 상한 300자', (await text()).includes('상한 300자, 900바이트'))
+await clickText('표에 추가')
+await sleep(400)
+let h2 = await writeStudent('2-15', '박샛별', [bodyOf(60, 60, 60, 60, 60, 20), bodyOf(100, 100)]) // 325자, AI가 201자로 지나치게 줄임
+check('AI가 201자로 줄이면 문장을 빼 264자', chars(h2) === 264, String(chars(h2)))
+await clickText('표에 추가')
+await sleep(400)
+saved = await tableRows()
+check('행동특성 2명 모두 300자·900바이트 이내', saved.length === 2 && saved.every((r) => r.chars <= 300 && r.bytes <= 900), JSON.stringify(saved))
+check('두 화면에서 실명이 전송되지 않음', !relay().some((c) => c.body.includes('김대륜') || c.body.includes('박샛별')))
+
+console.log(failed ?`\n실패 ${failed}건` : '\n전부 통과')
 ws.close()
 chrome.kill()
 server.close()

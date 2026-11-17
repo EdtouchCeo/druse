@@ -67,7 +67,8 @@ export const patches = {
   // 공용 묶음. 편집 단추를 아예 목록에서 빼고, 문서작성 AI 안내 문구를 번들에서 지운다.
   'src/components/export/ExportActions.vue': [
     ['보일 단추', "const ALL: Format[] = ['md', 'pdf', 'hwpx', 'xlsx', 'pptx']\n", "const ALL: Format[] = ['md', 'pdf']\n"],
-    ['편집 단추 안내', /\n {8}<span class="text-sm text-muted-foreground break-keep">문서작성 AI 새 탭에서 엽니다\.<\/span>/, ''],
+    // 원본 bfa746c부터 이 줄에 v-if="!hideEditHint"가 붙었다.
+    ['편집 단추 안내', /\n {8}<span v-if="!hideEditHint" class="text-sm text-muted-foreground break-keep">문서작성 AI 새 탭에서 엽니다\.<\/span>/, ''],
   ],
   // 양식은 build.mjs가 output/web/record/record-forms/에 싣는다. 화면은 BASE_URL(/record/) 기준으로 받으므로 주소 패치는 없다.
 }
