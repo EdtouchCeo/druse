@@ -13720,6 +13720,7 @@ function spJump(id){
         <button id="ai-sub-btn-6" onclick="switchAiSub(6)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🌐 나이스 브라우저</button>
         <button id="ai-sub-btn-10" onclick="switchAiSub(10)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">📦 PDF 용량 줄이기</button>
         <button id="ai-sub-btn-11" onclick="switchAiSub(11)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🗂️ 문서작성 AI</button>
+        <button id="ai-sub-btn-12" onclick="switchAiSub(12)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🎓 Dave AIT Class</button>
       </div>
 
       <!-- 0: 법령·지침 AI (RAG 챗봇) -->
@@ -13804,6 +13805,25 @@ function spJump(id){
             <a href="/forms/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#2a5298;color:#fff;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(42,82,152,0.28);">📝 문서작성 AI 열기 →</a>
           </div>
           <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 열립니다. 교수학습·평가 운영 계획, 1학급 1캠페인 활동 계획서·결과보고서, 봉사활동 운영 계획서·확인서, 교수-학습 지도안(약안), 수업 참관록, 월중 행사표, 확대간부회의, 학교운영위원회 제안서, 학급 특색 활동 제안서, 결석신고서를 목록에서 고를 수 있습니다.</p>
+        </div>
+      </div>
+      <!-- 12: Dave AIT Class 수업 플랫폼(교사 진행 화면, 별도 창) -->
+      <div id="ai-sub-12" style="display:none;">
+        <div style="word-break:keep-all;overflow-wrap:anywhere;max-width:760px;margin:0 auto;border-radius:16px;border:1px solid #e5e7eb;background:linear-gradient(135deg,#f8fafc 0%,#eef2fb 100%);box-shadow:0 2px 16px rgba(0,0,0,0.06);padding:28px 26px;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+            <img src="img/teacher/presenter.webp" alt="" loading="lazy" style="width:auto;height:72px;flex:none;">
+            <div>
+              <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:#1e3a6b;">Dave AIT Class</h3>
+              <p style="margin:2px 0 0;font-size:0.85rem;color:#64748b;">AI · IT · Tech 수업 진행 화면</p>
+            </div>
+          </div>
+          <p style="margin:0 0 8px;font-size:0.95rem;color:#334155;line-height:1.7;">차시를 골라 진행 화면을 열고 "수업 열기"를 누르면 참여 코드가 나옵니다. 학생은 학생·학부모 안내의 평가과제 도움 자료나 daeryun.life/ait/에서 코드를 넣고 들어오며, 선생님이 넘기는 슬라이드를 따라 봅니다. 교과서 쪽, 실습, 경쟁 퀴즈, 의견 나눔, AI 튜터를 한 화면에서 진행합니다.</p>
+          <p style="margin:0 0 16px;font-size:0.85rem;color:#64748b;line-height:1.7;">차시 자료는 비공개 수업 보관함에 있어 수업이 열린 동안 참여한 학생에게만 보입니다. PC에서 차시를 만들거나 고친 뒤에는 "자료 올리기"로 보관함을 맞춥니다.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <a href="/ait/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#2a5298;color:#fff;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(42,82,152,0.28);">🎓 차시 고르고 수업 열기 →</a>
+            <a href="/ait/upload.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:11px 22px;background:#fff;color:#2a5298;border:2px solid #2a5298;border-radius:10px;font-size:0.92rem;font-weight:700;text-decoration:none;">자료 올리기</a>
+          </div>
+          <p style="margin:16px 0 0;font-size:0.76rem;color:#94a3b8;">※ 새 창에서 열립니다. 진행 화면의 "발표 화면"을 누르면 프로젝터용 창이 따로 열리고, 리모컨으로 장을 넘길 수 있습니다.</p>
         </div>
       </div>
       <!-- 5: 학생 개별 점수 조회 -->
@@ -15675,7 +15695,7 @@ function spJump(id){
   };
 
   function switchAiSub(idx) {
-    for (var i = 0; i < 12; i++) {
+    for (var i = 0; i < 13; i++) {
       var panel = document.getElementById('ai-sub-' + i);
       var btn   = document.getElementById('ai-sub-btn-' + i);
       if (!panel || !btn) continue;

@@ -1,6 +1,10 @@
 // Dave AIT Class 공통 도구: 자료 경로, 불러오기, 화면 요소 만들기.
-export const CONTENT_BASE = '/ait/content';
 export const PREVIEW_HOST = ['localhost', '127.0.0.1'].includes(location.hostname);
+// 로컬에서 서버 연결을 시험할 때(가짜 Supabase, tools/ait-dev)만 켜는 스위치. 사이트에서는 쓰지 않는다.
+export const FAKE_SB = PREVIEW_HOST && localStorage.getItem('ait_fake_sb') === '1';
+export const SERVER_MODE = !PREVIEW_HOST || FAKE_SB;
+// 사이트에서는 자료가 비공개 보관함에 있어 문지기 함수(/ait-api/asset)를 거친다. 교사는 로그인 쿠키, 학생은 참여 증표로 연다.
+export const CONTENT_BASE = SERVER_MODE ? '/ait-api/asset' : '/ait/content';
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 헷갈리는 0·O·1·I는 뺀다.
 
 export async function loadJSON(url) {

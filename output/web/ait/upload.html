@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>자료 올리기 | Dave AIT Class</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/ait/ait.css">
+<script type="module" src="/ait/js/upload.js"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/ait/">
+    <img src="/img/daeryuni/face_smile.webp" alt="">
+    <span><small>대륜고 사용 설명서</small><strong>Dave AIT Class</strong></span>
+  </a>
+</header>
+<main class="home">
+  <section class="section-card" aria-labelledby="up-title">
+    <header><span class="num">1</span><h2 id="up-title">수업 자료 올리기</h2></header>
+    <div class="teacher-note">
+      <img src="/img/teacher/pointing.webp" alt="">
+      <p class="hint">PC에서 차시를 새로 만들거나 고치거나 승인한 뒤, <strong>수업플랫폼 폴더 안의 content 폴더</strong>를 골라 주세요. 바뀐 파일만 비공개 수업 보관함에 올리고, PC에서 지운 파일은 보관함에서도 지웁니다. 자료는 수업이 열린 동안 참여한 학생에게만 보입니다.</p>
+    </div>
+    <div class="upload-pick">
+      <label class="btn" for="folder">content 폴더 고르기</label>
+      <input id="folder" type="file" webkitdirectory directory multiple hidden>
+      <span class="hint" id="picked"></span>
+    </div>
+    <div id="plan" class="upload-plan" hidden></div>
+    <div class="upload-progress" id="progress" hidden>
+      <progress id="bar" max="100" value="0"></progress>
+      <span id="bar-text" aria-live="polite"></span>
+    </div>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+</main>
+</body>
+</html>

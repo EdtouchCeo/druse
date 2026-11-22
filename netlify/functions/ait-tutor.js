@@ -5,11 +5,14 @@
 //   GEMINI_API_KEY : Google AI Studio API 키
 //   AIT_TUTOR_MODEL: 튜터 모델 ID (선택). 없으면 LLM_MODEL, 그다음 아래 후보를 차례로 쓴다.
 //   LLM_MODEL      : 사용 설명서 AI의 모델 ID (선택)
-//   AIT_TUTOR_STUDENT_OPEN: 1이면 학생 질문을 받는다. 수업 확인(Supabase)을 붙이기 전에는 두지 않는다.
+//   SUPABASE_URL, SUPABASE_SERVICE_KEY: 학생 질문의 방 확인, 질문 기록, 교사 화면 중계
 //   AIT_DEV_TEACHER: 로컬 미리보기 전용. 1이면 교사 확인을 건너뛴다(배포 환경에는 두지 않는다).
 
 const { callGemini } = require('./_lib/vertex');
 const { requireTeacher } = require('./_lib/gate-cookie');
+const ait = require('./_lib/ait');
+
+const STUDENT_GAP_MS = 8000;
 
 const MAX_QUESTION = 500;
 const MAX_HISTORY = 6;
@@ -114,7 +117,7 @@ function materials(ctx) {
 const LEAK = [/정답은/, /답은\s*["'“]?[^\s]/, /정답\s*[:：]/, /보기\s*\d\s*번/, /[①②③④⑤]\s*(번|이|가)?\s*(정답|맞)/, /(가|나|다|라)\s*번이\s*(정답|맞)/];
 function leaks(text, hidden = []) {
   if (LEAK.some((re) => re.test(text))) return true;
-  if (hidden.some((t) => text.replace(/s+/g, '').includes(t.replace(/s+/g, '')))) return true;
+  if (hidden.some((t) => text.replace(/\s+/g, '').includes(t.replace(/\s+/g, '')))) return true;
   const block = text.match(/```[\s\S]*?```/g) || [];
   return block.some((b) => b.split('\n').filter((l) => l.trim() && !l.includes('___')).length > 6);
 }
@@ -161,13 +164,9 @@ exports.handler = async (event) => {
     const denied = requireTeacher(event);
     if (denied) return denied;
   }
-  // 학생 질문은 열린 수업인지 서버가 확인할 수 있을 때(Supabase 연결 뒤)까지 닫아 둔다.
-  // 그전에 열면 누구나 이 주소로 학교 AI 열쇠를 쓸 수 있다. 로컬 미리보기는 AIT_DEV_TEACHER=1로 연다.
-  if (role === 'student' && process.env.AIT_DEV_TEACHER !== '1' && process.env.AIT_TUTOR_STUDENT_OPEN !== '1') {
-    return reply(503, { error: '학생 튜터는 아직 준비 중입니다. 궁금한 점은 선생님께 물어보세요.', code: 'STUDENT_TUTOR_CLOSED' });
-  }
   const question = scrub(body.question).trim();
   if (!question) return reply(400, { error: '질문을 적어 주세요.' });
+  if (question.length > MAX_QUESTION) return reply(400, { error: `질문은 ${MAX_QUESTION}자 안으로 적어 주세요.` });
   if (role === 'student' && body.context?.quizActive) {
     return reply(409, { error: '퀴즈가 진행 중일 때는 튜터가 답하지 않습니다. 퀴즈가 끝난 뒤 다시 물어보세요.', code: 'QUIZ_ACTIVE' });
   }
@@ -176,6 +175,14 @@ exports.handler = async (event) => {
 
   const level = Math.min(5, Math.max(1, Number(body.level) || 1));
   const ctx = { ...(body.context || {}) };
+  // 학생은 열린 수업의 참가자만 묻는다. 방 상태(퀴즈 중, 튜터 꺼짐)와 질문 간격도 서버가 확인하고,
+  // 정답 낱말을 뽑을 발표 노트와 장의 글은 브라우저가 보낸 것 대신 보관함의 차시 자료에서 읽는다.
+  let room = null;
+  if (role === 'student' && process.env.AIT_DEV_TEACHER !== '1') {
+    const checked = await studentRoom(event, ctx);
+    if (checked.error) return checked.error;
+    room = checked;
+  }
   // 발표 노트에는 확인 문항의 정답이 들어 있다. 학생 질문에는 노트를 AI에 보내지 않고, 정답 낱말만 뽑아 막는 데 쓴다.
   const hidden = role === 'student' ? hiddenTerms(ctx.notes, ctx.slideText) : [];
   if (role === 'student') delete ctx.notes;
@@ -200,6 +207,7 @@ exports.handler = async (event) => {
       if (leaks(answer, hidden)) answer = FALLBACK;
     }
     if (!answer) answer = role === 'student' ? FALLBACK : '답을 만들지 못했습니다. 질문을 조금 바꿔 다시 물어봐 주세요.';
+    if (room) await recordStudent(room, ctx, { level, flagged, question, answer });
     return reply(200, { answer, level, flagged });
   } catch (e) {
     const msg = e.status === 429 ? '질문이 몰려 잠시 쉬고 있습니다. 30초쯤 뒤에 다시 물어보세요.' : '튜터가 답을 받지 못했습니다. 잠시 뒤 다시 물어보세요.';
@@ -207,5 +215,48 @@ exports.handler = async (event) => {
     return reply(502, { error: msg });
   }
 };
+
+// 학생 질문의 방 확인: 참여 증표 → 열린 방 → 튜터 켜짐·퀴즈 아님 → 질문 간격. 통과하면 장의 글과 노트를 채운다.
+async function studentRoom(event, ctx) {
+  const cfg = ait.config();
+  if (!cfg) return { error: reply(503, { error: '튜터 설정이 준비되지 않았습니다. 선생님께 알려 주세요.', code: 'SERVER_CONFIG' }) };
+  const me = ait.studentClaims(event);
+  if (!me) return { error: reply(401, { error: '수업에 참여한 뒤 물어볼 수 있습니다. 참여 코드로 다시 들어와 주세요.', code: 'NO_ROOM_TOKEN' }) };
+  try {
+    const rows = await ait.rest(cfg, `ait_rooms?id=eq.${encodeURIComponent(me.r)}&select=state,closed_at&limit=1`);
+    const room = rows?.[0];
+    if (!room || room.closed_at) return { error: reply(410, { error: '수업이 끝나 튜터도 닫혔습니다.', code: 'CLOSED' }) };
+    if (room.state?.tutor === false) return { error: reply(403, { error: '선생님이 지금은 튜터를 꺼 두었습니다.', code: 'TUTOR_OFF' }) };
+    if (room.state?.mode === 'quiz') return { error: reply(409, { error: '퀴즈가 진행 중일 때는 튜터가 답하지 않습니다. 퀴즈가 끝난 뒤 다시 물어보세요.', code: 'QUIZ_ACTIVE' }) };
+    const since = new Date(Date.now() - STUDENT_GAP_MS).toISOString();
+    const recent = await ait.rest(cfg, `ait_tutor_logs?member_id=eq.${encodeURIComponent(me.m)}&created_at=gt.${encodeURIComponent(since)}&select=id&limit=1`);
+    if (recent?.length) return { error: reply(429, { error: '조금 전에 물어봤습니다. 몇 초 뒤에 다시 물어보세요.', code: 'TOO_SOON' }) };
+    const lesson = await ait.downloadJSON(cfg, `${me.l}/lesson.json`);
+    const slide = lesson?.slides?.find((s) => s.n === Number(ctx.slideN));
+    ctx.lessonTitle = lesson?.title || ctx.lessonTitle;
+    if (slide) {
+      ctx.slideTitle = slide.title;
+      ctx.slideText = slide.text;
+      ctx.notes = slide.notes;
+    } else {
+      delete ctx.notes;
+    }
+    return { cfg, me };
+  } catch {
+    return { error: reply(503, { error: '수업 서버에 잠시 연결하지 못했습니다. 조금 뒤 다시 물어보세요.', code: 'UPSTREAM' }) };
+  }
+}
+
+// 질문 기록(질문 간격 확인에도 쓴다)과 교사 화면의 "학생 튜터 질문"으로 보내기. 실패해도 학생 답은 돌려준다.
+async function recordStudent({ cfg, me }, ctx, x) {
+  const slide = Number.isInteger(Number(ctx.slideN)) ? Number(ctx.slideN) : null;
+  const cell = Number.isInteger(Number(ctx.cell?.n)) ? Number(ctx.cell.n) : null;
+  await ait.rest(cfg, 'ait_tutor_logs', {
+    method: 'POST', prefer: 'return=minimal',
+    body: { room_id: me.r, member_id: me.m, slide, cell, level: x.level, question: x.question.slice(0, 2000), answer: x.answer.slice(0, 4000), flagged: x.flagged },
+  }).catch((e) => console.error('[ait-tutor] log', e.code));
+  await ait.broadcast(cfg, [{ topic: `ait:${me.r}:teacher`, payload: { type: 'tutor-log', pid: me.m, slide, cell, level: x.level, flagged: x.flagged, question: x.question.slice(0, 500), answer: x.answer.slice(0, 1500) } }])
+    .catch((e) => console.error('[ait-tutor] relay', e.code));
+}
 
 exports._test = { leaks, scrub, studentInstruction, materials, hiddenTerms };

@@ -1,18 +1,24 @@
 // 학생 참여 화면: 참여 코드로 들어와 선생님 화면을 따라가고, 지난 장을 둘러보다 돌아온다.
 import { $, el, loadLesson, normalizeCode, isValidCode, isTyping, enableDivider, hasTextbook, clampPage, pageUrl, PREVIEW_HOST } from './common.js';
 import { createStage, onSwipe, openToc } from './viewer.js';
-import { openRoom } from './sync.js';
+import { joinStudentRoom, TIMING, SERVER } from './sync.js';
 import { createLabArea } from './lab.js';
 import { createQuizPlayer } from './quiz-player.js';
 import { createTutorPanel } from './tutor.js';
 import { createTalkPlayer } from './talk.js';
 
 const code = normalizeCode(new URLSearchParams(location.search).get('code'));
-const PING_MS = 5000;
-const JOIN_TIMEOUT_MS = 4000;
+const PING_MS = TIMING.ping;
+const JOIN_TIMEOUT_MS = SERVER ? 12000 : 4000;
 
-const pid = sessionStorage.getItem('ait_pid') || crypto.randomUUID();
-sessionStorage.setItem('ait_pid', pid);
+let pid = null;
+// 메모 저장소. 저장소를 막은 브라우저에서도 화면이 멈추지 않게 이 탭의 기억으로 대신한다.
+const memoMemory = new Map();
+const memoStore = {
+  get(k) { try { return localStorage.getItem(k); } catch { return memoMemory.get(k) ?? null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { memoMemory.set(k, v); } },
+  remove(k) { try { localStorage.removeItem(k); } catch { memoMemory.delete(k); } },
+}; // 참가자 번호: 서버 연결이면 서버가 정하고, 로컬 미리보기면 이 탭이 만든다.
 
 let room;
 let lesson = null;
@@ -35,6 +41,15 @@ let talkSnap = null;
 let closed = false;
 let pingTimer = null;
 
+// 서버 연결이 끊겼다 다시 붙는 동안 학생에게 알린다.
+function connectionStatus(s) {
+  const bar = $('#conn');
+  if (!bar) return;
+  if (s === 'expired') { bar.hidden = false; bar.textContent = '참여 시간이 지났습니다. 참여 코드로 다시 들어와 주세요.'; return; }
+  bar.hidden = !(s === 'reconnecting' || s === 'no-token');
+  bar.textContent = '연결이 잠시 끊겼습니다. 다시 잇는 중입니다.';
+}
+
 function waitScreen(title, text, image) {
   $('#app').hidden = true;
   $('#waiting').hidden = false;
@@ -54,18 +69,34 @@ function guardImages() {
   });
 }
 
-function start() {
+const JOIN_ERRORS = {
+  NO_ROOM: ['수업을 찾지 못했습니다', '참여 코드를 다시 확인해 주세요. 선생님이 수업을 연 뒤에 들어올 수 있습니다.'],
+  KICKED: ['이 기기는 수업에 들어올 수 없습니다', '선생님이 이 기기의 참여를 멈췄습니다. 선생님께 말씀드려 주세요.'],
+  FULL: ['수업 인원이 가득 찼습니다', '선생님께 말씀드려 주세요.'],
+};
+
+async function start() {
   guardImages();
   if (!isValidCode(code)) {
     location.replace('/ait/?join=again');
     return;
   }
   $('#code-chip').textContent = code;
-  room = openRoom(code);
+  if (SERVER) waitScreen('수업에 들어가는 중입니다', '잠시만 기다려 주세요.', '/img/daeryuni/face_calm.webp');
+  try {
+    room = await joinStudentRoom(code, { onStatus: connectionStatus });
+  } catch (e) {
+    const [title, text] = JOIN_ERRORS[e.code] || ['수업에 들어가지 못했습니다', e.message];
+    waitScreen(title, text, '/img/daeryuni/face_surprised.webp');
+    return;
+  }
+  pid = room.pid;
   room.on(onMessage);
   room.send({ type: 'hello', pid });
   setTimeout(() => {
-    if (!teacher) waitScreen('수업을 찾지 못했습니다', '참여 코드를 다시 확인해 주세요. 선생님이 수업을 연 뒤에 들어올 수 있습니다.', '/img/daeryuni/face_surprised.webp');
+    if (teacher) return;
+    if (SERVER) waitScreen('선생님 화면을 기다리고 있습니다', '수업에는 들어왔습니다. 선생님 화면이 연결되면 바로 수업 화면으로 바뀝니다.', '/img/daeryuni/face_calm.webp');
+    else waitScreen('수업을 찾지 못했습니다', '참여 코드를 다시 확인해 주세요. 선생님이 수업을 연 뒤에 들어올 수 있습니다.', '/img/daeryuni/face_surprised.webp');
   }, JOIN_TIMEOUT_MS);
   pingTimer = setInterval(() => room.send({ type: 'ping', pid, slide: own.slide, following }), PING_MS);
   addEventListener('pagehide', () => { if (!closed) room.send({ type: 'bye', pid }); });
@@ -73,6 +104,13 @@ function start() {
 
 async function onMessage(msg) {
   if (!msg) return;
+  if (msg.type === 'kick' && msg.pid === pid && SERVER) {
+    closed = true;
+    clearInterval(pingTimer);
+    room.close();
+    waitScreen(...JOIN_ERRORS.KICKED, '/img/daeryuni/face_surprised.webp');
+    return;
+  }
   if (msg.type === 'closed') {
     closed = true;
     clearInterval(pingTimer);
@@ -237,7 +275,7 @@ function renderSide() {
   const memo = $('#memo');
   if (memo.dataset.slide !== slide.id) {
     memo.dataset.slide = slide.id;
-    memo.value = localStorage.getItem(memoKey(slide.id)) || '';
+    memo.value = memoStore.get(memoKey(slide.id)) || '';
     $('#memo-saved').textContent = '';
   }
 }
@@ -308,8 +346,8 @@ function saveMemo(silent) {
   const memo = $('#memo');
   if (!memo.dataset.slide) return;
   const key = memoKey(memo.dataset.slide);
-  if (memo.value.trim()) localStorage.setItem(key, memo.value);
-  else localStorage.removeItem(key);
+  if (memo.value.trim()) memoStore.set(key, memo.value);
+  else memoStore.remove(key);
   if (silent !== true) $('#memo-saved').textContent = '저장했습니다';
 }
 
@@ -317,7 +355,7 @@ function downloadMemos() {
   saveMemo(true);
   const lines = [`${lesson.title} 메모`, ''];
   for (const s of lesson.slides) {
-    const text = localStorage.getItem(memoKey(s.id));
+    const text = memoStore.get(memoKey(s.id));
     if (text) lines.push(`[${s.n}장 ${s.title || ''}]`, text, '');
   }
   if (lines.length === 2) lines.push('저장한 메모가 없습니다.');

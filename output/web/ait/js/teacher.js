@@ -1,7 +1,7 @@
 // 교사 진행 화면: 슬라이드 넘기기, 교과서·실습 나란히 보기, 발표 화면(프로젝터) 띄우기, 수업 열기와 학생 화면 맞추기.
-import { $, el, loadLesson, newCode, toast, isTyping, keyAction, enableDivider, hasTextbook, clampPage, pageUrl, thumbUrl, teacherSession, presentChannelName, PREVIEW_HOST } from './common.js';
+import { $, el, loadLesson, toast, isTyping, keyAction, enableDivider, hasTextbook, clampPage, pageUrl, thumbUrl, teacherSession, presentChannelName, PREVIEW_HOST } from './common.js';
 import { createStage, onSwipe, openToc } from './viewer.js';
-import { openRoom } from './sync.js';
+import { openTeacherRoom, TIMING, SERVER } from './sync.js';
 import { createLabArea } from './lab.js';
 import { createMusic } from './music.js';
 import { createQuizHost } from './quiz-host.js';
@@ -11,8 +11,8 @@ import { createTalkHost } from './talk.js';
 
 const params = new URLSearchParams(location.search);
 const lessonId = params.get('l') || '';
-const HEARTBEAT_MS = 4000;
-const ACTIVE_MS = 15000;
+const HEARTBEAT_MS = TIMING.heartbeat;
+const ACTIVE_MS = TIMING.active;
 
 const state = { mode: 'slides', slide: 1, page: null, lock: false, preview: false, tutor: true, seq: 0, session: crypto.randomUUID() };
 let lesson;
@@ -366,15 +366,33 @@ function setBlank(kind) {
 }
 
 // 수업 열기: 참여 코드를 만들고 학생 화면에 지금 상태를 보낸다.
-function openClass(draft, code = newCode(), announce = true) {
-  roomCode = code;
+// 사이트에서는 서버가 방과 코드를 만들고, 새로 고침 뒤에는 같은 방을 이어 연다.
+let opening = false;
+async function openClass(draft, savedRoom = null, announce = true) {
+  if (opening || room) return;
+  opening = true;
+  const btn = $('#open-room');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = '여는 중…';
+  try {
+    room = await openTeacherRoom({ lessonId: lesson.id, roomId: savedRoom, onStatus: connectionStatus });
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = label;
+    if (savedRoom) sessionStorage.removeItem(`ait_room_${lesson.id}`);
+    if (!savedRoom || !['CLOSED', 'NO_ROOM'].includes(e.code)) toast(e.message, null, null, 9000);
+    return;
+  } finally {
+    opening = false;
+  }
+  roomCode = room.code;
   state.preview = draft;
-  sessionStorage.setItem(`ait_room_${lesson.id}`, code);
-  room = openRoom(code);
+  sessionStorage.setItem(`ait_room_${lesson.id}`, room.roomId);
   room.on(onMessage);
   $('#open-room').hidden = true;
   $('#code-chip').hidden = false;
-  $('#code-chip').textContent = code;
+  $('#code-chip').textContent = roomCode;
   $('#close-room').hidden = false;
   $('#people').hidden = false;
   updatePeople();
@@ -383,13 +401,30 @@ function openClass(draft, code = newCode(), announce = true) {
   if (announce) showCode();
 }
 
-function closeClass() {
+async function closeClass() {
   if (!room) return;
   if (!confirm('수업을 닫으면 학생 화면이 모두 종료됩니다. 닫을까요?')) return;
   room.send({ type: 'closed' });
+  try {
+    await room.closeRoom();
+  } catch (e) {
+    toast(`수업 닫기를 서버에 알리지 못했습니다. ${e.message}`, null, null, 8000);
+    return;
+  }
   room.close();
   sessionStorage.removeItem(`ait_room_${lesson.id}`);
   location.reload();
+}
+
+// 실시간 연결 상태를 참여 코드 옆에 알린다.
+function connectionStatus(s) {
+  const chip = $('#code-chip');
+  const bad = s === 'reconnecting' || s === 'no-token' || s === 'denied';
+  chip.classList.toggle('offline', bad);
+  chip.title = s === 'denied' ? '실시간 연결 권한을 받지 못했습니다. 사용 설명서에 다시 로그인한 뒤 새로 고쳐 주세요.'
+    : s === 'no-token' ? '로그인 정보가 만료되었습니다. 사용 설명서에 다시 로그인해 주세요.'
+      : bad ? '연결이 끊겨 다시 잇는 중입니다.' : '학생 기기와 연결되어 있습니다.';
+  if (s === 'denied' || s === 'no-token') toast(chip.title, null, null, 9000);
 }
 
 function broadcast() {

@@ -1,6 +1,6 @@
 [build]
   publish = "output/web"
-  command = "node --test tests/counseling-*.test.cjs tests/auth-gate.test.cjs tests/sdg-admin.test.cjs && node scripts/build_auth_gate.cjs output/web --in-place"
+  command = "node --test tests/counseling-*.test.cjs tests/auth-gate.test.cjs tests/sdg-admin.test.cjs tests/ait-server.test.cjs && node scripts/build_auth_gate.cjs output/web --in-place"
 
 [build.environment]
   NODE_VERSION = "22"
@@ -19,7 +19,7 @@
 [[edge_functions]]
   function = "auth-gate"
   path = "/*"
-  excludedPath = ["/.netlify/*", "/lib/*", "/img/*", "/pdf/*", "/biotech/*", "/assessment/*", "/counseling/*", "/sdg/*", "/sdg-api/*", "/downloads/*", "/data/univ/*", "/auth-gate-client.js", "/favicon.ico", "/logo.jpg", "/logo.png", "/og-image-v2.jpg"]
+  excludedPath = ["/.netlify/*", "/lib/*", "/img/*", "/pdf/*", "/biotech/*", "/assessment/*", "/counseling/*", "/sdg/*", "/sdg-api/*", "/ait-api/*", "/downloads/*", "/data/univ/*", "/auth-gate-client.js", "/favicon.ico", "/logo.jpg", "/logo.png", "/og-image-v2.jpg"]
 
 # 전략실은 자체 서버 인증을 쓰므로 화면은 두되 검색 색인만 막는다.
 [[headers]]
@@ -52,6 +52,31 @@
 [[redirects]]
   from = "/ait-api/tutor"
   to = "/.netlify/functions/ait-tutor"
+  status = 200
+  force = true
+
+# Dave AIT Class 수업 방·학생 중계·자료(비공개 보관함)·자료 올리기
+[[redirects]]
+  from = "/ait-api/room"
+  to = "/.netlify/functions/ait-room"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ait-api/relay"
+  to = "/.netlify/functions/ait-relay"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ait-api/asset/*"
+  to = "/.netlify/functions/ait-asset/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ait-api/upload"
+  to = "/.netlify/functions/ait-upload"
   status = 200
   force = true
 

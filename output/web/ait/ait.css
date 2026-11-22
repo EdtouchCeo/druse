@@ -622,3 +622,20 @@ button.qz-opt { justify-content: flex-start; }
 }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .qz-confetti { display: none; } }
+
+/* 서버 연결이 끊겼다 다시 붙는 동안 보이는 알림 */
+.conn-bar{position:sticky;top:0;z-index:30;padding:8px 16px;background:#fff4d6;color:#5b4300;font-size:15px;font-weight:600;text-align:center;border-bottom:1px solid #f2d48a;}
+.conn-bar[hidden]{display:none;}
+
+/* 실시간 연결이 끊긴 동안 참여 코드 표시 */
+.code-chip.offline{background:#fff4d6;color:#5b4300;border-color:#f2d48a;}
+
+/* 자료 올리기 */
+.upload-pick{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:16px 0;}
+.upload-pick label.btn{cursor:pointer;}
+.upload-plan{margin:12px 0;padding:16px 18px;border:1px solid var(--line, #dbe3ef);border-radius:12px;background:#f8fafc;}
+.upload-plan p{margin:0 0 10px;}
+.upload-progress{display:flex;align-items:center;gap:12px;margin:12px 0;}
+.upload-progress progress{flex:1;height:14px;}
+.msg.ok{color:#14653a;}
+.upload-link{margin:0 0 12px;color:#475569;font-size:15px;}

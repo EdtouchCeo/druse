@@ -59,6 +59,8 @@ export function requiredTier(p) {
   // 학교 양식 틀과 서버 기능(양식 목록, 서버 AI)은 교사 확인을 따로 거친다.
   if (['/record', '/backward', '/schedule', '/evalplan', '/forms/templates', '/bw-api'].some((d) => under(p, d))) return 'teacher';
   if (p === '/build-emb.html' || p === '/build-emb') return 'teacher';
+  // Dave AIT Class: 진행 화면, 발표 화면, 자료 올리기는 교사만. 첫 화면과 학생 참여 화면(/ait/room.html)은 공개.
+  if (['/ait/teach.html', '/ait/teach', '/ait/present.html', '/ait/present', '/ait/upload.html', '/ait/upload'].includes(p)) return 'teacher';
   if (/^\/data\/(law|curr|neis)_[^/]*$/.test(p)) return 'teacher';
   return null;
 }
