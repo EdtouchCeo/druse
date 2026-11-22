@@ -9,7 +9,6 @@
 //   AIT_DEV_TEACHER: 로컬 미리보기 전용. 1이면 교사 확인을 건너뛴다(배포 환경에는 두지 않는다).
 
 const { callGemini } = require('./_lib/vertex');
-const { requireTeacher } = require('./_lib/gate-cookie');
 const ait = require('./_lib/ait');
 
 const STUDENT_GAP_MS = 8000;
@@ -160,9 +159,8 @@ exports.handler = async (event) => {
     return reply(400, { error: '요청 형식이 맞지 않습니다.' });
   }
   const role = body.role === 'teacher' ? 'teacher' : 'student';
-  if (role === 'teacher' && process.env.AIT_DEV_TEACHER !== '1') {
-    const denied = requireTeacher(event);
-    if (denied) return denied;
+  if (role === 'teacher' && process.env.AIT_DEV_TEACHER !== '1' && !ait.teacherClaims(event)) {
+    return reply(401, { error: '교사 튜터는 사이트 관리자 계정으로 로그인한 뒤 쓸 수 있습니다.', code: 'AUTH_REQUIRED' });
   }
   const question = scrub(body.question).trim();
   if (!question) return reply(400, { error: '질문을 적어 주세요.' });

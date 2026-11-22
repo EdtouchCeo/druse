@@ -46,8 +46,8 @@ async function start() {
     const back = encodeURIComponent(location.pathname + location.search);
     document.body.replaceChildren(el('div', { class: 'center-card' },
       el('img', { src: '/img/teacher/pointing.webp', alt: '' }),
-      el('h1', {}, '교사 로그인이 필요합니다'),
-      el('p', {}, '대륜고 사용 설명서에 교사 계정으로 로그인한 뒤 다시 열어 주세요.'),
+      el('h1', {}, '관리자 로그인이 필요합니다'),
+      el('p', {}, '대륜고 사용 설명서에 사이트 관리자 계정으로 로그인한 뒤 다시 열어 주세요.'),
       el('p', {}, el('a', { class: 'btn', href: `/?gate_return=${back}#login` }, '로그인하러 가기'))));
     return;
   }

@@ -1,6 +1,6 @@
 'use strict';
 // Dave AIT Class 수업 방: 교사가 열고 닫고, 학생이 참여 코드로 들어온다.
-//   교사(사용 설명서 교사 로그인 쿠키): open · resume · close · state · member
+//   교사(사용 설명서 로그인 쿠키, 당분간 사이트 관리자만): open · resume · close · state · member
 //   학생(Supabase 익명 로그인 토큰): join
 // 학생에게는 참여 증표 쿠키(ait_room, /ait-api 아래에서만 보냄)를 준다. 자료, 중계, 튜터가 이 증표로 방을 확인한다.
 const ait = require('./_lib/ait');
@@ -20,7 +20,7 @@ exports.handler = async (event) => {
     const body = ait.parseBody(event);
     if (body.action === 'join') return await join(cfg, event, body);
     const teacher = ait.teacherClaims(event);
-    if (!teacher) return ait.reply(401, { error: '승인된 교사 계정으로 로그인한 뒤 수업을 열 수 있습니다.', code: 'AUTH_REQUIRED' });
+    if (!teacher) return ait.reply(401, { error: '사이트 관리자 계정으로 로그인한 뒤 수업을 열 수 있습니다.', code: 'AUTH_REQUIRED' });
     switch (body.action) {
       case 'open': return await open(cfg, teacher, body);
       case 'resume': return await resume(cfg, teacher, body);

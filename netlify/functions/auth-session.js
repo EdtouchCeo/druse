@@ -32,7 +32,8 @@ exports.handler = async (event) => {
     if (!me || !me.id) return json(401, { error: '로그인 정보를 확인하지 못했습니다.', code: 'AUTH_REQUIRED' }, gate.clearCookieHeader());
 
     let tier = 'member';
-    if (String(me.email || '').toLowerCase() === ADMIN_EMAIL) {
+    const adm = String(me.email || '').toLowerCase() === ADMIN_EMAIL;
+    if (adm) {
       tier = 'teacher';
     } else {
       const profileRes = await fetch(
@@ -44,7 +45,7 @@ exports.handler = async (event) => {
       const profile = Array.isArray(rows) ? rows[0] : null;
       if (profile && profile.role === '교사' && profile.approved !== false) tier = 'teacher';
     }
-    const { value, exp } = gate.issue({ sub: me.id, tier }, KEY);
+    const { value, exp } = gate.issue({ sub: me.id, tier, adm }, KEY);
     return json(200, { tier, exp }, gate.setCookieHeader(value));
   } catch {
     return json(503, { error: '로그인 확인 서버에 연결하지 못했습니다.', code: 'AUTH_SERVICE_UNAVAILABLE' });

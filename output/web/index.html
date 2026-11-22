@@ -13722,6 +13722,19 @@ function spJump(id){
         <button id="ai-sub-btn-11" onclick="switchAiSub(11)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🗂️ 문서작성 AI</button>
         <button id="ai-sub-btn-12" onclick="switchAiSub(12)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;border:2px solid #d1d5db;background:#fff;color:#4b5563;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">🎓 Dave AIT Class</button>
       </div>
+      <script>
+        // Dave AIT Class는 당분간 사이트 관리자만 쓴다(서버도 따로 확인한다). 다른 교사 화면에서는 단추를 감춘다.
+        (function () {
+          var admin = false;
+          try {
+            var s = JSON.parse(localStorage.getItem('dr_sess_v1'));
+            var em = s && s.user && s.user.email ? String(s.user.email) : '';
+            if (!em && s && s.token) em = JSON.parse(decodeURIComponent(escape(atob(s.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))))).email || '';
+            admin = em.toLowerCase() === 'drhong81@gmail.com';
+          } catch (e) { admin = false; }
+          if (!admin) { var b = document.getElementById('ai-sub-btn-12'); if (b) b.style.display = 'none'; }
+        })();
+      </script>
 
       <!-- 0: 법령·지침 AI (RAG 챗봇) -->
       <div id="ai-sub-0">

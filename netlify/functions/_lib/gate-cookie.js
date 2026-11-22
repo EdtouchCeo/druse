@@ -12,9 +12,10 @@ function cookieKey(serviceKey) {
 function sign(payload, serviceKey) {
   return crypto.createHmac('sha256', cookieKey(serviceKey)).update(payload).digest('base64url');
 }
-function issue({ sub, tier }, serviceKey, now = Date.now()) {
+// adm: 사이트 관리자 계정이면 true. 관리자 전용 화면(Dave AIT Class 등)이 쓴다. 이 값이 없는 예전 쿠키는 한 번 새로 받게 한다.
+function issue({ sub, tier, adm = false }, serviceKey, now = Date.now()) {
   const exp = Math.floor(now / 1000) + TTL_SECONDS;
-  const payload = b64(JSON.stringify({ sub, tier, exp }));
+  const payload = b64(JSON.stringify({ sub, tier, adm: adm === true, exp }));
   return { value: `v1.${payload}.${sign(payload, serviceKey)}`, exp };
 }
 function verify(value, serviceKey, now = Date.now()) {

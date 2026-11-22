@@ -59,8 +59,8 @@ export function requiredTier(p) {
   // 학교 양식 틀과 서버 기능(양식 목록, 서버 AI)은 교사 확인을 따로 거친다.
   if (['/record', '/backward', '/schedule', '/evalplan', '/forms/templates', '/bw-api'].some((d) => under(p, d))) return 'teacher';
   if (p === '/build-emb.html' || p === '/build-emb') return 'teacher';
-  // Dave AIT Class: 진행 화면, 발표 화면, 자료 올리기는 교사만. 첫 화면과 학생 참여 화면(/ait/room.html)은 공개.
-  if (['/ait/teach.html', '/ait/teach', '/ait/present.html', '/ait/present', '/ait/upload.html', '/ait/upload'].includes(p)) return 'teacher';
+  // Dave AIT Class: 진행 화면, 발표 화면, 자료 올리기는 사이트 관리자만. 첫 화면과 학생 참여 화면(/ait/room.html)은 공개.
+  if (['/ait/teach.html', '/ait/teach', '/ait/present.html', '/ait/present', '/ait/upload.html', '/ait/upload'].includes(p)) return 'admin';
   if (/^\/data\/(law|curr|neis)_[^/]*$/.test(p)) return 'teacher';
   return null;
 }
@@ -82,7 +82,7 @@ const GATE_STYLE = [
   'a:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}',
 ].join('');
 
-function gateResponse(req, need, status = 401) {
+function gateResponse(req, need, status = 401, redirect = true) {
   const headers = { 'Cache-Control': 'no-store', 'X-Robots-Tag': NOINDEX, 'X-Content-Type-Options': 'nosniff' };
   const dest = req.headers.get('sec-fetch-dest');
   const wantsPage = dest === 'document' || (!dest && String(req.headers.get('accept') || '').includes('text/html'));
@@ -92,13 +92,15 @@ function gateResponse(req, need, status = 401) {
       headers: { ...headers, 'Content-Type': 'application/json; charset=UTF-8' },
     });
   }
-  const who = need === 'teacher' ? '승인된 교사 계정으로' : '계정으로';
-  const message = status === 503 ? '로그인 확인 설정을 점검하고 있습니다. 잠시 후 다시 시도해 주세요.' : `${who} 로그인하면 바로 열립니다.`;
+  const who = need === 'admin' ? '사이트 관리자 계정으로' : need === 'teacher' ? '승인된 교사 계정으로' : '계정으로';
+  const message = status === 503 ? '로그인 확인 설정을 점검하고 있습니다. 잠시 후 다시 시도해 주세요.'
+    : redirect ? `${who} 로그인하면 바로 열립니다.` : '이 화면은 사이트 관리자만 열 수 있습니다.';
   const html = '<!doctype html><html lang="ko"><head><meta charset="utf-8">'
     + '<meta name="viewport" content="width=device-width,initial-scale=1">'
     + `<meta name="robots" content="${NOINDEX}"><title>로그인 필요 | 대륜고 사용설명서</title><style>${GATE_STYLE}</style></head>`
-    + `<body><main><h1>로그인이 필요합니다</h1><p>${message}</p><a id="go" href="/#login">로그인하고 열기</a></main>`
-    + `<script>${GATE_SCRIPT}</script></body></html>`;
+    + (redirect
+      ? `<body><main><h1>로그인이 필요합니다</h1><p>${message}</p><a id="go" href="/#login">로그인하고 열기</a></main><script>${GATE_SCRIPT}</script></body></html>`
+      : `<body><main><h1>열 수 없는 화면입니다</h1><p>${message}</p><a href="/">첫 화면으로</a></main></body></html>`);
   return new Response(html, { status, headers: { ...headers, 'Content-Type': 'text/html; charset=UTF-8' } });
 }
 
@@ -126,7 +128,11 @@ export default async function authGate(req, context) {
   }
   if (!secret) return gateResponse(req, need, 503);
   if (!claims) return gateResponse(req, need);
-  if (RANK[claims.tier] < RANK[need]) return gateResponse(req, need, 403);
+  if (need === 'admin') {
+    // 관리자 표시가 없는 예전 쿠키는 로그인 화면을 한 번 거쳐 새로 받게 하고, 관리자가 아니면 되돌려 보내지 않는다.
+    if (claims.adm === undefined) return gateResponse(req, need);
+    if (claims.adm !== true) return gateResponse(req, need, 403, false);
+  } else if (RANK[claims.tier] < RANK[need]) return gateResponse(req, need, 403);
 
   const res = await context.next();
   const out = new Response(res.body, res);

@@ -39,7 +39,8 @@ function mockFetch() {
   };
 }
 
-const teacherCookie = () => `${gate.COOKIE_NAME}=${gate.issue({ sub: TEACHER, tier: 'teacher' }, KEY).value}`;
+const teacherCookie = () => `${gate.COOKIE_NAME}=${gate.issue({ sub: TEACHER, tier: 'teacher', adm: true }, KEY).value}`;
+const plainTeacherCookie = () => `${gate.COOKIE_NAME}=${gate.issue({ sub: TEACHER, tier: 'teacher' }, KEY).value}`;
 const roomCookie = (claims = {}) => `${ait.ROOM_COOKIE}=${ait.signRoom({ r: ROOM, m: MEMBER, l: 'ai-basics/u2/l01', exp: Math.floor(Date.now() / 1000) + 3600, ...claims }, KEY)}`;
 const post = (body, headers = {}) => ({ httpMethod: 'POST', headers, body: JSON.stringify(body) });
 const json = (res) => JSON.parse(res.body);
@@ -194,4 +195,14 @@ test('tutor: 정답 낱말 막기는 띄어쓰기가 달라도 걸린다', () =>
   const { leaks } = require('../netlify/functions/ait-tutor')._test;
   assert.equal(leaks('이건 결 측 값 이야기예요', ['결측값']), true);
   assert.equal(leaks('표를 다시 보세요', ['결측값']), false);
+});
+
+test('관리자가 아닌 교사는 수업 열기, 자료 보기·올리기, 교사 튜터를 쓰지 못한다', async () => {
+  routes.push(lessonRoute);
+  const c = plainTeacherCookie();
+  assert.equal((await room(post({ action: 'open', lessonId: 'ai-basics/u2/l01' }, { cookie: c }))).statusCode, 401);
+  assert.equal((await asset({ httpMethod: 'GET', path: '/ait-api/asset/ai-basics/u2/l01/lesson.json', headers: { cookie: c } })).statusCode, 401);
+  assert.equal((await upload({ httpMethod: 'GET', headers: { cookie: c } })).statusCode, 401);
+  assert.equal((await tutor(post({ role: 'teacher', question: '정답 알려줘' }, { cookie: c }))).statusCode, 401);
+  assert.equal(calls.filter((x) => x.url.includes('lesson.json')).length, 0);
 });

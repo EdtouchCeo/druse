@@ -28,10 +28,10 @@ async function showCatalog() {
     catalog = await loadCatalog();
   } catch (e) {
     const status = Number(String(e.message).split(' ').pop());
-    if (SERVER_MODE && status === 401) {
+    if (SERVER_MODE && (status === 401 || status === 403)) {
       // 차시 목록은 교사만 본다. 학생은 위의 참여 코드만 쓰면 된다.
-      box.replaceChildren(el('p', { class: 'hint' }, '사용 설명서에 교사 계정으로 로그인하면 차시 목록이 보입니다. 학생은 위 칸에 참여 코드를 넣으면 됩니다.'),
-        el('p', {}, el('a', { class: 'btn btn-sm', href: `/?gate_return=${encodeURIComponent('/ait/')}#login` }, '교사 로그인')));
+      box.replaceChildren(el('p', { class: 'hint' }, '차시 목록은 사이트 관리자만 봅니다. 학생은 위 칸에 참여 코드를 넣으면 됩니다.'),
+        el('p', {}, el('a', { class: 'btn btn-sm', href: `/?gate_return=${encodeURIComponent('/ait/')}#login` }, '관리자 로그인')));
       return;
     }
     box.replaceChildren(...[el('p', { class: 'hint' }, !SERVER_MODE

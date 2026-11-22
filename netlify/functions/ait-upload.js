@@ -1,6 +1,6 @@
 'use strict';
 // 교사 자료 올리기: 교사 PC의 content 폴더를 비공개 보관함(ait-content)에 맞춘다.
-// 서비스 키를 PC에 두지 않도록, 교사 로그인 쿠키를 확인한 뒤 파일마다 한 번 쓰는 올리기 주소를 내준다.
+// 서비스 키를 PC에 두지 않도록, 관리자 로그인 쿠키를 확인한 뒤 파일마다 한 번 쓰는 올리기 주소를 내준다.
 //   GET                          보관함 목록(_manifest.json: 경로 → 지문)
 //   POST {action:'sign', paths}  올리기 주소(한 번에 100개까지)
 //   POST {action:'remove', paths}  보관함에서 지우기
@@ -13,7 +13,7 @@ const SHA = /^[0-9a-f]{64}$/;
 exports.handler = async (event) => {
   const cfg = ait.config();
   if (!cfg) return ait.reply(503, { error: '수업 서버 설정이 준비되지 않았습니다.', code: 'SERVER_CONFIG' });
-  if (!ait.teacherClaims(event)) return ait.reply(401, { error: '승인된 교사 계정으로 로그인한 뒤 자료를 올릴 수 있습니다.', code: 'AUTH_REQUIRED' });
+  if (!ait.teacherClaims(event)) return ait.reply(401, { error: '사이트 관리자 계정으로 로그인한 뒤 자료를 올릴 수 있습니다.', code: 'AUTH_REQUIRED' });
   try {
     if (event.httpMethod === 'GET') {
       return ait.reply(200, { manifest: (await ait.downloadJSON(cfg, MANIFEST)) || {} });

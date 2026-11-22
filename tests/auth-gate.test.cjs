@@ -237,3 +237,33 @@ test('세션 함수는 서버 기록으로 등급을 정하고 저장소 값을 
   const out = await handler({ httpMethod: 'DELETE', headers: {} });
   assert.match(out.headers['Set-Cookie'], /Max-Age=0/);
 });
+
+test('Dave AIT Class 교사 화면은 사이트 관리자만 연다', async () => {
+  const admin = cookie.issue({ sub: 'admin', tier: 'teacher', adm: true }, SECRET).value;
+  const teacher = cookie.issue({ sub: 't', tier: 'teacher' }, SECRET).value;
+  for (const p of ['/ait/teach.html', '/AIT/Present.html', '/ait/upload.html']) {
+    const ok = await run(p, { value: admin });
+    assert.equal(ok.ctx.nextCalls, 1, p);
+    const no = await run(p, { value: teacher });
+    assert.equal(no.res.status, 403, p);
+    const html = await no.res.text();
+    assert.ok(html.includes('관리자만'), p);
+    assert.equal(html.includes('gate_return'), false, '관리자가 아닌 교사를 로그인 화면으로 되돌려 보내지 않는다');
+    const anon = await run(p);
+    assert.equal(anon.res.status, 401, p);
+  }
+  // 관리자 표시가 없는 예전 쿠키는 로그인 화면을 거쳐 새로 받게 한다.
+  const [, payload] = teacher.split('.');
+  const legacy = JSON.parse(Buffer.from(payload, 'base64url').toString());
+  delete legacy.adm;
+  const crypto = require('node:crypto');
+  const key = crypto.createHmac('sha256', SECRET).update('dr-gate-cookie-v1').digest();
+  const p2 = Buffer.from(JSON.stringify(legacy)).toString('base64url');
+  const old = `v1.${p2}.${crypto.createHmac('sha256', key).update(p2).digest('base64url')}`;
+  const res = await run('/ait/teach.html', { value: old });
+  assert.equal(res.res.status, 401);
+  assert.ok((await res.res.text()).includes('gate_return'));
+  // 학생 참여 화면과 첫 화면은 공개
+  assert.equal((await run('/ait/room.html')).ctx.nextCalls, 1);
+  assert.equal((await run('/ait/')).ctx.nextCalls, 1);
+});

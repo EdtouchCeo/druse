@@ -64,12 +64,13 @@ async function authUser(cfg, event) {
   return user;
 }
 
-// 교사: 사용 설명서 로그인 쿠키(서버 서명). sub가 Supabase 사용자 id다.
+// 교사 쪽 기능(수업 열기, 자료 보기·올리기, 교사 튜터)은 당분간 사이트 관리자만 쓴다.
+// 사용 설명서 로그인 쿠키(서버 서명)의 관리자 표시를 확인한다. sub가 Supabase 사용자 id다.
 function teacherClaims(event) {
   const cfg = config();
   if (!cfg) return null;
   const claims = gate.verify(gate.readCookie(event), cfg.key);
-  return claims && claims.tier === 'teacher' && claims.sub ? claims : null;
+  return claims && claims.tier === 'teacher' && claims.adm === true && claims.sub ? claims : null;
 }
 
 // 학생 참여 증표: { r: 방 id, m: 참가자 id, l: 차시 id, exp }. 서비스 키에서 따로 유도한 열쇠로 서명한다.
