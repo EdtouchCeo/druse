@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>수업 참여 | Dave AIT Class</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/ait/ait.css">
+<script type="module" src="/ait/js/student.js"></script>
+</head>
+<body class="class-body student-view">
+<header class="top">
+  <a class="brand" href="/ait/">
+    <img src="/img/daeryuni/face_smile.webp" alt="">
+    <span><small>대륜고 사용 설명서</small><strong>Dave AIT Class</strong></span>
+  </a>
+  <span class="lesson-name" id="lesson-name"></span>
+  <span class="badge draft" id="preview-badge" hidden>검토용 미리보기</span>
+  <span class="spacer"></span>
+  <span class="code-chip" id="code-chip"></span>
+</header>
+
+<div class="center-card" id="waiting">
+  <img src="/img/daeryuni/pose_explore.webp" alt="">
+  <h1 id="wait-title">수업에 들어가는 중입니다</h1>
+  <p id="wait-text">선생님 화면과 연결하고 있습니다.</p>
+</div>
+
+<div id="app" hidden>
+  <div class="follow-banner" id="follow-banner" hidden>
+    <span id="follow-text">지난 장을 보는 중입니다</span>
+    <button class="btn" id="follow" type="button">따라가기</button>
+  </div>
+  <div class="mode-banner" id="mode-banner" hidden></div>
+  <div class="quiz-player" id="quiz-player" hidden></div>
+  <div class="talk-full" id="talk-full" hidden></div>
+  <div class="workspace" id="ws">
+    <section class="pane" aria-label="수업 화면">
+      <div class="stage" id="stage"></div>
+      <div class="controls">
+        <button class="icon-btn" id="prev" type="button" aria-label="이전">‹</button>
+        <span class="count" id="count" aria-live="polite"></span>
+        <button class="icon-btn" id="next" type="button" aria-label="다음">›</button>
+        <span class="grow"></span>
+        <button class="btn-ghost btn-sm" id="toc" type="button">목차</button>
+        <button class="btn-ghost btn-sm" id="big" type="button" hidden>크게 보기</button>
+        <button class="btn-gold btn-sm" id="back" type="button" hidden>선생님 화면으로 돌아가기</button>
+      </div>
+    </section>
+    <div class="divider" id="divider"></div>
+    <aside class="side" id="side" aria-label="참여 도구">
+      <div class="student-side" id="tools">
+        <section class="panel" id="talk-panel" hidden><div id="talk-side"></div></section>
+        <section class="panel">
+          <h2>이 장의 연결 자료</h2>
+          <div class="link-list" id="links"></div>
+        </section>
+        <section class="panel">
+          <h2>메모 <small id="memo-where"></small></h2>
+          <label for="memo" class="hint memo-label">이 장에 남길 메모. 이 기기에만 저장됩니다.</label>
+          <textarea id="memo" maxlength="2000"></textarea>
+          <div class="row">
+            <span class="saved" id="memo-saved" aria-live="polite"></span>
+            <button class="btn-ghost btn-sm" id="memo-download" type="button">메모 내려받기</button>
+            <button class="btn-sm" id="memo-save" type="button">저장</button>
+          </div>
+        </section>
+      </div>
+      <div id="tb-pane" hidden>
+        <div class="side-head">
+          <h2 id="tb-title">교과서</h2>
+          <button class="btn-ghost btn-sm" id="tb-prev" type="button" aria-label="이전 쪽">‹</button>
+          <button class="btn-ghost btn-sm" id="tb-next" type="button" aria-label="다음 쪽">›</button>
+          <button class="btn-ghost btn-sm" id="tb-close" type="button">메모로 돌아가기</button>
+        </div>
+        <div class="tb-view"><img id="tb-img" alt=""></div>
+      </div>
+      <div class="side-body" id="tutor-view" hidden>
+        <div class="side-head">
+          <h2>AI 튜터</h2>
+          <button class="btn-ghost btn-sm" id="tutor-close" type="button">메모로 돌아가기</button>
+        </div>
+        <div class="tutor-pane" id="tutor-pane"></div>
+      </div>
+      <div class="side-body" id="lab-view" hidden>
+        <div class="side-head">
+          <h2>실습</h2>
+          <button class="btn-ghost btn-sm" id="lab-close" type="button">메모로 돌아가기</button>
+        </div>
+        <div class="lab-pane" id="lab-pane"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+</body>
+</html>

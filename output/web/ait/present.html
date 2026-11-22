@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>발표 화면 | Dave AIT Class</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/ait/ait.css">
+<script type="module" src="/ait/js/present.js"></script>
+</head>
+<body class="present-body">
+<div class="present-layout" id="layout">
+  <div class="present-stage" id="stage"></div>
+  <div class="present-lab lab-pane" id="lab" hidden></div>
+</div>
+<div class="present-quiz quiz-host" id="quiz" hidden></div>
+<div class="present-talk" id="talk" hidden>
+  <div class="present-talk-head"><span class="talk-label">의견 나눔</span><h1 id="talk-topic"></h1><span id="talk-count"></span></div>
+  <ol class="talk-list big" id="talk-list"></ol>
+  <div class="talk-spot" id="talk-spot" hidden></div>
+</div>
+<div class="present-code" id="code" hidden>
+  <img src="/img/teacher/presenter.webp" alt="">
+  <p id="code-text">아래 주소에서 참여 코드를 넣어 주세요.</p>
+  <div class="url" id="code-url"></div>
+  <div class="big-code" id="code-big"></div>
+</div>
+<div class="blank" id="blank" hidden></div>
+<button class="present-start" id="start" type="button">
+  <img src="/img/teacher/presenter.webp" alt="">
+  <strong>발표 화면</strong>
+  <span>이 창을 프로젝터 화면으로 옮긴 뒤 누르면 전체 화면이 됩니다.</span>
+  <span>리모컨 버튼을 한 번 눌러도 됩니다.</span>
+</button>
+<p class="present-wait" id="wait" hidden>진행 화면과 연결하고 있습니다.</p>
+</body>
+</html>

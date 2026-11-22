@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dave AIT Class | 대륜고 사용 설명서</title>
+<meta name="description" content="AI, IT, Tech 수업의 슬라이드, 실습, 퀴즈를 한 화면에서">
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/ait/ait.css">
+<script type="module" src="/ait/js/home.js"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">
+    <img src="/img/daeryuni/face_smile.webp" alt="">
+    <span><small>대륜고 사용 설명서</small><strong>Dave AIT Class</strong></span>
+  </a>
+</header>
+
+<main class="home">
+  <section class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">AI · IT · Tech 수업</span>
+      <h1>Dave AIT Class</h1>
+      <p>선생님이 알려 준 참여 코드를 넣으면 수업 화면이 내 기기에 열립니다.</p>
+      <form class="join-box" id="join">
+        <label for="code">참여 코드</label>
+        <div class="join-row">
+          <input id="code" name="code" inputmode="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="6" placeholder="예: K7Q2MD" aria-describedby="join-msg" required>
+          <button type="submit">들어가기</button>
+        </div>
+        <p class="msg error" id="join-msg" role="alert"></p>
+      </form>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <img src="/img/teacher/waving.webp" alt="">
+      <img class="second" src="/img/daeryuni/pose_wave.webp" alt="">
+    </div>
+  </section>
+
+  <section class="section-card" aria-labelledby="teach-title">
+    <header><span class="num">1</span><h2 id="teach-title">선생님 수업 열기</h2></header>
+    <div class="teacher-note">
+      <img src="/img/teacher/pointing.webp" alt="">
+      <p class="hint">차시를 골라 진행 화면을 엽니다. 수업 열기를 누르면 참여 코드가 만들어지고, 학생 화면은 선생님이 넘기는 장을 따라옵니다. 승인 전 초안은 학생에게 열리지 않습니다.</p>
+    </div>
+    <div id="catalog"><p class="hint">차시 목록을 불러오는 중입니다.</p></div>
+  </section>
+</main>
+</body>
+</html>

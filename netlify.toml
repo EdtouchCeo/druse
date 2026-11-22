@@ -48,6 +48,13 @@
   status = 200
   force = true
 
+# Dave AIT Class AI 튜터(/ait/). 학생에게는 힌트만, 교사 로그인 쿠키가 있으면 해설까지 답한다.
+[[redirects]]
+  from = "/ait-api/tutor"
+  to = "/.netlify/functions/ait-tutor"
+  status = 200
+  force = true
+
 # 수행평가 구현 미리보기(/sdg/) 학생용 기능. 생성은 교사 PC 처리 프로그램이 맡는다.
 [[redirects]]
   from = "/sdg-api/*"

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>수업 진행 | Dave AIT Class</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/ait/ait.css">
+<script type="module" src="/ait/js/teacher.js"></script>
+</head>
+<body class="class-body">
+<header class="top">
+  <a class="brand" href="/ait/">
+    <img src="/img/teacher/waving.webp" alt="">
+    <span><small>대륜고 사용 설명서</small><strong>Dave AIT Class</strong></span>
+  </a>
+  <span class="lesson-name" id="lesson-name"></span>
+  <span class="badge draft" id="draft-badge" hidden>검토 전 초안</span>
+  <span class="spacer"></span>
+  <span class="badge" id="present-badge" hidden>발표 화면 연결됨</span>
+  <span class="people" id="people" hidden></span>
+  <button class="code-chip" id="code-chip" type="button" hidden title="참여 코드를 크게 보기"></button>
+  <button class="btn-gold" id="open-room" type="button" hidden>수업 열기</button>
+</header>
+
+<nav class="modebar" id="modebar" aria-label="수업 모드">
+  <span class="label">수업 모드</span>
+  <button class="btn-ghost btn-sm" type="button" data-mode="slides" aria-pressed="true">슬라이드</button>
+  <button class="btn-ghost btn-sm" type="button" data-mode="textbook" aria-pressed="false">교과서</button>
+  <button class="btn-ghost btn-sm" type="button" data-mode="lab" aria-pressed="false">실습</button>
+  <button class="btn-ghost btn-sm" type="button" data-mode="quiz" aria-pressed="false">퀴즈</button>
+  <button class="btn-ghost btn-sm" type="button" data-mode="talk" aria-pressed="false">의견 나눔</button>
+  <span class="right">
+    <button class="btn-ghost btn-sm" id="tutor-toggle" type="button" aria-pressed="true" title="학생 화면의 AI 튜터를 켜고 끕니다">학생 튜터 켜짐</button>
+    <button class="btn-ghost btn-sm" id="lock" type="button" aria-pressed="false" title="켜면 학생이 다른 장으로 넘기지 못합니다">학생 화면 고정</button>
+    <button class="btn-ghost btn-sm" id="close-room" type="button" hidden>수업 닫기</button>
+  </span>
+</nav>
+
+<div class="workspace single" id="ws">
+  <section class="pane" aria-label="진행 화면">
+    <div class="quiz-host" id="quiz-host" hidden></div>
+    <div class="talk-host" id="talk-host" hidden></div>
+    <div class="stage" id="stage"></div>
+    <div class="presenter" id="presenter" hidden>
+      <span class="timer" id="timer" title="발표 화면을 띄운 뒤 지난 시간">00:00</span>
+      <span class="next-label">다음 장</span>
+      <img id="next-thumb" alt="">
+      <span class="next-title" id="next-title"></span>
+      <span class="blank-state" id="blank-state" hidden></span>
+    </div>
+    <div class="notes" id="notes" hidden></div>
+    <div class="controls">
+      <button class="icon-btn" id="prev" type="button" aria-label="이전">‹</button>
+      <span class="count" id="count" aria-live="polite"></span>
+      <button class="icon-btn" id="next" type="button" aria-label="다음">›</button>
+      <span class="grow"></span>
+      <button class="btn-ghost btn-sm" id="toc" type="button">목차</button>
+      <button class="btn-ghost btn-sm" id="notes-btn" type="button" aria-pressed="false">노트</button>
+      <button class="btn-ghost btn-sm" id="side-btn" type="button" aria-pressed="false" title="교과서나 실습을 오른쪽에 나란히 봅니다">나란히</button>
+      <button class="btn-gold btn-sm" id="present" type="button" title="프로젝터에 띄울 발표 화면을 엽니다">발표 화면</button>
+      <button class="btn-ghost btn-sm" id="blank" type="button" aria-pressed="false" hidden title="발표 화면을 검게 가립니다. 리모컨의 B 버튼과 같습니다">가리기</button>
+      <button class="btn-ghost btn-sm" id="full" type="button">전체 화면</button>
+    </div>
+  </section>
+  <div class="divider" id="divider"></div>
+  <aside class="side" id="side" aria-label="나란히 보기">
+    <div class="side-head">
+      <div class="side-tabs" role="tablist">
+        <button class="btn-ghost btn-sm" type="button" role="tab" data-tab="textbook" aria-selected="true" aria-pressed="true">교과서</button>
+        <button class="btn-ghost btn-sm" type="button" role="tab" data-tab="lab" aria-selected="false" aria-pressed="false">실습</button>
+        <button class="btn-ghost btn-sm" type="button" role="tab" data-tab="tutor" aria-selected="false" aria-pressed="false">튜터</button>
+      </div>
+      <span class="spacer"></span>
+      <span id="tb-tools">
+        <strong id="tb-title">교과서</strong>
+        <button class="btn-ghost btn-sm" id="tb-prev" type="button" aria-label="이전 쪽">‹</button>
+        <button class="btn-ghost btn-sm" id="tb-next" type="button" aria-label="다음 쪽">›</button>
+        <button class="btn-ghost btn-sm" id="tb-sync" type="button">이 장의 쪽으로</button>
+      </span>
+    </div>
+    <div class="side-body" id="tb-body"><div class="tb-view"><img id="tb-img" alt=""></div></div>
+    <div class="side-body" id="lab-body" hidden><div class="lab-pane" id="lab-pane"></div></div>
+    <div class="side-body" id="tutor-body" hidden><div class="tutor-pane" id="tutor-pane"></div></div>
+  </aside>
+</div>
+</body>
+</html>
