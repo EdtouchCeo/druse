@@ -54,6 +54,8 @@ async function answerCorrect(page, q) {
   await t.waitForFunction(() => document.querySelector('#stage img')?.naturalWidth > 0);
   check('teacher slide image through signed URL', true);
   await t.click('#open-room');
+  await t.fill('#open-code', 'DAVE22');
+  await t.click('.open-card button[type=submit]');
   await t.waitForSelector('.big-code');
   const code = (await t.textContent('.big-code')).trim();
   await t.click('.overlay');
@@ -61,6 +63,7 @@ async function answerCorrect(page, q) {
   const myRoom = (db) => db.ait_rooms.find((r) => r.code === code);
   const roomsBefore = st.db.ait_rooms.length;
   check('room row created by teacher', myRoom(st.db)?.teacher_id === TEACHER, code);
+  check('teacher-chosen code used', code === 'DAVE22', code);
   const roomId = myRoom(st.db).id;
   const mine = (db) => db.ait_members.filter((m) => m.room_id === roomId);
 

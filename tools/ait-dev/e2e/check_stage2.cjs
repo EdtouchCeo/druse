@@ -23,6 +23,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   await teacher.goto(`${BASE}/ait/teach.html?l=ai-basics/u2/l01p`);
   await teacher.waitForSelector('#stage img');
   await teacher.click('#open-room');
+  await teacher.fill('#open-code', '');
+  await teacher.click('.open-card button[type=submit]');
   const code = (await teacher.textContent('.big-code')).trim();
   await teacher.click('.overlay');
 

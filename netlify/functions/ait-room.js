@@ -9,6 +9,7 @@ const MAX_MEMBERS = 80;
 const ROOM_HOURS = 8;
 const TOKEN_HOURS = 6;
 const MODES = ['slides', 'textbook', 'lab', 'quiz', 'talk'];
+const CODE_RE = /^[A-HJ-NP-Z2-9]{6}$/; // 화면의 참여 코드 글자와 같다(0·1·I·O 없음).
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const q = encodeURIComponent;
 
@@ -51,9 +52,25 @@ async function open(cfg, teacher, body) {
   // 지난 방 정리(닫히거나 끝난 지 하루 지난 방과 그 기록). 실패해도 수업 열기는 계속한다.
   const old = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   await ait.rest(cfg, `ait_rooms?or=(closed_at.lt.${q(old)},expires_at.lt.${q(old)})`, { method: 'DELETE' }).catch(() => {});
+  // 교사가 코드를 정할 수 있다(비우면 서버가 뽑는다). 헷갈리는 0·1·I·O는 쓰지 않는다.
+  const wanted = body.code ? String(body.code).toUpperCase().trim() : '';
+  if (wanted && !CODE_RE.test(wanted)) {
+    throw new ait.HttpError(400, '참여 코드는 영문과 숫자 6자리로 정해 주세요. 헷갈리는 0, 1, I, O는 쓸 수 없습니다.', 'BAD_CODE');
+  }
+  const now = new Date().toISOString();
+  // 시간이 지났는데 닫히지 않은 방이 코드를 붙잡고 있지 않게 닫는다.
+  await ait.rest(cfg, `ait_rooms?closed_at=is.null&expires_at=lt.${q(now)}`, { method: 'PATCH', body: { closed_at: now } }).catch(() => {});
+  if (wanted) {
+    // 같은 교사가 이 코드로 열어 둔 지난 수업은 닫고 새로 연다(반마다 같은 코드를 쓰는 경우).
+    const mine = await ait.rest(cfg, `ait_rooms?code=eq.${q(wanted)}&closed_at=is.null&teacher_id=eq.${q(teacher.sub)}&select=id`);
+    for (const r of mine || []) {
+      await ait.rest(cfg, `ait_rooms?id=eq.${q(r.id)}`, { method: 'PATCH', body: { closed_at: now } });
+      await ait.broadcast(cfg, [{ topic: `ait:${r.id}`, payload: { type: 'closed' } }]).catch(() => {});
+    }
+  }
   const expires = new Date(Date.now() + ROOM_HOURS * 3600 * 1000).toISOString();
   for (let i = 0; i < 6; i += 1) {
-    const code = ait.newCode();
+    const code = wanted || ait.newCode();
     try {
       const rows = await ait.rest(cfg, 'ait_rooms', {
         method: 'POST', prefer: 'return=representation',
@@ -63,6 +80,7 @@ async function open(cfg, teacher, body) {
       return ait.reply(200, { roomId: room.id, code: room.code, expiresAt: room.expires_at });
     } catch (err) {
       if (err.code !== 'CONFLICT') throw err; // 열린 방끼리 코드가 겹치면 다시 뽑는다.
+      if (wanted) throw new ait.HttpError(409, `${wanted}는 지금 다른 수업에서 쓰고 있습니다. 다른 코드를 정해 주세요.`, 'CODE_TAKEN');
     }
   }
   throw new ait.HttpError(503, '참여 코드를 만들지 못했습니다. 다시 눌러 주세요.', 'CODE');

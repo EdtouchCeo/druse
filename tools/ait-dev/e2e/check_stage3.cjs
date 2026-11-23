@@ -51,6 +51,8 @@ async function answerWrong(page, q) {
   await teacher.click('[data-mode="quiz"]');
   check('quiz needs open room', !(await teacher.isVisible('#quiz-host')));
   await teacher.click('#open-room');
+  await teacher.fill('#open-code', '');
+  await teacher.click('.open-card button[type=submit]');
   const code = (await teacher.textContent('.big-code')).trim();
   await teacher.click('.overlay');
 

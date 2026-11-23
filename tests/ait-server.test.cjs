@@ -206,3 +206,36 @@ test('관리자가 아닌 교사는 수업 열기, 자료 보기·올리기, 교
   assert.equal((await tutor(post({ role: 'teacher', question: '정답 알려줘' }, { cookie: c }))).statusCode, 401);
   assert.equal(calls.filter((x) => x.url.includes('lesson.json')).length, 0);
 });
+
+test('room: 교사가 참여 코드를 정할 수 있고, 맞지 않거나 겹치면 알려 준다', async () => {
+  routes.push(lessonRoute);
+  routes.push([(u, m) => u.includes('/rest/v1/ait_rooms?or=') && m === 'DELETE', () => ({ json: [] })]);
+  routes.push([(u, m) => u.includes('ait_rooms?closed_at=is.null&expires_at=lt.') && m === 'PATCH', () => ({ json: [] })]);
+  let leftover = [{ id: ROOM }];
+  routes.push([(u, m) => u.includes('ait_rooms?code=eq.DAVE22') && m === 'GET', () => ({ json: leftover })]);
+  routes.push([(u, m) => u.includes(`ait_rooms?id=eq.${ROOM}`) && m === 'PATCH', () => ({ json: [] })]);
+  routes.push([(u) => u.endsWith('/realtime/v1/api/broadcast'), () => ({ status: 202, raw: '' })]);
+  let taken = false;
+  routes.push([(u, m) => u.endsWith('/rest/v1/ait_rooms') && m === 'POST', (u, b) => (taken ? { status: 409, json: {} } : { status: 201, json: [{ id: 'new-room', code: b.code, expires_at: b.expires_at }] })]);
+  const open = (code) => room(post({ action: 'open', lessonId: 'ai-basics/u2/l01', code }, { cookie: teacherCookie() }));
+
+  const ok = await open('dave22');
+  assert.equal(ok.statusCode, 200);
+  assert.equal(json(ok).code, 'DAVE22');
+  // 같은 코드로 열어 둔 내 지난 수업은 닫고 학생에게 알린다.
+  assert.ok(calls.some((c) => c.method === 'PATCH' && c.url.includes(`ait_rooms?id=eq.${ROOM}`) && c.body.closed_at));
+  assert.ok(calls.some((c) => c.url.endsWith('/api/broadcast') && c.body.messages[0].topic === `ait:${ROOM}` && c.body.messages[0].payload.type === 'closed'));
+
+  for (const bad of ['DAVE2', 'DAVE220', 'DAVE01', 'IOTA22', 'DA-E22']) {
+    const res = await open(bad);
+    assert.equal(res.statusCode, 400, bad);
+    assert.equal(json(res).code, 'BAD_CODE', bad);
+  }
+  leftover = [];
+  taken = true;
+  const busy = await open('DAVE22');
+  assert.equal(busy.statusCode, 409);
+  assert.equal(json(busy).code, 'CODE_TAKEN');
+  const posts = calls.filter((c) => c.method === 'POST' && c.url.endsWith('/rest/v1/ait_rooms'));
+  assert.equal(posts.at(-1).body.code, 'DAVE22', '정한 코드는 다른 코드로 바꿔 뽑지 않는다');
+});

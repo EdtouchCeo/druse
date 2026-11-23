@@ -21,6 +21,8 @@ async function openClass(ctx, lesson) {
   await t.goto(`${BASE}/ait/teach.html?l=${lesson}`);
   await t.waitForSelector('#stage img');
   await t.click('#open-room');
+  await t.fill('#open-code', '');
+  await t.click('.open-card button[type=submit]');
   const code = (await t.textContent('.big-code')).trim();
   await t.click('.overlay');
   const s = await ctx.newPage();

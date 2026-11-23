@@ -24,6 +24,8 @@ const SHORT = { q04: '모델', q11: '범주형 데이터', q15: 'eda', q17: '결
   await t.goto(`${BASE}/ait/teach.html?l=ai-basics/u2/l01`);
   await t.waitForSelector('#stage img');
   await t.click('#open-room');
+  await t.fill('#open-code', '');
+  await t.click('.open-card button[type=submit]');
   const code = (await t.textContent('.big-code')).trim();
   await t.click('.overlay');
   const [proj] = await Promise.all([ctx.waitForEvent('page'), t.click('#present')]);

@@ -42,6 +42,8 @@ async function fontSizes(page, sels) {
   await teacher.waitForSelector('#stage img');
   await shot(teacher, '02_teacher_before_open');
   await teacher.click('#open-room');
+  await teacher.fill('#open-code', '');
+  await teacher.click('.open-card button[type=submit]');
   await teacher.waitForSelector('.overlay');
   const code = (await teacher.textContent('.big-code')).trim();
   check('room code 6 chars', /^[A-Z0-9]{6}$/.test(code), code);

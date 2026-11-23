@@ -1,5 +1,5 @@
 // 교사 진행 화면: 슬라이드 넘기기, 교과서·실습 나란히 보기, 발표 화면(프로젝터) 띄우기, 수업 열기와 학생 화면 맞추기.
-import { $, el, loadLesson, toast, isTyping, keyAction, enableDivider, hasTextbook, clampPage, pageUrl, thumbUrl, teacherSession, presentChannelName, PREVIEW_HOST } from './common.js';
+import { $, el, loadLesson, normalizeCode, isValidCode, toast, isTyping, keyAction, enableDivider, hasTextbook, clampPage, pageUrl, thumbUrl, teacherSession, presentChannelName, PREVIEW_HOST } from './common.js';
 import { createStage, onSwipe, openToc } from './viewer.js';
 import { openTeacherRoom, TIMING, SERVER } from './sync.js';
 import { createLabArea } from './lab.js';
@@ -87,7 +87,7 @@ async function start() {
   } else if (draft) {
     openBtn.textContent = '검토용으로 열기';
   }
-  openBtn.addEventListener('click', () => openClass(draft));
+  openBtn.addEventListener('click', () => askCode(draft));
 
   bindControls();
   enableDivider($('#ws'), $('#divider'), 'ait_split_teacher');
@@ -368,7 +368,7 @@ function setBlank(kind) {
 // 수업 열기: 참여 코드를 만들고 학생 화면에 지금 상태를 보낸다.
 // 사이트에서는 서버가 방과 코드를 만들고, 새로 고침 뒤에는 같은 방을 이어 연다.
 let opening = false;
-async function openClass(draft, savedRoom = null, announce = true) {
+async function openClass(draft, savedRoom = null, announce = true, code = '') {
   if (opening || room) return;
   opening = true;
   const btn = $('#open-room');
@@ -376,12 +376,14 @@ async function openClass(draft, savedRoom = null, announce = true) {
   const label = btn.textContent;
   btn.textContent = '여는 중…';
   try {
-    room = await openTeacherRoom({ lessonId: lesson.id, roomId: savedRoom, onStatus: connectionStatus });
+    room = await openTeacherRoom({ lessonId: lesson.id, roomId: savedRoom, code, onStatus: connectionStatus });
   } catch (e) {
     btn.disabled = false;
     btn.textContent = label;
     if (savedRoom) sessionStorage.removeItem(`ait_room_${lesson.id}`);
     if (!savedRoom || !['CLOSED', 'NO_ROOM'].includes(e.code)) toast(e.message, null, null, 9000);
+    // 정한 코드가 맞지 않거나 이미 쓰이면 다시 정하게 한다.
+    if (code && ['BAD_CODE', 'CODE_TAKEN'].includes(e.code)) askCode(draft, code, e.message);
     return;
   } finally {
     opening = false;
@@ -453,6 +455,48 @@ function updatePeople() {
   const total = people.size;
   const away = [...people.values()].filter((p) => !p.following).length;
   $('#people').textContent = total ? `참여 ${total}명${away ? ` · 둘러보는 중 ${away}명` : ''}` : '참여 0명';
+}
+
+// 수업 열기 전에 참여 코드를 정한다. 비우면 서버가 만든다. 마지막에 쓴 코드를 기억해 다음 반에서도 쓰기 쉽게 한다.
+const CODE_KEY = 'ait_last_code';
+function askCode(draft, value = null, error = '') {
+  if (room || document.querySelector('.open-dialog')) return;
+  let last = '';
+  try { last = localStorage.getItem(CODE_KEY) || ''; } catch { last = ''; }
+  const input = el('input', {
+    id: 'open-code', maxlength: '6', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false',
+    placeholder: '비우면 자동', value: value ?? last, 'aria-describedby': 'open-code-help open-code-msg',
+  });
+  const msg = el('p', { class: 'msg error', id: 'open-code-msg', role: 'alert' }, error);
+  const close = () => box.remove();
+  const submit = (e) => {
+    e.preventDefault();
+    const code = normalizeCode(input.value);
+    if (code && !isValidCode(code)) {
+      msg.textContent = '영문과 숫자 6자리로 정해 주세요. 헷갈리는 0, 1, I, O는 쓸 수 없습니다.';
+      input.focus();
+      return;
+    }
+    try { if (code) localStorage.setItem(CODE_KEY, code); } catch { /* 저장소를 막은 브라우저 */ }
+    close();
+    openClass(draft, null, true, code);
+  };
+  const box = el('div', { class: 'open-dialog', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'open-code-title' },
+    el('form', { class: 'open-card', onsubmit: submit },
+      el('h2', { id: 'open-code-title' }, draft ? '검토용으로 수업 열기' : '수업 열기'),
+      el('label', { for: 'open-code' }, '참여 코드'),
+      input,
+      el('p', { class: 'hint', id: 'open-code-help' }, '영문과 숫자 6자리로 직접 정할 수 있습니다(예: DAVE22). 비워 두면 자동으로 만듭니다. 헷갈리는 0, 1, I, O는 쓸 수 없습니다.'),
+      msg,
+      el('div', { class: 'open-actions' },
+        el('button', { type: 'button', class: 'btn-ghost', onclick: close }, '취소'),
+        el('button', { type: 'submit', class: 'btn' }, '수업 열기'))));
+  box.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  box.addEventListener('click', (e) => { if (e.target === box) close(); });
+  input.addEventListener('input', () => { const v = normalizeCode(input.value); if (v !== input.value) input.value = v; msg.textContent = ''; });
+  document.body.append(box);
+  input.focus();
+  input.select();
 }
 
 function showCode() {

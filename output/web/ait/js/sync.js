@@ -60,12 +60,12 @@ function createThrottle(deliver) {
 }
 
 // 교사: 수업 열기(또는 새로 고침 뒤 이어 열기). 돌려주는 roomId를 sessionStorage에 두면 이어 열 수 있다.
-export async function openTeacherRoom({ lessonId, roomId, onStatus } = {}) {
+export async function openTeacherRoom({ lessonId, roomId, code: wanted, onStatus } = {}) {
   if (!SERVER) {
-    const code = roomId || newCode();
+    const code = roomId || wanted || newCode();
     return { code, roomId: code, ...localRoom(code), closeRoom: async () => {} };
   }
-  const info = roomId ? await api('room', { action: 'resume', roomId }) : await api('room', { action: 'open', lessonId });
+  const info = roomId ? await api('room', { action: 'resume', roomId }) : await api('room', { action: 'open', lessonId, code: wanted || undefined });
   const id = info.roomId;
   const handlers = new Set();
   const sock = createSocket(teacherToken, { onStatus });
