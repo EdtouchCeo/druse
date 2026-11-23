@@ -1,15 +1,24 @@
 // Dave AIT Class AI 튜터. 학생에게는 힌트와 해결 과정만, 교사에게는 정답과 해설까지 답한다.
 // 누가 묻는지는 화면이 아니라 서버가 교사 로그인 쿠키로 판단한다. 학생 이름·학번은 받지 않는다.
 //
+// 답은 사용 설명서의 서버 AI(Claude, EdTouch 서버 경유)가 먼저 만든다. 문서작성 AI·평가계획·학종 전략실과 같은 연결이다.
+// Claude API 키는 EdTouch 서버에만 있고, 그 서버는 승인 교사의 세션 토큰으로 요청을 확인한다.
+//   교사 질문: 교사 화면이 보낸 세션 토큰을 그대로 쓴다.
+//   학생 질문: 수업을 연 교사가 방에 맡긴 토큰(암호문, ait-room의 ai)을 쓴다. 학생 기기는 토큰을 보지 못한다.
+// Claude가 답하지 못하면(토큰 없음·만료, 서버 혼잡, 시간 초과) 같은 질문을 Gemini로 넘긴다.
+//
 // 필요한 Netlify 환경변수(사용 설명서와 같은 것을 쓴다):
-//   GEMINI_API_KEY : Google AI Studio API 키
-//   AIT_TUTOR_MODEL: 튜터 모델 ID (선택). 없으면 LLM_MODEL, 그다음 아래 후보를 차례로 쓴다.
+//   GEMINI_API_KEY : Google AI Studio API 키(대체 경로)
+//   AIT_TUTOR_PROVIDER: gemini로 두면 Claude 연결을 쓰지 않는다(배포 없이 되돌리는 스위치). 기본은 claude.
+//   AIT_CLAUDE_RELAY_URL: 서버 AI 주소를 바꿀 때만 지정(https). 없으면 전략실과 같은 주소를 쓴다.
+//   AIT_TUTOR_MODEL: Gemini 튜터 모델 ID (선택). 없으면 LLM_MODEL, 그다음 아래 후보를 차례로 쓴다.
 //   LLM_MODEL      : 사용 설명서 AI의 모델 ID (선택)
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY: 학생 질문의 방 확인, 질문 기록, 교사 화면 중계
 //   AIT_DEV_TEACHER: 로컬 미리보기 전용. 1이면 교사 확인을 건너뛴다(배포 환경에는 두지 않는다).
 
 const { callGemini } = require('./_lib/vertex');
 const ait = require('./_lib/ait');
+const { DEFAULT_URL: CLAUDE_URL } = require('./_lib/counseling-claude-relay');
 
 const STUDENT_GAP_MS = 8000;
 
@@ -129,15 +138,66 @@ const FALLBACK_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-fl
 const CALL_TIMEOUT_MS = 10000;
 const models = () => [...new Set([process.env.AIT_TUTOR_MODEL, process.env.LLM_MODEL, ...FALLBACK_MODELS].filter(Boolean))];
 
-async function ask({ apiKey, system, contents }) {
+// 서버 AI(Claude) 호출. 계약은 문서작성 AI와 같다: { prompt, systemInstruction, temperature, maxOutputTokens, label } → { text }.
+// 대화는 한 덩어리의 글로 이어 보낸다. 서버의 오류 본문은 쓰지 않고 상태 코드만 남긴다.
+const CLAUDE_TIMEOUT_MS = 13000;
+const TOTAL_BUDGET_MS = 23000; // Netlify 함수 응답 제한(26초) 안쪽.
+const claudeOn = () => String(process.env.AIT_TUTOR_PROVIDER || 'claude').trim().toLowerCase() !== 'gemini';
+function claudeUrl() {
+  const value = String(process.env.AIT_CLAUDE_RELAY_URL || CLAUDE_URL).trim();
+  try { const url = new URL(value); return url.protocol === 'https:' ? url.href : ''; } catch { return ''; }
+}
+
+function claudePrompt(contents) {
+  const text = (c) => (c.parts || []).map((p) => p.text || '').join('');
+  const talk = contents.slice(2, -1); // 앞의 둘은 수업 자료와 확인 문장, 마지막은 이번 질문이다.
+  const lines = [text(contents[0])];
+  if (talk.length) lines.push('', '[지금까지의 대화]', ...talk.map((c) => `${c.role === 'model' ? '튜터' : '질문'}: ${text(c)}`));
+  lines.push('', '[이번 질문]', text(contents[contents.length - 1]));
+  return lines.join('\n');
+}
+
+async function askClaude({ token, system, contents, timeoutMs }) {
+  const url = claudeUrl();
+  if (!url || !token) return { ok: false, status: 503 };
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'x-auth-site': 'daeryun' },
+      body: JSON.stringify({ prompt: claudePrompt(contents), systemInstruction: system, temperature: 0.3, maxOutputTokens: 1500, label: 'ait-tutor' }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return { ok: false, status: res.status };
+    const text = String(data?.text || '').trim();
+    return text ? { ok: true, text } : { ok: false, status: 502 };
+  } catch {
+    return { ok: false, status: 504 };
+  }
+}
+
+// Claude를 먼저 쓰고, 답하지 못하면 Gemini 후보를 차례로 쓴다. 한 번 Gemini로 넘어가면 같은 요청 안에서는 돌아가지 않는다.
+async function ask({ apiKey, system, contents, llm }) {
   let last = null;
+  const left = () => llm.deadline - Date.now();
+  if (llm.token) {
+    if (left() < 3000) throw Object.assign(new Error('llm'), { status: 504 });
+    const r = await askClaude({ token: llm.token, system, contents, timeoutMs: Math.min(CLAUDE_TIMEOUT_MS, left() - 1000) });
+    if (r.ok) { llm.via = 'claude'; return r.text; }
+    last = Object.assign(new Error('llm'), { status: r.status });
+    console.error('[ait-tutor] claude fallback', r.status);
+    llm.token = '';
+  }
+  if (!apiKey) throw last || Object.assign(new Error('llm'), { status: 503 });
   for (const model of models()) {
+    if (left() < 3000) break;
     const generationConfig = { temperature: 0.3, maxOutputTokens: 2048 };
     if (/gemini-2\.5/.test(model)) generationConfig.thinkingConfig = { thinkingBudget: 0 };
     try {
-      const r = await callGemini({ apiKey, model, signal: AbortSignal.timeout(CALL_TIMEOUT_MS), payload: { systemInstruction: { parts: [{ text: system }] }, contents, generationConfig } });
+      const r = await callGemini({ apiKey, model, signal: AbortSignal.timeout(Math.min(CALL_TIMEOUT_MS, left() - 1000)), payload: { systemInstruction: { parts: [{ text: system }] }, contents, generationConfig } });
       if (r.ok) {
         const cand = r.data?.candidates?.[0];
+        llm.via = 'gemini';
         return (cand?.content?.parts || []).map((p) => p.text || '').join('').trim();
       }
       last = Object.assign(new Error('llm'), { status: r.status });
@@ -147,7 +207,7 @@ async function ask({ apiKey, system, contents }) {
     }
     console.error('[ait-tutor] model fallback', model, last.status);
   }
-  throw last || new Error('llm');
+  throw last || Object.assign(new Error('llm'), { status: 504 });
 }
 
 exports.handler = async (event) => {
@@ -168,8 +228,8 @@ exports.handler = async (event) => {
   if (role === 'student' && body.context?.quizActive) {
     return reply(409, { error: '퀴즈가 진행 중일 때는 튜터가 답하지 않습니다. 퀴즈가 끝난 뒤 다시 물어보세요.', code: 'QUIZ_ACTIVE' });
   }
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return reply(503, { error: '튜터 설정이 준비되지 않았습니다. 선생님께 알려 주세요.', code: 'SERVER_CONFIG' });
+  const apiKey = process.env.GEMINI_API_KEY || '';
+  const llm = { token: '', via: '', deadline: Date.now() + TOTAL_BUDGET_MS };
 
   const level = Math.min(5, Math.max(1, Number(body.level) || 1));
   const ctx = { ...(body.context || {}) };
@@ -180,7 +240,11 @@ exports.handler = async (event) => {
     const checked = await studentRoom(event, ctx);
     if (checked.error) return checked.error;
     room = checked;
+    if (claudeOn()) llm.token = checked.aiToken;
+  } else if (role === 'teacher' && claudeOn()) {
+    llm.token = ait.bearer(event);
   }
+  if (!llm.token && !apiKey) return reply(503, { error: '튜터 설정이 준비되지 않았습니다. 선생님께 알려 주세요.', code: 'SERVER_CONFIG' });
   // 발표 노트에는 확인 문항의 정답이 들어 있다. 학생 질문에는 노트를 AI에 보내지 않고, 정답 낱말만 뽑아 막는 데 쓴다.
   const hidden = role === 'student' ? hiddenTerms(ctx.notes, ctx.slideText) : [];
   if (role === 'student') delete ctx.notes;
@@ -196,17 +260,18 @@ exports.handler = async (event) => {
   const system = role === 'teacher' ? teacherInstruction() : studentInstruction(level, hidden);
 
   try {
-    let answer = await ask({ apiKey, system, contents });
+    let answer = await ask({ apiKey, system, contents, llm });
     let flagged = false;
     if (role === 'student' && leaks(answer, hidden)) {
       flagged = true;
       const stricter = `${system}\n\n[다시 쓰기] 앞의 답에 정답이나 완성 코드가 들어 있었다. 정답과 코드는 빼고 힌트만 다시 써라.`;
-      answer = await ask({ apiKey, system: stricter, contents });
+      // 다시 쓸 시간이 모자라거나 다시 쓰기에 실패하면 안전한 안내로 바꾼다. 걸린 답은 내보내지 않는다.
+      answer = await ask({ apiKey, system: stricter, contents, llm }).catch(() => FALLBACK);
       if (leaks(answer, hidden)) answer = FALLBACK;
     }
     if (!answer) answer = role === 'student' ? FALLBACK : '답을 만들지 못했습니다. 질문을 조금 바꿔 다시 물어봐 주세요.';
     if (room) await recordStudent(room, ctx, { level, flagged, question, answer });
-    return reply(200, { answer, level, flagged });
+    return reply(200, { answer, level, flagged, via: llm.via });
   } catch (e) {
     const msg = e.status === 429 ? '질문이 몰려 잠시 쉬고 있습니다. 30초쯤 뒤에 다시 물어보세요.' : '튜터가 답을 받지 못했습니다. 잠시 뒤 다시 물어보세요.';
     console.error('[ait-tutor] fail', e.status || e.message);
@@ -239,7 +304,10 @@ async function studentRoom(event, ctx) {
     } else {
       delete ctx.notes;
     }
-    return { cfg, me };
+    // 교사가 맡긴 토큰은 만료 전일 때만 쓴다. 없으면 Gemini가 답한다.
+    const ai = room.state?.ai;
+    const aiToken = ai?.v && Number(ai.exp) - Date.now() > 10000 ? ait.openToken(ai.v, cfg.key) : '';
+    return { cfg, me, aiToken };
   } catch {
     return { error: reply(503, { error: '수업 서버에 잠시 연결하지 못했습니다. 조금 뒤 다시 물어보세요.', code: 'UPSTREAM' }) };
   }
@@ -257,4 +325,4 @@ async function recordStudent({ cfg, me }, ctx, x) {
     .catch((e) => console.error('[ait-tutor] relay', e.code));
 }
 
-exports._test = { leaks, scrub, studentInstruction, materials, hiddenTerms };
+exports._test = { leaks, scrub, studentInstruction, materials, hiddenTerms, claudePrompt };

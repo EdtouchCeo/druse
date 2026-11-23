@@ -24,6 +24,8 @@ if (FAKE) {
   process.env.SUPABASE_URL = `http://127.0.0.1:${PORT}/fake-sb`;
   process.env.SUPABASE_SERVICE_KEY = 'dev-service-key';
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // 가짜 로그인 토큰을 실제 서버 AI(Claude)로 보내지 않는다. Claude 연결은 tests/ait-server.test.cjs가 가짜 fetch로 시험한다.
+  if (!process.env.AIT_TUTOR_PROVIDER) process.env.AIT_TUTOR_PROVIDER = 'gemini';
   fake = require('./fake-supabase.cjs').createFake({ contentRoot: path.join(ROOT, 'ait', 'content'), serviceKey: 'dev-service-key', approveAll: true });
 } else {
   process.env.AIT_DEV_TEACHER = '1';

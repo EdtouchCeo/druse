@@ -239,3 +239,96 @@ test('room: 교사가 참여 코드를 정할 수 있고, 맞지 않거나 겹�
   const posts = calls.filter((c) => c.method === 'POST' && c.url.endsWith('/rest/v1/ait_rooms'));
   assert.equal(posts.at(-1).body.code, 'DAVE22', '정한 코드는 다른 코드로 바꿔 뽑지 않는다');
 });
+
+// 튜터의 서버 AI(Claude) 연결: 교사가 방에 맡긴 토큰으로 학생 질문에 답하고, 안 되면 Gemini로 넘긴다.
+const RELAY = 'service-63986215827.us-west1.run.app/api/llm/generate-open';
+const tutorRoutes = (state, claude) => {
+  routes.push([(u) => u.includes('ait_rooms?id=eq.'), () => ({ json: [{ state, closed_at: null }] })]);
+  routes.push([(u) => u.includes('ait_tutor_logs?member_id'), () => ({ json: [] })]);
+  routes.push(lessonRoute);
+  routes.push([(u, m) => u.endsWith('/rest/v1/ait_tutor_logs') && m === 'POST', () => ({ status: 201, raw: '' })]);
+  routes.push([(u) => u.endsWith('/realtime/v1/api/broadcast'), () => ({ status: 202, raw: '' })]);
+  routes.push([(u) => u.includes(RELAY), claude]);
+  routes.push([(u) => u.includes('generativelanguage.googleapis.com'), () => ({ json: { candidates: [{ content: { parts: [{ text: '표의 빈칸을 먼저 세어 보세요.' }] } }] } })]);
+};
+const sealed = (token = 'teacher-jwt', exp = Date.now() + 3000e3) => ({ v: ait.sealToken(token, KEY), exp });
+const askStudent = () => tutor(post({ role: 'student', question: '힌트 주세요', context: { slideN: 1 }, history: [{ who: 'student', text: '앞 질문' }, { who: 'tutor', text: '앞 답' }] }, { cookie: roomCookie() }));
+
+test('room: 교사 토큰은 본인 것만 암호문으로 맡기고, 화면으로 돌려주지 않는다', async () => {
+  const roomRow = { id: ROOM, code: 'DAVE22', lesson_id: 'ai-basics/u2/l01', state: { mode: 'slides', tutor: true }, closed_at: null, expires_at: new Date(Date.now() + 3600e3).toISOString() };
+  let owner = 'someone-else';
+  routes.push([(u, m) => u.includes('ait_rooms?id=eq.') && m === 'GET', () => ({ json: [roomRow] })]);
+  routes.push([(u) => u.endsWith('/auth/v1/user'), () => ({ json: { id: owner } })]);
+  routes.push([(u, m) => u.includes('ait_rooms?id=eq.') && m === 'PATCH', (u, b) => { Object.assign(roomRow, b); return { json: [] }; }]);
+  const share = () => room(post({ action: 'ai', roomId: ROOM }, { cookie: teacherCookie(), authorization: 'Bearer teacher-jwt' }));
+  assert.equal(json(await share()).code, 'TOKEN_MISMATCH');
+  owner = TEACHER;
+  assert.equal((await share()).statusCode, 200);
+  assert.ok(!JSON.stringify(roomRow.state).includes('teacher-jwt'), '토큰 원문을 적지 않는다');
+  assert.equal(ait.openToken(roomRow.state.ai.v, KEY), 'teacher-jwt');
+  assert.equal(ait.openToken(roomRow.state.ai.v, 'other-key'), '');
+  const resumed = json(await room(post({ action: 'resume', roomId: ROOM }, { cookie: teacherCookie() })));
+  assert.equal(resumed.state.ai, undefined);
+  assert.equal(resumed.state.mode, 'slides');
+  await room(post({ action: 'state', roomId: ROOM, mode: 'quiz' }, { cookie: teacherCookie() }));
+  assert.ok(roomRow.state.ai, '모드를 바꿔도 맡긴 토큰은 남는다');
+  await room(post({ action: 'close', roomId: ROOM }, { cookie: teacherCookie() }));
+  assert.equal(roomRow.state.ai, undefined, '닫으면 지운다');
+});
+
+test('tutor: 학생 질문은 교사가 맡긴 토큰으로 Claude가 답하고, 발표 노트는 보내지 않는다', async () => {
+  tutorRoutes({ tutor: true, mode: 'slides', ai: sealed() }, () => ({ json: { text: '표에서 비어 있는 칸이 어디인지 먼저 찾아보세요.' } }));
+  const res = await askStudent();
+  assert.equal(res.statusCode, 200);
+  assert.equal(json(res).via, 'claude');
+  const call = calls.find((c) => c.url.includes(RELAY));
+  assert.equal(call.headers.Authorization, 'Bearer teacher-jwt');
+  assert.equal(call.headers['x-auth-site'], 'daeryun');
+  assert.equal(call.body.label, 'ait-tutor');
+  assert.match(call.body.systemInstruction, /힌트 1단계/);
+  assert.match(call.body.prompt, /데이터 탐색/);
+  assert.match(call.body.prompt, /\[지금까지의 대화\]\n질문: 앞 질문\n튜터: 앞 답/);
+  assert.match(call.body.prompt, /\[이번 질문\]\n힌트 주세요$/);
+  assert.ok(!call.body.prompt.includes('발표 노트'), '정답이 든 노트는 보내지 않는다');
+  assert.equal(calls.filter((c) => c.url.includes('generativelanguage')).length, 0);
+});
+
+test('tutor: Claude가 답하지 못하거나 맡긴 토큰이 없으면 Gemini가 답한다', async () => {
+  tutorRoutes({ tutor: true, mode: 'slides', ai: sealed() }, () => ({ status: 503, json: { code: 'SERVER_BUDGET', error: '내부 사정' } }));
+  const failed = await askStudent();
+  assert.equal(failed.statusCode, 200);
+  assert.equal(json(failed).via, 'gemini');
+  assert.ok(!failed.body.includes('내부 사정'));
+  for (const state of [{ tutor: true }, { tutor: true, ai: sealed('teacher-jwt', Date.now() - 1000) }, { tutor: true, ai: { v: 'a1.x.y.z', exp: Date.now() + 3000e3 } }]) {
+    routes = [];
+    calls.length = 0;
+    tutorRoutes(state, () => ({ json: { text: '쓰이면 안 된다' } }));
+    assert.equal(json(await askStudent()).via, 'gemini');
+    assert.equal(calls.filter((c) => c.url.includes(RELAY)).length, 0);
+  }
+});
+
+test('tutor: Claude 답에 정답 표현이 있으면 다시 쓰게 하고, 그래도 있으면 안내문으로 바꾼다', async () => {
+  tutorRoutes({ tutor: true, mode: 'slides', ai: sealed() }, () => ({ json: { text: '정답은 결측값입니다.' } }));
+  const res = json(await askStudent());
+  assert.equal(res.flagged, true);
+  assert.ok(!res.answer.includes('결측값'));
+  assert.equal(calls.filter((c) => c.url.includes(RELAY)).length, 2);
+});
+
+test('tutor: 교사 질문은 교사 화면의 토큰으로 Claude에 보내고, 스위치로 Gemini만 쓰게 할 수 있다', async () => {
+  tutorRoutes({}, () => ({ json: { text: '정답은 결측값입니다.' } }));
+  const askTeacher = () => tutor(post({ role: 'teacher', question: '정답 알려줘', context: { slideN: 1, notes: '정답: 결측값' } }, { cookie: teacherCookie(), authorization: 'Bearer my-session' }));
+  const res = json(await askTeacher());
+  assert.equal(res.via, 'claude');
+  assert.equal(res.answer, '정답은 결측값입니다.');
+  assert.equal(calls.find((c) => c.url.includes(RELAY)).headers.Authorization, 'Bearer my-session');
+  process.env.AIT_TUTOR_PROVIDER = 'gemini';
+  try {
+    calls.length = 0;
+    assert.equal(json(await askTeacher()).via, 'gemini');
+    assert.equal(calls.filter((c) => c.url.includes(RELAY)).length, 0);
+  } finally {
+    delete process.env.AIT_TUTOR_PROVIDER;
+  }
+});

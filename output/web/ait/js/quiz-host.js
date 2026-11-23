@@ -42,6 +42,7 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
   let lastRanks = new Map();
   let timer = null;
   let lastSecond = null;
+  let asked = 0; // 학생에게 실제로 낸 문항 수. 중간에 끝내면 전체 문항 수보다 작다.
 
   const active = () => [...players.values()].filter((p) => !p.kicked);
   const q = () => questions[qIndex];
@@ -62,8 +63,10 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
       countdown, paused, answered,
       remainingMs: paused ? remaining : Math.max(0, deadline - Date.now()),
       reveal, board, lead,
-      podium: phase === 'podium' || phase === 'end' ? ranking().slice(0, 3) : [],
+      asked,
+      podium: phase === 'podium' || phase === 'end' || phase === 'done' ? ranking().slice(0, 3) : [],
       summary: phase === 'end' ? summary() : [],
+      closing: phase === 'done' ? closing() : null,
       mood: music.mood, speed, muted: music.muted,
     };
   }
@@ -92,7 +95,7 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
       publish();
       const p = players.get(msg.pid);
       if (p) personal(p);
-      if (p && !p.kicked && (phase === 'podium' || phase === 'end')) report(p);
+      if (p && !p.kicked && (phase === 'podium' || phase === 'end' || phase === 'done')) report(p);
     }
   }
 
@@ -172,7 +175,7 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
   // 퀴즈가 끝난 뒤에만 학생 한 명에게 자기 결과와 정답·해설을 보낸다.
   function report(p) {
     const rank = ranking().find((r) => r.pid === p.pid)?.rank || null;
-    const items = questions.map((item, i) => {
+    const items = questions.slice(0, asked).map((item, i) => {
       const a = p.answers[i];
       return {
         n: i + 1, type: item.type, prompt: item.prompt,
@@ -181,7 +184,7 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
         explain: item.explain, page: item.page, slide: item.slide,
       };
     });
-    room.send({ type: 'quiz-report', pid: p.pid, name: p.name, score: p.score, rank, players: active().length, total: questions.length, right: items.filter((x) => x.correct).length, items });
+    room.send({ type: 'quiz-report', pid: p.pid, name: p.name, score: p.score, rank, players: active().length, total: asked, right: items.filter((x) => x.correct).length, items });
   }
 
   function personal(p) {
@@ -207,6 +210,7 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
       clearInterval(timer);
       music.sfx('go');
       phase = 'question';
+      asked = qIndex + 1;
       paused = false;
       startedAt = Date.now();
       deadline = startedAt + q().time * 1000;
@@ -269,6 +273,27 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
     else if (phase === 'reveal') { if (qIndex + 1 >= questions.length) podium(); else showBoard(); }
     else if (phase === 'board') startQuestion(qIndex + 1);
     else if (phase === 'podium') { phase = 'end'; music.stop(); publish(); }
+    else if (phase === 'end') { phase = 'done'; publish(); }
+  }
+
+  // 남은 문항을 건너뛰고 끝낸다. 지금까지 낸 문항으로 순위와 결과를 만든다.
+  function stop() {
+    if (!['countdown', 'question', 'reveal', 'board'].includes(phase)) return;
+    const left = questions.length - asked;
+    if (!confirm(left > 0 ? `남은 ${left}문제를 건너뛰고 퀴즈를 끝낼까요? 지금까지 푼 ${asked}문제로 순위를 냅니다.` : '퀴즈를 끝내고 최종 순위를 볼까요?')) return;
+    clearInterval(timer);
+    paused = false;
+    reveal = null;
+    if (!asked) { // 첫 문제를 내기 전이면 대기실로 돌아간다.
+      qIndex = -1;
+      phase = 'lobby';
+      music.stop();
+      music.play('lobby');
+      publish();
+      return;
+    }
+    qIndex = asked - 1;
+    podium();
   }
 
   function podium() {
@@ -280,12 +305,27 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
   }
 
   function summary() {
-    return questions.map((item, i) => {
+    return questions.slice(0, asked).map((item, i) => {
       const got = active().map((p) => p.answers[i]).filter(Boolean);
       const right = got.filter((a) => a.correct).length;
       const n = active().length;
       return { n: i + 1, prompt: item.prompt, rate: n ? Math.round((right / n) * 100) : 0, avg: got.length ? (got.reduce((s, a) => s + a.ms, 0) / got.length / 1000).toFixed(1) : null, page: item.page, slide: item.slide };
     });
+  }
+
+  // 종료 화면에 보일 요약: 참여 인원, 평균 정답률과 점수, 다시 짚을 문항.
+  function closing() {
+    const list = active();
+    const n = list.length;
+    const right = list.reduce((sum, p) => sum + p.answers.slice(0, asked).filter((a) => a && a.correct).length, 0);
+    const low = summary().filter((s) => s.rate < 50).sort((a, b) => a.rate - b.rate || a.n - b.n).slice(0, 3);
+    return {
+      players: n, asked, total: questions.length, stopped: asked < questions.length,
+      avgRate: n && asked ? Math.round((right / (n * asked)) * 100) : 0,
+      avgScore: n ? Math.round(list.reduce((sum, p) => sum + p.score, 0) / n) : 0,
+      responses: answers.length,
+      low,
+    };
   }
 
   // 결과 내려받기: 응답 한 건이 한 줄인 표. 엑셀에서 한글이 깨지지 않도록 BOM을 붙인다.
@@ -323,6 +363,8 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
   function action(name, arg) {
     music.unlock();
     if (name === 'start' || name === 'next' || name === 'close') next();
+    else if (name === 'stop') stop();
+    else if (name === 'back-summary' && phase === 'done') { phase = 'end'; publish(); }
     else if (name === 'mood') { music.setMood(arg); if (phase === 'lobby') { music.stop(); music.play('lobby'); } publish(); }
     else if (name === 'speed') { speed = !speed; publish(); }
     else if (name === 'mute') { music.setMuted(!music.muted); publish(); }

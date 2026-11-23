@@ -83,7 +83,19 @@ export async function openTeacherRoom({ lessonId, roomId, code: wanted, onStatus
     if (!ch) { ch = sock.channel(`ait:${id}:p:${m.pid}`, () => {}); personal.set(m.pid, ch); }
     if (!ch.send(m)) ch.ready().then(() => ch.send(m)).catch(() => {});
   };
-  const record = (patch) => api('room', { action: 'state', roomId: id, ...patch }).catch(() => {});
+  // 방 기록을 고치는 요청은 한 줄로 세워 보낸다(상태 기록과 토큰 맡기기가 서로 덮어쓰지 않게).
+  let chain = Promise.resolve();
+  const serial = (fn) => { chain = chain.then(fn, fn); return chain; };
+  const record = (patch) => serial(() => api('room', { action: 'state', roomId: id, ...patch }).catch(() => {}));
+  // 학생 튜터가 서버 AI(Claude)를 쓸 수 있게 교사 세션 토큰을 방에 맡긴다. 토큰이 새로 바뀌면 다시 맡긴다.
+  let sharedToken = null;
+  const shareAi = async () => {
+    const t = await teacherToken().catch(() => null);
+    if (!t || t === sharedToken) return;
+    await serial(() => api('room', { action: 'ai', roomId: id }, { Authorization: `Bearer ${t}` }).then(() => { sharedToken = t; }).catch(() => {}));
+  };
+  shareAi();
+  const aiTimer = setInterval(shareAi, 60 * 1000);
 
   return {
     code: info.code,
@@ -97,7 +109,7 @@ export async function openTeacherRoom({ lessonId, roomId, code: wanted, onStatus
       else throttled(m);
     },
     on(fn) { handlers.add(fn); return () => handlers.delete(fn); },
-    close() { handlers.clear(); setTimeout(() => sock.close(), 300); },
+    close() { handlers.clear(); clearInterval(aiTimer); setTimeout(() => sock.close(), 300); },
     closeRoom: () => api('room', { action: 'close', roomId: id }),
   };
 }

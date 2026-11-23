@@ -43,7 +43,7 @@ Dave AIT Class는 교사의 AI·IT·Tech 수업 플랫폼이다(`/ait/`). 교사
 | `netlify/functions/ait-relay.js` | 학생 메시지 중계 |
 | `netlify/functions/ait-asset.js` | 자료 문지기 |
 | `netlify/functions/ait-upload.js` | 자료 올리기(한 번 쓰는 올리기 주소, `_manifest.json`) |
-| `netlify/functions/ait-tutor.js` | AI 튜터. 학생은 열린 방·튜터 켜짐·퀴즈 아님·8초 간격을 서버가 확인 |
+| `netlify/functions/ait-tutor.js` | AI 튜터. 학생은 열린 방·튜터 켜짐·퀴즈 아님·8초 간격을 서버가 확인. 답은 서버 AI(Claude, EdTouch 서버 경유)가 먼저, 안 되면 Gemini |
 | `netlify/functions/_lib/ait.js` | 공용(REST·Storage·Realtime, 참여 증표 서명) |
 | `netlify/edge-functions/auth-gate.js` | `/ait/teach·present·upload`는 관리자만 |
 | `tools/ait-dev/` | 로컬 미리보기 서버, 가짜 Supabase, 화면 시험(`e2e/`) |
@@ -59,7 +59,17 @@ Dave AIT Class는 교사의 AI·IT·Tech 수업 플랫폼이다(`/ait/`). 교사
 - 익명 로그인 켜짐(IP당 시간당 300회). 무료 요금제: 동시 접속 200, 초당 메시지 100 → 퀴즈 0.8초, 의견 0.6초 간격으로 모아 보냄, 학생 ping 20초.
 - 버킷 `ait-content`(비공개, 파일당 10MB).
 
-Netlify 환경 변수: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `GEMINI_API_KEY`(기존). 선택: `AIT_TUTOR_MODEL`. `LLM_MODEL`은 없음.
+Netlify 환경 변수: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `GEMINI_API_KEY`(기존). 선택: `AIT_TUTOR_MODEL`, `AIT_TUTOR_PROVIDER`(`gemini`면 Claude 연결 끔), `AIT_CLAUDE_RELAY_URL`. `LLM_MODEL`은 없음.
+
+## 튜터의 서버 AI(Claude) 연결 (2026-11-23)
+
+- 문서작성 AI·평가계획·학종 전략실과 같은 EdTouch 서버(`/api/llm/generate-open`)를 쓴다. Claude 열쇠는 그 서버에만 있고, 요청에 실린 승인 교사의 Supabase 세션 토큰(`x-auth-site: daeryun`)으로 확인한다.
+- 교사 질문: 교사 화면이 `Authorization`으로 보낸 토큰을 그대로 쓴다.
+- 학생 질문: 교사 화면이 `/ait-api/room`의 `ai` 요청으로 방에 맡긴 토큰을 쓴다. 서버는 토큰 주인이 로그인 쿠키의 교사와 같은지 확인하고 `ait_rooms.state.ai`에 암호문(AES-256-GCM, 서비스 키에서 유도한 열쇠)과 만료 시각만 적는다. 화면으로는 돌려주지 않고 수업을 닫으면 지운다. 표를 바꾸지 않았다.
+- 교사 화면은 1분마다 토큰이 바뀌었는지 보고 다시 맡긴다. 교사 화면을 닫은 채 1시간이 지나면 토큰이 만료되어 학생 질문은 Gemini가 답한다.
+- 한 요청의 시간 예산은 23초다. Claude에 최대 13초를 주고, 실패하면 남은 시간으로 Gemini 후보를 쓴다. 정답이 새서 다시 쓸 때 시간이 모자라면 안전한 안내문으로 바꾼다.
+- 실제 Claude 서버 호출은 교사 토큰이 있어야 해서 시험하지 못했다(가짜 토큰에 401을 돌려주는 것까지만 확인). 배포 뒤 교사 튜터 칸에서 "Claude가 답했습니다"가 나오는지, 학생 질문 뒤 Netlify 함수 기록에 `claude fallback`이 없는지 확인한다. 서버 AI가 형식 없는 글 요청(`schema` 없음)을 받지 않으면 `claude fallback 400`이 남는다.
+- 가짜 Supabase 미리보기는 실제 서버 AI를 부르지 않도록 `AIT_TUTOR_PROVIDER=gemini`로 돈다.
 
 ## 시험
 

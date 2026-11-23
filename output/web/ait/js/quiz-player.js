@@ -21,6 +21,21 @@ export function createQuizPlayer(root, { pid, send, code }) {
   let draftName = null;
   let finalReport = null;
   let onlyWrong = true;
+  let shortDraft = '';
+
+  // 입력을 받는 화면(대화명 적기, 문제 풀기)의 열쇠. 같은 열쇠면 화면을 새로 만들지 않는다.
+  function stableKey() {
+    if (kicked || !view) return '';
+    if (!me.joined) return 'join';
+    if (view.phase === 'question' && sentQ !== view.qIndex) return `q|${view.qIndex}|${view.paused ? 1 : 0}`;
+    return '';
+  }
+
+  // 같은 화면에서 바뀌는 것은 남은 시간뿐이다("10초 더").
+  function refresh() {
+    const bar = root.querySelector('.qz-timebar');
+    if (bar && view.phase === 'question') bar.replaceWith(timer());
+  }
 
   function join() {
     send({ type: 'quiz-join', pid, name: me.name, avatar: me.avatar });
@@ -30,9 +45,13 @@ export function createQuizPlayer(root, { pid, send, code }) {
     if (msg.type === 'quiz') {
       const prev = view;
       view = msg.view;
-      if (view.phase === 'question' && (!prev || prev.qIndex !== view.qIndex || prev.phase !== 'question')) { picked = []; }
+      if (view.phase === 'question' && (!prev || prev.qIndex !== view.qIndex || prev.phase !== 'question')) { picked = []; shortDraft = ''; }
       if (view.phase === 'countdown' && prev?.phase !== 'countdown') play('count');
       if (!me.joined && !kicked && !rejoinSent && sessionStorage.getItem('ait_quiz_joined') === code) { rejoinSent = true; join(); }
+      // 다른 학생이 답하거나 들어올 때마다 같은 화면이 다시 온다. 입력 중인 칸을 새로 만들면
+      // 적던 글과 한글 조합이 사라지므로, 화면이 같으면 남은 시간만 고친다.
+      const key = stableKey();
+      if (key && root.dataset.key === key && root.firstChild) { refresh(); return; }
       paint();
     } else if (msg.pid !== pid) {
       return;
@@ -123,7 +142,9 @@ export function createQuizPlayer(root, { pid, send, code }) {
         }),
         el('button', { type: 'button', class: 'btn-gold', disabled: !done, onclick: () => sendAnswer(picked) }, done ? '이 순서로 보내기' : `${q.items.length - picked.length}개 더 고르기`));
     }
-    const input = el('input', { maxlength: '40', autocomplete: 'off', 'aria-label': '답' });
+    // 일시 정지처럼 화면을 새로 그릴 때도 적던 답을 되살린다.
+    const input = el('input', { class: 'qp-short-input', maxlength: '40', autocomplete: 'off', 'aria-label': '답', value: shortDraft });
+    input.addEventListener('input', () => { shortDraft = input.value; });
     return el('form', { class: 'qp-short', onsubmit: (e) => { e.preventDefault(); if (input.value.trim()) sendAnswer(input.value.trim()); } }, input, el('button', { type: 'submit', class: 'btn-gold' }, '보내기'));
   }
 
@@ -133,7 +154,7 @@ export function createQuizPlayer(root, { pid, send, code }) {
     const total = (view.q?.time || 20) * 1000;
     const draw = () => {
       const left = view.paused ? view.remainingMs : Math.max(0, deadline - Date.now());
-      fill.style.width = `${(left / total) * 100}%`;
+      fill.style.width = `${Math.max(0, Math.min(100, (left / total) * 100))}%`;
       fill.classList.toggle('hurry', left <= 5000);
     };
     draw();
@@ -217,7 +238,17 @@ export function createQuizPlayer(root, { pid, send, code }) {
       else body = card('/img/daeryuni/face_shy.webp', '아쉬워요', el('p', {}, '교실 화면의 해설을 함께 읽어 보세요.'), scoreLine());
     } else if (view.phase === 'board') body = card('/img/daeryuni/pose_raise.webp', you?.rank ? `지금 ${you.rank}위` : '순위 확인', scoreLine(), el('p', { class: 'hint' }, '다음 문제를 준비하세요.'));
     else body = finalReport ? reportView() : card('/img/daeryuni/pose_thumb.webp', you?.rank ? `최종 ${you.rank}위` : '퀴즈가 끝났습니다', scoreLine(), el('p', {}, '끝까지 함께해 주어 고맙습니다.'));
+    // 적던 칸에 커서가 있었으면 새로 그린 뒤에도 그 자리에 둔다.
+    const active = document.activeElement;
+    const focused = active && root.contains(active) ? (active.id === 'qp-name' ? '#qp-name' : active.classList.contains('qp-short-input') ? '.qp-short-input' : '') : '';
+    const caret = focused ? active.selectionStart : null;
+    root.dataset.key = stableKey();
     root.replaceChildren(head, el('div', { class: 'qp-body' }, body));
+    const again = focused ? root.querySelector(focused) : null;
+    if (again) {
+      again.focus();
+      try { if (caret !== null) again.setSelectionRange(caret, caret); } catch { /* 커서 자리를 못 옮겨도 입력은 된다 */ }
+    }
   }
 
   paint();

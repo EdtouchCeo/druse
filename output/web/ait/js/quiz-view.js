@@ -221,14 +221,51 @@ function draw(root, view, { teacher = false, onAction = () => {}, onTick } = {})
     if (teacher) {
       add(tools, btn('결과 내려받기(CSV)', 'download-csv', null, 'btn-ghost btn-sm', onAction),
         btn('결과 내려받기(JSON)', 'download-json', null, 'btn-ghost btn-sm', onAction),
-        el('span', { class: 'grow' }), btn('퀴즈 마치기', 'finish', null, 'btn', onAction));
+        el('span', { class: 'grow' }), btn('퀴즈 종료', 'next', null, 'btn-gold', onAction));
+    }
+  } else if (view.phase === 'done') {
+    // 종료 화면: 교실 화면에는 마무리 인사와 요약을, 진행 화면에는 내려받기와 돌아가기 버튼을 둔다.
+    const c = view.closing || { players: 0, asked: 0, total: 0, avgRate: 0, avgScore: 0, low: [] };
+    const tile = (value, unit, label) => el('div', { class: 'qz-tile' }, el('b', {}, value, el('small', {}, unit)), el('span', {}, label));
+    add(body,
+      el('div', { class: 'qz-done-head' },
+        el('img', { src: '/img/teacher/thumbs_up.webp', alt: '' }),
+        el('div', {},
+          el('p', { class: 'qz-big' }, '퀴즈를 마쳤습니다'),
+          el('p', { class: 'qz-sub' }, c.stopped ? `전체 ${c.total}문제 가운데 ${c.asked}문제까지 풀었습니다.` : `${c.asked}문제를 모두 풀었습니다.`),
+          el('p', { class: 'qz-sub' }, '내 기기에서 문항별 내 답과 해설을 확인하세요.')),
+        buddy('pose_thumb', '끝까지 함께해 줘서 고마워요', 'done')),
+      el('div', { class: 'qz-tiles' },
+        tile(`${c.players}`, '명', '참여'),
+        tile(`${c.avgRate}`, '%', '평균 정답률'),
+        tile(c.avgScore.toLocaleString(), '점', '평균 점수')),
+      el('div', { class: 'qz-done-cols' },
+        el('section', {},
+          el('h3', {}, '최종 순위'),
+          view.podium.length ? el('ol', { class: 'qz-board' }, ...view.podium.map((p) => el('li', { class: p.rank === 1 ? 'top' : '' },
+            el('b', {}, `${p.rank}`), el('img', { src: avatarUrl(p.avatar), alt: '' }), el('span', { class: 'name' }, p.name), el('span', { class: 'score' }, `${p.score.toLocaleString()}점`))))
+            : el('p', { class: 'qz-sub' }, '참여한 학생이 없습니다.')),
+        el('section', {},
+          el('h3', {}, '다시 짚을 문항'),
+          c.low.length ? el('ol', { class: 'qz-low' }, ...c.low.map((s) => el('li', {},
+            el('span', { class: 'rate' }, `${s.rate}%`),
+            el('span', { class: 'txt' }, `${s.n}. ${s.prompt}`),
+            teacher && s.slide ? btn(`${s.slide}장 보기`, 'goto-slide', s.slide, 'btn-ghost btn-xs', onAction) : null)))
+            : el('p', { class: 'qz-sub' }, '정답률이 50% 아래인 문항이 없습니다.'))));
+    if (teacher) {
+      add(tools, btn('결과 내려받기(CSV)', 'download-csv', null, 'btn-ghost btn-sm', onAction),
+        btn('결과 내려받기(JSON)', 'download-json', null, 'btn-ghost btn-sm', onAction),
+        btn('문항별 결과', 'back-summary', null, 'btn-ghost btn-sm', onAction),
+        el('span', { class: 'grow' }), btn('슬라이드로 돌아가기', 'finish', null, 'btn-gold', onAction));
     }
   }
 
   if (teacher) {
     addFirst(tools, 
       btn(view.muted ? '소리 켜기' : '소리 끄기', 'mute', null, 'btn-ghost btn-sm', onAction),
-      view.phase !== 'lobby' ? btn('참가자', 'people', null, 'btn-ghost btn-sm', onAction) : null);
+      view.phase !== 'lobby' ? btn('참가자', 'people', null, 'btn-ghost btn-sm', onAction) : null,
+      // 문제를 다 내기 전에 끝내야 할 때(종이 울릴 때)를 위한 버튼.
+      ['countdown', 'question', 'reveal', 'board'].includes(view.phase) ? btn('퀴즈 끝내기', 'stop', null, 'btn-ghost btn-sm', onAction) : null);
   }
   root.replaceChildren(head, body, teacher ? tools : '');
   fixDistBars(root, view);

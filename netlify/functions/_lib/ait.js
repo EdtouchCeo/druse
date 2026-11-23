@@ -112,6 +112,33 @@ function roomCookieHeader(value, maxAge) {
   return `${ROOM_COOKIE}=${value}; Path=/ait-api; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.max(0, Math.floor(maxAge))}`;
 }
 
+// 교사 세션 토큰 보관(학생 튜터가 서버 AI(Claude)를 부를 때 쓴다). 방 기록에는 암호문만 둔다.
+// 열쇠는 서비스 키에서 따로 유도하고, 토큰은 1시간이면 만료된다.
+const bearer = (event) => String(event.headers?.authorization || event.headers?.Authorization || '').match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || '';
+function aiKey(serviceKey) {
+  return crypto.createHmac('sha256', String(serviceKey)).update('ait-ai-token-v1').digest();
+}
+function sealToken(token, serviceKey) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', aiKey(serviceKey), iv);
+  const body = Buffer.concat([cipher.update(String(token), 'utf8'), cipher.final()]);
+  return `a1.${iv.toString('base64url')}.${body.toString('base64url')}.${cipher.getAuthTag().toString('base64url')}`;
+}
+function openToken(value, serviceKey) {
+  const [v, iv, body, tag, extra] = String(value || '').split('.');
+  if (v !== 'a1' || !iv || !body || !tag || extra !== undefined || !serviceKey) return '';
+  try {
+    const decipher = crypto.createDecipheriv('aes-256-gcm', aiKey(serviceKey), Buffer.from(iv, 'base64url'));
+    decipher.setAuthTag(Buffer.from(tag, 'base64url'));
+    return Buffer.concat([decipher.update(Buffer.from(body, 'base64url')), decipher.final()]).toString('utf8');
+  } catch {
+    return '';
+  }
+}
+function jwtExpMs(token) {
+  try { return (JSON.parse(Buffer.from(String(token).split('.')[1], 'base64url').toString('utf8')).exp || 0) * 1000; } catch { return 0; }
+}
+
 // Realtime REST 방송(서비스 키). 비공개 채널로 보낸다.
 async function broadcast(cfg, messages) {
   if (!messages.length) return;
@@ -202,5 +229,5 @@ function parseBody(event, limit = 64 * 1024) {
 module.exports = {
   BUCKET, LESSON_RE, ROOM_COOKIE, HttpError, config, reply, fail, rest, authUser, teacherClaims,
   signRoom, verifyRoom, studentClaims, roomCookieHeader, broadcast, safePath, download, downloadJSON,
-  signedUrl, uploadUrl, upload, remove, newCode, parseBody,
+  signedUrl, uploadUrl, upload, remove, newCode, parseBody, bearer, sealToken, openToken, jwtExpMs,
 };

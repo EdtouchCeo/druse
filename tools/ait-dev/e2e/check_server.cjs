@@ -137,6 +137,8 @@ async function answerCorrect(page, q) {
   check('quiz lobby has 3 players', true);
   st = await state();
   check('room state recorded as quiz', myRoom(st.db).state.mode === 'quiz', JSON.stringify(myRoom(st.db).state));
+  // 학생 튜터가 서버 AI(Claude)를 쓸 수 있게 교사 화면이 세션 토큰을 방에 맡긴다. 암호문만 적히고 모드를 바꿔도 남는다.
+  check('teacher token shared with room as ciphertext', /^a1\./.test(myRoom(st.db).state.ai?.v || '') && myRoom(st.db).state.ai.exp > Date.now());
   await t.click('#quiz-host button:has-text("퀴즈 시작")');
   for (let i = 0; i < 2; i += 1) {
     const q = quiz.questions[i];

@@ -8,6 +8,7 @@ import { createQuizHost } from './quiz-host.js';
 import { renderHostView } from './quiz-view.js';
 import { createTutorPanel } from './tutor.js';
 import { createTalkHost } from './talk.js';
+import { teacherToken } from './rt.js';
 
 const params = new URLSearchParams(location.search);
 const lessonId = params.get('l') || '';
@@ -582,6 +583,7 @@ function ensureTutor() {
   if (tutorPanel) return;
   tutorPanel = createTutorPanel($('#tutor-pane'), {
     role: 'teacher',
+    getToken: teacherToken,
     getContext: () => {
       const s = currentSlide();
       return { lessonTitle: lesson.title, slideN: s.n, slideTitle: s.title, slideText: s.text, notes: s.notes, page: s.textbook?.page, cell: labPanel?.cellContext() || null };

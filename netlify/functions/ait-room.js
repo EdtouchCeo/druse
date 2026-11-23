@@ -1,6 +1,6 @@
 'use strict';
 // Dave AIT Class 수업 방: 교사가 열고 닫고, 학생이 참여 코드로 들어온다.
-//   교사(사용 설명서 로그인 쿠키, 당분간 사이트 관리자만): open · resume · close · state · member
+//   교사(사용 설명서 로그인 쿠키, 당분간 사이트 관리자만): open · resume · close · state · member · ai
 //   학생(Supabase 익명 로그인 토큰): join
 // 학생에게는 참여 증표 쿠키(ait_room, /ait-api 아래에서만 보냄)를 준다. 자료, 중계, 튜터가 이 증표로 방을 확인한다.
 const ait = require('./_lib/ait');
@@ -28,12 +28,16 @@ exports.handler = async (event) => {
       case 'close': return await close(cfg, teacher, body);
       case 'state': return await setState(cfg, teacher, body);
       case 'member': return await member(cfg, teacher, body);
+      case 'ai': return await shareAi(cfg, event, teacher, body);
       default: return ait.reply(400, { error: '알 수 없는 요청입니다.', code: 'BAD_REQUEST' });
     }
   } catch (err) {
     return ait.fail(err);
   }
 };
+
+// 방 상태에서 교사 토큰 암호문은 화면으로 돌려보내지 않는다.
+const publicState = (state) => { const { ai, ...rest } = state || {}; return rest; };
 
 async function ownRoom(cfg, teacher, roomId) {
   if (!UUID.test(String(roomId || ''))) throw new ait.HttpError(400, '방 정보가 맞지 않습니다.', 'BAD_REQUEST');
@@ -89,13 +93,14 @@ async function open(cfg, teacher, body) {
 async function resume(cfg, teacher, body) {
   const room = await ownRoom(cfg, teacher, body.roomId);
   if (room.closed_at || Date.parse(room.expires_at) <= Date.now()) throw new ait.HttpError(410, '이미 닫힌 수업입니다.', 'CLOSED');
-  return ait.reply(200, { roomId: room.id, code: room.code, lessonId: room.lesson_id, expiresAt: room.expires_at, state: room.state });
+  return ait.reply(200, { roomId: room.id, code: room.code, lessonId: room.lesson_id, expiresAt: room.expires_at, state: publicState(room.state) });
 }
 
 async function close(cfg, teacher, body) {
   const room = await ownRoom(cfg, teacher, body.roomId);
-  if (!room.closed_at) {
-    await ait.rest(cfg, `ait_rooms?id=eq.${q(room.id)}`, { method: 'PATCH', body: { closed_at: new Date().toISOString() } });
+  // 닫을 때 맡아 둔 교사 토큰도 지운다.
+  if (!room.closed_at || room.state?.ai) {
+    await ait.rest(cfg, `ait_rooms?id=eq.${q(room.id)}`, { method: 'PATCH', body: { closed_at: room.closed_at || new Date().toISOString(), state: publicState(room.state) } });
   }
   await ait.broadcast(cfg, [{ topic: `ait:${room.id}`, payload: { type: 'closed' } }]).catch(() => {});
   return ait.reply(200, { ok: true });
@@ -108,7 +113,21 @@ async function setState(cfg, teacher, body) {
   if (MODES.includes(body.mode)) state.mode = body.mode;
   if (typeof body.tutor === 'boolean') state.tutor = body.tutor;
   await ait.rest(cfg, `ait_rooms?id=eq.${q(room.id)}`, { method: 'PATCH', body: { state } });
-  return ait.reply(200, { state });
+  return ait.reply(200, { state: publicState(state) });
+}
+
+// 학생 튜터가 서버 AI(Claude)를 쓸 수 있게 교사의 세션 토큰을 방에 맡긴다. 서버 AI는 승인 교사의 토큰이 있어야 답한다.
+// 토큰이 이 교사 본인의 것인지 확인하고, 암호문으로만 적는다. 교사 화면이 토큰을 새로 받을 때마다 다시 맡긴다.
+async function shareAi(cfg, event, teacher, body) {
+  const room = await ownRoom(cfg, teacher, body.roomId);
+  if (room.closed_at || Date.parse(room.expires_at) <= Date.now()) throw new ait.HttpError(410, '이미 닫힌 수업입니다.', 'CLOSED');
+  const user = await ait.authUser(cfg, event);
+  if (user.id !== teacher.sub) throw new ait.HttpError(403, '로그인한 계정의 토큰이 아닙니다.', 'TOKEN_MISMATCH');
+  const token = ait.bearer(event);
+  const exp = ait.jwtExpMs(token) || Date.now() + 50 * 60 * 1000;
+  const state = { ...(room.state || {}), ai: { v: ait.sealToken(token, cfg.key), exp } };
+  await ait.rest(cfg, `ait_rooms?id=eq.${q(room.id)}`, { method: 'PATCH', body: { state } });
+  return ait.reply(200, { ok: true, exp });
 }
 
 // 내보내기(다시 들어오지 못함)와 되돌리기, 대화명 기록.

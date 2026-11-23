@@ -19,6 +19,7 @@ AIT_ENV_FILE=<GEMINI_API_KEY가 있는 .env> node tools/ait-dev/server.cjs 8765
 | `check_stage2.cjs` | 실습(Pyodide), 발표 화면, 리모컨 키 |
 | `check_stage3.cjs` | 경쟁 퀴즈 전체 흐름, 내보내기, 시상대, 결과 내려받기 (l02 퀴즈) |
 | `check_stage4.cjs` | AI 튜터(실제 Gemini 호출), 의견 나눔, 비속어 거르기 |
+| `check_quiz_end.cjs` | 대화명·단답형 입력 보존(다른 학생 응답, 10초 더, 일시 정지), 퀴즈 끝내기, 종료 화면 (l01 퀴즈) |
 | `check_l01quiz.cjs` | l01 퀴즈 문항 형식과 채점 |
 | `check_labs.cjs` | 코랩 노트북 실습, 내 코랩에서 열기, 실습 탭. 3번째 부분은 l03에 시험용 외부 실습을 붙인 사본이 있어야 함 |
 | `check_mobile.cjs` | 휴대폰 화면 넘침(결과는 측정값 목록) |

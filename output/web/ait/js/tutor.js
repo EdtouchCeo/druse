@@ -39,7 +39,7 @@ function format(text) {
   return box;
 }
 
-export function createTutorPanel(container, { role = 'student', getContext, onExchange, isBlocked }) {
+export function createTutorPanel(container, { role = 'student', getContext, onExchange, isBlocked, getToken }) {
   let thread = []; // { who: 'student' | 'tutor', text }
   let level = 1;
   let busy = false;
@@ -70,7 +70,7 @@ export function createTutorPanel(container, { role = 'student', getContext, onEx
     input,
     el('div', { class: 'tutor-actions' }, newBtn, moreBtn, el('span', { class: 'grow' }), sendBtn),
     status,
-    el('p', { class: 'hint tutor-privacy' }, role === 'teacher' ? '질문은 Google Gemini로 보내 처리합니다.' : '질문은 Google Gemini로 보내 답을 만듭니다. 이름이나 연락처는 쓰지 마세요.'),
+    el('p', { class: 'hint tutor-privacy' }, role === 'teacher' ? '질문은 EdTouch 서버를 거쳐 Anthropic(Claude)으로 보내 처리합니다. 연결되지 않으면 Google Gemini가 대신 답합니다.' : '질문은 AI 서비스(Anthropic Claude, 연결되지 않으면 Google Gemini)로 보내 답을 만듭니다. 이름이나 연락처는 쓰지 마세요.'),
   );
 
   const paintWhere = () => {
@@ -106,16 +106,18 @@ export function createTutorPanel(container, { role = 'student', getContext, onEx
     status.textContent = '튜터가 생각하는 중입니다.';
     const context = getContext();
     try {
+      // 교사 질문에는 세션 토큰을 붙인다. 서버 AI(Claude)가 승인 교사인지 확인하는 데만 쓴다.
+      const token = getToken ? await getToken().catch(() => null) : null;
       const res = await fetch('/ait-api/tutor', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         credentials: 'same-origin',
         body: JSON.stringify({ role, question, level, context, history: thread.slice(0, -1).slice(-6) }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || '튜터가 답하지 못했습니다. 잠시 뒤 다시 물어보세요.');
       add('tutor', data.answer, role === 'student' ? `힌트 ${data.level}단계 · ${LEVEL_NAME[data.level]}` : null);
-      status.textContent = '';
+      status.textContent = role === 'teacher' && data.via ? (data.via === 'claude' ? 'Claude가 답했습니다.' : 'Claude에 연결하지 못해 Gemini가 답했습니다.') : '';
       onExchange && onExchange({ question, answer: data.answer, level: data.level, flagged: !!data.flagged, context });
     } catch (e) {
       thread.pop();
