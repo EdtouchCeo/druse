@@ -174,6 +174,7 @@ function goSlide(n) {
   const page = currentSlide().textbook?.page;
   if (hasTextbook(lesson, page)) state.page = page;
   render();
+  if (talkSideOn()) renderTalkSide();
   broadcast();
 }
 
@@ -196,6 +197,7 @@ function setMode(mode) {
   if (mode === 'talk' && !room) { toast('먼저 수업을 열어 참여 코드를 만든 뒤 의견 나눔을 시작해 주세요.', '수업 열기', () => $('#open-room').click(), 7000); return; }
   state.mode = mode;
   showQuizLayer(mode === 'quiz');
+  music.setAway(mode !== 'quiz');
   showTalkLayer(mode === 'talk');
   document.querySelectorAll('#modebar [data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
   if (mode === 'lab') { toggleSide(true); showTab('lab'); }
@@ -252,12 +254,15 @@ async function showTab(tab) {
   if (tab === 'lab' && !lesson.labs?.length) tab = 'textbook';
   if (tab === 'tutor') { ensureTutor(); }
   if (tab === 'textbook' && !lesson.textbookMeta) tab = 'lab';
+  if (tab === 'talk' && !room) { toast('먼저 수업을 열어 참여 코드를 만든 뒤 의견 나눔을 시작해 주세요.', '수업 열기', () => $('#open-room').click(), 7000); return; }
   sideTab = tab;
   document.querySelectorAll('[data-tab]').forEach((b) => { const on = b.dataset.tab === tab; b.setAttribute('aria-selected', String(on)); b.setAttribute('aria-pressed', String(on)); });
   $('#tb-body').hidden = tab !== 'textbook';
   $('#tb-tools').hidden = tab !== 'textbook';
   $('#lab-body').hidden = tab !== 'lab';
   $('#tutor-body').hidden = tab !== 'tutor';
+  $('#talk-body').hidden = tab !== 'talk';
+  if (tab === 'talk') { renderTalkSide(); return; }
   if (tab === 'textbook') showSidePage(currentSlide().textbook?.page);
   else if (tab === 'lab') await ensureLab();
   else tutorPanel?.refresh();
@@ -440,7 +445,7 @@ function onMessage(msg) {
   if (!msg || typeof msg.pid !== 'string') return;
   if (quizHost && (msg.type.startsWith('quiz-') || (msg.type === 'hello' && state.mode === 'quiz'))) quizHost.handle(msg);
   if (msg.type.startsWith('talk-') || (msg.type === 'hello' && talk)) ensureTalk().handle(msg);
-  if (msg.type === 'tutor-log') { tutorLogs.push({ ...msg, at: Date.now() }); if (state.mode === 'talk') renderTalk(); }
+  if (msg.type === 'tutor-log') { tutorLogs.push({ ...msg, at: Date.now() }); drawTalk(); }
   if (msg.type === 'hello' || msg.type === 'ping') {
     people.set(msg.pid, { last: Date.now(), slide: msg.slide, following: msg.following !== false });
     if (msg.type === 'hello') broadcast();
@@ -534,6 +539,14 @@ function startQuiz() {
 
 function quizAction(name, arg) {
   if (name === 'people') { openPeople(); return; }
+  if (name === 'leave') {
+    const waiting = quizHost.people().filter((p) => !p.kicked).length;
+    if (waiting && !confirm(`학생 ${waiting}명이 대기실에 들어와 있습니다. 퀴즈를 닫고 슬라이드로 돌아갈까요?`)) return;
+    quizHost.end();
+    quizHost = null;
+    setMode('slides');
+    return;
+  }
   if (name === 'finish') {
     if (!confirm('퀴즈를 마치고 슬라이드로 돌아갈까요? 결과를 내려받지 않았다면 먼저 내려받아 주세요.')) return;
     quizHost.end();
@@ -597,7 +610,7 @@ function ensureTalk() {
     talk = createTalkHost({
       lesson, room,
       present: (m) => present.channel?.postMessage(m),
-      onChange: () => { if (state.mode === 'talk') renderTalk(); },
+      onChange: drawTalk,
       getSlide: () => state.slide,
       tutorLog: () => tutorLogs,
     });
@@ -621,35 +634,87 @@ function showTalkLayer(on) {
   }
 }
 
+// 진행 화면과 오른쪽 칸 가운데 보이는 쪽을 다시 그린다.
+function drawTalk() {
+  if (state.mode === 'talk') renderTalk();
+  if (talkSideOn()) renderTalkSide();
+}
+const talkSideOn = () => sideTab === 'talk' && !$('#ws').classList.contains('single') && !$('#talk-body').hidden;
+
+// 주제 칸: 댓글이 올라와 다시 그려도 적던 주제와 커서가 남도록 글을 따로 들고 있는다.
+let topicDraft = '';
+function talkTopics(t, where) {
+  const topicInput = el('input', { class: 'talk-topic-input', maxlength: '140', placeholder: '예: 과적합을 일상의 예로 설명해 보면?', 'aria-label': '새 주제' });
+  topicInput.value = topicDraft;
+  topicInput.dataset.where = where;
+  topicInput.addEventListener('input', () => { topicDraft = topicInput.value; });
+  const bind = el('input', { type: 'checkbox' });
+  const addTopic = () => { if (topicInput.value.trim()) { const text = topicInput.value; topicDraft = ''; t.addTopic(text, bind.checked ? state.slide : null); } };
+  topicInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) addTopic(); });
+  return el('section', { class: 'panel' },
+    el('h2', {}, '주제'),
+    el('div', { class: 'talk-add' }, topicInput, el('button', { type: 'button', class: 'btn-sm', onclick: addTopic }, '추가')),
+    el('label', { class: 'check' }, bind, `지금 장(${state.slide}장)에 묶기`),
+    el('ol', { class: 'topic-list' }, ...t.topics().map((x, i) => el('li', { class: x.id === t.topicId ? 'on' : '' },
+      el('span', { class: 'n' }, `${i + 1}`),
+      el('span', { class: 'txt' }, x.text, x.slide ? el('small', {}, ` · ${x.slide}장`) : null),
+      x.id === t.topicId && t.open ? el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.close() }, '닫기')
+        : el('button', { type: 'button', class: 'btn-xs', onclick: () => t.openTopic(x.id) }, x.openedAt ? '다시 열기' : '열기'),
+      x.id === t.topicId && t.open ? null : el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.removeTopic(x.id) }, '지우기')))),
+    t.topics().length ? null : el('p', { class: 'hint' }, '주제를 여러 개 만들어 두고 수업 중에 하나씩 엽니다.'));
+}
+
+// 지금 주제와 올라온 의견
+function talkFeed(t) {
+  const current = t.topics().find((x) => x.id === t.topicId);
+  const feed = t.feed();
+  return [
+    el('div', { class: 'talk-host-head' },
+      el('div', {}, el('span', { class: 'talk-label' }, t.open ? '열림' : '닫힘'), el('h2', {}, current ? current.text : '주제를 골라 열어 주세요')),
+      current ? (t.open ? el('button', { type: 'button', class: 'btn-ghost btn-sm', onclick: () => t.close() }, '댓글창 닫기') : el('button', { type: 'button', class: 'btn-gold btn-sm', onclick: () => t.reopen() }, '댓글창 다시 열기')) : null),
+    el('p', { class: 'hint' }, `의견 ${feed.length}건${t.filteredCount() ? ` · 걸러진 글 ${t.filteredCount()}건(학생에게 보이지 않음)` : ''}`),
+    el('ol', { class: 'talk-list host' }, ...feed.slice().reverse().map((m) => {
+      const p = t.person(m.pid);
+      return el('li', { class: `talk-msg${t.spotlight() === m.id ? ' spot' : ''}` },
+        el('div', { class: 'talk-meta' }, el('strong', {}, `${p?.name || ''}`), el('small', {}, ` #${p?.no} · ${new Date(m.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}${m.replyTo ? ` · ${m.replyTo}번 글에 답함` : ''}`), el('span', { class: 'talk-likes' }, `공감 ${m.likes.size}`)),
+        el('p', { class: 'talk-text' }, m.text),
+        el('div', { class: 'talk-tools' },
+          el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.toggleSpotlight(m.id) }, t.spotlight() === m.id ? '크게 띄우기 끄기' : '크게 띄우기'),
+          el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.remove(m.id) }, '지우기'),
+          el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.resetName(m.pid) }, '대화명 초기화'),
+          el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.block(m.pid) }, p?.blocked ? '쓰기 다시 허용' : '글쓴이 쓰기 막기')));
+    })),
+    t.filteredCount() ? el('details', { class: 'talk-filtered' }, el('summary', {}, `걸러진 글 ${t.filteredCount()}건 보기`),
+      el('ol', {}, ...t.filteredList().map((m) => el('li', {}, `#${t.person(m.pid)?.no} ${m.text}`,
+        el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.block(m.pid) }, t.person(m.pid)?.blocked ? '쓰기 다시 허용' : '쓰기 막기'))))) : null,
+  ].filter(Boolean);
+}
+
+// 다시 그린 뒤에도 주제 입력칸의 커서를 돌려놓는다.
+function keepTopicFocus(box, where, draw) {
+  const active = document.activeElement;
+  const had = active?.classList?.contains('talk-topic-input') && active.dataset.where === where;
+  const caret = had ? [active.selectionStart, active.selectionEnd] : null;
+  draw();
+  if (!had) return;
+  const input = box.querySelector('.talk-topic-input');
+  input.focus();
+  try { input.setSelectionRange(caret[0], caret[1]); } catch (e) { /* 커서를 못 옮겨도 글은 남는다 */ }
+}
+
 function renderTalk() {
   const t = ensureTalk();
   const box = $('#talk-host');
-  const topicInput = el('input', { maxlength: '140', placeholder: '예: 과적합을 일상의 예로 설명해 보면?', 'aria-label': '새 주제' });
-  const bind = el('input', { type: 'checkbox', id: 'talk-bind' });
-  const addTopic = () => { if (topicInput.value.trim()) { t.addTopic(topicInput.value, bind.checked ? state.slide : null); } };
-  topicInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) addTopic(); });
   const classInput = el('input', { maxlength: '20', value: t.className, placeholder: '예: 1-3', 'aria-label': '반' });
   classInput.addEventListener('change', () => t.setClass(classInput.value));
   const anon = el('input', { type: 'checkbox', id: 'talk-anon' });
-  const current = t.topics().find((x) => x.id === t.topicId);
-  const feed = t.feed();
   const bySlide = new Map();
   tutorLogs.forEach((l) => bySlide.set(l.slide, (bySlide.get(l.slide) || 0) + 1));
   const hot = [...bySlide.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
 
-  box.replaceChildren(
+  keepTopicFocus(box, 'main', () => box.replaceChildren(
     el('div', { class: 'talk-side-col' },
-      el('section', { class: 'panel' },
-        el('h2', {}, '주제'),
-        el('div', { class: 'talk-add' }, topicInput, el('button', { type: 'button', class: 'btn-sm', onclick: addTopic }, '추가')),
-        el('label', { class: 'check' }, bind, `지금 장(${state.slide}장)에 묶기`),
-        el('ol', { class: 'topic-list' }, ...t.topics().map((x, i) => el('li', { class: x.id === t.topicId ? 'on' : '' },
-          el('span', { class: 'n' }, `${i + 1}`),
-          el('span', { class: 'txt' }, x.text, x.slide ? el('small', {}, ` · ${x.slide}장`) : null),
-          x.id === t.topicId && t.open ? el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.close() }, '닫기')
-            : el('button', { type: 'button', class: 'btn-xs', onclick: () => t.openTopic(x.id) }, x.openedAt ? '다시 열기' : '열기'),
-          x.id === t.topicId && t.open ? null : el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.removeTopic(x.id) }, '지우기')))),
-        t.topics().length ? null : el('p', { class: 'hint' }, '주제를 여러 개 만들어 두고 수업 중에 하나씩 엽니다.')),
+      talkTopics(t, 'main'),
       el('section', { class: 'panel' },
         el('h2', {}, '학생 튜터 질문 ', el('small', {}, `${tutorLogs.length}건`)),
         hot.length ? el('p', { class: 'hint' }, `질문이 많은 장: ${hot.map(([s, n]) => `${s}장 ${n}건`).join(', ')}`) : el('p', { class: 'hint' }, '아직 질문이 없습니다.'),
@@ -660,25 +725,17 @@ function renderTalk() {
         el('label', { class: 'check' }, anon, '대화명 빼고 저장(참가자 번호만)'),
         el('button', { type: 'button', class: 'btn-sm', onclick: () => toast(`내려받았습니다: ${t.exportFiles(anon.checked)}`) }, '분석용 파일 내려받기'),
         el('p', { class: 'hint' }, '댓글, 주제, 참가자, 튜터 질문을 한 줄에 한 건씩 CSV로 저장하고 같은 내용을 JSON으로 함께 저장합니다.'))),
-    el('div', { class: 'talk-main-col' },
-      el('div', { class: 'talk-host-head' },
-        el('div', {}, el('span', { class: 'talk-label' }, t.open ? '열림' : '닫힘'), el('h2', {}, current ? current.text : '주제를 골라 열어 주세요')),
-        current ? (t.open ? el('button', { type: 'button', class: 'btn-ghost btn-sm', onclick: () => t.close() }, '댓글창 닫기') : el('button', { type: 'button', class: 'btn-gold btn-sm', onclick: () => t.reopen() }, '댓글창 다시 열기')) : null),
-      el('p', { class: 'hint' }, `의견 ${feed.length}건${t.filteredCount() ? ` · 걸러진 글 ${t.filteredCount()}건(학생에게 보이지 않음)` : ''}`),
-      el('ol', { class: 'talk-list host' }, ...feed.slice().reverse().map((m) => {
-        const p = t.person(m.pid);
-        return el('li', { class: `talk-msg${t.spotlight() === m.id ? ' spot' : ''}` },
-          el('div', { class: 'talk-meta' }, el('strong', {}, `${p?.name || ''}`), el('small', {}, ` #${p?.no} · ${new Date(m.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}${m.replyTo ? ` · ${m.replyTo}번 글에 답함` : ''}`), el('span', { class: 'talk-likes' }, `공감 ${m.likes.size}`)),
-          el('p', { class: 'talk-text' }, m.text),
-          el('div', { class: 'talk-tools' },
-            el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.toggleSpotlight(m.id) }, t.spotlight() === m.id ? '크게 띄우기 끄기' : '크게 띄우기'),
-            el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.remove(m.id) }, '지우기'),
-            el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.resetName(m.pid) }, '대화명 초기화'),
-            el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.block(m.pid) }, p?.blocked ? '쓰기 다시 허용' : '글쓴이 쓰기 막기')));
-      })),
-      t.filteredCount() ? el('details', { class: 'talk-filtered' }, el('summary', {}, `걸러진 글 ${t.filteredCount()}건 보기`),
-        el('ol', {}, ...t.filteredList().map((m) => el('li', {}, `#${t.person(m.pid)?.no} ${m.text}`,
-          el('button', { type: 'button', class: 'btn-ghost btn-xs', onclick: () => t.block(m.pid) }, t.person(m.pid)?.blocked ? '쓰기 다시 허용' : '쓰기 막기'))))) : null));
+    el('div', { class: 'talk-main-col' }, ...talkFeed(t))));
+}
+
+// 오른쪽 칸의 의견 나눔: 슬라이드를 띄운 채로 주제를 열고 올라오는 의견을 본다.
+function renderTalkSide() {
+  const t = ensureTalk();
+  const box = $('#talk-side-pane');
+  keepTopicFocus(box, 'side', () => box.replaceChildren(
+    el('section', { class: 'panel talk-side-feed' }, ...talkFeed(t)),
+    talkTopics(t, 'side'),
+    el('p', { class: 'hint' }, '대화 저장과 학생 튜터 질문은 위쪽 수업 모드의 의견 나눔에서 봅니다.')));
 }
 
 start();

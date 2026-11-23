@@ -498,6 +498,10 @@ button.qz-opt { justify-content: flex-start; }
 
 /* 의견 나눔 */
 .talk-host { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 14px; padding: 14px; background: var(--bg); overflow: hidden; }
+.talk-side-pane { flex: 1; min-height: 0; overflow: auto; padding: 12px 14px 20px; background: var(--bg); display: grid; gap: 12px; align-content: start; }
+.talk-side-pane .talk-host-head { flex-wrap: wrap; }
+.talk-side-pane .talk-host-head h2 { display: block; font-size: 1.1rem; margin: 4px 0 0; }
+.talk-side-pane .talk-list { margin-top: 8px; }
 .talk-side-col { overflow: auto; display: grid; gap: 12px; align-content: start; }
 .talk-main-col { overflow: auto; display: flex; flex-direction: column; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
 .talk-host-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }

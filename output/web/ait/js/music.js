@@ -61,12 +61,15 @@ export function createMusic() {
   let tempo = 1;
   let volume = Number(localStorage.getItem('ait_music_volume') || 0.6);
   let muted = localStorage.getItem('ait_music_muted') === '1';
+  // 퀴즈 화면을 벗어난 동안에는 소리를 막는다(소리 끄기 설정과 따로 둔다).
+  let away = false;
+  const level = () => (muted || away ? 0 : volume);
 
   function ensure() {
     if (!ctx) {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       master = ctx.createGain();
-      master.gain.value = muted ? 0 : volume;
+      master.gain.value = level();
       const comp = ctx.createDynamicsCompressor();
       comp.threshold.value = -14;
       master.connect(comp);
@@ -248,8 +251,9 @@ export function createMusic() {
     unlock() { ensure(); },
     setTempo(mul) { tempo = mul; },
     get volume() { return volume; },
-    setVolume(v) { volume = v; localStorage.setItem('ait_music_volume', String(v)); if (master && !muted) master.gain.value = v; },
+    setVolume(v) { volume = v; localStorage.setItem('ait_music_volume', String(v)); if (master) master.gain.value = level(); },
     get muted() { return muted; },
-    setMuted(on) { muted = on; localStorage.setItem('ait_music_muted', on ? '1' : '0'); if (master) master.gain.value = on ? 0 : volume; },
+    setMuted(on) { muted = on; localStorage.setItem('ait_music_muted', on ? '1' : '0'); if (master) master.gain.value = level(); },
+    setAway(on) { away = on; if (master) master.gain.value = level(); },
   };
 }
