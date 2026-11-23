@@ -1,4 +1,4 @@
-// 실시간 의견 나눔. 교사가 주제를 열면 학생이 댓글을 올리고 서로 답하며 공감한다.
+// 실시간 참여방. 교사가 주제를 열면 학생이 댓글을 올리고 서로 답하며 공감한다.
 // 교사 진행 화면이 모든 글을 받아 거르고 번호를 붙인 뒤 학생 화면과 발표 화면에 나눠 준다(서버를 붙이면 이 역할을 서버로 옮긴다).
 import { el } from './common.js';
 import { checkText, autoName, validName } from './filter.js';
@@ -249,7 +249,7 @@ export function createTalkPlayer(root, { pid, send, compact = false }) {
   function paint() {
     if (!snap) return;
     topicEl.replaceChildren(
-      el('span', { class: 'talk-label' }, snap.open ? '의견 나눔' : '의견 나눔 (닫힘)'),
+      el('span', { class: 'talk-label' }, snap.open ? '참여방' : '참여방 (닫힘)'),
       el('strong', {}, snap.topic ? snap.topic.text : '선생님이 주제를 열면 의견을 나눌 수 있습니다.'));
     renderFeed(list, snap, {
       me: me.no,

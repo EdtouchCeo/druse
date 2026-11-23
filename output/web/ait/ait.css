@@ -211,6 +211,10 @@ table.df thead th { background: var(--soft); }
 .side-head .spacer { margin-left: auto; }
 #tb-tools { display: inline-flex; align-items: center; gap: 6px; }
 #tb-tools[hidden] { display: none !important; }
+/* 오른쪽 칸이 좁아도 단추 글자는 한 줄로 두고, 자리가 모자라면 쪽 넘김 도구가 아랫줄로 내려간다. */
+.side-head { flex-wrap: wrap; row-gap: 6px; }
+.side-tabs, #tb-tools { flex: none; }
+.side-head button, #tb-title { white-space: nowrap; flex: none; }
 .side-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
 
@@ -496,7 +500,7 @@ button.qz-opt { justify-content: flex-start; }
 .tutor-status { margin: 0; min-height: 1.4em; color: var(--primary-dark); font-weight: 600; }
 .tutor-privacy { margin: 0; }
 
-/* 의견 나눔 */
+/* 참여방 */
 .talk-host { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 14px; padding: 14px; background: var(--bg); overflow: hidden; }
 .talk-side-pane { flex: 1; min-height: 0; overflow: auto; padding: 12px 14px 20px; background: var(--bg); display: grid; gap: 12px; align-content: start; }
 .talk-side-pane .talk-host-head { flex-wrap: wrap; }
@@ -550,7 +554,7 @@ button.qz-opt { justify-content: flex-start; }
 .talk-actions .grow { flex: 1; }
 .talk-replying { margin: 0; font-size: .9rem; color: var(--primary-dark); background: var(--soft); border-radius: 8px; padding: 4px 8px; cursor: pointer; }
 
-/* 발표 화면의 의견 나눔 */
+/* 발표 화면의 참여방 */
 .present-talk { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; gap: 14px; padding: 24px 32px; color: var(--ink); background: linear-gradient(170deg, #eef3fb 0%, #f8fafc 70%); }
 .present-talk-head { display: flex; align-items: center; gap: 16px; }
 .present-talk-head h1 { flex: 1; margin: 0; font-size: clamp(1.8rem, 3vw, 2.8rem); line-height: 1.35; }

@@ -194,7 +194,7 @@ function setMode(mode) {
     if (!room) { toast('먼저 수업을 열어 참여 코드를 만든 뒤 퀴즈를 시작해 주세요.', '수업 열기', () => $('#open-room').click(), 7000); return; }
     if (!quizHost) startQuiz();
   }
-  if (mode === 'talk' && !room) { toast('먼저 수업을 열어 참여 코드를 만든 뒤 의견 나눔을 시작해 주세요.', '수업 열기', () => $('#open-room').click(), 7000); return; }
+  if (mode === 'talk' && !room) { toast('먼저 수업을 열어 참여 코드를 만든 뒤 참여방을 시작해 주세요.', '수업 열기', () => $('#open-room').click(), 7000); return; }
   state.mode = mode;
   showQuizLayer(mode === 'quiz');
   music.setAway(mode !== 'quiz');
@@ -203,7 +203,7 @@ function setMode(mode) {
   if (mode === 'lab') { toggleSide(true); showTab('lab'); }
   render();
   broadcast();
-  toast(mode === 'lab' ? '학생 화면을 슬라이드와 실습 나란히 보기로 바꿨습니다.' : mode === 'textbook' ? '학생 화면에 교과서를 보여 줍니다.' : mode === 'quiz' ? '학생 화면을 퀴즈로 바꿨습니다.' : mode === 'talk' ? '학생 화면을 의견 나눔으로 바꿨습니다.' : '학생 화면에 슬라이드를 보여 줍니다.');
+  toast(mode === 'lab' ? '학생 화면을 슬라이드와 실습 나란히 보기로 바꿨습니다.' : mode === 'textbook' ? '학생 화면에 교과서를 보여 줍니다.' : mode === 'quiz' ? '학생 화면을 퀴즈로 바꿨습니다.' : mode === 'talk' ? '학생 화면을 참여방으로 바꿨습니다.' : '학생 화면에 슬라이드를 보여 줍니다.');
   if (mode === 'quiz') quizHost.publish();
 }
 
@@ -254,7 +254,7 @@ async function showTab(tab) {
   if (tab === 'lab' && !lesson.labs?.length) tab = 'textbook';
   if (tab === 'tutor') { ensureTutor(); }
   if (tab === 'textbook' && !lesson.textbookMeta) tab = 'lab';
-  if (tab === 'talk' && !room) { toast('먼저 수업을 열어 참여 코드를 만든 뒤 의견 나눔을 시작해 주세요.', '수업 열기', () => $('#open-room').click(), 7000); return; }
+  if (tab === 'talk' && !room) { toast('먼저 수업을 열어 참여 코드를 만든 뒤 참여방을 시작해 주세요.', '수업 열기', () => $('#open-room').click(), 7000); return; }
   sideTab = tab;
   document.querySelectorAll('[data-tab]').forEach((b) => { const on = b.dataset.tab === tab; b.setAttribute('aria-selected', String(on)); b.setAttribute('aria-pressed', String(on)); });
   $('#tb-body').hidden = tab !== 'textbook';
@@ -604,7 +604,7 @@ function ensureTutor() {
   });
 }
 
-// 의견 나눔
+// 참여방
 function ensureTalk() {
   if (!talk) {
     talk = createTalkHost({
@@ -728,14 +728,14 @@ function renderTalk() {
     el('div', { class: 'talk-main-col' }, ...talkFeed(t))));
 }
 
-// 오른쪽 칸의 의견 나눔: 슬라이드를 띄운 채로 주제를 열고 올라오는 의견을 본다.
+// 오른쪽 칸의 참여방: 슬라이드를 띄운 채로 주제를 열고 올라오는 의견을 본다.
 function renderTalkSide() {
   const t = ensureTalk();
   const box = $('#talk-side-pane');
   keepTopicFocus(box, 'side', () => box.replaceChildren(
     el('section', { class: 'panel talk-side-feed' }, ...talkFeed(t)),
     talkTopics(t, 'side'),
-    el('p', { class: 'hint' }, '대화 저장과 학생 튜터 질문은 위쪽 수업 모드의 의견 나눔에서 봅니다.')));
+    el('p', { class: 'hint' }, '대화 저장과 학생 튜터 질문은 위쪽 수업 모드의 참여방에서 봅니다.')));
 }
 
 start();

@@ -220,7 +220,7 @@ exports.handler = async (event) => {
   }
   const role = body.role === 'teacher' ? 'teacher' : 'student';
   if (role === 'teacher' && process.env.AIT_DEV_TEACHER !== '1' && !ait.teacherClaims(event)) {
-    return reply(401, { error: '교사 튜터는 사이트 관리자 계정으로 로그인한 뒤 쓸 수 있습니다.', code: 'AUTH_REQUIRED' });
+    return reply(401, { error: '보조교사는 사이트 관리자 계정으로 로그인한 뒤 쓸 수 있습니다.', code: 'AUTH_REQUIRED' });
   }
   const question = scrub(body.question).trim();
   if (!question) return reply(400, { error: '질문을 적어 주세요.' });

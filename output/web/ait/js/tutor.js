@@ -46,7 +46,8 @@ export function createTutorPanel(container, { role = 'student', getContext, onEx
   let lastAsk = 0;
 
   const list = el('ol', { class: 'tutor-list', 'aria-live': 'polite' });
-  const input = el('textarea', { class: 'tutor-input', rows: '3', maxlength: '500', 'aria-label': '튜터에게 질문' });
+  const who = role === 'teacher' ? '보조교사' : '튜터';
+  const input = el('textarea', { class: 'tutor-input', rows: '3', maxlength: '500', 'aria-label': `${who}에게 질문` });
   input.placeholder = role === 'teacher' ? '예: 26장 생각해 보기의 정답과 해설을 정리해 줘' : '예: 과적합이 왜 문제인지 모르겠어요';
   const sendBtn = el('button', { type: 'button', class: 'btn-sm' }, '보내기');
   const moreBtn = el('button', { type: 'button', class: 'btn-ghost btn-sm', hidden: role === 'teacher' }, '힌트 더 받기');
@@ -62,7 +63,7 @@ export function createTutorPanel(container, { role = 'student', getContext, onEx
     el('div', { class: 'tutor-head' },
       el('img', { src: role === 'teacher' ? '/img/teacher/idea.webp' : '/img/daeryuni/face_thinking.webp', alt: '' }),
       el('div', {},
-        el('h2', {}, role === 'teacher' ? 'AI 튜터 (교사용: 정답과 해설 포함)' : 'AI 튜터'),
+        el('h2', {}, role === 'teacher' ? 'AI 보조교사 (정답과 해설 포함)' : 'AI 튜터'),
         el('p', { class: 'hint' }, role === 'teacher' ? '정답, 해설, 완성 코드, 문항 초안까지 답합니다. AI의 답은 초안이므로 확인한 뒤 쓰세요.' : '정답 대신 스스로 풀 수 있게 힌트를 드립니다. 다시 물을수록 힌트가 쉬워집니다.'))),
     where,
     list,
@@ -70,7 +71,8 @@ export function createTutorPanel(container, { role = 'student', getContext, onEx
     input,
     el('div', { class: 'tutor-actions' }, newBtn, moreBtn, el('span', { class: 'grow' }), sendBtn),
     status,
-    el('p', { class: 'hint tutor-privacy' }, role === 'teacher' ? '질문은 EdTouch 서버를 거쳐 Anthropic(Claude)으로 보내 처리합니다. 연결되지 않으면 Google Gemini가 대신 답합니다.' : '질문은 AI 서비스(Anthropic Claude, 연결되지 않으면 Google Gemini)로 보내 답을 만듭니다. 이름이나 연락처는 쓰지 마세요.'),
+    // 교사 칸에는 안내 문구를 두지 않는다(replaceChildren은 null을 글자로 찍으므로 빈 배열로 뺀다).
+    ...(role === 'teacher' ? [] : [el('p', { class: 'hint tutor-privacy' }, '질문은 AI 서비스(Anthropic Claude, 연결되지 않으면 Google Gemini)로 보내 답을 만듭니다. 이름이나 연락처는 쓰지 마세요.')]),
   );
 
   const paintWhere = () => {
@@ -103,7 +105,7 @@ export function createTutorPanel(container, { role = 'student', getContext, onEx
     moreBtn.disabled = true;
     add('student', question);
     input.value = '';
-    status.textContent = '튜터가 생각하는 중입니다.';
+    status.textContent = `${who}가 생각하는 중입니다.`;
     const context = getContext();
     try {
       // 교사 질문에는 세션 토큰을 붙인다. 서버 AI(Claude)가 승인 교사인지 확인하는 데만 쓴다.
@@ -115,7 +117,7 @@ export function createTutorPanel(container, { role = 'student', getContext, onEx
         body: JSON.stringify({ role, question, level, context, history: thread.slice(0, -1).slice(-6) }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || '튜터가 답하지 못했습니다. 잠시 뒤 다시 물어보세요.');
+      if (!res.ok) throw new Error(data.error || `${who}가 답하지 못했습니다. 잠시 뒤 다시 물어보세요.`);
       add('tutor', data.answer, role === 'student' ? `힌트 ${data.level}단계 · ${LEVEL_NAME[data.level]}` : null);
       status.textContent = role === 'teacher' && data.via ? (data.via === 'claude' ? 'Claude가 답했습니다.' : 'Claude에 연결하지 못해 Gemini가 답했습니다.') : '';
       onExchange && onExchange({ question, answer: data.answer, level: data.level, flagged: !!data.flagged, context });
