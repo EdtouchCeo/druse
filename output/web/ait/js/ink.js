@@ -8,7 +8,38 @@ import { el } from './common.js';
 export const INK_COLORS = { r: '#e53935', g: '#1f9d55', b: '#1e6fd9', y: '#ffd400', o: '#ff8a00', p: '#ff4fa3' };
 const COLOR_NAMES = { r: '빨강', g: '초록', b: '파랑', y: '노랑', o: '주황', p: '분홍' };
 const WIDTHS = [0.003, 0.005, 0.008, 0.012, 0.018]; // 그림 높이에 대한 선 굵기 비율
-const TOOLS = [['pen', '펜'], ['line', '직선'], ['rect', '네모'], ['ellipse', '원'], ['arrow', '화살표'], ['text', '글']];
+const TOOLS = [['pen', '펜 (끌기)'], ['line', '직선 (Shift+끌기)'], ['rect', '네모 (Ctrl+끌기)'], ['ellipse', '원 (Tab 누른 채 끌기)'], ['arrow', '화살표 (Ctrl+Shift+끌기)'], ['text', '글 (T, 누른 자리에 입력)']];
+
+// 판서 도구 아이콘(선 그림). 색은 단추 글자색을 따른다.
+const ICONS = {
+  pen: [['path', { d: 'M4 20l4.2-1L19 8.2 15.8 5 5 15.8 4 20z' }], ['path', { d: 'M13.8 7l3.2 3.2' }]],
+  line: [['path', { d: 'M5 19L19 5' }]],
+  rect: [['rect', { x: 4, y: 6, width: 16, height: 12, rx: 1 }]],
+  ellipse: [['ellipse', { cx: 12, cy: 12, rx: 8.5, ry: 6 }]],
+  arrow: [['path', { d: 'M5 19L19 5' }], ['path', { d: 'M10 5h9v9' }]],
+  text: [['path', { d: 'M5 7V5h14v2' }], ['path', { d: 'M12 5v14' }], ['path', { d: 'M9 19h6' }]],
+  thin: [['path', { d: 'M4 12h16', 'stroke-width': 1.2 }]],
+  thick: [['path', { d: 'M4 12h16', 'stroke-width': 5 }]],
+  white: [['rect', { x: 3, y: 5, width: 18, height: 14, rx: 2, fill: '#fff' }]],
+  black: [['rect', { x: 3, y: 5, width: 18, height: 14, rx: 2, fill: '#111' }]],
+  undo: [['path', { d: 'M9 14L4 9l5-5' }], ['path', { d: 'M4 9h10a6 6 0 0 1 0 12h-3' }]],
+  clear: [['path', { d: 'M4 7h16' }], ['path', { d: 'M9 7V4h6v3' }], ['path', { d: 'M6 7l1 13h10l1-13' }], ['path', { d: 'M10 11v6M14 11v6' }]],
+  keys: [['rect', { x: 2, y: 6, width: 20, height: 12, rx: 2 }], ['path', { d: 'M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10' }]],
+  close: [['path', { d: 'M6 6l12 12M18 6L6 18' }]],
+};
+export function inkIcon(name) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'ink-ico');
+  for (const [tag, attrs] of ICONS[name] || []) {
+    const n = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    svg.append(n);
+  }
+  return svg;
+}
 const MAX_S = 6;
 const NAV_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'];
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -226,6 +257,7 @@ export function createInk(stage, box, img, { editable = false, interactive = fal
   // 판서(진행 화면만)
   let bar = null;
   let helpLine = null;
+  let widthDot = null;
   if (editable) {
     canvas.addEventListener('pointerdown', (e) => {
       if (!drawMode || e.button > 0) return;
@@ -266,11 +298,14 @@ export function createInk(stage, box, img, { editable = false, interactive = fal
     document.addEventListener('keyup', (e) => { if (e.key === 'Tab') tabHeld = false; });
     window.addEventListener('blur', () => { tabHeld = false; });
 
+    // 아이콘만 두고, 커서를 올리거나 키보드로 고르면 이름과 단축키가 바로 뜬다(data-tip).
+    const iconBtn = (name, tip, onclick, extra = {}) => el('button', { type: 'button', class: 'btn-ghost btn-sm ink-btn', 'aria-label': tip, 'data-tip': tip, onclick, ...extra }, inkIcon(name));
     const swatches = Object.keys(INK_COLORS).map((k) => el('button', {
-      type: 'button', class: 'ink-swatch', 'data-color': k, title: `${COLOR_NAMES[k]} (${k.toUpperCase()})`, 'aria-label': COLOR_NAMES[k],
+      type: 'button', class: 'ink-swatch', 'data-color': k, 'data-tip': `${COLOR_NAMES[k]} (${k.toUpperCase()})`, 'aria-label': `${COLOR_NAMES[k]} (${k.toUpperCase()})`,
       onclick: () => { color = k; paintBar(); },
     }));
-    const toolBtns = TOOLS.map(([k, label]) => el('button', { type: 'button', class: 'btn-ghost btn-sm', 'data-tool': k, onclick: () => { tool = k; textArmed = false; paintBar(); } }, label));
+    const toolBtns = TOOLS.map(([k, tip]) => iconBtn(k, tip, () => { tool = k; textArmed = false; paintBar(); }, { 'data-tool': k }));
+    widthDot = el('span', { class: 'ink-width', 'aria-hidden': 'true' });
     helpLine = el('div', { class: 'ink-help' }, INK_HELP);
     helpLine.hidden = true;
     bar = el('div', { class: 'ink-bar', role: 'toolbar', 'aria-label': '판서 도구' },
@@ -279,14 +314,16 @@ export function createInk(stage, box, img, { editable = false, interactive = fal
         el('span', { class: 'ink-sep' }),
         ...toolBtns,
         el('span', { class: 'ink-sep' }),
-        el('button', { type: 'button', class: 'btn-ghost btn-sm', title: '가늘게 ([)', onclick: () => { widthLevel = clamp(widthLevel - 1, 0, WIDTHS.length - 1); paintBar(); } }, '가늘게'),
-        el('button', { type: 'button', class: 'btn-ghost btn-sm', title: '굵게 (])', onclick: () => { widthLevel = clamp(widthLevel + 1, 0, WIDTHS.length - 1); paintBar(); } }, '굵게'),
-        el('button', { type: 'button', class: 'btn-ghost btn-sm', 'data-board': 'white', title: '흰 칠판 (W)', onclick: () => toggleBoard('white') }, '흰 칠판'),
-        el('button', { type: 'button', class: 'btn-ghost btn-sm', 'data-board': 'black', title: '검은 칠판 (K)', onclick: () => toggleBoard('black') }, '검은 칠판'),
-        el('button', { type: 'button', class: 'btn-ghost btn-sm', title: '되돌리기 (Ctrl+Z)', onclick: undo }, '되돌리기'),
-        el('button', { type: 'button', class: 'btn-ghost btn-sm', title: '모두 지우기 (E)', onclick: clearAll }, '모두 지우기'),
-        el('button', { type: 'button', class: 'btn-ghost btn-sm', title: '단축키 보기', 'aria-pressed': 'false', onclick: (e) => { helpLine.hidden = !helpLine.hidden; e.currentTarget.setAttribute('aria-pressed', String(!helpLine.hidden)); } }, '단축키'),
-        el('button', { type: 'button', class: 'btn-sm', title: '판서 끝내기 (Esc)', onclick: () => setDraw(false) }, '끝내기')),
+        iconBtn('thin', '가늘게 ([)', () => { widthLevel = clamp(widthLevel - 1, 0, WIDTHS.length - 1); paintBar(); }),
+        widthDot,
+        iconBtn('thick', '굵게 (])', () => { widthLevel = clamp(widthLevel + 1, 0, WIDTHS.length - 1); paintBar(); }),
+        el('span', { class: 'ink-sep' }),
+        iconBtn('white', '흰 칠판 (W)', () => toggleBoard('white'), { 'data-board': 'white' }),
+        iconBtn('black', '검은 칠판 (K)', () => toggleBoard('black'), { 'data-board': 'black' }),
+        iconBtn('undo', '되돌리기 (Ctrl+Z)', undo),
+        iconBtn('clear', '모두 지우기 (E)', clearAll),
+        iconBtn('keys', '단축키 모두 보기', (e) => { helpLine.hidden = !helpLine.hidden; e.currentTarget.setAttribute('aria-pressed', String(!helpLine.hidden)); }, { 'aria-pressed': 'false' }),
+        el('button', { type: 'button', class: 'btn-sm ink-btn ink-close', 'aria-label': '판서 끝내기 (Esc 또는 D)', 'data-tip': '판서 끝내기 (Esc 또는 D)', onclick: () => setDraw(false) }, inkIcon('close'))),
       helpLine);
     bar.hidden = true;
     stage.append(bar);
@@ -298,6 +335,11 @@ export function createInk(stage, box, img, { editable = false, interactive = fal
     bar.querySelectorAll('[data-tool]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tool === (textArmed ? 'text' : tool))));
     bar.querySelectorAll('[data-board]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.board === board)));
     stage.style.setProperty('--ink-color', INK_COLORS[color]);
+    if (widthDot) {
+      // 지금 굵기와 색을 점 크기로 보여 준다.
+      const d = 4 + widthLevel * 3;
+      Object.assign(widthDot.style, { width: `${d}px`, height: `${d}px`, background: INK_COLORS[color] });
+    }
     stage.classList.toggle('ink-text', tool === 'text' || textArmed);
   }
 

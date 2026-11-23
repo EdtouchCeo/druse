@@ -1,7 +1,7 @@
 // 교사 진행 화면: 슬라이드 넘기기, 교과서·실습 나란히 보기, 발표 화면(프로젝터) 띄우기, 수업 열기와 학생 화면 맞추기.
 import { $, el, loadLesson, normalizeCode, isValidCode, toast, isTyping, keyAction, enableDivider, hasTextbook, clampPage, pageUrl, thumbUrl, teacherSession, presentChannelName, PREVIEW_HOST } from './common.js';
 import { createStage, onSwipe, openToc } from './viewer.js';
-import { zoomPane, INK_HELP } from './ink.js';
+import { zoomPane, inkIcon } from './ink.js';
 import { openTeacherRoom, TIMING, SERVER } from './sync.js';
 import { createLabArea } from './lab.js';
 import { createMusic } from './music.js';
@@ -120,7 +120,7 @@ function bindControls() {
   });
   $('#side-btn').addEventListener('click', (e) => toggleSide(e.currentTarget.getAttribute('aria-pressed') !== 'true'));
   document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
-  $('#ink-btn').title = `줌잇처럼 슬라이드·교과서 위에 판서합니다. ${INK_HELP}`;
+  $('#ink-btn').prepend(inkIcon('pen'));
   $('#ink-btn').addEventListener('click', () => stage.ink.toggleDraw());
   $('#full').addEventListener('click', () => {
     if (document.fullscreenElement) document.exitFullscreen();

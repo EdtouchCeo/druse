@@ -80,7 +80,13 @@ const inked = (page, sel) => page.$eval(sel, (c) => {
   await wait(400);
   const pInk = await inked(present, '#stage .ink-canvas');
   check('present mirrors ink', pInk > 200, String(pInk));
+  await teacher.hover('.ink-bar [data-tool="line"]');
+  await wait(150);
+  const tip = await teacher.$eval('.ink-bar [data-tool="line"]', (b) => getComputedStyle(b, '::after').content);
+  check('icon tooltip shows shortcut', tip.includes('Shift'), tip);
+  check('tool buttons are icons', (await teacher.$$('.ink-bar .ink-btn svg')).length >= 13);
   await shot(teacher, 'ink_teacher_shapes');
+  await teacher.mouse.move(5, 5);
   await shot(present, 'ink_present_shapes');
 
   // 굵기·칠판·되돌리기
