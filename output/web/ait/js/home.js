@@ -40,7 +40,7 @@ async function showCatalog() {
     !SERVER_MODE ? null : el('p', {}, el('a', { class: 'btn btn-sm', href: '/ait/upload.html' }, '자료 올리기'))].filter(Boolean));
     return;
   }
-  if (SERVER_MODE) box.before(el('p', { class: 'upload-link' }, el('a', { class: 'btn-ghost btn-sm btn', href: '/ait/upload.html' }, '자료 올리기'), ' PC에서 차시를 새로 만들거나 고친 뒤 눌러 보관함에 맞춥니다.'));
+  if (SERVER_MODE) box.before(el('p', { class: 'upload-link' }, el('a', { class: 'btn-ghost btn-sm btn', href: '/ait/upload.html' }, '자료 올리기'), ' PC에서 차시를 새로 만들거나 고친 뒤 content 폴더를 업로드합니다.'));
   box.replaceChildren(...catalog.courses.map((course) => el('div', { class: 'course' },
     el('h3', {}, course.title),
     el('p', { class: 'hint' }, course.grade || ''),

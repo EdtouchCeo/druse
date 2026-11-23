@@ -8,7 +8,7 @@ const DIR = require('path').join(REPO_DIR, 'output/web/ait/content');
 (async () => {
   const b = await chromium.launch({ channel: 'msedge' });
   const ctx = await b.newContext();
-  await ctx.addCookies([{ name: gate.COOKIE_NAME, value: gate.issue({ sub: '33333333-3333-4333-8333-333333333333', tier: 'teacher' }, 'dev-service-key').value, domain: '127.0.0.1', path: '/', secure: true, httpOnly: true }]);
+  await ctx.addCookies([{ name: gate.COOKIE_NAME, value: gate.issue({ sub: '33333333-3333-4333-8333-333333333333', tier: 'teacher', adm: true }, 'dev-service-key').value, domain: '127.0.0.1', path: '/', secure: true, httpOnly: true }]);
   const p = await ctx.newPage();
   const errs = [];
   p.on('pageerror', (e) => errs.push(e.message));
@@ -22,7 +22,7 @@ const DIR = require('path').join(REPO_DIR, 'output/web/ait/content');
   console.log('plan:', (await p.textContent('#plan')).slice(0, 120));
   const t0 = Date.now();
   await p.click('#plan button');
-  await p.waitForFunction(() => /맞췄습니다|못했습니다/.test(document.querySelector('#msg').textContent), null, { timeout: 300000 });
+  await p.waitForFunction(() => /마쳤습니다|실패했습니다/.test(document.querySelector('#msg').textContent), null, { timeout: 300000 });
   console.log('done:', await p.textContent('#msg'), `${Math.round((Date.now() - t0) / 1000)}s`);
   const st = await (await fetch('http://127.0.0.1:8766/fake-sb/__state')).json();
   console.log('fake uploads:', st.uploads.length, 'manifest saved:', st.uploads.includes('_manifest.json'));

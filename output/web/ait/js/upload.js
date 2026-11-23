@@ -73,12 +73,12 @@ async function pick(files) {
 
   const lessonsChanged = [...new Set(upload.map((e) => e.path.split('/').slice(0, 3).join('/')).filter((p) => p.split('/').length === 3))];
   $('#plan').replaceChildren(...[
-    el('p', {}, `새로 올리거나 바꿀 파일 ${upload.length}개, 보관함에서 지울 파일 ${remove.length}개입니다.`),
+    el('p', {}, `업로드할 파일 ${upload.length}개, 보관함에서 지울 파일 ${remove.length}개입니다.${upload.length || remove.length ? ' 아래 업로드 단추를 눌러 주세요.' : ''}`),
     lessonsChanged.length ? el('p', { class: 'hint' }, `바뀐 곳: ${lessonsChanged.slice(0, 8).join(', ')}${lessonsChanged.length > 8 ? ' 외' : ''}`) : null,
     bad.length ? el('p', { class: 'hint' }, `올리지 않는 파일 ${bad.length}개(10MB 초과, 지원하지 않는 형식, 영문·숫자가 아닌 이름): ${bad.slice(0, 3).map((e) => e.path).join(', ')}`) : null,
     upload.length || remove.length
-      ? el('button', { type: 'button', class: 'btn', onclick: run }, '보관함에 맞추기')
-      : el('p', { class: 'msg ok' }, '보관함이 이미 PC와 같습니다.'),
+      ? el('button', { type: 'button', class: 'btn', onclick: run }, '업로드')
+      : el('p', { class: 'msg ok' }, '업로드할 파일이 없습니다. 사이트 자료가 이미 PC와 같습니다.'),
   ].filter(Boolean));
   $('#plan').hidden = false;
 }
@@ -112,7 +112,7 @@ async function run(e) {
             failed.push(item.path);
           }
           count += 1;
-          progress(count, upload.length, '올리는 중');
+          progress(count, upload.length, '업로드 중');
         }
       };
       await Promise.all(Array.from({ length: PARALLEL }, worker));
@@ -122,12 +122,12 @@ async function run(e) {
     }
     await api('POST', { action: 'manifest', manifest: done });
   } catch (err) {
-    msg(`${err.message} 다시 고르면 남은 파일만 이어서 올립니다.`, 'error');
+    msg(`${err.message} 폴더를 다시 고르면 남은 파일만 이어서 업로드합니다.`, 'error');
     await api('POST', { action: 'manifest', manifest: done }).catch(() => {});
     return;
   }
-  if (failed.length) msg(`${upload.length - failed.length}개를 올렸고 ${failed.length}개는 올리지 못했습니다. 폴더를 다시 고르면 남은 파일만 올립니다.`, 'error');
-  else msg(`보관함을 PC와 맞췄습니다. 올린 파일 ${upload.length}개, 지운 파일 ${remove.length}개.`, 'ok');
+  if (failed.length) msg(`${upload.length - failed.length}개를 업로드했고 ${failed.length}개는 실패했습니다. 폴더를 다시 고르면 남은 파일만 업로드합니다.`, 'error');
+  else msg(`업로드를 마쳤습니다. 업로드한 파일 ${upload.length}개, 지운 파일 ${remove.length}개. 이제 진행 화면에서 수업을 열 수 있습니다.`, 'ok');
   plan = null;
 }
 
