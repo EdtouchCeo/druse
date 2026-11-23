@@ -53,6 +53,8 @@ function onMessage(msg) {
     if (snap.spotlight) $('#talk-spot').replaceChildren(Object.assign(document.createElement('p'), { textContent: snap.spotlight.text }), Object.assign(document.createElement('strong'), { textContent: snap.spotlight.name }));
   } else if (msg.type === 'quiz') {
     renderHostView($('#quiz'), msg.view, { teacher: false });
+  } else if (msg.type === 'ink') {
+    stage.ink.apply(msg.ink);
   } else if (msg.type === 'lab') {
     mirror.render(msg.snap);
   } else if (msg.type === 'code') {

@@ -25,6 +25,8 @@ AIT_ENV_FILE=<GEMINI_API_KEY가 있는 .env> node tools/ait-dev/server.cjs 8765
 | `check_mobile.cjs` | 휴대폰 화면 넘침(결과는 측정값 목록) |
 | `check_guard.cjs` | 학생 화면 그림 저장 막기 |
 | `check_entry.cjs`, `check_aicard.cjs` | 사용 설명서의 학생 입장 칸, 샛별AI 칸 |
+| `check_ink.cjs` | 판서(줌잇식 단축키)와 발표 화면 따라 그리기, 무대·교과서 확대, 학생 화면 확대 (l03) |
+| `check_cnn.cjs` | 합성곱 신경망 5분 실습 페이지(`/ait/labs/cnn/`) 세 단계, 좁은 칸·넓은 화면 |
 
 ## 서버 연결(가짜 Supabase) — 포트 8766
 

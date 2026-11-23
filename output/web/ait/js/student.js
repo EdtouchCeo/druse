@@ -1,6 +1,7 @@
 // 학생 참여 화면: 참여 코드로 들어와 선생님 화면을 따라가고, 지난 장을 둘러보다 돌아온다.
 import { $, el, loadLesson, normalizeCode, isValidCode, isTyping, enableDivider, hasTextbook, clampPage, pageUrl, PREVIEW_HOST } from './common.js';
 import { createStage, onSwipe, openToc } from './viewer.js';
+import { zoomPane } from './ink.js';
 import { joinStudentRoom, TIMING, SERVER } from './sync.js';
 import { createLabArea } from './lab.js';
 import { createQuizPlayer } from './quiz-player.js';
@@ -161,7 +162,8 @@ function setupLesson(preview) {
   $('#preview-badge').hidden = !preview;
   $('#waiting').hidden = true;
   $('#app').hidden = false;
-  stage = createStage($('#stage'), lesson);
+  stage = createStage($('#stage'), lesson, { interactive: true });
+  zoomPane($('#tb-pane .tb-view'), $('#tb-img'), $('#tb-zoom'));
   enableDivider($('#ws'), $('#divider'), 'ait_split_student');
   $('#prev').addEventListener('click', () => browse(own.slide - 1));
   $('#next').addEventListener('click', () => browse(own.slide + 1));
@@ -241,7 +243,7 @@ function render() {
   const banner = $('#mode-banner');
   banner.hidden = !(teacher.lock || textbookMode || labMode);
   banner.textContent = textbookMode ? `선생님이 교과서 ${teacher.page}쪽을 보여 주고 있습니다.`
-    : labMode ? '실습 시간입니다. 실습 칸의 셀을 위에서부터 차례로 실행해 보세요.'
+    : labMode ? (lesson.slides[own.slide - 1]?.lab?.cells?.length ? '실습 시간입니다. 실습 칸의 셀을 위에서부터 차례로 실행해 보세요.' : '실습 시간입니다. 오른쪽 실습 칸의 안내를 따라 해 보세요.')
       : '선생님이 화면을 고정했습니다. 함께 봅니다.';
   if (labMode && sideView !== 'lab') showSide('lab');
   // 실습 시간이 끝나면 연결 자료와 메모로 돌아간다.
@@ -262,8 +264,8 @@ function renderSide() {
     links.append(el('button', { type: 'button', class: 'btn-ghost', onclick: () => showTextbook(page) }, `교과서 ${page}쪽 펼치기`));
   }
   if (slide.lab) {
-    const cells = slide.lab.cells.map((id) => id.replace('c', '셀 ')).join(', ');
-    links.append(el('button', { type: 'button', class: 'btn-ghost', onclick: () => showSide('lab') }, `실습 ${cells} 열기`));
+    const cells = (slide.lab.cells || []).map((id) => id.replace('c', '셀 ')).join(', ');
+    links.append(el('button', { type: 'button', class: 'btn-ghost', onclick: () => showSide('lab') }, cells ? `실습 ${cells} 열기` : '실습 열기'));
   } else if (lesson.labs?.length) {
     links.append(el('button', { type: 'button', class: 'btn-ghost', onclick: () => showSide('lab') }, '실습 열기'));
   }

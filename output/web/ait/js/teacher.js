@@ -1,6 +1,7 @@
 // 교사 진행 화면: 슬라이드 넘기기, 교과서·실습 나란히 보기, 발표 화면(프로젝터) 띄우기, 수업 열기와 학생 화면 맞추기.
 import { $, el, loadLesson, normalizeCode, isValidCode, toast, isTyping, keyAction, enableDivider, hasTextbook, clampPage, pageUrl, thumbUrl, teacherSession, presentChannelName, PREVIEW_HOST } from './common.js';
 import { createStage, onSwipe, openToc } from './viewer.js';
+import { zoomPane, INK_HELP } from './ink.js';
 import { openTeacherRoom, TIMING, SERVER } from './sync.js';
 import { createLabArea } from './lab.js';
 import { createMusic } from './music.js';
@@ -24,6 +25,7 @@ let sidePage = null;
 let sideTab = 'textbook';
 let labPanel = null;
 let labSnap = null;
+let inkState = null; // 판서·확대 상태(발표 화면이 따라 그린다)
 let blank = null; // 'black' | 'white' | null
 let quiz = null;
 let quizHost = null;
@@ -62,7 +64,15 @@ async function start() {
   $('#lesson-name').replaceChildren(lesson.title, el('small', {}, `${lesson.slides.length}장 · 교과서 ${lesson.textbook.first}~${lesson.textbook.last}쪽`));
   const draft = lesson.approval?.status !== 'approved';
   $('#draft-badge').hidden = !draft;
-  stage = createStage($('#stage'), lesson);
+  stage = createStage($('#stage'), lesson, {
+    editable: true,
+    onChange: (ink) => {
+      inkState = ink;
+      $('#ink-btn').setAttribute('aria-pressed', String(ink.draw));
+      sendPresent('ink');
+    },
+  });
+  zoomPane($('#tb-body .tb-view'), $('#tb-img'), $('#tb-zoom'));
   state.page = lesson.slides[0].textbook?.page ?? lesson.textbook.first;
 
   const hasLab = lesson.labs?.length > 0;
@@ -110,6 +120,8 @@ function bindControls() {
   });
   $('#side-btn').addEventListener('click', (e) => toggleSide(e.currentTarget.getAttribute('aria-pressed') !== 'true'));
   document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  $('#ink-btn').title = `줌잇처럼 슬라이드·교과서 위에 판서합니다. ${INK_HELP}`;
+  $('#ink-btn').addEventListener('click', () => stage.ink.toggleDraw());
   $('#full').addEventListener('click', () => {
     if (document.fullscreenElement) document.exitFullscreen();
     else $('#stage').requestFullscreen?.();
@@ -137,6 +149,8 @@ function bindControls() {
   onSwipe($('#stage'), () => act('next'), () => act('prev'));
   document.addEventListener('keydown', (e) => {
     if (isTyping(e) || document.querySelector('.drawer, .overlay')) return;
+    // 판서·확대 단축키가 먼저다(퀴즈·참여방 화면에서는 무대가 가려져 있으므로 쓰지 않는다).
+    if (state.mode !== 'quiz' && state.mode !== 'talk' && e.target.closest?.('.side') == null && stage.ink.handleKey(e)) { e.preventDefault(); return; }
     const action = keyAction(e);
     if (!action) return;
     e.preventDefault();
@@ -196,6 +210,7 @@ function setMode(mode) {
   }
   if (mode === 'talk' && !room) { toast('먼저 수업을 열어 참여 코드를 만든 뒤 참여방을 시작해 주세요.', '수업 열기', () => $('#open-room').click(), 7000); return; }
   state.mode = mode;
+  if (mode === 'quiz' || mode === 'talk') stage.ink.setDraw(false);
   showQuizLayer(mode === 'quiz');
   music.setAway(mode !== 'quiz');
   showTalkLayer(mode === 'talk');
@@ -343,6 +358,7 @@ function sendPresent(what = 'state') {
   if (!present.channel) return;
   if (what === 'state' || what === 'all') present.channel.postMessage({ type: 'state', lesson: lesson.id, mode: state.mode, slide: state.slide, page: state.page, blank });
   if ((what === 'lab' || what === 'all') && labSnap) present.channel.postMessage({ type: 'lab', snap: labSnap });
+  if ((what === 'ink' || what === 'all') && inkState) present.channel.postMessage({ type: 'ink', ink: inkState });
 }
 
 async function openProjector() {

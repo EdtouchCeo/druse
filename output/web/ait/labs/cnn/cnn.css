@@ -1,0 +1,83 @@
+/* 합성곱 신경망 5분 실습. 실습 칸(좁은 iframe)과 휴대폰, 넓은 화면에서 모두 읽히게 한다. */
+.cnn-body { font-size: 16px; }
+.cnn { max-width: 980px; margin: 0 auto; padding: 14px 14px 40px; }
+.cnn-head h1 { font-size: 1.35rem; margin: 0 0 2px; color: var(--primary-dark); }
+.cnn-head .hint { margin: 0 0 10px; }
+.cnn-steps { display: flex; flex-wrap: wrap; gap: 6px; position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 6px 0; }
+.cnn-steps button[aria-current="step"] { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.cnn-step { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 10px; }
+.cnn-step h2 { font-size: 1.15rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.cnn-step h2 .num { width: 28px; height: 28px; border-radius: 8px; background: var(--primary); color: #fff; display: grid; place-items: center; font-size: .95rem; flex: none; }
+.cnn-step h3 { font-size: 1.02rem; margin: 18px 0 4px; }
+.cnn-step p { margin: 6px 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+figure { margin: 0; }
+figcaption { font-size: .86rem; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+
+/* 준비 문제 3×3 */
+.warm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 8px; }
+.op { font-size: 1.5rem; font-weight: 800; color: var(--muted); }
+.mat { display: grid; grid-template-columns: repeat(3, 44px); gap: 3px; font-variant-numeric: tabular-nums; }
+.mat .cell { height: 40px; display: grid; place-items: center; background: #eef2f8; border: 2px solid transparent; border-radius: 6px; font-weight: 700; }
+.mat.kernel .cell { background: #fff6e5; }
+.mat.sm { grid-template-columns: repeat(3, 38px); }
+.mat.sm .cell { height: 32px; font-size: .9rem; }
+.answer { width: 96px; font-size: 1.3rem; font-weight: 800; text-align: center; padding: 6px; }
+.look { border-color: #d92d20 !important; box-shadow: 0 0 0 3px rgba(217, 45, 32, .22); animation: look 1s ease-in-out 2; }
+@keyframes look { 50% { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .look { animation: none; } }
+.msg.ok { color: #14653a; font-weight: 600; }
+
+/* 사진과 특징 맵 */
+.duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 8px; }
+.duo canvas, .small canvas { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1; image-rendering: pixelated; border-radius: 8px; background: #000; display: block; }
+.small canvas { max-width: 200px; }
+#cat { cursor: crosshair; }
+.calc { margin-top: 10px; background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.calc .where { font-weight: 700; margin: 0 0 6px; }
+.calc .mini { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.calc .sum { font-size: .88rem; line-height: 1.7; }
+.t { white-space: nowrap; }
+.calc .sum strong { font-size: 1.05rem; color: var(--primary-dark); }
+
+/* 최대 풀링 */
+.pool-pick { display: grid; grid-template-columns: repeat(2, 84px); gap: 6px; margin: 8px 0 4px; padding: 6px; border: 3px solid var(--accent); border-radius: 12px; width: max-content; }
+.pool-pick .pick { min-height: 60px; font-size: 1.3rem; font-variant-numeric: tabular-nums; padding: 0; }
+.pool-pick .pick.chosen { background: #fde7bf; border-color: var(--accent-dark); color: #4a2f00; }
+.note { background: #eef4ff; border-left: 4px solid var(--primary); padding: 8px 12px; border-radius: 6px; }
+.second { margin-top: 8px; }
+
+/* 완전 연결 */
+.feat { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; max-width: 420px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.fcell { --a: 0; text-align: center; font-size: .8rem; padding: 5px 0; border-radius: 4px; background: rgba(42, 82, 152, calc(.08 + var(--a) * .7)); color: #0f172a; font-weight: 600; }
+.strip { list-style: none; display: flex; flex-wrap: wrap; gap: 3px; padding: 8px; margin: 8px 0 0; background: #f8fafc; border: 1px dashed var(--field); border-radius: 10px; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.strip li { background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+.strip small { color: var(--muted); margin-right: 2px; font-size: .7rem; }
+fieldset.predict { border: 1px solid var(--line); border-radius: 10px; margin: 14px 0 0; padding: 8px 12px 12px; }
+fieldset.predict legend { font-weight: 700; padding: 0 4px; }
+.choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.choice.chosen { background: #fde7bf; border-color: var(--accent-dark); color: #4a2f00; }
+.notice { font-size: .88rem; color: #7a4b00; background: #fff6e5; border-radius: 8px; padding: 6px 10px; }
+.scores { margin-top: 8px; display: grid; gap: 8px; }
+.score-row { display: grid; grid-template-columns: 56px 1fr 64px; align-items: center; gap: 8px; border: 2px solid transparent; border-radius: 8px; padding: 2px 4px; }
+.score-row .name { font-weight: 700; }
+.score-row .track { background: #eef2f8; border-radius: 6px; height: 22px; overflow: hidden; }
+.score-row .bar { display: block; height: 100%; width: 0; background: var(--primary-light); border-radius: 6px; transition: width .8s ease; }
+.score-row .val { text-align: right; font-variant-numeric: tabular-nums; }
+.score details summary { cursor: pointer; font-size: .86rem; color: var(--primary); margin: 2px 4px; }
+.formula { font-size: .76rem; line-height: 1.6; color: var(--muted); max-height: 160px; overflow: auto; background: #f8fafc; border-radius: 6px; padding: 6px 8px; }
+.formula strong { color: var(--ink); }
+#why { margin-top: 0; }
+
+.wrap details { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-top: 8px; }
+.wrap summary { cursor: pointer; font-weight: 700; }
+.wrap details details { border-style: dashed; }
+
+@media (max-width: 520px) {
+  .cnn { padding: 10px 10px 32px; }
+  .cnn-step { padding: 12px; }
+  .mat { grid-template-columns: repeat(3, 38px); }
+  .mat .cell { height: 34px; font-size: .92rem; }
+}

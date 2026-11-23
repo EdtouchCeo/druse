@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>합성곱 신경망 5분 실습 | Dave AIT Class</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/ait/ait.css">
+<link rel="stylesheet" href="/ait/labs/cnn/cnn.css">
+<script type="module" src="/ait/labs/cnn/cnn.js"></script>
+</head>
+<body class="cnn-body">
+<main class="cnn">
+  <header class="cnn-head">
+    <h1>고양이 사진은 어떻게 분류될까?</h1>
+    <p class="hint">합성곱 신경망의 세 단계를 직접 계산해 봅니다. 예상하고, 계산하고, 결과를 확인하세요. (약 5분)</p>
+    <nav class="cnn-steps" aria-label="실습 단계">
+      <button type="button" class="btn-ghost btn-sm" data-step="1" aria-current="step">1 합성곱</button>
+      <button type="button" class="btn-ghost btn-sm" data-step="2" disabled>2 최대 풀링</button>
+      <button type="button" class="btn-ghost btn-sm" data-step="3" disabled>3 완전 연결</button>
+    </nav>
+  </header>
+
+  <!-- 1단계: 합성곱 -->
+  <section class="cnn-step" id="step1" aria-labelledby="s1-title">
+    <h2 id="s1-title"><span class="num">1</span>합성곱: 단서 찾기</h2>
+    <p>픽셀값과 커널을 <strong>같은 위치끼리 곱하고 모두 더하면</strong> 특징값 하나가 나옵니다. 39번 슬라이드의 예시를 계산해 보세요.</p>
+    <div class="warm">
+      <figure><figcaption>이미지 픽셀값</figcaption><div class="mat" id="warm-px"></div></figure>
+      <span class="op" aria-hidden="true">×</span>
+      <figure><figcaption>커널(sharpen)</figcaption><div class="mat kernel" id="warm-k"></div></figure>
+      <span class="op" aria-hidden="true">=</span>
+      <figure><figcaption><label for="warm-in">연산 결과</label></figcaption><input id="warm-in" class="answer" inputmode="numeric" autocomplete="off" placeholder="?"></figure>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn-gold btn-sm" id="s1-check">정답 확인</button>
+      <button type="button" class="btn-ghost btn-sm" id="s1-hint">힌트</button>
+      <button type="button" class="btn-ghost btn-sm" id="s1-reset">다시 시도</button>
+    </div>
+    <p class="msg" id="s1-msg" role="status" aria-live="polite"></p>
+
+    <div class="photo" id="s1-photo" hidden>
+      <h3>고양이 사진 위에서 필터 옮기기</h3>
+      <p class="hint">사진을 누르거나, 사진을 고른 뒤 화살표 키로 필터(주황 칸)를 옮겨 보세요. 사진에는 <strong>윤곽 찾기 필터</strong>를 씁니다. 결과가 음수이면 "특징이 없다"는 뜻으로 0을 적습니다.</p>
+      <div class="duo">
+        <figure>
+          <figcaption>고양이 사진 32×32 (픽셀값 0~255)</figcaption>
+          <canvas id="cat" width="320" height="320" tabindex="0" aria-label="고양이 사진. 화살표 키로 필터를 옮깁니다"></canvas>
+        </figure>
+        <figure>
+          <figcaption>특징 맵 32×32 <span id="fill-count"></span></figcaption>
+          <canvas id="fmap" width="320" height="320" aria-label="특징 맵"></canvas>
+        </figure>
+      </div>
+      <div class="calc" id="s1-calc" aria-live="polite"></div>
+      <div class="actions">
+        <button type="button" class="btn-ghost btn-sm" id="sweep">나머지 한 번에 훑기</button>
+        <button type="button" class="btn-sm" id="to2">다음: 최대 풀링 ›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2단계: 최대 풀링 -->
+  <section class="cnn-step" id="step2" aria-labelledby="s2-title" hidden>
+    <h2 id="s2-title"><span class="num">2</span>최대 풀링: 단서 줄이기</h2>
+    <p>특징 맵을 2×2씩 나누고 <strong>가장 큰 값 하나만</strong> 남깁니다. 주황 테두리 네 칸에서 남길 값을 고르세요.</p>
+    <div class="pool-pick" role="group" aria-label="2×2 영역의 네 값" id="pool-pick"></div>
+    <div class="actions">
+      <button type="button" class="btn-gold btn-sm" id="s2-check">정답 확인</button>
+      <button type="button" class="btn-ghost btn-sm" id="s2-hint">힌트</button>
+      <button type="button" class="btn-ghost btn-sm" id="s2-reset">다시 시도</button>
+    </div>
+    <p class="msg" id="s2-msg" role="status" aria-live="polite"></p>
+    <div class="duo">
+      <figure>
+        <figcaption>특징 맵 32×32 = 1,024개</figcaption>
+        <canvas id="pmap-in" width="320" height="320" aria-label="풀링 전 특징 맵"></canvas>
+      </figure>
+      <figure>
+        <figcaption>풀링 결과 16×16 = 256개</figcaption>
+        <canvas id="pmap-out" width="320" height="320" aria-label="풀링 결과"></canvas>
+      </figure>
+    </div>
+    <div id="s2-more" hidden>
+      <p class="note">줄어든 것은 원본 사진이 아니라 <strong>특징 맵의 값 개수</strong>입니다. 2×2 네 칸이 한 칸이 되니 1,024개가 256개(4분의 1)가 됩니다.</p>
+      <div class="actions"><button type="button" class="btn-ghost btn-sm" id="second">두 번째 합성곱과 풀링 해 보기</button></div>
+      <div class="second" id="second-box" hidden>
+        <p>16×16 맵에 한 번 더 합성곱(주변 특징 모으기)과 풀링을 하면 <strong>8×8 = 64개</strong>가 남습니다.</p>
+        <figure class="small"><figcaption>두 번째 풀링 결과 8×8</figcaption><canvas id="p2map" width="240" height="240" aria-label="두 번째 풀링 결과 8×8"></canvas></figure>
+        <div class="actions"><button type="button" class="btn-sm" id="to3">다음: 완전 연결 ›</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3단계: 완전 연결 -->
+  <section class="cnn-step" id="step3" aria-labelledby="s3-title" hidden>
+    <h2 id="s3-title"><span class="num">3</span>완전 연결: 분류하기</h2>
+    <p>8×8 특징값 64개를 한 줄로 펼쳐 완전 연결 계층에 넣습니다. 특징값은 가장 큰 값을 10으로 맞춘 수입니다.</p>
+    <div class="feat" id="feat" aria-label="8×8 특징값"></div>
+    <div class="actions"><button type="button" class="btn-ghost btn-sm" id="flatten">한 줄로 펼치기</button></div>
+    <ol class="strip" id="strip" hidden aria-label="펼친 특징값 64개"></ol>
+
+    <fieldset class="predict" id="predict">
+      <legend>계산하기 전에 예상: 어느 점수가 가장 높을까요?</legend>
+      <div class="choices" id="predict-choices"></div>
+    </fieldset>
+    <div class="actions"><button type="button" class="btn-gold btn-sm" id="compute" disabled>점수 계산</button></div>
+    <p class="notice">수업용으로 정한 가중치이며, 출력은 확률이 아닌 <strong>비교 점수</strong>입니다. 점수 = (특징값 × 가중치)의 합 + 편향</p>
+    <div class="scores" id="scores" hidden></div>
+
+    <div id="final" hidden>
+      <fieldset class="predict">
+        <legend>완전 연결 계층은 무엇이라고 답했을까요?</legend>
+        <div class="choices" id="final-choices"></div>
+      </fieldset>
+      <div class="actions">
+        <button type="button" class="btn-gold btn-sm" id="s3-check">정답 확인</button>
+        <button type="button" class="btn-ghost btn-sm" id="s3-hint">힌트</button>
+        <button type="button" class="btn-ghost btn-sm" id="s3-reset">다시 시도</button>
+      </div>
+      <p class="msg" id="s3-msg" role="status" aria-live="polite"></p>
+      <label for="why">고른 근거를 한 문장으로 적어 보세요 (저장되지 않습니다)</label>
+      <textarea id="why" rows="2" placeholder="예: ○○ 점수가 가장 높아서"></textarea>
+    </div>
+  </section>
+
+  <section class="cnn-step wrap" id="wrap" hidden aria-labelledby="wrap-title">
+    <h2 id="wrap-title">마무리 확인</h2>
+    <details>
+      <summary>첫 번째 풀링에서 값의 개수가 왜 1,024개에서 256개로 줄었나요?</summary>
+      <p class="hint">자기 말로 먼저 답한 뒤 펼쳐 보세요.</p>
+      <details><summary>생각해 볼 점</summary><p>2×2 네 칸에서 가장 큰 값 하나만 남기므로 가로와 세로가 절반씩, 값의 개수는 4분의 1이 됩니다.</p></details>
+    </details>
+    <details>
+      <summary>완전 연결 계층은 무엇을 근거로 답을 골랐나요?</summary>
+      <p class="hint">자기 말로 먼저 답한 뒤 펼쳐 보세요.</p>
+      <details><summary>생각해 볼 점</summary><p>64개 특징값에 동물마다 정한 가중치를 곱해 더하고 편향을 더한 점수를 비교해, 가장 높은 점수의 동물을 골랐습니다.</p></details>
+    </details>
+  </section>
+</main>
+</body>
+</html>

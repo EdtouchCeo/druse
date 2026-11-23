@@ -1,9 +1,18 @@
 // 슬라이드와 교과서 쪽을 무대에 그린다. 이웃 장을 미리 불러 넘김이 끊기지 않게 한다.
 import { el, slideUrl, thumbUrl, pageUrl } from './common.js';
+import { createInk } from './ink.js';
 
-export function createStage(stage, lesson) {
+// inkOptions: 진행 화면은 { editable, onChange }, 학생 화면은 { interactive }(확대만), 발표 화면은 비워 둔다.
+export function createStage(stage, lesson, inkOptions = {}) {
   const img = el('img', { alt: '', decoding: 'async' });
-  stage.replaceChildren(img);
+  const box = el('div', { class: 'zoom-box' }, img);
+  stage.replaceChildren(box);
+  const ink = createInk(stage, box, img, inkOptions);
+  // 다른 그림으로 바뀔 때만 판서와 확대를 지운다(같은 장을 다시 그리라는 신호에는 그대로 둔다).
+  const show = (src, alt) => {
+    if (img.getAttribute('src') !== src) { img.src = src; ink.reset(); }
+    img.alt = alt;
+  };
   const cache = new Map();
   const preload = (url) => {
     if (!url || cache.has(url)) return;
@@ -13,16 +22,15 @@ export function createStage(stage, lesson) {
     cache.set(url, i);
   };
   return {
+    ink,
     showSlide(n) {
       const slide = lesson.slides[n - 1];
       if (!slide) return;
-      img.src = slideUrl(lesson, slide);
-      img.alt = `${n}장. ${slide.title || ''}`;
+      show(slideUrl(lesson, slide), `${n}장. ${slide.title || ''}`);
       [n + 1, n + 2, n - 1].forEach((k) => lesson.slides[k - 1] && preload(slideUrl(lesson, lesson.slides[k - 1])));
     },
     showPage(page) {
-      img.src = pageUrl(lesson, page);
-      img.alt = `교과서 ${page}쪽`;
+      show(pageUrl(lesson, page), `교과서 ${page}쪽`);
       [page + 1, page - 1].forEach((p) => preload(pageUrl(lesson, p)));
     },
   };
@@ -32,9 +40,13 @@ export function createStage(stage, lesson) {
 export function onSwipe(target, onLeft, onRight) {
   let x0 = null;
   let y0 = null;
-  target.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  target.addEventListener('touchstart', (e) => {
+    // 확대해 옮기거나 판서하는 중, 두 손가락으로 벌리는 중에는 장을 넘기지 않는다.
+    if (e.touches.length > 1 || target.classList.contains('zoomed') || target.classList.contains('inking')) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, { passive: true });
   target.addEventListener('touchend', (e) => {
-    if (x0 === null) return;
+    if (x0 === null || e.touches.length) { x0 = null; return; }
     const dx = e.changedTouches[0].clientX - x0;
     const dy = e.changedTouches[0].clientY - y0;
     x0 = null;
