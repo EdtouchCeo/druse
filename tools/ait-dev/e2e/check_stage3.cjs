@@ -158,14 +158,14 @@ async function answerWrong(page, q) {
   await s[0].waitForSelector('.qp-report');
   await s[1].waitForSelector('.qp-report');
   const stats0 = await s[0].textContent('.qp-stats');
-  check('student 1 report rank 1', stats0.includes('1위') && stats0.includes('21문제 맞힘'), stats0.replace(/\s+/g, ' '));
+  check('student 1 report rank 1', stats0.includes('1위') && stats0.includes(`${quiz.questions.length}문제 맞힘`), stats0.replace(/\s+/g, ' '));
   check('student 1 no wrong items', (await s[0].textContent('.qp-report')).includes('틀린 문제가 없습니다'));
   const wrongCount = await s[1].$$eval('.qp-items li.no', (x) => x.length);
-  check('student 2 sees 21 wrong items', wrongCount === 21, String(wrongCount));
+  check('student 2 sees all items wrong', wrongCount === quiz.questions.length, String(wrongCount));
   const first = await s[1].textContent('.qp-items li.no');
   check('wrong item shows my answer and correct answer', first.includes('내 답') && first.includes('정답') && first.includes('교과서 89쪽'), first.slice(0, 80));
   await s[1].click('.qp-filter button:has-text("전체")');
-  check('toggle all items', (await s[1].$$eval('.qp-items li', (x) => x.length)) === 21);
+  check('toggle all items', (await s[1].$$eval('.qp-items li', (x) => x.length)) === quiz.questions.length);
   await s[0].click('.qp-filter button:has-text("전체")');
   await s[0].screenshot({ path: path.join(OUT, '41_student_report_mobile.png'), fullPage: false });
   await s[1].click('.qp-filter button:has-text("틀린 문제")');
