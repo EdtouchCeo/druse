@@ -263,6 +263,7 @@ function draw(root, view, { teacher = false, onAction = () => {}, onTick } = {})
   if (teacher) {
     addFirst(tools, 
       btn(view.muted ? '소리 켜기' : '소리 끄기', 'mute', null, 'btn-ghost btn-sm', onAction),
+      btn('전체 화면', 'full', null, 'btn-ghost btn-sm', onAction),
       view.phase !== 'lobby' ? btn('참가자', 'people', null, 'btn-ghost btn-sm', onAction) : btn('퀴즈 나가기', 'leave', null, 'btn-ghost btn-sm', onAction),
       // 문제를 다 내기 전에 끝내야 할 때(종이 울릴 때)를 위한 버튼.
       ['countdown', 'question', 'reveal', 'board'].includes(view.phase) ? btn('퀴즈 끝내기', 'stop', null, 'btn-ghost btn-sm', onAction) : null);

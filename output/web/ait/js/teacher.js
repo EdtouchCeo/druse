@@ -539,6 +539,12 @@ function startQuiz() {
 
 function quizAction(name, arg) {
   if (name === 'people') { openPeople(); return; }
+  // 퀴즈 화면만 크게 띄운다. 다시 누르거나 Esc로 돌아온다.
+  if (name === 'full') {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else $('#quiz-host').requestFullscreen?.();
+    return;
+  }
   if (name === 'leave') {
     const waiting = quizHost.people().filter((p) => !p.kicked).length;
     if (waiting && !confirm(`학생 ${waiting}명이 대기실에 들어와 있습니다. 퀴즈를 닫고 슬라이드로 돌아갈까요?`)) return;
@@ -558,6 +564,7 @@ function quizAction(name, arg) {
 }
 
 function showQuizLayer(on) {
+  if (!on && document.fullscreenElement === $('#quiz-host')) document.exitFullscreen();
   $('#quiz-host').hidden = !on;
   $('#stage').hidden = on;
   document.querySelector('.pane .controls').hidden = on;
@@ -586,7 +593,7 @@ function openPeople() {
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   const drawer = el('div', { class: 'drawer', onclick: (e) => { if (e.target === drawer) close(); } }, panel);
   document.addEventListener('keydown', onKey);
-  document.body.append(drawer);
+  (document.fullscreenElement || document.body).append(drawer); // 전체 화면에서는 그 안에 넣어야 보인다.
   panel.querySelector('button').focus();
   function close() { drawer.remove(); document.removeEventListener('keydown', onKey); }
 }
