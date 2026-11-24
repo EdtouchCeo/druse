@@ -5,7 +5,7 @@ import { createInk } from './ink.js';
 // inkOptions: 진행 화면은 { editable, onChange }, 학생 화면은 { interactive }(확대만), 발표 화면은 비워 둔다.
 // mediaOptions: 장 그림 위에 겹칠 움직이는 그림(GIF)과 동영상.
 //   진행 화면 { controls: true, onMedia }(재생·멈춤·옮김을 알린다), 학생 화면 { controls: true },
-//   발표 화면은 비워 두고 진행 화면의 신호(media.apply)를 따른다.
+//   발표 화면 { controls: true, onMedia, sound: true }. 진행 화면과 발표 화면은 어느 쪽에서 눌러도 서로 따라 한다(media.apply).
 export function createStage(stage, lesson, inkOptions = {}, mediaOptions = {}) {
   const img = el('img', { alt: '', decoding: 'async' });
   const layer = el('div', { class: 'slide-media' });
@@ -44,7 +44,7 @@ export function createStage(stage, lesson, inkOptions = {}, mediaOptions = {}) {
 
 // PDF로 바꾼 장 그림에는 GIF·동영상의 첫 장면만 남는다. 원본을 PPT에서의 자리에 겹쳐 움직이게 한다.
 // 겹친 층은 확대 상자(zoom-box) 안에 있어 함께 확대되고, 판서 캔버스와 칠판은 그 위에 놓인다.
-function createMediaLayer(lesson, img, box, layer, { controls = false, onMedia = null } = {}) {
+function createMediaLayer(lesson, img, box, layer, { controls = false, onMedia = null, sound = false } = {}) {
   let slide = null;
   let videos = [];
   let applying = false;
@@ -77,7 +77,7 @@ function createMediaLayer(lesson, img, box, layer, { controls = false, onMedia =
       if (item.type === 'video') {
         const i = videos.length;
         node = el('video', { src, preload: 'auto', playsinline: true, controls, 'aria-label': `${next.n}장 동영상` });
-        node.muted = true; // 학생 기기와 진행 화면은 소리 없이 시작한다. 소리는 발표 화면에서 낸다.
+        node.muted = !sound; // 학생 기기와 진행 화면은 소리 없이 시작한다. 소리는 발표 화면에서 낸다.
         if (onMedia) ['play', 'pause', 'seeked', 'ended'].forEach((ev) => node.addEventListener(ev, () => report(i, node)));
         videos.push(node);
       } else {
@@ -91,7 +91,7 @@ function createMediaLayer(lesson, img, box, layer, { controls = false, onMedia =
     layout();
   }
 
-  // 진행 화면의 재생 상태를 따른다(발표 화면). 같은 장일 때만 맞춘다.
+  // 짝이 되는 화면(진행 화면과 발표 화면)의 재생 상태를 따른다. 같은 장일 때만 맞춘다.
   async function apply(msg) {
     const v = videos[msg.i];
     if (!v || msg.slide !== slide?.n) return;
@@ -99,7 +99,7 @@ function createMediaLayer(lesson, img, box, layer, { controls = false, onMedia =
     try {
       if (Math.abs(v.currentTime - msg.t) > 0.4) v.currentTime = msg.t;
       if (msg.playing && v.paused) {
-        v.muted = false;
+        v.muted = !sound;
         await v.play().catch(() => { v.muted = true; return v.play().catch(() => {}); });
       } else if (!msg.playing && !v.paused) v.pause();
     } finally { applying = false; }

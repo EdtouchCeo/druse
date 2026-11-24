@@ -22,7 +22,8 @@ async function start() {
     return;
   }
   document.title = `${lesson.title} · 발표 화면`;
-  stage = createStage($('#stage'), lesson);
+  // 발표 화면에서 영상을 직접 눌러도 재생된다. 진행 화면에 알려 두 화면이 같은 자리를 보게 한다.
+  stage = createStage($('#stage'), lesson, {}, { controls: true, sound: true, onMedia: (m) => channel.postMessage({ type: 'media', ...m }) });
   mirror = createLabMirror($('#lab'));
   channel.onmessage = (e) => onMessage(e.data || {});
   channel.postMessage({ type: 'hello' });
@@ -88,8 +89,10 @@ document.addEventListener('keydown', (e) => {
 });
 
 // 화면을 누르면 다음 장, 오른쪽 버튼을 누르면 이전 장으로 간다(실습 칸 안은 제외).
-$('#stage').addEventListener('click', () => channel.postMessage({ type: 'key', action: 'next' }));
-$('#stage').addEventListener('contextmenu', (e) => { e.preventDefault(); channel.postMessage({ type: 'key', action: 'prev' }); });
+// 영상 위를 누르면 장을 넘기지 않고 영상을 재생하거나 멈춘다.
+const onVideo = (e) => e.target instanceof Element && !!e.target.closest('video');
+$('#stage').addEventListener('click', (e) => { if (!onVideo(e)) channel.postMessage({ type: 'key', action: 'next' }); });
+$('#stage').addEventListener('contextmenu', (e) => { e.preventDefault(); if (!onVideo(e)) channel.postMessage({ type: 'key', action: 'prev' }); });
 $('#blank').addEventListener('click', () => channel.postMessage({ type: 'key', action: last?.blank || 'black' }));
 $('#code').addEventListener('click', () => { $('#code').hidden = true; });
 

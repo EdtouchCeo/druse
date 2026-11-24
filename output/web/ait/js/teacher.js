@@ -334,6 +334,10 @@ function openPresentChannel() {
       updatePresentUi();
     } else if (msg.type === 'key') {
       act(msg.action);
+    } else if (msg.type === 'media') {
+      // 발표 화면에서 영상을 누르면 진행 화면의 영상도 같은 자리로 맞춘다.
+      mediaState = { slide: msg.slide, i: msg.i, playing: msg.playing, t: msg.t };
+      stage.media.apply(msg);
     }
   };
   setInterval(() => {

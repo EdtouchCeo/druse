@@ -73,7 +73,18 @@ const placed = (page, sel, item) => page.evaluate(([sel, item]) => {
   check('l03 on slide 38', (await teacher.textContent('#count')).startsWith('38 /'));
   await teacher.waitForFunction(() => document.querySelector('#stage video')?.readyState >= 2, null, { timeout: 8000 }).catch(() => {});
   check('teacher video has controls', await teacher.$eval('#stage video', (v) => v.controls && v.readyState >= 2));
-  check('present has the same video', await present.$eval('#stage video', (v) => !v.controls).catch(() => false));
+  check('present has the same video', await present.$eval('#stage video', (v) => v.controls).catch(() => false));
+  // 발표 화면에서 영상을 직접 눌러도 재생되고, 장은 넘어가지 않으며 진행 화면이 따라 한다.
+  const pv = await present.$eval('#stage video', (x) => { const b = x.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+  await present.mouse.click(pv.x, pv.y);
+  await wait(900);
+  check('present click plays the video', await present.$eval('#stage video', (x) => !x.paused));
+  check('present click does not turn the slide', (await teacher.textContent('#count')).startsWith('38 /'));
+  check('teacher follows present', await teacher.$eval('#stage video', (x) => !x.paused && x.muted));
+  await present.mouse.click(pv.x, pv.y);
+  await wait(600);
+  check('present click pauses both', await present.$eval('#stage video', (x) => x.paused) && await teacher.$eval('#stage video', (x) => x.paused));
+  await teacher.bringToFront();
   const v = await placed(teacher, '#stage video', { x: 0.04125, y: 0.21733, w: 0.91725 });
   check('video placed where the PPT has it', Math.abs(v.dx) < 0.01 && Math.abs(v.dy) < 0.01 && Math.abs(v.dw) < 0.01, JSON.stringify(v));
   await teacher.$eval('#stage video', (x) => x.play());
