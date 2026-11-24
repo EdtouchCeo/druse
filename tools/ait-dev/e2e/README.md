@@ -27,6 +27,7 @@ AIT_ENV_FILE=<GEMINI_API_KEY가 있는 .env> node tools/ait-dev/server.cjs 8765
 | `check_entry.cjs`, `check_aicard.cjs` | 사용 설명서의 학생 입장 칸, 샛별AI 칸 |
 | `check_ink.cjs` | 판서(줌잇식 단축키)와 발표 화면 따라 그리기, 무대·교과서 확대, 학생 화면 확대 (l03) |
 | `check_media.cjs` | 장 위의 GIF·동영상: PPT 자리에 겹치기, 진행 화면 재생·멈춤·위치를 발표 화면이 따르기, 판서 캔버스가 위, 교과서 모드에서 지우기, 학생 화면(소리 끔). 로컬 content의 l02·l03에 media가 있어야 한다 |
+| `check_practice2.cjs` | l02 실습 2(교과서 98~101쪽 선형 회귀, jeans.csv): 44장 실습 모드에서 9셀 전체 실행, 회귀계수·결정계수·예측값을 교과서 결과와 대조 |
 | `check_cnn.cjs` | 합성곱 신경망 5분 실습 페이지(`/ait/labs/cnn/`) 세 단계, 좁은 칸·넓은 화면 |
 
 ## 서버 연결(가짜 Supabase) — 포트 8766
