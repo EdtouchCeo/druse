@@ -185,6 +185,33 @@ function draw(root, view, { teacher = false, onAction = () => {}, onTick } = {})
         el('span', { class: 'grow' }),
         btn(view.qIndex + 1 >= view.total ? '최종 순위' : '순위 보기', 'next', null, 'btn-gold', onAction));
     }
+  } else if (view.phase === 'review') {
+    // 오답 보기: 정답 공개 화면에 응답 수와 틀린 답을 더해 다시 보여 준다.
+    const r = view.reveal;
+    const v = view.review;
+    add(body,
+      el('div', { class: 'qz-qhead' }, el('span', { class: 'qz-type' }, `오답 보기 ${v.pos} / ${v.count}`), el('span', { class: 'qz-type' }, TYPE_LABEL[view.q.type]),
+        el('span', { class: 'qz-review-count' }, `정답률 ${r.rate}% · 정답 ${v.right}명 · 오답 ${v.wrong}명${v.none ? ` · 답하지 못함 ${v.none}명` : ''}`)),
+      el('h2', { class: 'qz-prompt' }, view.q.prompt),
+      ...(view.q.image ? [el('img', { class: 'qz-img small', src: view.q.image, alt: '문항 그림' })] : []),
+      choiceGrid(view, r),
+      v.wrongs.length ? el('div', { class: 'qz-wrongs' }, el('b', {}, '틀린 답'), ...v.wrongs.map((w) => el('span', {}, `${w.text} `, el('small', {}, `${w.n}명`)))) : null,
+      el('div', { class: 'qz-explain' },
+        el('img', { src: '/img/teacher/idea.webp', alt: '' }),
+        el('div', { class: 'qz-explain-text' }, el('p', {}, r.explain), el('p', { class: 'qz-ref' }, [r.ref?.page ? `교과서 ${r.ref.page}쪽` : '', r.ref?.slide ? `슬라이드 ${r.ref.slide}장` : ''].filter(Boolean).join(' · ')),
+          teacher && r.teacherNote ? el('p', { class: 'qz-tnote' }, el('b', {}, '교사 메모 '), r.teacherNote) : null)));
+    if (teacher) {
+      const prev = btn('이전 오답', 'review-prev', null, 'btn-ghost btn-sm', onAction);
+      const next = btn('다음 오답', 'review-next', null, v.pos < v.count ? 'btn-gold' : 'btn-ghost btn-sm', onAction);
+      prev.disabled = v.pos <= 1;
+      next.disabled = v.pos >= v.count;
+      add(tools,
+        r.ref?.slide ? btn(`슬라이드 ${r.ref.slide}장 보기`, 'goto-slide', r.ref.slide, 'btn-ghost btn-sm', onAction) : null,
+        el('span', { class: 'grow' }),
+        prev,
+        btn('오답 보기 닫기', 'review-back', null, v.pos < v.count ? 'btn-ghost btn-sm' : 'btn-gold', onAction),
+        next);
+    }
   } else if (view.phase === 'board') {
     add(body, el('h2', { class: 'qz-prompt qz-center' }, '지금 순위'),
       el('ol', { class: 'qz-board' }, ...view.board.map((p) => el('li', { class: p.rank === 1 ? 'top' : '' },
@@ -215,12 +242,14 @@ function draw(root, view, { teacher = false, onAction = () => {}, onTick } = {})
         el('thead', {}, el('tr', {}, el('th', {}, '문항'), el('th', {}, '정답률'), el('th', {}, '평균 응답 시간'), el('th', {}, '근거'))),
         el('tbody', {}, ...view.summary.map((s) => el('tr', { class: s.rate < 50 ? 'low' : '' },
           el('td', {}, `${s.n}. ${s.prompt}`), el('td', {}, `${s.rate}%`), el('td', {}, s.avg ? `${s.avg}초` : '-'),
-          el('td', {}, [s.page ? `${s.page}쪽` : '', s.slide ? `${s.slide}장` : ''].filter(Boolean).join(' · '))))))),
+          el('td', {}, [s.page ? `${s.page}쪽` : '', s.slide ? `${s.slide}장` : ''].filter(Boolean).join(' · '),
+            teacher && s.wrong ? btn('오답 보기', 'review', s.n, 'btn-ghost btn-xs', onAction) : null)))))),
       el('div', { class: 'qz-foot' }, el('p', { class: 'qz-sub' }, '정답률이 50% 아래인 문항은 붉게 표시했습니다.'),
         buddy('pose_mentor', '붉은 문항은 슬라이드로 다시 짚어 봐요', 'end')));
     if (teacher) {
       add(tools, btn('결과 내려받기(CSV)', 'download-csv', null, 'btn-ghost btn-sm', onAction),
         btn('결과 내려받기(JSON)', 'download-json', null, 'btn-ghost btn-sm', onAction),
+        view.wrongCount ? btn(`오답 보기 ${view.wrongCount}`, 'review', null, 'btn-ghost btn-sm', onAction) : null,
         el('span', { class: 'grow' }), btn('퀴즈 종료', 'next', null, 'btn-gold', onAction));
     }
   } else if (view.phase === 'done') {
@@ -256,6 +285,7 @@ function draw(root, view, { teacher = false, onAction = () => {}, onTick } = {})
       add(tools, btn('결과 내려받기(CSV)', 'download-csv', null, 'btn-ghost btn-sm', onAction),
         btn('결과 내려받기(JSON)', 'download-json', null, 'btn-ghost btn-sm', onAction),
         btn('문항별 결과', 'back-summary', null, 'btn-ghost btn-sm', onAction),
+        view.wrongCount ? btn(`오답 보기 ${view.wrongCount}`, 'review', null, 'btn-ghost btn-sm', onAction) : null,
         el('span', { class: 'grow' }), btn('슬라이드로 돌아가기', 'finish', null, 'btn-gold', onAction));
     }
   }
@@ -265,6 +295,7 @@ function draw(root, view, { teacher = false, onAction = () => {}, onTick } = {})
       btn(view.muted ? '소리 켜기' : '소리 끄기', 'mute', null, 'btn-ghost btn-sm', onAction),
       btn('전체 화면', 'full', null, 'btn-ghost btn-sm', onAction),
       view.phase !== 'lobby' ? btn('참가자', 'people', null, 'btn-ghost btn-sm', onAction) : btn('퀴즈 나가기', 'leave', null, 'btn-ghost btn-sm', onAction),
+      ['board', 'podium', 'end', 'done', 'review'].includes(view.phase) ? btn('전체 순위', 'ranking', null, 'btn-ghost btn-sm', onAction) : null,
       // 문제를 다 내기 전에 끝내야 할 때(종이 울릴 때)를 위한 버튼.
       ['countdown', 'question', 'reveal', 'board'].includes(view.phase) ? btn('퀴즈 끝내기', 'stop', null, 'btn-ghost btn-sm', onAction) : null);
   }

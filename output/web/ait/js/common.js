@@ -67,6 +67,28 @@ export function teacherSession() {
   }
 }
 
+// 오래된 브라우저(전자칠판 등)에 없는 기능을 채운다.
+for (const proto of [Element.prototype, Document.prototype, DocumentFragment.prototype]) {
+  if (!proto.replaceChildren) {
+    proto.replaceChildren = function replaceChildren(...nodes) {
+      while (this.lastChild) this.removeChild(this.lastChild);
+      this.append(...nodes);
+    };
+  }
+}
+
+// 기기를 구분하는 임의의 값. randomUUID는 오래된 브라우저와 http 주소에는 없다.
+export function uuid() {
+  if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+  const b = new Uint8Array(16);
+  if (globalThis.crypto?.getRandomValues) crypto.getRandomValues(b);
+  else for (let i = 0; i < 16; i += 1) b[i] = Math.floor(Math.random() * 256);
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+
 export function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {

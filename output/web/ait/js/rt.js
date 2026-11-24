@@ -28,9 +28,18 @@ function jwtExp(token) {
   }
 }
 
+// AbortSignal.timeout은 오래된 브라우저(전자칠판 등)에 없다.
+function timeoutSignal(ms) {
+  if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  if (typeof AbortController === 'undefined') return undefined;
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
 async function authPost(path, body) {
   const res = await fetch(`${SB_URL}/auth/v1/${path}`, {
-    method: 'POST', headers: { apikey: SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(12000),
+    method: 'POST', headers: { apikey: SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: timeoutSignal(12000),
   });
   if (!res.ok) { const e = new Error(`auth ${res.status}`); e.status = res.status; throw e; }
   return res.json();
@@ -44,7 +53,7 @@ export async function teacherToken() {
   const exp = s.expires_at || jwtExp(s.token);
   if (exp - Date.now() > 90 * 1000) return s.token;
   if (!s.refresh_token) return null;
-  teacherRefreshing ??= (async () => {
+  if (!teacherRefreshing) teacherRefreshing = (async () => {
     try {
       const d = await authPost('token?grant_type=refresh_token', { refresh_token: s.refresh_token });
       // 다른 탭이 먼저 새로 받았으면 그 값을 쓴다.
@@ -67,7 +76,7 @@ let studentRefreshing = null;
 export async function studentToken() {
   const s = store.get(STUDENT_KEY);
   if (s?.token && s.expires_at - Date.now() > 90 * 1000) return s.token;
-  studentRefreshing ??= (async () => {
+  if (!studentRefreshing) studentRefreshing = (async () => {
     try {
       let d = null;
       if (s?.refresh_token) d = await authPost('token?grant_type=refresh_token', { refresh_token: s.refresh_token }).catch(() => null);

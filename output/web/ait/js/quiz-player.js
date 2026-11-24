@@ -28,6 +28,8 @@ export function createQuizPlayer(root, { pid, send, code }) {
     if (kicked || !view) return '';
     if (!me.joined) return 'join';
     if (view.phase === 'question' && sentQ !== view.qIndex) return `q|${view.qIndex}|${view.paused ? 1 : 0}`;
+    // 내 결과를 읽는 동안 선생님이 오답 보기를 넘겨도 읽던 자리가 그대로 남는다.
+    if (finalReport && ['podium', 'end', 'done', 'review'].includes(view.phase)) return 'report';
     return '';
   }
 

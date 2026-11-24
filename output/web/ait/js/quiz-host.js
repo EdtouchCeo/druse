@@ -37,6 +37,8 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
   let paused = false;
   let speed = quiz.speed !== false;
   let reveal = null;
+  const reveals = []; // 문항별 정답 공개 내용. 오답 보기에서 다시 쓴다.
+  let reviewFrom = 'end'; // 오답 보기를 연 화면(문항별 결과 또는 종료 화면)
   let board = [];
   let lead = null;
   let lastRanks = new Map();
@@ -64,8 +66,10 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
       remainingMs: paused ? remaining : Math.max(0, deadline - Date.now()),
       reveal, board, lead,
       asked,
+      review: phase === 'review' ? reviewInfo() : null,
+      wrongCount: phase === 'end' || phase === 'done' ? wrongList().length : 0,
       podium: phase === 'podium' || phase === 'end' || phase === 'done' ? ranking().slice(0, 3) : [],
-      summary: phase === 'end' ? summary() : [],
+      summary: phase === 'end' ? summary().map((x) => ({ ...x, wrong: wrongList().includes(x.n - 1) })) : [],
       closing: phase === 'done' ? closing() : null,
       mood: music.mood, speed, muted: music.muted,
     };
@@ -95,7 +99,7 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
       publish();
       const p = players.get(msg.pid);
       if (p) personal(p);
-      if (p && !p.kicked && (phase === 'podium' || phase === 'end' || phase === 'done')) report(p);
+      if (p && !p.kicked && (phase === 'podium' || phase === 'end' || phase === 'done' || phase === 'review')) report(p);
     }
   }
 
@@ -246,6 +250,7 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
     const right = got.filter((a) => a.correct).length;
     const answerKey = item.type === 'order' ? item.items.slice().sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1))).map((x) => x.id) : item.answer;
     reveal = { answer: answerKey, dist, rate: list.length ? Math.round((right / list.length) * 100) : 0, explain: item.explain, ref: { slide: item.slide, page: item.page }, teacherNote: item.teacher_note || '' };
+    reveals[qIndex] = reveal;
     phase = 'reveal';
     music.stop();
     music.setTempo(1);
@@ -274,6 +279,66 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
     else if (phase === 'board') startQuestion(qIndex + 1);
     else if (phase === 'podium') { phase = 'end'; music.stop(); publish(); }
     else if (phase === 'end') { phase = 'done'; publish(); }
+  }
+
+  // 오답 보기: 한 명이라도 틀렸거나 답하지 못한 문항을 정답·응답 분포·해설과 함께 다시 본다.
+  function wrongList() {
+    const n = active().length;
+    const list = [];
+    for (let i = 0; i < asked; i += 1) {
+      if (!reveals[i]) continue;
+      const right = active().filter((p) => p.answers[i]?.correct).length;
+      if (n && right < n) list.push(i);
+    }
+    return list;
+  }
+
+  function reviewInfo() {
+    const list = wrongList();
+    const item = q();
+    const people = active();
+    const got = people.map((p) => p.answers[qIndex]).filter(Boolean);
+    const wrong = got.filter((a) => !a.correct);
+    // 단답형과 순서 맞추기는 학생이 낸 틀린 답을 많이 나온 순서로 묶는다(이름은 붙이지 않는다).
+    let wrongs = [];
+    if (item.type === 'short' || item.type === 'order') {
+      const count = new Map();
+      wrong.forEach((a) => { const k = a.shown || '(빈 답)'; count.set(k, (count.get(k) || 0) + 1); });
+      wrongs = [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([text, n]) => ({ text, n }));
+    }
+    return {
+      pos: Math.max(0, list.indexOf(qIndex)) + 1, count: list.length,
+      right: got.length - wrong.length, wrong: wrong.length, none: people.length - got.length, wrongs,
+    };
+  }
+
+  function openReview(n) {
+    const list = wrongList();
+    if (!list.length) return;
+    if (phase === 'end' || phase === 'done') reviewFrom = phase;
+    else if (phase !== 'review') return;
+    qIndex = Number.isInteger(n) && list.includes(n - 1) ? n - 1 : list[0];
+    reveal = reveals[qIndex];
+    phase = 'review';
+    publish();
+  }
+
+  function moveReview(d) {
+    if (phase !== 'review') return;
+    const list = wrongList();
+    const at = list.indexOf(qIndex) + d;
+    if (at < 0 || at >= list.length) return;
+    qIndex = list[at];
+    reveal = reveals[qIndex];
+    publish();
+  }
+
+  function closeReview() {
+    if (phase !== 'review') return;
+    qIndex = asked - 1;
+    reveal = null;
+    phase = reviewFrom;
+    publish();
   }
 
   // 남은 문항을 건너뛰고 끝낸다. 지금까지 낸 문항으로 순위와 결과를 만든다.
@@ -365,6 +430,10 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
     if (name === 'start' || name === 'next' || name === 'close') next();
     else if (name === 'stop') stop();
     else if (name === 'back-summary' && phase === 'done') { phase = 'end'; publish(); }
+    else if (name === 'review') openReview(arg);
+    else if (name === 'review-prev') moveReview(-1);
+    else if (name === 'review-next') moveReview(1);
+    else if (name === 'review-back') closeReview();
     else if (name === 'mood') { music.setMood(arg); if (phase === 'lobby') { music.stop(); music.play('lobby'); } publish(); }
     else if (name === 'speed') { speed = !speed; publish(); }
     else if (name === 'mute') { music.setMuted(!music.muted); publish(); }
@@ -421,6 +490,8 @@ export function createQuizHost({ lesson, quiz, room, music, render, present, onG
   return {
     begin, end, handle, action, view, publish,
     people: () => [...players.values()],
+    // 전체 순위(진행 화면 전용): 순위, 점수, 맞힌 문항 수
+    rankingAll: () => ranking().map((r) => ({ ...r, correct: players.get(r.pid).answers.slice(0, asked).filter((a) => a && a.correct).length, asked })),
     resetName, resetAllNames, kick,
     get phase() { return phase; },
   };

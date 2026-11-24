@@ -8,7 +8,7 @@
 // 메시지 종류
 //   교사 → 학생: state · closed · kick · quiz · quiz-* · talk · talk-*
 //   학생 → 교사: hello · ping · bye · quiz-join · quiz-answer · talk-post · talk-like (tutor-log는 튜터 서버가 보낸다)
-import { SERVER_MODE, newCode } from './common.js';
+import { SERVER_MODE, newCode, uuid } from './common.js';
 import { createSocket, teacherToken, studentToken } from './rt.js';
 
 export const SERVER = SERVER_MODE;
@@ -117,7 +117,7 @@ export async function openTeacherRoom({ lessonId, roomId, code: wanted, onStatus
 // 학생: 참여 코드로 들어오기. pid는 서버가 정한 참가자 번호다.
 export async function joinStudentRoom(code, { onStatus } = {}) {
   if (!SERVER) {
-    const pid = sessionStorage.getItem('ait_pid') || crypto.randomUUID();
+    const pid = sessionStorage.getItem('ait_pid') || uuid();
     sessionStorage.setItem('ait_pid', pid);
     return { pid, ...localRoom(code) };
   }

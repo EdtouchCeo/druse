@@ -1,5 +1,5 @@
 // 교사 진행 화면: 슬라이드 넘기기, 교과서·실습 나란히 보기, 발표 화면(프로젝터) 띄우기, 수업 열기와 학생 화면 맞추기.
-import { $, el, loadLesson, normalizeCode, isValidCode, toast, isTyping, keyAction, enableDivider, hasTextbook, clampPage, pageUrl, thumbUrl, teacherSession, presentChannelName, PREVIEW_HOST } from './common.js';
+import { $, el, loadLesson, normalizeCode, isValidCode, toast, isTyping, keyAction, enableDivider, hasTextbook, clampPage, pageUrl, thumbUrl, teacherSession, presentChannelName, PREVIEW_HOST, uuid } from './common.js';
 import { createStage, onSwipe, openToc } from './viewer.js';
 import { zoomPane, inkIcon } from './ink.js';
 import { openTeacherRoom, TIMING, SERVER } from './sync.js';
@@ -16,7 +16,7 @@ const lessonId = params.get('l') || '';
 const HEARTBEAT_MS = TIMING.heartbeat;
 const ACTIVE_MS = TIMING.active;
 
-const state = { mode: 'slides', slide: 1, page: null, lock: false, preview: false, tutor: true, seq: 0, session: crypto.randomUUID() };
+const state = { mode: 'slides', slide: 1, page: null, lock: false, preview: false, tutor: true, seq: 0, session: uuid() };
 let lesson;
 let stage;
 let room = null;
@@ -561,6 +561,7 @@ function startQuiz() {
 
 function quizAction(name, arg) {
   if (name === 'people') { openPeople(); return; }
+  if (name === 'ranking') { openRanking(); return; }
   // 퀴즈 화면만 크게 띄운다. 다시 누르거나 Esc로 돌아온다.
   if (name === 'full') {
     if (document.fullscreenElement) document.exitFullscreen();
@@ -595,6 +596,26 @@ function showQuizLayer(on) {
 }
 
 // 참가자 목록: 장난스러운 대화명을 초기화하거나 내보낸다.
+// 전체 순위: 진행 화면에만 띄운다. 발표 화면과 학생 기기에는 상위 순위만 나간다.
+function openRanking() {
+  const rows = quizHost.rankingAll();
+  const panel = el('div', { class: 'drawer-panel', role: 'dialog', 'aria-modal': 'true', 'aria-label': '전체 순위' },
+    el('h2', {}, `전체 순위 ${rows.length}명`, el('button', { type: 'button', class: 'btn-ghost btn-sm', onclick: close }, '닫기')),
+    el('p', { class: 'hint' }, '이 목록은 진행 화면에만 보입니다. 발표 화면과 학생 기기에는 나가지 않습니다.'),
+    rows.length ? el('ol', { class: 'people-list rank-list' }, ...rows.map((r) => el('li', { class: r.rank <= 3 ? 'top' : '' },
+      el('span', { class: 'no' }, `${r.rank}`),
+      el('span', { class: 'name' }, r.name),
+      el('span', { class: 'score' }, `${r.correct} / ${r.asked}문제`),
+      el('strong', { class: 'pts' }, `${r.score.toLocaleString()}점`))))
+      : el('p', { class: 'hint' }, '들어온 학생이 없습니다.'));
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  const drawer = el('div', { class: 'drawer', onclick: (e) => { if (e.target === drawer) close(); } }, panel);
+  document.addEventListener('keydown', onKey);
+  (document.fullscreenElement || document.body).append(drawer);
+  panel.querySelector('button').focus();
+  function close() { drawer.remove(); document.removeEventListener('keydown', onKey); }
+}
+
 function openPeople() {
   const list = el('ul', { class: 'people-list' });
   const draw = () => {

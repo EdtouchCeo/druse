@@ -156,6 +156,7 @@ async function onMessage(msg) {
   render();
 }
 
+let controlsBound = false;
 function setupLesson(preview) {
   document.title = `${lesson.title} | Dave AIT Class`;
   $('#lesson-name').textContent = lesson.title;
@@ -163,6 +164,10 @@ function setupLesson(preview) {
   $('#waiting').hidden = true;
   $('#app').hidden = false;
   stage = createStage($('#stage'), lesson, { interactive: true }, { controls: true });
+  // 단추와 키는 한 번만 잇는다. 들어올 때 선생님 상태가 연달아 두 번 오면 이 함수가 두 번 불려
+  // 넘기기가 두 번씩 걸리고, 한 번 누르면 두 장이 넘어갔다.
+  if (controlsBound) return;
+  controlsBound = true;
   zoomPane($('#tb-pane .tb-view'), $('#tb-img'), $('#tb-zoom'));
   enableDivider($('#ws'), $('#divider'), 'ait_split_student');
   $('#prev').addEventListener('click', () => browse(own.slide - 1));
