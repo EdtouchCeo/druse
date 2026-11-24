@@ -55,6 +55,8 @@ function onMessage(msg) {
     renderHostView($('#quiz'), msg.view, { teacher: false });
   } else if (msg.type === 'ink') {
     stage.ink.apply(msg.ink);
+  } else if (msg.type === 'media') {
+    stage.media.apply(msg);
   } else if (msg.type === 'lab') {
     mirror.render(msg.snap);
   } else if (msg.type === 'code') {

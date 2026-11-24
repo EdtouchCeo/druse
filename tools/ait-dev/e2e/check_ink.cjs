@@ -177,7 +177,7 @@ const inked = (page, sel) => page.$eval(sel, (c) => {
   await student.goto(`${BASE}/ait/room.html?code=${code}`);
   await student.waitForSelector('#app:not([hidden])', { timeout: 8000 });
   await student.waitForFunction(() => document.querySelector('#stage img')?.naturalWidth > 0);
-  const sb = await student.$eval('#stage', (s) => { const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+  const sb = await student.$eval('#stage', (s) => { const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height * 0.15 }; }); // 장 위쪽(가운데에 동영상이 있으면 그 단추가 두 번 누르기를 받는다)
   await student.mouse.dblclick(sb.x, sb.y);
   await wait(200);
   const sz = await student.$eval('#stage .zoom-box', (b) => b.style.transform);

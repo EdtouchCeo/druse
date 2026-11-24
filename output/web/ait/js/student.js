@@ -162,7 +162,7 @@ function setupLesson(preview) {
   $('#preview-badge').hidden = !preview;
   $('#waiting').hidden = true;
   $('#app').hidden = false;
-  stage = createStage($('#stage'), lesson, { interactive: true });
+  stage = createStage($('#stage'), lesson, { interactive: true }, { controls: true });
   zoomPane($('#tb-pane .tb-view'), $('#tb-img'), $('#tb-zoom'));
   enableDivider($('#ws'), $('#divider'), 'ait_split_student');
   $('#prev').addEventListener('click', () => browse(own.slide - 1));

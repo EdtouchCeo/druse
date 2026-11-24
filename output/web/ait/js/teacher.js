@@ -26,6 +26,7 @@ let sideTab = 'textbook';
 let labPanel = null;
 let labSnap = null;
 let inkState = null; // 판서·확대 상태(발표 화면이 따라 그린다)
+let mediaState = null; // 장 위 동영상의 재생 상태(발표 화면이 따라 한다)
 let blank = null; // 'black' | 'white' | null
 let quiz = null;
 let quizHost = null;
@@ -71,6 +72,10 @@ async function start() {
       $('#ink-btn').setAttribute('aria-pressed', String(ink.draw));
       sendPresent('ink');
     },
+  }, {
+    controls: true,
+    // 진행 화면에서 동영상을 재생·멈추면 발표 화면이 따라 한다.
+    onMedia: (m) => { mediaState = m; sendPresent('media'); },
   });
   zoomPane($('#tb-body .tb-view'), $('#tb-img'), $('#tb-zoom'));
   state.page = lesson.slides[0].textbook?.page ?? lesson.textbook.first;
@@ -359,6 +364,7 @@ function sendPresent(what = 'state') {
   if (what === 'state' || what === 'all') present.channel.postMessage({ type: 'state', lesson: lesson.id, mode: state.mode, slide: state.slide, page: state.page, blank });
   if ((what === 'lab' || what === 'all') && labSnap) present.channel.postMessage({ type: 'lab', snap: labSnap });
   if ((what === 'ink' || what === 'all') && inkState) present.channel.postMessage({ type: 'ink', ink: inkState });
+  if ((what === 'media' || what === 'all') && mediaState && mediaState.slide === state.slide) present.channel.postMessage({ type: 'media', ...mediaState });
 }
 
 async function openProjector() {

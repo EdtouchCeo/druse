@@ -2,7 +2,7 @@
 // 파일마다 지문(SHA-256)을 만들어 보관함 목록과 견주고, 바뀐 파일만 한 번 쓰는 주소로 올린다.
 import { $, el } from './common.js';
 
-const TYPES = { webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', json: 'application/json', csv: 'text/csv', txt: 'text/plain', ipynb: 'application/json' };
+const TYPES = { webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', json: 'application/json', csv: 'text/csv', txt: 'text/plain', ipynb: 'application/json', gif: 'image/gif', mp4: 'video/mp4', webm: 'video/webm' };
 const MAX_BYTES = 10 * 1024 * 1024;
 const PARALLEL = 6;
 
